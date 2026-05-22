@@ -4721,7 +4721,648 @@ render = function(){
 })();
 
 
-openClassMenu();
+// ── UI & CODES UPDATE 1.6: START MENU, HUD REWORK, CODES, BALANCE ──
+(function(){
+  const UI_PATCH_VERSION='UI & Codes Update 1.6';
+  const CLASS_UNLOCK_KEY=SAVE_KEY+'_class_unlocks_v3';
+  const REDEEM_KEY=SAVE_KEY+'_redeemed_codes_v1';
+  const FREE_CLASSES=['assault','sniper'];
+  const CLASS_COSTS={engineer:10,mage:15,ronin:20,alchemist:20,reaper:30,chronoHero:100};
+  const CLASS_ORDER=['assault','sniper','engineer','mage','ronin','alchemist','reaper','chronoHero'];
+  const CODE_REWARDS={ChronoCode:100,MonsterHunter:250};
+  const RARITY_META={
+    'COMUM':{cls:'rarity-common',label:'COMUM'},
+    'RARO':{cls:'rarity-rare',label:'RARO'},
+    'ÉPICO':{cls:'rarity-epic',label:'ÉPICO'},
+    'LENDÁRIO':{cls:'rarity-legendary',label:'LENDÁRIO'},
+    'MÍTICO':{cls:'rarity-mythic',label:'MÍTICO'}
+  };
+
+  if(!document.getElementById('uiPatch16Styles')){
+    const st=document.createElement('style');
+    st.id='uiPatch16Styles';
+    st.textContent=`
+      .weapon-return-wrap{display:none!important}
+      .title{display:none!important}
+      .hud{top:10px;width:min(98vw,1320px);align-items:flex-start;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+      .left-panel{gap:7px}.right-panel{align-items:flex-end}
+      .stats{min-width:235px;gap:6px;padding:10px 11px;border-radius:0;background:rgba(5,8,18,.72);border:2px solid rgba(140,210,255,.38);box-shadow:inset 0 0 0 2px rgba(0,0,0,.35),0 0 26px rgba(80,170,255,.1);image-rendering:pixelated}
+      .stats>div{grid-template-columns:60px 1fr;font-size:12px;letter-spacing:.11em;color:#dff3ff;text-shadow:0 0 7px rgba(97,218,251,.55)}
+      .stats>div:nth-child(3),.stats>div:nth-child(4),.stats>div:nth-child(5){display:none!important}
+      .stats span{font-family:'Orbitron',sans-serif;font-size:10px}
+      .bar{height:13px;border-radius:0;background:#050914;border:2px solid rgba(255,255,255,.16);box-shadow:inset 0 0 0 2px rgba(0,0,0,.45)}
+      .bar i{border-radius:0;transition:width .08s linear;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 0 13px currentColor}
+      #hpBar{background:linear-gradient(90deg,#ff355d,#ff7a93,#ffd1da)}
+      #shieldBar{background:linear-gradient(90deg,#32ffd2,#8dffe7,#eaffff)}
+      .scoreboard{min-width:305px;background:transparent;border:none;box-shadow:none;backdrop-filter:none;padding:0;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;font-size:12px}
+      .scoreboard .ui-token{pointer-events:none;min-width:74px;padding:8px 10px;border-radius:0;background:linear-gradient(180deg,rgba(10,16,33,.86),rgba(3,6,14,.92));border:2px solid rgba(255,255,255,.13);box-shadow:inset 0 0 0 2px rgba(0,0,0,.38),0 0 22px rgba(97,218,251,.06);text-align:center;position:relative;overflow:hidden}
+      .scoreboard .ui-token::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);transform:translateX(-110%);animation:uiTokenSweep 4.2s infinite}
+      .scoreboard .ui-token small{display:block;font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:.12em;opacity:.72;line-height:1.1}
+      .scoreboard .ui-token b,.scoreboard .ui-token span{display:block;font-family:'Orbitron',sans-serif;font-size:15px;margin-top:2px;color:#fff;text-shadow:0 0 14px currentColor}
+      .ui-gold b{color:#ffd166!important}.ui-relic b{color:#ffb8ff!important}.ui-level b{color:#9bedff!important}.ui-wave b{color:#ff8fa3!important}.ui-combo span{color:#fff083!important}
+      @keyframes uiTokenSweep{0%,70%{transform:translateX(-115%)}100%{transform:translateX(115%)}}
+      .skill-bar{bottom:18px;gap:12px;padding:8px 12px;border-radius:18px;background:rgba(3,6,14,.36);border:1px solid rgba(145,220,255,.12);backdrop-filter:blur(10px);box-shadow:0 0 34px rgba(97,218,251,.08)}
+      .skill-icon{width:62px;height:62px;border-radius:16px;border:2px solid rgba(135,215,255,.32);background:linear-gradient(180deg,rgba(13,21,44,.92),rgba(4,7,18,.96));font-size:26px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 0 22px rgba(97,218,251,.08)}
+      .skill-icon::after{content:'';position:absolute;inset:6px;border-radius:12px;border:1px solid rgba(255,255,255,.08);pointer-events:none}
+      .skill-icon .cd-overlay{font-size:13px;font-family:'Orbitron',sans-serif;background:rgba(0,0,0,.78);color:#fff;text-shadow:0 0 8px #61dafb}
+      .skill-icon .key-hint{bottom:-20px;font-family:'Orbitron',sans-serif;font-size:10px;color:#dff3ff;text-shadow:0 0 8px #61dafb}
+      .dash-skill-icon{border-color:rgba(255,209,102,.55)!important;box-shadow:0 0 26px rgba(255,209,102,.16),inset 0 0 0 1px rgba(255,255,255,.08)}
+      .dash-skill-icon.ready{animation:dashReadyPulse 1s infinite alternate}@keyframes dashReadyPulse{to{box-shadow:0 0 32px rgba(255,209,102,.42),inset 0 0 22px rgba(255,209,102,.08)}}
+      .start-stage{position:relative;overflow:hidden;padding:0;border-radius:24px;background:radial-gradient(circle at 50% 30%,rgba(97,218,251,.18),transparent 32%),linear-gradient(135deg,rgba(8,12,28,.98),rgba(2,3,10,.99));min-height:530px;display:grid;place-items:center;border:1px solid rgba(130,220,255,.22)}
+      .start-stage::before{content:'';position:absolute;inset:-25%;background:conic-gradient(from 0deg,transparent,#61dafb33,transparent,#9f6cff33,transparent,#ff6b9d33,transparent);animation:chronoSpin 14s linear infinite;filter:blur(18px);opacity:.9}
+      .start-inner{position:relative;z-index:2;width:100%;padding:38px;text-align:center}
+      .start-logo{font-family:'Orbitron',sans-serif;font-size:54px;font-weight:900;letter-spacing:.12em;line-height:.95;background:linear-gradient(90deg,#eaffff,#61dafb,#9f6cff,#ff6b9d,#ffd166);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(97,218,251,.32))}
+      .start-sub{margin:14px auto 24px;max-width:640px;color:#bcd6ff;line-height:1.65}
+      .start-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}.start-actions .main-btn{min-width:170px;font-family:'Orbitron',sans-serif;letter-spacing:.08em}
+      .start-shards{position:absolute;inset:0;pointer-events:none}.chrono-shard{position:absolute;width:12px;height:22px;background:linear-gradient(180deg,#fff,#61dafb 45%,#9f6cff);clip-path:polygon(50% 0,100% 32%,70% 100%,30% 100%,0 32%);filter:drop-shadow(0 0 13px #61dafb);animation:shardDrift var(--dur) ease-in-out infinite alternate;opacity:.72}.chrono-shard:nth-child(3n){background:linear-gradient(180deg,#fff,#ffd166,#ff6b9d);filter:drop-shadow(0 0 13px #ffd166)}.chrono-shard:nth-child(4n){background:linear-gradient(180deg,#fff,#c6a0ff,#5fffee);filter:drop-shadow(0 0 13px #c6a0ff)}
+      @keyframes chronoSpin{to{transform:rotate(360deg)}}@keyframes shardDrift{from{transform:translate3d(0,0,0) rotate(0deg) scale(.85)}to{transform:translate3d(var(--dx),var(--dy),0) rotate(180deg) scale(1.15)}}
+      .codes-box{max-width:560px;margin:18px auto 0;display:grid;gap:12px}.code-input{width:100%;border-radius:14px;border:1px solid rgba(130,220,255,.22);background:rgba(0,0,0,.36);color:#eaf6ff;font:700 18px 'Rajdhani';padding:14px 16px;outline:none;text-align:center;letter-spacing:.08em;box-shadow:inset 0 0 18px rgba(97,218,251,.04)}.code-input:focus{border-color:#61dafb;box-shadow:0 0 18px rgba(97,218,251,.16),inset 0 0 18px rgba(97,218,251,.06)}.code-msg{min-height:22px;font-weight:800;letter-spacing:.04em}
+      .upgrade-btn{position:relative;overflow:hidden;border-width:2px}.rarity-chip{display:inline-block;margin-bottom:7px;padding:3px 8px;border-radius:999px;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:.12em}.rarity-common{border-color:#54b9ff!important;box-shadow:0 0 22px rgba(84,185,255,.12)!important}.rarity-common .rarity-chip{background:#54b9ff22;color:#8fd3ff;border:1px solid #54b9ff66}.rarity-rare{border-color:#4ce0b3!important;box-shadow:0 0 22px rgba(76,224,179,.13)!important}.rarity-rare .rarity-chip{background:#4ce0b322;color:#8fffe0;border:1px solid #4ce0b366}.rarity-epic{border-color:#b77cff!important;box-shadow:0 0 26px rgba(183,124,255,.18)!important}.rarity-epic .rarity-chip{background:#b77cff22;color:#d8b8ff;border:1px solid #b77cff66}.rarity-legendary{border-color:#ffd166!important;box-shadow:0 0 30px rgba(255,209,102,.22)!important}.rarity-legendary .rarity-chip{background:#ffd16624;color:#ffe7a1;border:1px solid #ffd16677}.rarity-mythic{border-color:#ff304f!important;background:linear-gradient(135deg,rgba(255,48,79,.24),rgba(105,10,24,.36))!important;box-shadow:0 0 40px rgba(255,48,79,.36),inset 0 0 28px rgba(255,255,255,.06)!important;animation:mythicPulse .7s infinite alternate}.rarity-mythic .rarity-chip{background:#ff304f33;color:#ffdbe1;border:1px solid #ff304faa}.rarity-mythic strong{color:#fff!important;text-shadow:0 0 18px #ff304f}@keyframes mythicPulse{to{filter:brightness(1.18);transform:translateY(-1px)}}
+      .shop-grid{grid-template-columns:repeat(auto-fit,minmax(250px,1fr));align-items:stretch}.shop-btn{position:relative;min-height:112px;border-width:2px}.shop-btn strong{font-family:'Orbitron',sans-serif;font-size:14px}.shop-section-title{margin:18px 0 4px;font-family:'Orbitron',sans-serif;font-size:14px;letter-spacing:.16em;color:#9bedff;text-align:left}.shop-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:18px}.return-shop-btn{background:linear-gradient(135deg,#ffd166,#fff0b3);color:#111827}
+      .death-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:18px 0}.death-stat{padding:12px;border:1px solid rgba(130,220,255,.16);background:rgba(255,255,255,.04);border-radius:14px}.death-stat small{display:block;opacity:.68;letter-spacing:.1em}.death-stat b{font-family:'Orbitron',sans-serif;font-size:20px;color:#fff}.death-build{margin-top:12px;text-align:left;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px;color:#bcd6ff}
+    `;
+    document.head.appendChild(st);
+  }
+
+  function rawMeta(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{}}catch{return {}}}
+  function writeMeta(m){localStorage.setItem(SAVE_KEY,JSON.stringify(m||{}));}
+  function getRelics(){const a=rawMeta(); return Number(a.relicShards||0)}
+  function addRelics(n){const m=rawMeta(); m.relicShards=Number(m.relicShards||0)+n; writeMeta(m); if(game&&game.meta) game.meta.relicShards=m.relicShards; return m.relicShards;}
+  function spendRelics(n){const m=rawMeta(); const have=Number(m.relicShards||0); if(have<n) return false; m.relicShards=have-n; writeMeta(m); if(game&&game.meta) game.meta.relicShards=m.relicShards; return true;}
+  function readUnlocks(){try{const arr=JSON.parse(localStorage.getItem(CLASS_UNLOCK_KEY)||'[]'); return Array.from(new Set(FREE_CLASSES.concat(Array.isArray(arr)?arr:[])));}catch{return [...FREE_CLASSES]}}
+  function writeUnlocks(arr){localStorage.setItem(CLASS_UNLOCK_KEY,JSON.stringify(Array.from(new Set((arr||[]).filter(Boolean)))))}
+  function isUnlocked(k){return FREE_CLASSES.includes(k)||readUnlocks().includes(k)}
+  function orderedClasses(){return CLASS_ORDER.filter(k=>CLASSES[k]).concat(Object.keys(CLASSES).filter(k=>!CLASS_ORDER.includes(k)));}
+  function redeemed(){try{const arr=JSON.parse(localStorage.getItem(REDEEM_KEY)||'[]'); return Array.isArray(arr)?arr:[]}catch{return []}}
+  function writeRedeemed(arr){localStorage.setItem(REDEEM_KEY,JSON.stringify(Array.from(new Set(arr||[]))))}
+  function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+  window.openStartMenu=function(){
+    game=null;
+    mouse.down=false;
+    overlay.classList.remove('hidden');
+    const meta=loadMeta();
+    const shardHtml=Array.from({length:32},(_,i)=>`<i class="chrono-shard" style="left:${rand(2,96).toFixed(1)}%;top:${rand(4,92).toFixed(1)}%;--dx:${rand(-70,70).toFixed(0)}px;--dy:${rand(-55,55).toFixed(0)}px;--dur:${rand(2.3,5.5).toFixed(2)}s;animation-delay:${rand(-4,0).toFixed(2)}s"></i>`).join('');
+    overlayCard.innerHTML=`
+      <div class="start-stage">
+        <div class="start-shards">${shardHtml}</div>
+        <div class="start-inner">
+          <div class="start-logo">CHRONO<br>SHARDS</div>
+          <p class="start-sub">Fragmentos temporais orbitam a arena. Compre personagens, desbloqueie relíquias e sobreviva a ondas cada vez mais absurdas.</p>
+          <div class="death-grid" style="max-width:620px;margin-left:auto;margin-right:auto">
+            <div class="death-stat"><small>HIGH SCORE</small><b>${Number(meta.highScore||0).toLocaleString()}</b></div>
+            <div class="death-stat"><small>RELÍQUIAS</small><b id="startRelicCount">${getRelics()}</b></div>
+            <div class="death-stat"><small>VERSÃO</small><b>1.6</b></div>
+          </div>
+          <div class="start-actions">
+            <button class="main-btn" id="playBtn">JOGAR</button>
+            <button class="main-btn" id="codesBtn" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CÓDIGOS</button>
+            <button class="main-btn" id="relicsBtn" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">RELÍQUIAS</button>
+          </div>
+          <div class="tipline">WASD mover • Mouse mirar • Clique atirar • Shift dash • E/Q/R habilidades • X ultimate do Chrono-Hero</div>
+        </div>
+      </div>`;
+    document.getElementById('playBtn').addEventListener('click',openClassMenu);
+    document.getElementById('codesBtn').addEventListener('click',openCodesMenu);
+    document.getElementById('relicsBtn').addEventListener('click',openMetaRelicMenu);
+  };
+
+  window.openCodesMenu=function(){
+    const used=redeemed();
+    overlay.classList.remove('hidden');
+    overlayCard.innerHTML=`
+      <h1>CÓDIGOS ✦</h1>
+      <p>Digite um código de recompensa. Cada código só pode ser resgatado uma vez neste navegador.</p>
+      <div class="codes-box">
+        <input class="code-input" id="codeInput" autocomplete="off" spellcheck="false" placeholder="DIGITE O CÓDIGO">
+        <button class="main-btn" id="redeemBtn">RESGATAR</button>
+        <div class="code-msg" id="codeMsg">Relíquias atuais: <strong>${getRelics()}</strong></div>
+      </div>
+      <div style="margin-top:16px"><button class="main-btn" id="backStartBtn">← Voltar</button></div>`;
+    const input=document.getElementById('codeInput'), msg=document.getElementById('codeMsg');
+    function redeemCode(){
+      const typed=(input.value||'').trim();
+      const key=Object.keys(CODE_REWARDS).find(k=>k.toLowerCase()===typed.toLowerCase());
+      if(!key){msg.innerHTML='<span style="color:#ff8fa3">Código inválido.</span>'; return;}
+      const fresh=redeemed();
+      if(fresh.includes(key)){msg.innerHTML='<span style="color:#ffd166">Esse código já foi usado.</span>'; return;}
+      const total=addRelics(CODE_REWARDS[key]);
+      fresh.push(key); writeRedeemed(fresh);
+      msg.innerHTML=`<span style="color:#8fffe0">Resgatado! +${CODE_REWARDS[key]} relíquias. Total: <strong>${total}</strong></span>`;
+      input.value='';
+    }
+    document.getElementById('redeemBtn').addEventListener('click',redeemCode);
+    input.addEventListener('keydown',e=>{if(e.key==='Enter') redeemCode();});
+    document.getElementById('backStartBtn').addEventListener('click',openStartMenu);
+  };
+
+  const _uiMetaRelicMenu=openMetaRelicMenu;
+  openMetaRelicMenu=function(){
+    _uiMetaRelicMenu();
+    const back=document.getElementById('backBtn');
+    if(back){back.replaceWith(back.cloneNode(true));document.getElementById('backBtn').addEventListener('click',openStartMenu);}
+  };
+
+  openClassMenu=function(){
+    const meta=loadMeta();
+    const relics=getRelics();
+    const unlocks=readUnlocks();
+    overlay.classList.remove('hidden');
+    overlayCard.innerHTML=`
+      <h1>SELEÇÃO DE PERSONAGEM</h1>
+      <p>Assault e Sniper começam liberados. O resto é compra permanente com relíquias.<br>High Score: <strong>${Number(meta.highScore||0).toLocaleString()}</strong> &bull; Relíquias: <strong id="classRelicCount">${relics}</strong></p>
+      <div class="pick-grid">
+        ${orderedClasses().map(k=>{
+          const c=CLASSES[k], unlocked=FREE_CLASSES.includes(k)||unlocks.includes(k), cost=CLASS_COSTS[k]||0;
+          const skills=(c.skills||[]).map(s=>(SKILL_DEFS[s]?.emoji||'✦')+' '+(SKILL_DEFS[s]?.name||s)).join(' • ');
+          if(unlocked){
+            return `<button class="pick-btn class-card" data-class="${k}">
+              <strong>${c.name}</strong>
+              <span class="class-tag" style="background:${c.tagColor}22;color:${c.tagColor};border:1px solid ${c.tagColor}44">${c.tag}</span>
+              <span style="margin-top:6px">${c.desc}</span>
+              <span class="muted">HP ${c.hp} • Foco ${c.focus} • ${WEAPONS[c.weapon]?.name||c.weapon}</span>
+              <span style="font-size:11px;margin-top:4px;opacity:.68">${skills}</span>
+            </button>`;
+          }
+          return `<div class="pick-btn class-card locked" data-locked="${k}">
+            <span class="lock-badge">🔒</span>
+            <strong>${c.name}</strong>
+            <span class="class-tag" style="background:${c.tagColor}18;color:${c.tagColor};border:1px solid ${c.tagColor}33">BLOQUEADO</span>
+            <span style="margin-top:6px;opacity:.7">${c.desc}</span>
+            <span class="muted">HP ${c.hp} • Foco ${c.focus} • ${WEAPONS[c.weapon]?.name||c.weapon}</span>
+            <div class="buy-row"><span class="cost-chip">🜂 ${cost} relíquias</span><button class="buy-btn" data-buy="${k}" ${relics<cost?'disabled':''}>Comprar</button></div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
+        <button class="main-btn" id="backMainBtn">← Início</button>
+        <button class="main-btn" id="codesFromClassBtn" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Códigos</button>
+      </div>`;
+    [...overlayCard.querySelectorAll('[data-class]')].forEach(btn=>btn.addEventListener('click',()=>{resetGame(btn.dataset.class);overlay.classList.add('hidden')}));
+    [...overlayCard.querySelectorAll('[data-buy]')].forEach(btn=>btn.addEventListener('click',(ev)=>{
+      ev.stopPropagation();
+      const k=btn.dataset.buy, cost=CLASS_COSTS[k]||0;
+      const msg=document.getElementById('classRelicCount');
+      if(!spendRelics(cost)){if(msg)msg.innerHTML=`${getRelics()} <span style="color:#ff8fa3">— insuficiente</span>`;return;}
+      const next=readUnlocks(); next.push(k); writeUnlocks(next);
+      openClassMenu();
+    }));
+    document.getElementById('backMainBtn').addEventListener('click',openStartMenu);
+    document.getElementById('codesFromClassBtn').addEventListener('click',openCodesMenu);
+  };
+
+  function ensureDashIcon(){
+    let el=document.getElementById('dashIcon');
+    if(el) return el;
+    el=document.createElement('div');
+    el.id='dashIcon';
+    el.className='skill-icon dash-skill-icon';
+    el.innerHTML='<span id="dashEmoji">💨</span><div class="cd-overlay" id="dashCd" style="display:none">0.0</div><span class="key-hint">SHIFT</span>';
+    skillBar.insertBefore(el,skillBar.firstChild);
+    return el;
+  }
+  function ensureScoreboardShell(){
+    const sb=document.querySelector('.scoreboard'); if(!sb) return;
+    if(sb.dataset.ui16==='1') return;
+    sb.dataset.ui16='1';
+    sb.innerHTML=`
+      <div class="ui-token ui-gold"><small>OURO</small><b id="uiGold">0</b></div>
+      <div class="ui-token ui-relic"><small>RELÍQUIAS</small><b id="uiRelics">0</b></div>
+      <div class="ui-token ui-level"><small>LVL</small><b id="uiLevel">1</b></div>
+      <div class="ui-token ui-wave"><small>WAVE</small><b id="uiWave">1</b></div>
+      <div class="ui-token ui-combo"><small>COMBO</small><span id="uiCombo">x1</span></div>`;
+  }
+  const _uiUpdateHUD=updateHUD;
+  updateHUD=function(){
+    _uiUpdateHUD();
+    ensureDashIcon(); ensureScoreboardShell();
+    if(!game) return;
+    const p=game.player;
+    const g=document.getElementById('uiGold'), r=document.getElementById('uiRelics'), l=document.getElementById('uiLevel'), w=document.getElementById('uiWave'), c=document.getElementById('uiCombo');
+    if(g)g.textContent=game.gold; if(r)r.textContent=(game.meta?.relicShards??getRelics()); if(l)l.textContent=game.level; if(w)w.textContent=game.wave; if(c)c.textContent=`x${game.combo}`;
+    const dash=document.getElementById('dashIcon'), dashCd=document.getElementById('dashCd');
+    if(dash&&dashCd){
+      const ready=(p.dashCharge>=99.5&&p.dashTime<=0);
+      dash.classList.toggle('ready',ready);
+      if(ready){dashCd.style.display='none';}
+      else{const regen=60+22*((game.upgrades?.dashRegen||1)-1);dashCd.style.display='flex';dashCd.textContent=Math.max(0,(100-p.dashCharge)/Math.max(1,regen)).toFixed(1);}
+    }
+  };
+
+  function drawFocusUnderPlayer(){
+    if(!game||!game.player) return;
+    const p=game.player;
+    if(p.focus>=p.maxFocus-0.4) return;
+    const pct=clamp(p.focus/p.maxFocus,0,1), bw=62, bh=7, x=p.x-bw/2, y=p.y+p.r+18;
+    ctx.save();
+    ctx.globalAlpha=0.92;
+    ctx.fillStyle='rgba(4,5,14,.78)'; ctx.fillRect(x-2,y-2,bw+4,bh+4);
+    ctx.strokeStyle='rgba(225,220,255,.55)'; ctx.lineWidth=1; ctx.strokeRect(x-2.5,y-2.5,bw+5,bh+5);
+    const grad=ctx.createLinearGradient(x,y,x+bw,y); grad.addColorStop(0,'#7c3cff'); grad.addColorStop(.55,'#c6a0ff'); grad.addColorStop(1,'#ffffff');
+    ctx.fillStyle=grad; ctx.fillRect(x,y,bw*pct,bh);
+    ctx.shadowBlur=12; ctx.shadowColor='#c6a0ff'; ctx.strokeStyle='#c6a0ff'; ctx.strokeRect(x,y,bw*pct,bh);
+    ctx.restore();
+  }
+  const _uiRender=render;
+  render=function(){_uiRender();drawFocusUnderPlayer();};
+
+  function weightedChoices(pool,count){
+    const chosen=[], bag=[...pool];
+    while(chosen.length<count&&bag.length){
+      const total=bag.reduce((s,it)=>s+(it.weight||1),0);
+      let roll=Math.random()*total, idx=0;
+      for(;idx<bag.length;idx++){roll-=bag[idx].weight||1;if(roll<=0)break;}
+      chosen.push(bag.splice(Math.min(idx,bag.length-1),1)[0]);
+    }
+    return chosen;
+  }
+  openUpgradeMenu=function(){
+    game.running=false;
+    const pool=[
+      {rarity:'COMUM',weight:48,name:'Dano +18%',desc:'Mais impacto em tiros e skills.',effect:()=>game.upgrades.damage+=0.18},
+      {rarity:'COMUM',weight:48,name:'Cadência +16%',desc:'Atira mais rápido.',effect:()=>game.upgrades.fireRate+=0.16},
+      {rarity:'COMUM',weight:48,name:'Velocidade +12%',desc:'Movimento mais leve.',effect:()=>game.upgrades.speed+=0.12},
+      {rarity:'COMUM',weight:48,name:'HP máximo +20',desc:'Mais margem para erro.',effect:()=>{game.player.maxHp+=20;game.player.hp+=20}},
+      {rarity:'COMUM',weight:48,name:'Foco máximo +22',desc:'Mais espaço para skills.',effect:()=>{game.player.maxFocus+=22;game.player.focus+=22}},
+      {rarity:'RARO',weight:26,name:'Perfuração +1',desc:'Tiros atravessam mais um inimigo.',effect:()=>game.upgrades.pierce+=1},
+      {rarity:'RARO',weight:26,name:'Multishot +1',desc:'Projétil extra por disparo.',effect:()=>game.upgrades.multishot+=1},
+      {rarity:'RARO',weight:26,name:'Lifesteal +0.5%',desc:'Cura por dano, bem mais controlado.',effect:()=>game.upgrades.lifesteal=Math.min((game.upgrades.lifesteal||0)+0.005,0.08)},
+      {rarity:'RARO',weight:26,name:'Dash Servo +18%',desc:'Dash carrega mais rápido.',effect:()=>game.upgrades.dashRegen+=0.18},
+      {rarity:'RARO',weight:26,name:'Magnetismo +40',desc:'Puxa loot de mais longe.',effect:()=>game.upgrades.magnet+=40},
+      {rarity:'ÉPICO',weight:10,name:'Armadura +10%',desc:'Reduz dano recebido.',effect:()=>game.upgrades.armor+=0.10},
+      {rarity:'ÉPICO',weight:10,name:'Balas Explosivas',desc:'Impactos causam dano em área.',effect:()=>game.upgrades.explosiveBullets=true},
+      {rarity:'ÉPICO',weight:10,name:'Drone Aliado',desc:'Drone automático adicional.',effect:()=>{if(game.drones.length<4) game.drones.push({angle:rand(0,Math.PI*2),dist:58+game.drones.length*20,fireCd:0,x:0,y:0});else game.upgrades.fireRate+=0.06}},
+      {rarity:'LENDÁRIO',weight:3,name:'Mini-Torreta Permanente',desc:'Instala uma mini-torreta fixa e duradoura.',effect:()=>{if(typeof spawnMiniTurret==='function')spawnMiniTurret(game.player.x+rand(-80,80),game.player.y+rand(-80,80));else game.upgrades.fireRate+=0.12}},
+      {rarity:'LENDÁRIO',weight:3,name:'Contrato de Caça',desc:'Chance de ouro extra em mortes.',effect:()=>game.upgrades.bounty+=3}
+    ];
+    const mythic={rarity:'MÍTICO',weight:0,name:'Unidade Suprema',desc:'+50% velocidade, +100% cadência, +5 projéteis, +100% HP e +25% dano.',effect:()=>{game.upgrades.speed+=0.50;game.upgrades.fireRate+=1.00;game.upgrades.multishot+=5;game.player.maxHp*=2;game.player.hp=game.player.maxHp;game.upgrades.damage+=0.25;game.flash=0.6;game.flashColor='#ff304f';game.shake=28;}};
+    const mythicAppears=Math.random()<0.001;
+    const choices=mythicAppears?[mythic,...weightedChoices(pool,3)]:weightedChoices(pool,4);
+    overlay.classList.remove('hidden');
+    overlayCard.innerHTML=`
+      <h1>LEVEL UP ${game.level}</h1>
+      <p>Escolha uma melhoria. As cores indicam raridade: azul, verde, roxo, amarelo e vermelho mítico.</p>
+      <div class="upgrade-grid">
+        ${choices.map((u,i)=>{const m=RARITY_META[u.rarity]||RARITY_META.COMUM;return `<button class="upgrade-btn ${m.cls}" data-up="${i}"><span class="rarity-chip">${m.label}</span><strong>${u.name}</strong><span>${u.desc}</span></button>`}).join('')}
+      </div>`;
+    [...overlayCard.querySelectorAll('[data-up]')].forEach(btn=>btn.addEventListener('click',()=>{choices[Number(btn.dataset.up)].effect();overlay.classList.add('hidden');game.running=true;updateHUD();if(typeof eclipseNotice==='function')eclipseNotice('Upgrade adquirido','#d4a0ff')}));
+  };
+
+  openShopMenu=function(){
+    game.running=false; game.betweenWaves=true;
+    const discount=1-Math.min(game.upgrades.shopDiscount||0,0.45);
+    const cost=n=>Math.max(1,Math.floor(n*discount));
+    const itemGroups=[
+      {title:'ARMAS',items:[
+        {key:'shotgun',name:'Shotgun',desc:'Cone curto com vários pellets. Recomprável se não estiver equipada.',cost:cost(34),available:game.weaponKey!=='shotgun',effect:()=>{game.weaponKey='shotgun'}},
+        {key:'rail',name:'Rail Gun',desc:'Disparo forte e preciso, bloqueado por cobertura.',cost:cost(46),available:game.weaponKey!=='rail',effect:()=>{game.weaponKey='rail'}}
+      ]},
+      {title:'APRIMORAMENTOS',items:[
+        {key:'hpMax',name:'HP máximo +24',cost:cost(44*Math.pow(1.35,game.shopCounts.hpMax||0)),desc:'Mais resistência.',available:(game.shopCounts.hpMax||0)<(game.shopLimits.hpMax||8),effect:()=>{game.player.maxHp+=24;game.player.hp+=24;game.shopCounts.hpMax=(game.shopCounts.hpMax||0)+1}},
+        {key:'focusMax',name:'Foco máximo +30',cost:cost(38*Math.pow(1.30,game.shopCounts.focusMax||0)),desc:'Mais slow e skills.',available:(game.shopCounts.focusMax||0)<(game.shopLimits.focusMax||6),effect:()=>{game.player.maxFocus+=30;game.player.focus+=30;game.shopCounts.focusMax=(game.shopCounts.focusMax||0)+1}},
+        {key:'damageBoost',name:'Dano +16%',cost:cost(48*Math.pow(1.45,game.shopCounts.damageBoost||0)),desc:'Escala tudo.',available:(game.shopCounts.damageBoost||0)<(game.shopLimits.damageBoost||6),effect:()=>{game.upgrades.damage+=0.16;game.shopCounts.damageBoost=(game.shopCounts.damageBoost||0)+1}},
+        {key:'armorBoost',name:'Armadura +8%',cost:cost(42*Math.pow(1.40,game.shopCounts.armorBoost||0)),desc:'Sofre menos.',available:(game.shopCounts.armorBoost||0)<(game.shopLimits.armorBoost||5),effect:()=>{game.upgrades.armor+=0.08;game.shopCounts.armorBoost=(game.shopCounts.armorBoost||0)+1}},
+        {key:'dashServo',name:'Servo de Dash +20%',cost:cost(40*Math.pow(1.33,game.shopCounts.dashServo||0)),desc:'Dash volta mais rápido.',available:(game.shopCounts.dashServo||0)<(game.shopLimits.dashServo||6),effect:()=>{game.upgrades.dashRegen+=0.20;game.shopCounts.dashServo=(game.shopCounts.dashServo||0)+1}},
+        {key:'magnet',name:'Ímã de Loot +50',cost:cost(36*Math.pow(1.3,game.shopCounts.magnet||0)),desc:'Puxa loot de longe.',available:(game.shopCounts.magnet||0)<(game.shopLimits.magnet||5),effect:()=>{game.upgrades.magnet+=50;game.shopCounts.magnet=(game.shopCounts.magnet||0)+1}}
+      ]},
+      {title:'RAROS DA LOJA',items:[
+        {key:'turretPack',name:'Mini-Torreta Permanente',cost:cost(62*Math.pow(1.42,game.shopCounts.turretPack||0)),desc:'Torreta fixa, menor e sem expiração.',available:(game.shopCounts.turretPack||0)<(game.shopLimits.turretPack||3),effect:()=>{if(typeof spawnMiniTurret==='function')spawnMiniTurret(game.player.x+rand(-90,90),game.player.y+rand(-70,70));game.shopCounts.turretPack=(game.shopCounts.turretPack||0)+1}},
+        {key:'relicTrade',name:'Fragmento Relíquia +1',cost:cost(90*Math.pow(1.5,game.shopCounts.relicTrade||0)),desc:'Compra progresso permanente.',available:(game.shopCounts.relicTrade||0)<(game.shopLimits.relicTrade||4),effect:()=>{game.meta.relicShards+=1;saveMeta();game.shopCounts.relicTrade=(game.shopCounts.relicTrade||0)+1}}
+      ]}
+    ];
+    const flat=[];
+    const html=itemGroups.map(group=>`<div class="shop-section-title">${group.title}</div><div class="shop-grid">${group.items.map(item=>{const i=flat.push(item)-1;return `<button class="shop-btn" data-shop="${i}" ${item.available?'':'disabled'} style="${item.available?'':'opacity:.35;cursor:not-allowed'}"><strong>${item.name} — ${item.cost}g</strong><span>${item.desc}</span></button>`}).join('')}</div>`).join('');
+    overlay.classList.remove('hidden');
+    overlayCard.innerHTML=`
+      <h1>LOJA ECLIPSE 🛒</h1>
+      <p>Ouro: <strong>${game.gold}</strong> &bull; Relíquias permanentes: <strong>${game.meta.relicShards}</strong><br>Arma atual: <strong>${WEAPONS[game.weaponKey]?.name||game.weaponKey}</strong></p>
+      ${html}
+      <div class="shop-actions">
+        <button class="main-btn return-shop-btn" id="returnWeaponShopBtn">↺ Arma Inicial</button>
+        <button class="main-btn" id="continueBtn">Continuar →</button>
+      </div>`;
+    [...overlayCard.querySelectorAll('[data-shop]')].forEach(btn=>{const item=flat[Number(btn.dataset.shop)]; if(!item.available) return; btn.addEventListener('click',()=>{if(game.gold<item.cost){if(typeof eclipseNotice==='function')eclipseNotice('SEM OURO','#ff9ba8',18);return;}game.gold-=item.cost;item.effect();updateHUD();openShopMenu();});});
+    document.getElementById('returnWeaponShopBtn').addEventListener('click',()=>{game.weaponKey=CLASSES[game.classKey].weapon;updateHUD();openShopMenu();});
+    document.getElementById('continueBtn').addEventListener('click',()=>{overlay.classList.add('hidden');game.running=true;game.betweenWaves=false;game.shopPending=false;game.wave++;startNextWave();});
+  };
+
+  gameOver=function(){
+    game.running=false;
+    if(game.score>game.meta.highScore){game.meta.highScore=game.score;saveMeta()}else saveMeta();
+    const p=game.player, hs=game.score>=game.meta.highScore;
+    overlay.classList.remove('hidden');
+    overlayCard.innerHTML=`
+      <h1>RUN ENCERRADA 💀</h1>
+      <p>${hs?'<strong style="color:#ffd166">🏆 NOVO HIGH SCORE!</strong><br>':''}Resumo completo da sua tentativa.</p>
+      <div class="death-grid">
+        <div class="death-stat"><small>SCORE</small><b>${game.score.toLocaleString()}</b></div>
+        <div class="death-stat"><small>WAVE</small><b>${game.wave}</b></div>
+        <div class="death-stat"><small>KILLS</small><b>${game.kills}</b></div>
+        <div class="death-stat"><small>LEVEL</small><b>${game.level}</b></div>
+        <div class="death-stat"><small>OURO</small><b>${game.gold}</b></div>
+        <div class="death-stat"><small>RELÍQUIAS</small><b>${game.meta.relicShards}</b></div>
+        <div class="death-stat"><small>COMBO</small><b>x${game.comboMax||game.combo}</b></div>
+        <div class="death-stat"><small>ARMA</small><b style="font-size:16px">${WEAPONS[game.weaponKey]?.name||game.weaponKey}</b></div>
+      </div>
+      <div class="death-build">
+        <strong>${CLASSES[game.classKey].name}</strong><br>
+        HP máximo: ${Math.floor(p.maxHp)} • Escudo máximo: ${Math.floor(p.maxShield)} • Foco máximo: ${Math.floor(p.maxFocus)}<br>
+        Dano: ${Math.round((game.upgrades.damage||1)*100)}% • Cadência: ${Math.round((game.upgrades.fireRate||1)*100)}% • Velocidade: ${Math.round((game.upgrades.speed||1)*100)}% • Armadura: ${Math.round((game.upgrades.armor||0)*100)}% • Lifesteal: ${(Math.min(game.upgrades.lifesteal||0,.08)*100).toFixed(1)}%
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px">
+        <button class="main-btn" id="againBtn">Jogar de novo</button>
+        <button class="main-btn" id="homeBtn" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Menu inicial</button>
+      </div>`;
+    document.getElementById('againBtn').addEventListener('click',openClassMenu);
+    document.getElementById('homeBtn').addEventListener('click',openStartMenu);
+  };
+
+  // Sniper: Pierce Mode recebe defesa pesada.
+  const _uiDealDamage=dealDamageToPlayer;
+  dealDamageToPlayer=function(amount){
+    if(game&&game.classKey==='sniper'&&game.player&&(game.player.railPierceMode||0)>0) amount*=0.30;
+    _uiDealDamage(amount);
+  };
+
+  // Chrono-Hero: tiros mais completos, labareda maior, buraco negro maior e ultimate ainda mais rara.
+  WEAPONS.heroSplit={name:'Tri-Gem Splitter',cooldown:0.34,bulletSpeed:560,damage:17,spread:0.09,projectiles:3,life:1.25};
+  function heroCanPay(idx,cd){
+    if(!game||!game.running||game.classKey!=='chronoHero') return false;
+    const key=CLASSES[game.classKey].skills[idx], sk=SKILL_DEFS[key], p=game.player;
+    if(!sk||game.skillCds[idx]>0||p.focus<sk.focusCost||game.heroUltimate) return false;
+    p.focus-=sk.focusCost; game.skillCds[idx]=cd??sk.cooldown; return true;
+  }
+  const _uiUseSkill=useSkill;
+  useSkill=function(idx){
+    if(game&&game.classKey==='chronoHero'){
+      const key=CLASSES[game.classKey].skills[idx];
+      if(key==='heroFlame'){
+        if(heroCanPay(idx,10)){
+          const p=game.player,a=angleTo(p,mouse);
+          game.heroFlameStreams=game.heroFlameStreams||[];
+          game.heroFlameStreams.push({x:p.x,y:p.y,ang:a,age:0,life:1.28,maxLife:1.28,range:430,width:0.58,dps:78,burnDps:16,color:'#ff8a35',seed:Math.random()*999});
+          addRing(p.x+Math.cos(a)*56,p.y+Math.sin(a)*56,'#ffb347',82,5); addParticles(p.x+Math.cos(a)*28,p.y+Math.sin(a)*28,'#fff0a8',34,0.75); game.shake=10; if(typeof eclipseNotice==='function')eclipseNotice('LABAREDA DRACÔNICA','#ffb347',16);
+        }
+        return;
+      }
+      if(key==='heroBlackHole'){
+        if(heroCanPay(idx,18)){
+          const x=clamp(mouse.x,85,W-85),y=clamp(mouse.y,85,H-85);
+          game.heroBlackHoles=game.heroBlackHoles||[];
+          game.heroBlackHoles.push({x,y,r:245,life:3,maxLife:3,pulse:0,dps:20,pull:560,color:'#8a5cff',exploded:false,polished:true,ui16:true});
+          addRing(x,y,'#ffffff',92,6); addRing(x,y,'#8a5cff',250,6); addParticles(x,y,'#bda8ff',70,1.0); game.flash=.18; game.flashColor='#8a5cff'; game.shake=15; if(typeof eclipseNotice==='function')eclipseNotice('COLAPSO GRAVITACIONAL','#bda8ff',16);
+        }
+        return;
+      }
+    }
+    _uiUseSkill(idx);
+  };
+  const _uiShoot=shoot;
+  shoot=function(){
+    if(game&&game.heroUltimate) return;
+    if(!game||!game.running||game.classKey!=='chronoHero'){_uiShoot();return;}
+    const p=game.player; if(p.fireCd>0) return;
+    const base=angleTo(p,mouse), weapon=WEAPONS.heroSplit;
+    for(const side of [-1,0,1]){
+      const ang=base+side*0.078;
+      const px=p.x+Math.cos(base+Math.PI/2)*side*5+Math.cos(ang)*21;
+      const py=p.y+Math.sin(base+Math.PI/2)*side*5+Math.sin(ang)*21;
+      game.bullets.push({x:px,y:py,vx:Math.cos(ang)*weapon.bulletSpeed,vy:Math.sin(ang)*weapon.bulletSpeed,r:5.1,life:weapon.life,damage:weapon.damage*game.upgrades.damage,pierce:game.upgrades.pierce,weaponKey:'heroSplit',explosive:false,identityColor:'#5fffee',heroSplitTimer2:0.48,heroSplitAng:ang,heroSplitTimer:0.48});
+    }
+    p.fireCd=weapon.cooldown/game.upgrades.fireRate;
+    addParticles(p.x+Math.cos(base)*20,p.y+Math.sin(base)*20,'#5fffee',12,0.5);
+  };
+  const _uiUpdateEnemies=updateEnemies;
+  updateEnemies=function(dt){
+    _uiUpdateEnemies(dt);
+    if(!game||!game.heroBlackHoles) return;
+    for(const h of game.heroBlackHoles){
+      if(!h.ui16||h.life<=0) continue;
+      for(const e of game.enemies){
+        if(e.type==='boss'&&dist(h,e)<h.r+e.r){
+          const a=angleTo(e,h); const pull=(1-dist(h,e)/(h.r+e.r))*h.pull*dt*1.4;
+          e.x+=Math.cos(a)*pull; e.y+=Math.sin(a)*pull; e.vx=0; e.vy=0; e.hitFlash=Math.max(e.hitFlash||0,.08);
+        }
+      }
+    }
+  };
+  const _uiUpdatePlayer2=updatePlayer;
+  updatePlayer=function(dt){
+    const pre=(game&&game.classKey==='chronoHero')?Number(game.heroUltCharge||0):0;
+    _uiUpdatePlayer2(dt);
+    if(game&&game.classKey==='chronoHero'&&!game.heroUltimate){
+      const maxGain=dt*0.18;
+      if(Number(game.heroUltCharge||0)>pre+maxGain) game.heroUltCharge=clamp(pre+maxGain,0,100);
+    }
+  };
+  const _uiEnemyDeath=enemyDeath;
+  enemyDeath=function(index,e){
+    const track=game&&game.classKey==='chronoHero'&&e; const pre=track?Number(game.heroUltCharge||0):0;
+    _uiEnemyDeath(index,e);
+    if(track&&game&&game.classKey==='chronoHero'&&!game.heroUltimate){
+      const desired=e.type==='boss'?10:(e.elite?2.6:1.1);
+      if(Number(game.heroUltCharge||0)>pre+desired) game.heroUltCharge=clamp(pre+desired,0,100);
+    }
+  };
+
+  console.log(UI_PATCH_VERSION+' carregado');
+})();
+
+
+// ── WALL & PROJECTILE FIX 1.7: HITBOX PRECISA + TODOS PROJÉTEIS BLOQUEADOS ──
+(function(){
+  const WALL_PATCH_VERSION='Wall & Projectile Fix 1.7';
+
+  function preciseObstacleBody(o){
+    // A parede é desenhada com roundRect e brilho. Para os tiros, usamos só o corpo visual real,
+    // sem a “aura”/sombra e sem inflar demais a hitbox nas quinas.
+    const inset=Math.min(4, Math.max(2, Math.min(o.w,o.h)*0.10));
+    return {x:o.x+inset,y:o.y+inset,w:Math.max(4,o.w-inset*2),h:Math.max(4,o.h-inset*2),r:Math.min(8,Math.max(3,Math.min(o.w,o.h)*0.22))};
+  }
+  function signedDistanceRoundedRect(px,py,rect,expand=0){
+    const x=rect.x-expand, y=rect.y-expand, w=rect.w+expand*2, h=rect.h+expand*2;
+    const radius=Math.max(0,rect.r+expand);
+    const cx=x+w/2, cy=y+h/2;
+    const bx=Math.max(0,w/2-radius), by=Math.max(0,h/2-radius);
+    const qx=Math.abs(px-cx)-bx, qy=Math.abs(py-cy)-by;
+    const outside=Math.hypot(Math.max(qx,0),Math.max(qy,0));
+    const inside=Math.min(Math.max(qx,qy),0);
+    return outside+inside-radius;
+  }
+  function pointHitsObstacleForProjectile(px,py,o,rad){
+    return signedDistanceRoundedRect(px,py,preciseObstacleBody(o),rad)<=0;
+  }
+  function bboxTouchesObstacle(x1,y1,x2,y2,o,rad){
+    const b=preciseObstacleBody(o), pad=rad+2;
+    const minX=Math.min(x1,x2), maxX=Math.max(x1,x2), minY=Math.min(y1,y2), maxY=Math.max(y1,y2);
+    return !(maxX<b.x-pad||minX>b.x+b.w+pad||maxY<b.y-pad||minY>b.y+b.h+pad);
+  }
+  function segmentHitsObstaclePrecise(x1,y1,x2,y2,o,rad){
+    if(!bboxTouchesObstacle(x1,y1,x2,y2,o,rad)) return false;
+    const len=Math.hypot(x2-x1,y2-y1);
+    const steps=Math.max(2,Math.ceil(len/5));
+    for(let s=0;s<=steps;s++){
+      const t=s/steps;
+      const x=x1+(x2-x1)*t, y=y1+(y2-y1)*t;
+      if(pointHitsObstacleForProjectile(x,y,o,rad)) return true;
+    }
+    return false;
+  }
+  function projectileWallRadius(obj,extra=0){
+    // Antes a colisão usava o raio inteiro do projétil + expansão retangular.
+    // Isso fazia a parede parecer maior do que o desenho. Agora o raio é menor e a quina é arredondada.
+    return clamp((obj?.r||3)*0.55+extra*0.25,1.1,4.8);
+  }
+  function mapSegmentBlockedPrecise(x1,y1,x2,y2,rad=1.5){
+    if(!game||!game.mapDecor||!game.mapDecor.obstacles) return false;
+    for(const o of game.mapDecor.obstacles){
+      if(segmentHitsObstaclePrecise(x1,y1,x2,y2,o,rad)) return true;
+    }
+    return false;
+  }
+
+  // Substitui a colisão antiga para tiros/linha de visão por uma versão que casa melhor com o visual.
+  shotBlockedByMap=function(oldX,oldY,obj,extra=0){
+    if(!obj||obj.ignoreWalls||obj.wallPierce||obj.ultimateBeam) return false;
+    return mapSegmentBlockedPrecise(oldX,oldY,obj.x,obj.y,projectileWallRadius(obj,extra));
+  };
+  lineBlockedByMap=function(a,b,extra=0){
+    if(!a||!b) return false;
+    return mapSegmentBlockedPrecise(a.x,a.y,b.x,b.y,clamp(extra*0.18+1.2,1.2,3.2));
+  };
+
+  function isSniperCloakedNow(){return game&&game.classKey==='sniper'&&game.cloakActive>0;}
+  function isInsideHeroIceField(obj){
+    return !!(game&&game.heroIceFields&&game.heroIceFields.some(f=>f.life>0&&dist(obj,f)<f.r+(obj.r||0)));
+  }
+  function splitOracleProjectile(i,b){
+    const base=Math.atan2(b.vy,b.vx), count=8;
+    for(let n=0;n<count;n++){
+      const a=base+(Math.PI*2/count)*n;
+      game.enemyBullets.push({x:b.x,y:b.y,vx:Math.cos(a)*250,vy:Math.sin(a)*250,r:5.5,life:2.7,damage:8,color:'#e7ff9f',homing:false,fromBoss:true});
+    }
+    addRing(b.x,b.y,'#d8ff8a',58,3); addParticles(b.x,b.y,'#d8ff8a',16,0.65);
+    game.enemyBullets.splice(i,1);
+  }
+
+  // Reescreve só a movimentação dos projéteis inimigos para TODOS baterem na parede.
+  // Exceções pedidas: cura do médico não é projétil; ultimate do Chrono-Hero não usa enemyBullets.
+  updateEnemyBullets=function(dt){
+    if(!game||!game.enemyBullets||!game.player) return;
+    if(game.heroUltimate) return;
+    const p=game.player;
+
+    if(game.parryTimer>0){
+      for(let i=game.enemyBullets.length-1;i>=0;i--){
+        const b=game.enemyBullets[i];
+        if(dist(b,p)<72){
+          let target=null,minD=620;
+          for(const e of game.enemies){const d=dist(p,e);if(d<minD&&!lineBlockedByMap(p,e,2)){minD=d;target=e;}}
+          const a=target?angleTo(p,target):angleTo(p,mouse);
+          game.bullets.push({x:p.x,y:p.y,vx:Math.cos(a)*620,vy:Math.sin(a)*620,r:4,life:0.9,damage:20*game.upgrades.damage,pierce:1,weaponKey:'rail',explosive:false,identityColor:'#ffe38c'});
+          addLightning(p.x,p.y,b.x,b.y,'#ffe38c'); game.enemyBullets.splice(i,1); game.shake=5;
+        }
+      }
+    }
+
+    for(let i=game.enemyBullets.length-1;i>=0;i--){
+      const b=game.enemyBullets[i];
+      if(!b) continue;
+      if(b.oracleSplitTimer!==undefined){
+        b.oracleSplitTimer-=dt;
+        if(b.oracleSplitTimer<=0){splitOracleProjectile(i,b);continue;}
+      }
+
+      const oldX=b.x, oldY=b.y;
+      const slow=isInsideHeroIceField(b)?0.5:1;
+      if(slow<1&&Math.random()<0.08) addParticles(b.x,b.y,'#dffcff',1,0.12);
+
+      if(isSniperCloakedNow()&&!b.fromBoss){
+        b._cloakWanderCd=(b._cloakWanderCd||0)-dt;
+        if(b._cloakWanderCd<=0||b._cloakWanderAng===undefined){b._cloakWanderAng=rand(0,Math.PI*2);b._cloakWanderCd=rand(0.25,0.75)}
+        const sp=Math.max(120,Math.hypot(b.vx,b.vy)||190);
+        b.vx+=(Math.cos(b._cloakWanderAng)*sp-b.vx)*dt*3.2;
+        b.vy+=(Math.sin(b._cloakWanderAng)*sp-b.vy)*dt*3.2;
+      }else if(b.homing&&game.timeStopActive<=0){
+        const a=angleTo(b,p);
+        b.vx+=(Math.cos(a)*300-b.vx)*dt*1.5;
+        b.vy+=(Math.sin(a)*300-b.vy)*dt*1.5;
+      }
+
+      b.x+=b.vx*dt*slow; b.y+=b.vy*dt*slow; b.life-=dt;
+
+      if(shotBlockedByMap(oldX,oldY,b,0)){
+        addParticles(b.x,b.y,b.color||'#9bedff',7,0.28);
+        addRing(b.x,b.y,b.color||'#9bedff',18,2);
+        game.enemyBullets.splice(i,1); continue;
+      }
+      if(b.life<=0||b.x<-44||b.x>W+44||b.y<-44||b.y>H+44){game.enemyBullets.splice(i,1);continue;}
+      if(circleCollide(b,p)&&p.hurtCd<=0&&p.dashTime<=0){dealDamageToPlayer(b.damage);game.enemyBullets.splice(i,1);}
+    }
+  };
+
+  function heroSkillPayFix(idx,cd){
+    if(!game||!game.running||game.classKey!=='chronoHero') return false;
+    const key=CLASSES[game.classKey].skills[idx], sk=SKILL_DEFS[key], p=game.player;
+    if(!sk||game.skillCds[idx]>0||p.focus<sk.focusCost||game.heroUltimate) return false;
+    p.focus-=sk.focusCost; game.skillCds[idx]=cd??sk.cooldown; return true;
+  }
+  const _wallFixUseSkill=useSkill;
+  useSkill=function(idx){
+    if(game&&game.classKey==='chronoHero'){
+      const key=CLASSES[game.classKey].skills[idx];
+      if(key==='heroFlame'){
+        if(heroSkillPayFix(idx,10)){
+          const p=game.player,a=angleTo(p,mouse);
+          game.heroFlameStreams=game.heroFlameStreams||[];
+          // Mais largo para os lados, porém com alcance menor para cumprir a mudança pedida.
+          game.heroFlameStreams.push({x:p.x,y:p.y,ang:a,age:0,life:1.18,maxLife:1.18,range:345,width:0.92,dps:80,burnDps:16,color:'#ff8a35',seed:Math.random()*999,wideFlame:true});
+          addRing(p.x+Math.cos(a)*48,p.y+Math.sin(a)*48,'#ffb347',96,5);
+          addParticles(p.x+Math.cos(a)*25,p.y+Math.sin(a)*25,'#fff0a8',42,0.82);
+          game.shake=10;
+          if(typeof eclipseNotice==='function') eclipseNotice('LABAREDA LATERAL','#ffb347',16);
+        }
+        return;
+      }
+    }
+    _wallFixUseSkill(idx);
+  };
+
+  function drawWideFlameFix(){
+    if(!game||!game.heroFlameStreams) return;
+    ctx.save();
+    ctx.globalCompositeOperation='lighter';
+    for(const f of game.heroFlameStreams){
+      if(!f.wideFlame) continue;
+      const progress=1-Math.pow(1-clamp(f.age/f.maxLife,0,1),3);
+      const reach=f.range*progress, fade=clamp(f.life/f.maxLife,0,1);
+      const muzzle={x:f.x+Math.cos(f.ang)*18,y:f.y+Math.sin(f.ang)*18};
+      for(let s=0;s<16;s++){
+        const t=(s+1)/16, d=reach*t;
+        for(const side of [-1,1]){
+          const off=side*(18+70*t)*Math.sin(0.65+s*0.41+f.seed);
+          const x=muzzle.x+Math.cos(f.ang)*d+Math.cos(f.ang+Math.PI/2)*off;
+          const y=muzzle.y+Math.sin(f.ang)*d+Math.sin(f.ang+Math.PI/2)*off;
+          const rr=(18+38*t)*fade;
+          const g=ctx.createRadialGradient(x,y,1,x,y,Math.max(2,rr));
+          g.addColorStop(0,'rgba(255,255,235,.95)');
+          g.addColorStop(.38,'rgba(255,183,72,.70)');
+          g.addColorStop(.78,'rgba(255,70,30,.30)');
+          g.addColorStop(1,'rgba(255,30,0,0)');
+          ctx.globalAlpha=0.46*fade; ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,rr,0,Math.PI*2); ctx.fill();
+        }
+      }
+    }
+    ctx.restore();
+  }
+  const _wallFixRender=render;
+  render=function(){_wallFixRender();drawWideFlameFix();};
+
+  console.log(WALL_PATCH_VERSION+' carregado');
+})();
+
+
+openStartMenu();
 requestAnimationFrame(loop);
 </script>
 </body>
