@@ -5362,7 +5362,485 @@ render = function(){
 })();
 
 
-openStartMenu();
+
+// ── CHARACTER POWER REWORK 1.8: RONIN / ALCHEMIST / REAPER / SNIPER ──
+(function(){
+  const POWER_PATCH_VERSION='Character Power Rework 1.8';
+
+  function ensurePowerState(){
+    if(!game) return;
+    game.roninParrySlashes=game.roninParrySlashes||[];
+    game.roninDashSlashes=game.roninDashSlashes||[];
+    game.roninShockArcs=game.roninShockArcs||[];
+    game.alchemyBottles=game.alchemyBottles||[];
+    game.reaperSoulSlashes=game.reaperSoulSlashes||[];
+    if(game.roninDashChain===undefined) game.roninDashChain=0;
+  }
+  function angleDiffP(a,b){return Math.atan2(Math.sin(a-b),Math.cos(a-b));}
+  function pointSegDistance(px,py,x1,y1,x2,y2){
+    const vx=x2-x1, vy=y2-y1, wx=px-x1, wy=py-y1;
+    const c1=vx*wx+vy*wy, c2=vx*vx+vy*vy || 1;
+    const t=clamp(c1/c2,0,1);
+    const x=x1+vx*t, y=y1+vy*t;
+    return Math.hypot(px-x,py-y);
+  }
+  function addParryKatana(x,y,ang,color='#ffe38c',scale=1){
+    ensurePowerState();
+    game.roninParrySlashes.push({x,y,ang,life:0.34,maxLife:0.34,color,scale});
+  }
+  function addDashKatana(x,y,ang,color='#ffd166',scale=1){
+    ensurePowerState();
+    game.roninDashSlashes.push({x,y,ang,life:0.42,maxLife:0.42,color,scale});
+  }
+  function addSoulScythe(x,y,ang,color='#ff7b9c',scale=1){
+    ensurePowerState();
+    game.reaperSoulSlashes.push({x,y,ang,life:0.55,maxLife:0.55,color,scale});
+  }
+  function stunEnemy(e,t=0.3){e.stunTimer=Math.max(e.stunTimer||0,t);}
+  function payPowerSkill(idx,cdOverride){
+    if(!game||!game.running) return false;
+    const p=game.player, key=CLASSES[game.classKey].skills[idx], sk=SKILL_DEFS[key];
+    if(!sk||game.skillCds[idx]>0||p.focus<sk.focusCost) return false;
+    p.focus-=sk.focusCost;
+    game.skillCds[idx]=cdOverride??sk.cooldown;
+    return true;
+  }
+  function damageOneEnemyFromSkill(i,e,dmg,color){
+    if(!e||i<0) return false;
+    e.hp-=dmg;
+    e.hitFlash=Math.max(e.hitFlash||0,0.16);
+    addParticles(e.x,e.y,color,10,0.65);
+    if(e.hp<=0){enemyDeath(i,e);return true;}
+    return false;
+  }
+
+  // Atualiza descrições e substitui o Q do Sniper por tiro carregado.
+  if(CLASSES.sniper){
+    CLASSES.sniper.skills=['pierceMode','chargedShot','timeStop'];
+    CLASSES.sniper.desc='Precisão, overdrive perfurante e um tiro carregado que rasga o mapa.';
+  }
+  Object.assign(SKILL_DEFS,{
+    chargedShot:{name:'Tiro Carregado',emoji:'☄️',focusCost:45,cooldown:8.5,desc:'Próximo tiro fica enorme, atravessa paredes e solta raios teleguiados.'}
+  });
+  if(SKILL_DEFS.parryField){
+    SKILL_DEFS.parryField.name='Parry Absoluto';
+    SKILL_DEFS.parryField.desc='Deflete todos os projéteis e empurra inimigos enquanto durar.';
+  }
+  if(SKILL_DEFS.bladeDash){
+    SKILL_DEFS.bladeDash.name='Execução Ronin';
+    SKILL_DEFS.bladeDash.desc='Se matar com o dash, pode usar de novo sem cooldown até 10 vezes.';
+  }
+  if(SKILL_DEFS.chronoSlash){
+    SKILL_DEFS.chronoSlash.name='Choque Crono';
+    SKILL_DEFS.chronoSlash.desc='Atinge até 10 inimigos próximos com choque e stun curto.';
+  }
+  if(SKILL_DEFS.toxicCloud){
+    SKILL_DEFS.toxicCloud.name='Três Frascos';
+    SKILL_DEFS.toxicCloud.desc='Arremessa 3 garrafas de veneno com física e áreas separadas.';
+  }
+  if(SKILL_DEFS.soulDrain){
+    SKILL_DEFS.soulDrain.desc='Suga marcados em qualquer distância; bosses têm limite de 3% da vida.';
+  }
+
+  const _powerResetGame=resetGame;
+  resetGame=function(classKey){
+    _powerResetGame(classKey);
+    ensurePowerState();
+    if(game){
+      game.roninParrySlashes=[]; game.roninDashSlashes=[]; game.roninShockArcs=[];
+      game.alchemyBottles=[]; game.reaperSoulSlashes=[]; game.roninDashChain=0;
+      if(game.player) game.player.sniperChargedShot=false;
+    }
+  };
+
+  function castRoninParry(idx){
+    if(!payPowerSkill(idx,8)) return;
+    ensurePowerState();
+    game.parryTimer=2.75;
+    game.roninParryPulse=2.75;
+    game.roninDashChain=0;
+    addRing(game.player.x,game.player.y,'#ffe38c',105,6);
+    addParticles(game.player.x,game.player.y,'#fff2a8',26,0.55);
+    if(typeof eclipseNotice==='function') eclipseNotice('PARRY ABSOLUTO','#ffe38c',18);
+  }
+  function castRoninBladeDash(idx){
+    if(!payPowerSkill(idx,3.2)) return;
+    ensurePowerState();
+    const p=game.player, fromX=p.x, fromY=p.y;
+    const a=angleTo(p,mouse), dashDist=188;
+    const toX=clamp(p.x+Math.cos(a)*dashDist,22,W-22), toY=clamp(p.y+Math.sin(a)*dashDist,22,H-22);
+    p.x=toX; p.y=toY; p.dashCharge=clamp(p.dashCharge+16,0,100);
+    addLightning(fromX,fromY,toX,toY,'#ffd166');
+    addDashKatana((fromX+toX)/2,(fromY+toY)/2,a,'#ffd166',1.35);
+    let killed=false, hits=0;
+    for(let i=game.enemies.length-1;i>=0;i--){
+      const e=game.enemies[i];
+      const d=pointSegDistance(e.x,e.y,fromX,fromY,toX,toY);
+      if(d<e.r+48 || dist(e,{x:toX,y:toY})<e.r+82){
+        hits++;
+        e.vx+=Math.cos(a)*240; e.vy+=Math.sin(a)*240;
+        const dead=damageOneEnemyFromSkill(i,e,(98+game.level*2.1)*game.upgrades.damage,'#ffd166');
+        addDashKatana(e.x,e.y,a+rand(-0.2,0.2),'#fff0a8',0.95);
+        if(dead) killed=true;
+      }
+    }
+    game.shake=Math.max(game.shake,killed?14:8);
+    if(killed && game.roninDashChain<9){
+      game.roninDashChain++;
+      game.skillCds[idx]=0;
+      addFloatingText(p.x,p.y-32,`EXECUÇÃO ${game.roninDashChain}/10`,'#ffd166',15);
+    }else{
+      if(killed) addFloatingText(p.x,p.y-32,'LIMITE DO COMBO','#ffd166',15);
+      if(!hits) addFloatingText(p.x,p.y-32,'ERROU','#ffd166',13);
+      game.roninDashChain=0;
+      game.skillCds[idx]=SKILL_DEFS.bladeDash.cooldown;
+    }
+  }
+  function castRoninShock(idx){
+    if(!payPowerSkill(idx,10)) return;
+    ensurePowerState();
+    const p=game.player;
+    const targets=[...game.enemies].filter(e=>dist(p,e)<315).sort((a,b)=>dist(p,a)-dist(p,b)).slice(0,10);
+    const n=Math.max(1,targets.length), dmg=(128*game.upgrades.damage)*Math.max(0.42,1-(n-1)*0.065);
+    addRing(p.x,p.y,'#ffd166',315,6);
+    if(!targets.length){addFloatingText(p.x,p.y-26,'SEM ALVOS','#ffd166',14);return;}
+    for(const e of targets){
+      const i=game.enemies.indexOf(e); if(i<0) continue;
+      stunEnemy(e,0.3);
+      addLightning(p.x,p.y,e.x,e.y,'#fff2a8');
+      game.roninShockArcs.push({x1:p.x,y1:p.y,x2:e.x,y2:e.y,life:0.28,maxLife:0.28,color:'#ffd166'});
+      damageOneEnemyFromSkill(i,e,dmg,'#ffd166');
+    }
+    addFloatingText(p.x,p.y-36,`CHOQUE x${targets.length}`,'#ffd166',17);
+    game.shake=14;
+  }
+  function throwAlchemyBottles(idx){
+    if(!payPowerSkill(idx,5.5)) return;
+    ensurePowerState();
+    const p=game.player;
+    const a=angleTo(p,mouse), tx=clamp(mouse.x,55,W-55), ty=clamp(mouse.y,55,H-55);
+    const sideAng=a+Math.PI/2;
+    for(const off of [-82,0,82]){
+      const target={x:clamp(tx+Math.cos(sideAng)*off+rand(-16,16),42,W-42),y:clamp(ty+Math.sin(sideAng)*off+rand(-16,16),42,H-42)};
+      game.alchemyBottles.push({sx:p.x,sy:p.y,x:p.x,y:p.y,tx:target.x,ty:target.y,t:0,life:0.78,maxLife:0.78,r:8,spin:rand(0,Math.PI*2),color:'#b6ff7a'});
+    }
+    addParticles(p.x,p.y,'#b6ff7a',14,0.45);
+    if(typeof eclipseNotice==='function') eclipseNotice('TRÊS FRASCOS','#b6ff7a',15);
+  }
+  function castReaperSoulDrain(idx){
+    if(!payPowerSkill(idx,6)) return;
+    ensurePowerState();
+    const p=game.player;
+    let targets=game.enemies.filter(e=>e._reaperMarked||e.marked);
+    if(!targets.length){
+      let closest=null,minD=Infinity;
+      for(const e of game.enemies){const d=dist(p,e);if(d<minD){minD=d;closest=e;}}
+      if(closest) targets=[closest];
+    }
+    if(!targets.length){addFloatingText(p.x,p.y-26,'SEM ALMA','#ff7b9c',14);return;}
+    const multi=targets.length>1;
+    let totalHeal=0;
+    if(multi) addRing(p.x,p.y,'#ff7b9c',180,6);
+    for(const e of [...targets]){
+      const i=game.enemies.indexOf(e); if(i<0) continue;
+      const marked=(e._reaperMarked||e.marked);
+      let dmg;
+      if(e.type==='boss') dmg=Math.min(e.hp*0.18,e.maxHp*0.03); // limite pedido: até 3% da vida de boss
+      else dmg=marked?Math.max(52,e.hp*0.42):Math.max(35,e.hp*0.32);
+      e.hp-=dmg; e.hitFlash=0.24;
+      const heal=e.type==='boss'?dmg*0.35:dmg*(marked?0.42:0.30);
+      totalHeal+=heal;
+      addLightning(p.x,p.y,e.x,e.y,'#ff7b9c');
+      addSoulScythe(e.x,e.y,angleTo(p,e)+Math.PI/2,'#ff7b9c',multi?1.15:0.85);
+      addParticles(e.x,e.y,'#ff7b9c',18,0.75);
+      if(e.hp<=0) enemyDeath(i,e);
+    }
+    if(totalHeal>0){
+      p.hp=clamp(p.hp+totalHeal,0,p.maxHp);
+      addFloatingText(p.x,p.y-34,`+${Math.ceil(totalHeal)} ALMA`,'#ff7b9c',16);
+    }
+    if(multi && typeof eclipseNotice==='function') eclipseNotice(`COLHEITA DE ${targets.length} ALMAS`,'#ff7b9c',17);
+    game.shake=Math.max(game.shake,multi?16:9);
+  }
+  function castReaperPhantomNoHeal(idx){
+    if(!payPowerSkill(idx,10)) return;
+    const p=game.player;
+    const targets=[...game.enemies].sort((a,b)=>dist(p,a)-dist(p,b)).slice(0,3);
+    if(!targets.length){addFloatingText(p.x,p.y-24,'SEM ALVOS','#ff7b9c',13);return;}
+    let delay=0;
+    for(const t of targets){
+      setTimeout(()=>{
+        if(!game||!game.running||!game.player) return;
+        const i=game.enemies.indexOf(t); if(i<0) return;
+        const fromX=game.player.x, fromY=game.player.y;
+        game.player.x=clamp(t.x+rand(-22,22),20,W-20); game.player.y=clamp(t.y+rand(-22,22),20,H-20);
+        addLightning(fromX,fromY,t.x,t.y,'#ff7b9c');
+        addDashKatana(t.x,t.y,rand(0,Math.PI*2),'#ff7b9c',1.05);
+        t.hp-=82*game.upgrades.damage; t.hitFlash=0.2;
+        addParticles(t.x,t.y,'#ff7b9c',14,0.9);
+        if(t.hp<=0){
+          // Evita a cura automática de morte marcada especificamente nesta skill R.
+          t._reaperMarked=false; t.marked=false;
+          enemyDeath(i,t);
+        }
+      },delay);
+      delay+=170;
+    }
+  }
+  function armSniperChargedShot(idx){
+    if(!payPowerSkill(idx,8.5)) return;
+    const p=game.player;
+    p.sniperChargedShot=true;
+    addRing(p.x,p.y,'#ffe38c',95,5);
+    addParticles(p.x,p.y,'#fff2a8',28,0.65);
+    addFloatingText(p.x,p.y-32,'PRÓXIMO TIRO CARREGADO','#ffe38c',16);
+    if(typeof eclipseNotice==='function') eclipseNotice('TIRO CARREGADO ARMADO','#ffe38c',16);
+  }
+
+  const _powerUseSkill=useSkill;
+  useSkill=function(idx){
+    if(!game||!game.running) return;
+    ensurePowerState();
+    const skillKey=CLASSES[game.classKey].skills[idx];
+    if(game.classKey==='ronin'&&skillKey==='parryField'){castRoninParry(idx);return;}
+    if(game.classKey==='ronin'&&skillKey==='bladeDash'){castRoninBladeDash(idx);return;}
+    if(game.classKey==='ronin'&&skillKey==='chronoSlash'){castRoninShock(idx);return;}
+    if(game.classKey==='alchemist'&&skillKey==='toxicCloud'){throwAlchemyBottles(idx);return;}
+    if(game.classKey==='reaper'&&skillKey==='soulDrain'){castReaperSoulDrain(idx);return;}
+    if(game.classKey==='reaper'&&skillKey==='phantomStrike'){castReaperPhantomNoHeal(idx);return;}
+    if(game.classKey==='sniper'&&skillKey==='chargedShot'){armSniperChargedShot(idx);return;}
+    _powerUseSkill(idx);
+  };
+
+  const _powerShoot=shoot;
+  shoot=function(){
+    if(game&&game.classKey==='sniper'&&game.player&&game.player.sniperChargedShot&&game.running){
+      const p=game.player; if(p.fireCd>0) return;
+      const a=angleTo(p,mouse);
+      p.sniperChargedShot=false;
+      const dmg=92*game.upgrades.damage*(p.railPierceMode>0?1.4:1);
+      game.bullets.push({
+        x:p.x+Math.cos(a)*24,y:p.y+Math.sin(a)*24,
+        vx:Math.cos(a)*1280,vy:Math.sin(a)*1280,
+        r:12,life:1.15,damage:0,chargedDamage:dmg,pierce:999,weaponKey:'sniperCharged',
+        explosive:false,identityColor:'#ffe38c',wallPierce:true,sniperCharged:true,lightningCd:0,_chargedHits:[]
+      });
+      p.fireCd=0.72/game.upgrades.fireRate;
+      p.vx-=Math.cos(a)*360; p.vy-=Math.sin(a)*360;
+      for(let n=0;n<26;n++) addParticles(p.x-Math.cos(a)*14+rand(-8,8),p.y-Math.sin(a)*14+rand(-8,8),'#b8b8b8',1,0.7);
+      addRing(p.x,p.y,'#ffe38c',70,4);
+      game.shake=13;
+      return;
+    }
+    _powerShoot();
+  };
+
+  const _powerUpdateEnemyBullets=updateEnemyBullets;
+  updateEnemyBullets=function(dt){
+    if(game&&game.parryTimer>0&&game.player){
+      ensurePowerState();
+      const p=game.player;
+      for(let i=game.enemyBullets.length-1;i>=0;i--){
+        const b=game.enemyBullets[i]; if(!b) continue;
+        if(dist(b,p)<88+(b.r||0)){
+          let target=null,minD=780;
+          for(const e of game.enemies){const d=dist(p,e);if(d<minD&&!(typeof lineBlockedByMap==='function'&&lineBlockedByMap(p,e,2))){minD=d;target=e;}}
+          const a=target?angleTo(p,target):Math.atan2(-(b.vy||0),-(b.vx||0));
+          const sp=Math.max(840,Math.hypot(b.vx||0,b.vy||0)*1.55);
+          game.bullets.push({x:b.x,y:b.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:Math.max(4,(b.r||4)*0.9),life:1.15,damage:(b.damage||10)*2.15*game.upgrades.damage,pierce:2,weaponKey:'parryBolt',explosive:false,identityColor:'#ffe38c'});
+          addParryKatana(b.x,b.y,a+Math.PI/2,'#ffe38c',0.95);
+          addLightning(p.x,p.y,b.x,b.y,'#fff0a8');
+          game.enemyBullets.splice(i,1); game.shake=Math.max(game.shake,6);
+        }
+      }
+    }
+    _powerUpdateEnemyBullets(dt);
+  };
+
+  const _powerUpdateEnemies=updateEnemies;
+  updateEnemies=function(dt){
+    if(!game){_powerUpdateEnemies(dt);return;}
+    ensurePowerState();
+    const old=new Map();
+    for(const e of game.enemies){
+      old.set(e,{x:e.x,y:e.y,vx:e.vx||0,vy:e.vy||0,stun:e.stunTimer||0});
+      if(e.stunTimer>0) e.stunTimer=Math.max(0,e.stunTimer-dt);
+    }
+
+    // Parry empurra inimigos antes do update base para evitar dano de contato durante a defesa.
+    if(game.parryTimer>0&&game.player){
+      const p=game.player;
+      for(const e of game.enemies){
+        if(dist(p,e)<92+e.r){
+          e._roninParryHitCd=(e._roninParryHitCd||0)-dt;
+          const a=angleTo(p,e);
+          e.x+=Math.cos(a)*42; e.y+=Math.sin(a)*42;
+          e.vx=Math.cos(a)*440; e.vy=Math.sin(a)*440;
+          if(e._roninParryHitCd<=0){
+            e.hp-=38*game.upgrades.damage; e.hitFlash=0.18; e._roninParryHitCd=0.48;
+            addParryKatana(e.x,e.y,a+Math.PI/2,'#ffe38c',1.1);
+            addParticles(e.x,e.y,'#ffe38c',12,0.7);
+            const i=game.enemies.indexOf(e); if(i>=0&&e.hp<=0) enemyDeath(i,e);
+          }
+        }
+      }
+    }
+
+    _powerUpdateEnemies(dt);
+
+    for(const e of game.enemies){
+      const o=old.get(e);
+      if(o&&o.stun>0){
+        e.x=o.x; e.y=o.y; e.vx=0; e.vy=0;
+        if(Math.random()<0.22) addParticles(e.x,e.y,'#ffd166',1,0.2);
+      }
+      if(e._roninParryHitCd>0) e._roninParryHitCd=Math.max(0,e._roninParryHitCd-dt);
+    }
+  };
+
+  function updateAlchemyBottles(dt){
+    if(!game||!game.alchemyBottles) return;
+    for(let i=game.alchemyBottles.length-1;i>=0;i--){
+      const b=game.alchemyBottles[i];
+      b.t+=dt; b.life-=dt; b.spin+=dt*12;
+      const k=clamp(b.t/b.maxLife,0,1), arc=Math.sin(k*Math.PI)*72;
+      b.x=b.sx+(b.tx-b.sx)*k; b.y=b.sy+(b.ty-b.sy)*k-arc;
+      if(Math.random()<0.28) addParticles(b.x,b.y,'#b6ff7a',1,0.18);
+      if(b.life<=0){
+        const lx=b.tx, ly=b.ty;
+        addRing(lx,ly,'#b6ff7a',62,4); addParticles(lx,ly,'#b6ff7a',22,0.75);
+        for(let j=game.enemies.length-1;j>=0;j--){
+          const e=game.enemies[j];
+          if(dist({x:lx,y:ly},e)<72+e.r){
+            e.hp-=28*game.upgrades.damage; e.hitFlash=0.12;
+            if(typeof poisonEnemy==='function') poisonEnemy(e,3.6); else e.poison=Math.max(e.poison||0,3.6);
+            if(e.hp<=0) enemyDeath(j,e);
+          }
+        }
+        game.hazards.push({type:'poisonCloud',x:lx,y:ly,r:72,pulse:0,life:4.4,damageCd:0});
+        game.alchemyBottles.splice(i,1);
+      }
+    }
+  }
+  function updateSniperChargedBullet(b,dt){
+    b.lightningCd=(b.lightningCd||0)-dt;
+    // Dano principal controlado aqui para ignorar paredes sem duplicar o dano do update base.
+    for(let j=game.enemies.length-1;j>=0;j--){
+      const e=game.enemies[j]; if(!e) continue;
+      b._chargedHits=b._chargedHits||[];
+      if(b._chargedHits.includes(e)) continue;
+      if(dist(b,e)<b.r+e.r+8){
+        b._chargedHits.push(e);
+        e.hp-=b.chargedDamage; e.hitFlash=0.24;
+        stunEnemy(e,0.14);
+        addParticles(e.x,e.y,'#ffe38c',18,0.9);
+        addRing(e.x,e.y,'#ffe38c',48,3);
+        if(e.hp<=0) enemyDeath(j,e);
+      }
+    }
+    if(b.lightningCd<=0){
+      const targets=[...game.enemies].filter(e=>dist(b,e)<150).sort((a,c)=>dist(b,a)-dist(b,c)).slice(0,2);
+      for(const e of targets){
+        const i=game.enemies.indexOf(e); if(i<0) continue;
+        addLightning(b.x,b.y,e.x,e.y,'#fff2a8');
+        e.hp-=22*game.upgrades.damage; e.hitFlash=Math.max(e.hitFlash||0,0.10); stunEnemy(e,0.12);
+        if(e.hp<=0) enemyDeath(i,e);
+      }
+      b.lightningCd=0.09;
+    }
+    if(Math.random()<0.75) addParticles(b.x,b.y,Math.random()<0.5?'#fff2a8':'#b8b8b8',1,0.34);
+  }
+
+  const _powerUpdateBullets=updateBullets;
+  updateBullets=function(dt){
+    _powerUpdateBullets(dt);
+    if(!game||!game.bullets) return;
+    for(let i=game.bullets.length-1;i>=0;i--){
+      const b=game.bullets[i];
+      if(b&&b.sniperCharged) updateSniperChargedBullet(b,dt);
+    }
+  };
+
+  const _powerUpdateHazards=updateHazards;
+  updateHazards=function(dt){
+    _powerUpdateHazards(dt);
+    if(!game) return;
+    ensurePowerState();
+    updateAlchemyBottles(dt);
+    for(const arrName of ['roninParrySlashes','roninDashSlashes','roninShockArcs','reaperSoulSlashes']){
+      const arr=game[arrName]||[];
+      for(let i=arr.length-1;i>=0;i--){arr[i].life-=dt;if(arr[i].life<=0) arr.splice(i,1);}
+    }
+  };
+
+  // Sniper recebe 70% de defesa no Pierce Mode.
+  const _powerDealDamageToPlayer=dealDamageToPlayer;
+  dealDamageToPlayer=function(amount){
+    if(game&&game.classKey==='sniper'&&game.player&&game.player.railPierceMode>0){
+      return _powerDealDamageToPlayer(amount*0.30);
+    }
+    return _powerDealDamageToPlayer(amount);
+  };
+
+  function drawKatanaEffect(s,isParry=false){
+    const k=clamp(s.life/s.maxLife,0,1);
+    const len=(isParry?70:92)*(s.scale||1), w=(isParry?6:8)*(s.scale||1);
+    ctx.save();
+    ctx.translate(s.x,s.y); ctx.rotate(s.ang);
+    ctx.globalCompositeOperation='lighter';
+    ctx.globalAlpha=k;
+    ctx.shadowBlur=20; ctx.shadowColor=s.color;
+    const grad=ctx.createLinearGradient(-len/2,0,len/2,0);
+    grad.addColorStop(0,'rgba(255,255,255,0)'); grad.addColorStop(0.22,s.color); grad.addColorStop(0.5,'#ffffff'); grad.addColorStop(0.78,s.color); grad.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.strokeStyle=grad; ctx.lineWidth=w; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(-len/2,0); ctx.quadraticCurveTo(0,-18*(s.scale||1),len/2,0); ctx.stroke();
+    ctx.globalAlpha=0.48*k; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(-len/2,10); ctx.quadraticCurveTo(0,24*(s.scale||1),len/2,10); ctx.stroke();
+    ctx.restore();
+  }
+  function drawSoulScythe(s){
+    const k=clamp(s.life/s.maxLife,0,1), sc=s.scale||1;
+    ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(s.ang); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=k;
+    ctx.shadowBlur=22; ctx.shadowColor=s.color; ctx.strokeStyle=s.color; ctx.lineWidth=5*sc; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(0,0,44*sc,-1.0,1.25); ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=2*sc; ctx.beginPath(); ctx.moveTo(-18*sc,-34*sc); ctx.lineTo(18*sc,34*sc); ctx.stroke();
+    ctx.restore();
+  }
+  const _powerDrawHazards=drawHazards;
+  drawHazards=function(){
+    _powerDrawHazards();
+    if(!game) return;
+    ensurePowerState();
+    ctx.save();
+    // Garrafas do alquimista com arco/física.
+    for(const b of game.alchemyBottles||[]){
+      ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(b.spin); ctx.globalCompositeOperation='lighter';
+      ctx.shadowBlur=14; ctx.shadowColor=b.color; ctx.fillStyle='#d8ff9f'; ctx.strokeStyle='#5dff8c'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.roundRect(-6,-10,12,20,4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='#ffffff'; ctx.globalAlpha=0.7; ctx.fillRect(-3,-13,6,5);
+      ctx.restore();
+      ctx.globalAlpha=0.16; ctx.strokeStyle='#b6ff7a'; ctx.beginPath(); ctx.moveTo(b.sx,b.sy); ctx.quadraticCurveTo((b.sx+b.tx)/2,(b.sy+b.ty)/2-90,b.tx,b.ty); ctx.stroke(); ctx.globalAlpha=1;
+    }
+    for(const s of game.roninParrySlashes||[]) drawKatanaEffect(s,true);
+    for(const s of game.roninDashSlashes||[]) drawKatanaEffect(s,false);
+    for(const s of game.reaperSoulSlashes||[]) drawSoulScythe(s);
+    for(const a of game.roninShockArcs||[]){
+      const k=clamp(a.life/a.maxLife,0,1);
+      ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.55*k; ctx.strokeStyle=a.color; ctx.lineWidth=3; ctx.shadowBlur=18; ctx.shadowColor=a.color;
+      ctx.beginPath(); ctx.moveTo(a.x1,a.y1); const mx=(a.x1+a.x2)/2+rand(-12,12), my=(a.y1+a.y2)/2+rand(-12,12); ctx.quadraticCurveTo(mx,my,a.x2,a.y2); ctx.stroke();
+    }
+    if(game.parryTimer>0&&game.classKey==='ronin'&&game.player){
+      const p=game.player, pulse=0.55+Math.sin(game.time*18)*0.18;
+      ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.20*pulse; ctx.fillStyle='#ffe38c'; ctx.shadowBlur=28; ctx.shadowColor='#ffe38c';
+      ctx.beginPath(); ctx.arc(p.x,p.y,88+Math.sin(game.time*16)*5,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  };
+
+  console.log(POWER_PATCH_VERSION+' carregado');
+})();
+
+window.openStartMenu();
 requestAnimationFrame(loop);
 </script>
 </body>
