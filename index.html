@@ -7219,7 +7219,7 @@ requestAnimationFrame(loop);
 
   // Upgrade screen cap enforcement and mythic unchanged; no lifesteal above 3.5%.
   const openUpgradeMenu23=openUpgradeMenu;
-  openUpgradeMenu=function(){openUpgradeMenu23();setTimeout(()=>{overlayCard.querySelectorAll('.upgrade-btn').forEach(btn=>{btn.innerHTML=btn.innerHTML.replace(/limite de 8%|limite 8%|8%/g,'limite de 3.5%');});},0);};
+  openUpgradeMenu=function(){openUpgradeMenu23();setTimeout(()=>{overlayCard.querySelectorAll('.upgrade-btn').forEach(btn=>{btn.innerHTML=btn.innerHTML.replace(/limite de 8%|limite 8%|8%/g,'');});},0);};
 
   console.log(PATCH+' carregado');
 })();
