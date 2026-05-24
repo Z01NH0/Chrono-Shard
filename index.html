@@ -356,7 +356,7 @@ const SKILL_DEFS = {
 const META_DEFAULT = {relicShards:0, unlockedRelics:[], highScore:0};
 const RELICS = [
   {id:'glass_core',name:'Glass Core',desc:'+20% dano global.',cost:8,apply:g=>g.upgrades.damage+=0.2},
-  {id:'blood_thread',name:'Blood Thread',desc:'+5% lifesteal.',cost:10,apply:g=>g.upgrades.lifesteal+=0.05},
+  {id:'blood_thread',name:'Blood Thread',desc:'Removido: não concede mais lifesteal inicial.',cost:10,apply:g=>{}},
   {id:'swift_circuit',name:'Swift Circuit',desc:'+14% velocidade.',cost:8,apply:g=>g.upgrades.speed+=0.14},
   {id:'focus_prism',name:'Focus Prism',desc:'+30 foco máximo.',cost:9,apply:g=>{g.player.maxFocus+=30;g.player.focus+=30}},
   {id:'armor_lattice',name:'Armor Lattice',desc:'+10% armadura.',cost:10,apply:g=>g.upgrades.armor+=0.1},
@@ -4812,14 +4812,14 @@ render = function(){
           <div class="death-grid" style="max-width:620px;margin-left:auto;margin-right:auto">
             <div class="death-stat"><small>HIGH SCORE</small><b>${Number(meta.highScore||0).toLocaleString()}</b></div>
             <div class="death-stat"><small>RELÍQUIAS</small><b id="startRelicCount">${getRelics()}</b></div>
-            <div class="death-stat"><small>VERSÃO</small><b>2.1</b></div>
+            <div class="death-stat"><small>VERSÃO</small><b>2.3</b></div>
           </div>
           <div class="start-actions">
             <button class="main-btn" id="playBtn">JOGAR</button>
             <button class="main-btn" id="codesBtn" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CÓDIGOS</button>
             <button class="main-btn" id="relicsBtn" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">RELÍQUIAS</button>
           </div>
-          <div class="tipline">WASD mover • Mouse mirar • Clique atirar • Shift dash • E/Q/R habilidades</div>
+          <div class="tipline">WASD mover • Mouse mirar • Clique atirar • Shift dash • E/Q/R habilidades • X ultimate do Chrono-Hero</div>
         </div>
       </div>`;
     document.getElementById('playBtn').addEventListener('click',openClassMenu);
@@ -5001,7 +5001,7 @@ render = function(){
     overlay.classList.remove('hidden');
     overlayCard.innerHTML=`
       <h1>LEVEL UP ${game.level}</h1>
-      <p>Escolha uma melhoria para amenizar seu sofrimento</p>
+      <p>Escolha uma melhoria. As cores indicam raridade: azul, verde, roxo, amarelo e vermelho mítico.</p>
       <div class="upgrade-grid">
         ${choices.map((u,i)=>{const m=RARITY_META[u.rarity]||RARITY_META.COMUM;return `<button class="upgrade-btn ${m.cls}" data-up="${i}"><span class="rarity-chip">${m.label}</span><strong>${u.name}</strong><span>${u.desc}</span></button>`}).join('')}
       </div>`;
@@ -5052,7 +5052,7 @@ render = function(){
     const p=game.player, hs=game.score>=game.meta.highScore;
     overlay.classList.remove('hidden');
     overlayCard.innerHTML=`
-      <h1>VOCÊ EXPLODIU 💀</h1>
+      <h1>RUN ENCERRADA 💀</h1>
       <p>${hs?'<strong style="color:#ffd166">🏆 NOVO HIGH SCORE!</strong><br>':''}Resumo completo da sua tentativa.</p>
       <div class="death-grid">
         <div class="death-stat"><small>SCORE</small><b>${game.score.toLocaleString()}</b></div>
@@ -5067,7 +5067,7 @@ render = function(){
       <div class="death-build">
         <strong>${CLASSES[game.classKey].name}</strong><br>
         HP máximo: ${Math.floor(p.maxHp)} • Escudo máximo: ${Math.floor(p.maxShield)} • Foco máximo: ${Math.floor(p.maxFocus)}<br>
-        Dano: ${Math.round((game.upgrades.damage||1)*100)}% • Cadência: ${Math.round((game.upgrades.fireRate||1)*100)}% • Velocidade: ${Math.round((game.upgrades.speed||1)*100)}% • Armadura: ${Math.round((game.upgrades.armor||0)*100)}% • Lifesteal: ${(Math.min(game.upgrades.lifesteal||0,.08)*100).toFixed(1)}%
+        Dano: ${Math.round((game.upgrades.damage||1)*100)}% • Cadência: ${Math.round((game.upgrades.fireRate||1)*100)}% • Velocidade: ${Math.round((game.upgrades.speed||1)*100)}% • Armadura: ${Math.round((game.upgrades.armor||0)*100)}% • Lifesteal: ${(Math.min(game.upgrades.lifesteal||0,.035)*100).toFixed(1)}%
       </div>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px">
         <button class="main-btn" id="againBtn">Jogar de novo</button>
@@ -5848,7 +5848,7 @@ render = function(){
   const CLASS_UNLOCK_KEY=SAVE_KEY+'_class_unlocks_v3';
   const SHADOW_CLASS='shadowChild';
   const SHADOW_COST=150;
-  const SECRET_BOSS_CHANCE=0.025;
+  const SECRET_BOSS_CHANCE=0.05;
 
   Object.assign(CLASSES,{
     [SHADOW_CLASS]:{
@@ -5925,7 +5925,7 @@ render = function(){
     overlayCard.className='card';
     overlayCard.innerHTML=`
       <h1>CHRONO SHARDS<br><small style="font-size:15px;letter-spacing:.18em;color:#ff2c48;-webkit-text-fill-color:#ff2c48">SECRET RIFT UPDATE</small></h1>
-      <p>Escolha sua classe. ${lostEmperorDefeated()?'<strong style="color:#ff2c48">Um poder secreto foi encontrado.</strong>':'Há fissuras pulsando por poder...'}<br>
+      <p>Escolha sua classe. ${lostEmperorDefeated()?'<strong style="color:#ff2c48">Um poder secreto foi encontrado.</strong>':'Há fissuras escondidas depois de bosses...'}<br>
       <strong>WASD</strong> mover &bull; <strong>Mouse</strong> mirar &bull; <strong>Clique</strong> atirar &bull; <strong>E/Q/R</strong> skills &bull; <strong>X</strong> ultimate<br>
       🏆 High Score: <strong>${meta.highScore.toLocaleString()}</strong> &bull; Relíquias: <strong>${relics}</strong></p>
       <div class="pick-grid">
@@ -6895,6 +6895,333 @@ requestAnimationFrame(loop);
   };
 
   console.log('Secret Rift 2.2: ult fix + Emperor bullet hell carregado');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoSystemsUIBalance23) return;
+  window.__chronoSystemsUIBalance23 = true;
+  const PATCH='Systems/UI/Balance 2.3';
+  const CLASS_UNLOCK_KEY_23 = SAVE_KEY+'_class_unlocks_v3';
+  const SECRET_UNLOCK_KEY_23 = SAVE_KEY+'_secret_rift_v1';
+  const FREE_CLASSES_23 = ['assault','sniper'];
+  const CLASS_COSTS_23 = {engineer:10,mage:15,ronin:20,alchemist:20,reaper:30,chronoHero:100,shadowChild:150};
+  const CLASS_ORDER_23 = ['assault','sniper','engineer','mage','ronin','alchemist','reaper','chronoHero','shadowChild'];
+  const CLASS_LORE_23 = {
+    assault:'Um soldado de frente que aprendeu a sobreviver entre linhas temporais quebradas. Não é o mais raro, mas é quem segura a primeira queda do céu.',
+    sniper:'Um atirador que enxerga rachaduras no tempo como linhas de mira. Cada disparo parece calculado antes mesmo da batalha começar.',
+    engineer:'Um inventor que transforma sucata cronológica em torretas, drones e choques em cadeia. Ele não luta sozinho: ele monta uma guerra.',
+    mage:'Um mago que roubou fragmentos do vazio e agora dobra queda, fogo e retorno temporal como se fossem feitiços simples.',
+    ronin:'Um duelista perdido entre eras. Sua lâmina não corta apenas matéria: ela corta intenção, projétil e destino.',
+    alchemist:'Um pesquisador tóxico que descobriu que veneno também pode ser linguagem. Cada frasco escreve morte no chão da arena.',
+    reaper:'Um carrasco que caça almas marcadas. Quanto mais escura a luta, mais familiar parece o caminho dele.',
+    chronoHero:'Um herói cristalino criado para selar catástrofes. Carrega elementos, singularidades e uma ultimate que parece nascer de estrelas quebradas.',
+    shadowChild:'Um mito escondido atrás da fissura. Usa uma casca negra viva, veias vermelhas e uma raiva antiga demais para caber em uma linha temporal.'
+  };
+  const KEY_LABELS_23=['E','Q','R'];
+
+  const st=document.createElement('style');
+  st.id='systemsUiBalance23Styles';
+  st.textContent=`
+    .start-stage.v23{min-height:600px;text-align:left;background:radial-gradient(circle at 72% 22%,rgba(255,107,157,.18),transparent 25%),radial-gradient(circle at 22% 45%,rgba(97,218,251,.22),transparent 29%),linear-gradient(135deg,#040713,#0b1022 45%,#020307);border:2px solid rgba(160,220,255,.24);box-shadow:0 0 90px rgba(97,218,251,.1),inset 0 0 80px rgba(255,255,255,.03)}
+    .start-layout-v23{position:relative;z-index:2;display:grid;grid-template-columns:minmax(300px,1fr) 330px;gap:28px;align-items:center;padding:42px;width:100%}
+    .start-logo-v23{font-family:Orbitron,sans-serif;font-size:58px;font-weight:900;letter-spacing:.12em;line-height:.92;background:linear-gradient(90deg,#fff,#61dafb,#9f6cff,#ff6b9d,#ffd166);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 28px rgba(97,218,251,.35));text-align:left}
+    .start-lore-v23{margin-top:16px;color:#bcd6ff;font-size:16px;line-height:1.55;max-width:660px}
+    .tutorial-panel-v23{margin-top:22px;padding:18px 20px;border:1px solid rgba(155,237,255,.28);background:linear-gradient(135deg,rgba(97,218,251,.10),rgba(159,108,255,.07));border-radius:18px;box-shadow:inset 0 0 24px rgba(97,218,251,.04)}
+    .tutorial-panel-v23 h3{font-family:Orbitron,sans-serif;margin:0 0 9px;color:#eaffff;letter-spacing:.14em;font-size:13px}.tutorial-panel-v23 p{margin:0;color:#d9ecff;line-height:1.65;font-size:14px}
+    .start-side-v23{display:grid;gap:12px}.start-stat-v23{padding:14px 16px;border:1px solid rgba(255,255,255,.13);background:rgba(0,0,0,.28);border-radius:16px}.start-stat-v23 small{font-family:Orbitron,sans-serif;font-size:10px;letter-spacing:.16em;opacity:.65}.start-stat-v23 b{display:block;margin-top:4px;font-family:Orbitron,sans-serif;font-size:24px;color:#fff;text-shadow:0 0 16px currentColor}.start-actions-v23{display:grid;gap:10px;margin-top:6px}.start-actions-v23 .main-btn{width:100%;font-family:Orbitron,sans-serif;letter-spacing:.1em}
+    .relic-page-v23{text-align:left}.relic-top-v23{display:grid;grid-template-columns:1fr 210px;gap:16px;align-items:stretch;margin-bottom:14px}.relic-bank-v23{border-radius:18px;border:1px solid rgba(255,184,255,.34);background:radial-gradient(circle at 70% 20%,rgba(255,184,255,.22),transparent 40%),rgba(0,0,0,.28);padding:18px;text-align:center}.relic-bank-v23 small{font-family:Orbitron,sans-serif;letter-spacing:.15em;opacity:.72}.relic-bank-v23 b{display:block;font-family:Orbitron,sans-serif;font-size:34px;color:#ffb8ff;text-shadow:0 0 20px #ffb8ff}.relic-card-v23{position:relative;text-align:left;padding:15px 16px;border-radius:18px;border:2px solid rgba(145,220,255,.15);background:linear-gradient(135deg,rgba(97,218,251,.08),rgba(159,108,255,.06));overflow:hidden}.relic-card-v23::before{content:'';position:absolute;right:-24px;top:-28px;width:84px;height:84px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.13),transparent 65%)}.relic-card-v23.unlocked{border-color:rgba(76,224,179,.42);box-shadow:0 0 22px rgba(76,224,179,.12)}.relic-card-v23.removed{opacity:.55;filter:grayscale(.35)}.relic-card-v23 strong{display:block;font-family:Orbitron,sans-serif;font-size:14px;color:#fff}.relic-card-v23 span{display:block;margin-top:6px;color:#aecaef;font-size:13px;line-height:1.35}.relic-card-v23 button{margin-top:10px;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,#ffb8ff,#61dafb);color:#07101d;font-weight:900}.relic-card-v23 button:disabled{opacity:.45;filter:grayscale(.5);cursor:not-allowed}
+    .class-grid-v23{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px}.class-card-v23{position:relative;min-height:285px;padding:14px;text-align:left;border-radius:20px;border:2px solid rgba(120,200,255,.18);background:linear-gradient(160deg,rgba(9,14,31,.96),rgba(3,5,14,.96));box-shadow:inset 0 0 35px rgba(255,255,255,.03);overflow:hidden}.class-card-v23.locked{filter:saturate(.5);opacity:.82}.class-lock-v23{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:4;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:31px;background:rgba(0,0,0,.62);border:2px solid rgba(255,255,255,.22);box-shadow:0 0 30px rgba(0,0,0,.8),0 0 22px rgba(255,255,255,.08)}.class-model-v23{height:92px;display:grid;place-items:center;margin:0 0 10px;position:relative}.class-model-v23::before{content:'';width:54px;height:72px;background:linear-gradient(180deg,var(--c),#05070e 70%);clip-path:polygon(50% 0,72% 18%,90% 46%,70% 100%,30% 100%,10% 46%,28% 18%);filter:drop-shadow(0 0 18px var(--c));animation:modelFloat23 1.8s infinite alternate ease-in-out}.class-model-v23::after{content:'';position:absolute;width:92px;height:92px;border-radius:50%;border:1px solid color-mix(in srgb,var(--c) 60%,transparent);box-shadow:0 0 22px var(--c);opacity:.36}.class-card-v23[data-class="shadowChild"] .class-model-v23::before{background:linear-gradient(180deg,#050505,#000 45%,#ff1f3d 78%,#050505);clip-path:polygon(50% 0,62% 18%,82% 8%,75% 34%,96% 48%,74% 61%,78% 95%,50% 100%,22% 95%,26% 61%,4% 48%,25% 34%,18% 8%,38% 18%)}.class-card-v23[data-class="chronoHero"] .class-model-v23::before{clip-path:polygon(50% 0,64% 24%,92% 30%,72% 55%,82% 100%,50% 78%,18% 100%,28% 55%,8% 30%,36% 24%)}@keyframes modelFloat23{to{transform:translateY(-7px) scale(1.05)}}.class-title-row-v23{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}.class-title-row-v23 strong{font-family:Orbitron,sans-serif;font-size:14px;color:#fff}.info-btn-v23{width:30px;height:30px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#eaf6ff}.select-btn-v23,.buy-btn-v23{width:100%;margin-top:11px;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--c),#fff);color:#07101d;font-family:Orbitron,sans-serif;font-size:12px}.buy-btn-v23:disabled{opacity:.45;filter:grayscale(.55);cursor:not-allowed}.class-info-panel-v23{text-align:left}.skill-info-v23{display:grid;gap:8px;margin:14px 0}.skill-row-v23{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1)}.skill-row-v23 b{color:#fff}.lore-box-v23{padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.1);color:#c7dcff;line-height:1.55}
+    .boss-shield-v23{font-family:Orbitron,sans-serif;position:absolute}.mythic-ui-note{color:#ffb8ff}.skill-bar{z-index:7!important}
+  `;
+  document.head.appendChild(st);
+
+  function esc23(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function readMeta23(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{}}catch{return {}}}
+  function writeMeta23(m){localStorage.setItem(SAVE_KEY,JSON.stringify(m||{})); if(game&&game.meta) game.meta=m;}
+  function relics23(){return Number(readMeta23().relicShards||0)}
+  function addRelics23(n){const m=readMeta23();m.relicShards=Number(m.relicShards||0)+n;writeMeta23(m);return m.relicShards}
+  function spendRelics23(n){const m=readMeta23();const h=Number(m.relicShards||0); if(h<n)return false; m.relicShards=h-n; writeMeta23(m); return true;}
+  function readUnlocks23(){try{const a=JSON.parse(localStorage.getItem(CLASS_UNLOCK_KEY_23)||'[]');return Array.from(new Set(FREE_CLASSES_23.concat(Array.isArray(a)?a:[])));}catch{return [...FREE_CLASSES_23]}}
+  function writeUnlocks23(a){localStorage.setItem(CLASS_UNLOCK_KEY_23,JSON.stringify(Array.from(new Set((a||[]).filter(Boolean)))))}
+  function secretUnlocked23(){try{return !!(JSON.parse(localStorage.getItem(SECRET_UNLOCK_KEY_23)||'{}')||{}).lostEmperorDefeated}catch{return false}}
+  function classOrder23(){return CLASS_ORDER_23.filter(k=>CLASSES[k]&&(k!=='shadowChild'||secretUnlocked23())).concat(Object.keys(CLASSES).filter(k=>!CLASS_ORDER_23.includes(k)));}
+  function isClassUnlocked23(k){return FREE_CLASSES_23.includes(k)||readUnlocks23().includes(k)}
+  function classCost23(k){return CLASS_COSTS_23[k]||0}
+  function classColor23(k){return (CLASSES[k]&&CLASSES[k].tagColor)|| (CLASSES[k]&&CLASSES[k].color) || '#61dafb'}
+  function skillList23(k){const c=CLASSES[k];return (c.skills||[]).map((s,i)=>{const def=SKILL_DEFS[s]||{};return {key:KEY_LABELS_23[i]||'?',name:def.name||s,emoji:def.emoji||'✦',desc:def.desc||'Sem descrição.'}})}
+  function getCodesMenu(){ if(typeof openCodesMenu==='function') return openCodesMenu; return openStartMenu; }
+
+  openStartMenu=function(){
+    game=null; mouse.down=false; overlay.classList.remove('hidden');
+    const meta=readMeta23();
+    const shards=Array.from({length:42},(_,i)=>`<i class="chrono-shard" style="left:${rand(2,96).toFixed(1)}%;top:${rand(4,92).toFixed(1)}%;--dx:${rand(-90,90).toFixed(0)}px;--dy:${rand(-70,70).toFixed(0)}px;--dur:${rand(2.2,5.9).toFixed(2)}s;animation-delay:${rand(-4,0).toFixed(2)}s"></i>`).join('');
+    overlayCard.innerHTML=`<div class="start-stage v23"><div class="start-shards">${shards}</div><div class="start-layout-v23"><div><div class="start-logo-v23">CHRONO<br>SHARDS</div><p class="start-lore-v23">Entre numa arena temporal, colete fragmentos, sobreviva aos bosses e desbloqueie personagens míticos. Explore o cosmos por sua conta e risco</p><div class="tutorial-panel-v23"><h3>TUTORIAL RÁPIDO</h3><p><b>WASD</b> move • <b>Mouse</b> mira • <b>Clique</b> atira • <b>Shift</b> dash • <b>E/Q/R</b> habilidades • <b>X</b> ultimate quando existir. Use paredes como cobertura: projéteis comuns não atravessam.</p></div></div><div class="start-side-v23"><div class="start-stat-v23"><small>HIGH SCORE</small><b>${Number(meta.highScore||0).toLocaleString()}</b></div><div class="start-stat-v23"><small>RELÍQUIAS</small><b>${relics23()}</b></div><div class="start-stat-v23"><small>VERSÃO</small><b>2.3</b></div><div class="start-actions-v23"><button class="main-btn" id="playBtn23">JOGAR</button><button class="main-btn" id="codesBtn23" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CÓDIGOS</button><button class="main-btn" id="relicsBtn23" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">RELÍQUIAS</button></div></div></div></div>`;
+    document.getElementById('playBtn23').onclick=openClassMenu;
+    document.getElementById('codesBtn23').onclick=getCodesMenu();
+    document.getElementById('relicsBtn23').onclick=openMetaRelicMenu;
+  };
+
+  function openClassInfo23(k){
+    const c=CLASSES[k]; const skills=skillList23(k);
+    overlay.classList.remove('hidden');
+    overlayCard.innerHTML=`<div class="class-info-panel-v23"><h1>${c.name}</h1><p>${c.desc}</p><div class="death-grid"><div class="death-stat"><small>HP</small><b>${c.hp}</b></div><div class="death-stat"><small>ESCUDO</small><b>${c.shield}</b></div><div class="death-stat"><small>FOCO</small><b>${c.focus}</b></div><div class="death-stat"><small>VELOCIDADE</small><b>${c.speed}</b></div></div><h3 style="font-family:Orbitron;color:${classColor23(k)}">ESPECIAIS</h3><div class="skill-info-v23">${skills.map(s=>`<div class="skill-row-v23"><b>${s.key} — ${s.emoji} ${esc23(s.name)}</b><br><span>${esc23(s.desc)}</span></div>`).join('')}${k==='chronoHero'?`<div class="skill-row-v23"><b>X — 💎 Chrono Prism</b><br><span>Ultimate carregada apenas com o tempo; dispara um feixe prismático massivo.</span></div>`:''}${k==='shadowChild'?`<div class="skill-row-v23"><b>X — 🩸 Ira Abissal</b><br><span>Transformação mítica temporária com redução extrema de dano e shurikens vampíricas.</span></div>`:''}</div><h3 style="font-family:Orbitron;color:${classColor23(k)}">LORE</h3><div class="lore-box-v23">${esc23(CLASS_LORE_23[k]||'Um combatente perdido entre fragmentos de tempo, buscando sentido no caos dos Chronos.')}</div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px"><button class="main-btn" id="backClassInfo23">← Voltar para seleção</button></div></div>`;
+    document.getElementById('backClassInfo23').onclick=openClassMenu;
+  }
+
+  openClassMenu=function(){
+    const meta=readMeta23(), rs=relics23(), unlocks=readUnlocks23(); overlay.classList.remove('hidden');
+    overlayCard.innerHTML=`<h1>SELEÇÃO DE PERSONAGEM</h1><p>Escolha seu estilo. Clique no <b>i</b> para ver as informações dos personagens.<br>Relíquias: <strong id="classRelicCount23">${rs}</strong> • High Score: <strong>${Number(meta.highScore||0).toLocaleString()}</strong></p><div class="class-grid-v23">${classOrder23().map(k=>{const c=CLASSES[k], col=classColor23(k), unlocked=isClassUnlocked23(k), cost=classCost23(k), skills=skillList23(k).map(s=>`${s.key}:${s.emoji}`).join(' ');return `<div class="class-card-v23 ${unlocked?'':'locked'}" data-class="${k}" style="--c:${col}"><button class="info-btn-v23" data-info="${k}" title="Informações">i</button>${unlocked?'':`<div class="class-lock-v23">🔒</div>`}<div class="class-model-v23"></div><div class="class-title-row-v23"><strong>${c.name}</strong></div><span class="class-tag" style="background:${col}22;color:${col};border:1px solid ${col}55">${c.tag||'CLASSE'}</span><span style="display:block;margin-top:8px;color:#b8cbea;line-height:1.35">${c.desc}</span><span class="muted">HP ${c.hp} • Foco ${c.focus} • ${WEAPONS[c.weapon]?.name||c.weapon}</span><span style="display:block;font-size:11px;margin-top:5px;opacity:.7">${skills}</span>${unlocked?`<button class="select-btn-v23" data-pick="${k}">Selecionar</button>`:`<button class="buy-btn-v23" data-buy="${k}" ${rs<cost?'disabled':''}>Comprar — ${cost} 🜂</button>`}</div>`}).join('')}</div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap"><button class="main-btn" id="backMainBtn23">← Menu inicial</button><button class="main-btn" id="codesFromClassBtn23" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Códigos</button></div>`;
+    overlayCard.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{resetGame(b.dataset.pick);overlay.classList.add('hidden')});
+    overlayCard.querySelectorAll('[data-info]').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();openClassInfo23(b.dataset.info)});
+    overlayCard.querySelectorAll('[data-buy]').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();const k=b.dataset.buy,cost=classCost23(k);if(!spendRelics23(cost)){const el=document.getElementById('classRelicCount23'); if(el)el.innerHTML=`${relics23()} <span style="color:#ff8fa3">insuficiente</span>`;return;}const u=readUnlocks23();u.push(k);writeUnlocks23(u);openClassMenu();});
+    document.getElementById('backMainBtn23').onclick=openStartMenu; document.getElementById('codesFromClassBtn23').onclick=getCodesMenu();
+  };
+
+  openMetaRelicMenu=function(){
+    const meta=readMeta23(); meta.unlockedRelics=Array.isArray(meta.unlockedRelics)?meta.unlockedRelics:[];
+    overlay.classList.remove('hidden'); overlayCard.classList.add('relic-page-v23');
+    const cards=RELICS.filter(r=>r.id!=='blood_thread').map(r=>{const unlocked=meta.unlockedRelics.includes(r.id);const can=relics23()>=r.cost&&!unlocked;return `<div class="relic-card-v23 ${unlocked?'unlocked':''}"><strong>${unlocked?'✓ ':''}${r.name}</strong><span>${r.desc}</span><span class="muted">Custo: ${r.cost} relíquias</span>${unlocked?'<button disabled>Desbloqueada</button>':`<button data-relic-buy="${r.id}" ${can?'':'disabled'}>Comprar</button>`}</div>`}).join('');
+    overlayCard.innerHTML=`<h1>RELÍQUIAS ✦</h1><div class="relic-top-v23"><p>Relíquias são melhorias permanentes para runs futuras.</p><div class="relic-bank-v23"><small>RELÍQUIAS</small><b>${relics23()}</b></div></div><div class="relic-grid">${cards}<div class="relic-card-v23 removed"><strong>Blood Thread</strong><span>Removida: não concede mais lifesteal inicial.</span><button disabled>Removida</button></div></div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px"><button class="main-btn" id="relicBack23">← Menu inicial</button></div>`;
+    overlayCard.querySelectorAll('[data-relic-buy]').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.relicBuy;const relic=RELICS.find(r=>r.id===id);if(!relic||!spendRelics23(relic.cost))return;const m=readMeta23();m.unlockedRelics=Array.from(new Set([...(m.unlockedRelics||[]),id]));writeMeta23(m);openMetaRelicMenu();});
+    document.getElementById('relicBack23').onclick=openStartMenu;
+  };
+
+  // Meta/relic balance: no starting lifesteal relic and cap all lifesteal at 3.5%.
+  const blood=RELICS.find(r=>r.id==='blood_thread'); if(blood){blood.desc='Removida: não concede mais lifesteal inicial.'; blood.apply=()=>{};}
+  function capLifesteal23(){ if(game&&game.upgrades) game.upgrades.lifesteal=Math.min(Math.max(game.upgrades.lifesteal||0,0),0.035); }
+
+  // Shop with smaller/costlier HP upgrade.
+  openShopMenu=function(){
+    game.running=false; game.betweenWaves=true; capLifesteal23();
+    const discount=1-Math.min(game.upgrades.shopDiscount||0,0.45); const cost=n=>Math.max(1,Math.floor(n*discount));
+    const groups=[
+      {title:'ARMAS',items:[
+        {name:'Shotgun',key:'shotgun',cost:cost(34),desc:'Cone curto com vários pellets. Recomprável se não equipada.',available:game.weaponKey!=='shotgun',effect:()=>{game.weaponKey='shotgun'}},
+        {name:'Rail Gun',key:'rail',cost:cost(46),desc:'Disparo forte e preciso, ótimo para cobertura.',available:game.weaponKey!=='rail',effect:()=>{game.weaponKey='rail'}}]},
+      {title:'APRIMORAMENTOS',items:[
+        {name:'HP máximo +16',key:'hpMax',cost:cost(64*Math.pow(1.48,game.shopCounts.hpMax||0)),desc:'Menos HP por compra, mas ainda salva runs longas.',available:(game.shopCounts.hpMax||0)<(game.shopLimits.hpMax||8),effect:()=>{game.player.maxHp+=16;game.player.hp+=16;game.shopCounts.hpMax=(game.shopCounts.hpMax||0)+1}},
+        {name:'Foco máximo +30',key:'focusMax',cost:cost(42*Math.pow(1.32,game.shopCounts.focusMax||0)),desc:'Mais espaço para skills e slow.',available:(game.shopCounts.focusMax||0)<(game.shopLimits.focusMax||6),effect:()=>{game.player.maxFocus+=30;game.player.focus+=30;game.shopCounts.focusMax=(game.shopCounts.focusMax||0)+1}},
+        {name:'Dano +16%',key:'damageBoost',cost:cost(52*Math.pow(1.45,game.shopCounts.damageBoost||0)),desc:'Escala tiros e especiais.',available:(game.shopCounts.damageBoost||0)<(game.shopLimits.damageBoost||6),effect:()=>{game.upgrades.damage+=0.16;game.shopCounts.damageBoost=(game.shopCounts.damageBoost||0)+1}},
+        {name:'Armadura +8%',key:'armorBoost',cost:cost(46*Math.pow(1.40,game.shopCounts.armorBoost||0)),desc:'Reduz dano recebido.',available:(game.shopCounts.armorBoost||0)<(game.shopLimits.armorBoost||5),effect:()=>{game.upgrades.armor+=0.08;game.shopCounts.armorBoost=(game.shopCounts.armorBoost||0)+1}},
+        {name:'Servo de Dash +20%',key:'dashServo',cost:cost(42*Math.pow(1.33,game.shopCounts.dashServo||0)),desc:'Dash recarrega mais rápido.',available:(game.shopCounts.dashServo||0)<(game.shopLimits.dashServo||6),effect:()=>{game.upgrades.dashRegen+=0.20;game.shopCounts.dashServo=(game.shopCounts.dashServo||0)+1}},
+        {name:'Ímã de Loot +50',key:'magnet',cost:cost(38*Math.pow(1.32,game.shopCounts.magnet||0)),desc:'Puxa ouro e fragmentos de longe.',available:(game.shopCounts.magnet||0)<(game.shopLimits.magnet||5),effect:()=>{game.upgrades.magnet+=50;game.shopCounts.magnet=(game.shopCounts.magnet||0)+1}}]},
+      {title:'RAROS DA LOJA',items:[
+        {name:'Mini-Torreta Permanente',key:'turretPack',cost:cost(66*Math.pow(1.44,game.shopCounts.turretPack||0)),desc:'Torreta fixa menor e sem expiração.',available:(game.shopCounts.turretPack||0)<(game.shopLimits.turretPack||3),effect:()=>{if(typeof spawnMiniTurret==='function')spawnMiniTurret(game.player.x+rand(-90,90),game.player.y+rand(-70,70));game.shopCounts.turretPack=(game.shopCounts.turretPack||0)+1}},
+        {name:'Fragmento Relíquia +1',key:'relicTrade',cost:cost(95*Math.pow(1.52,game.shopCounts.relicTrade||0)),desc:'Compra progresso permanente.',available:(game.shopCounts.relicTrade||0)<(game.shopLimits.relicTrade||4),effect:()=>{game.meta.relicShards+=1;saveMeta();game.shopCounts.relicTrade=(game.shopCounts.relicTrade||0)+1}}]}
+    ];
+    const flat=[];const html=groups.map(g=>`<div class="shop-section-title">${g.title}</div><div class="shop-grid">${g.items.map(it=>{const idx=flat.push(it)-1;return `<button class="shop-btn" data-shop23="${idx}" ${it.available?'':'disabled'} style="${it.available?'':'opacity:.35;cursor:not-allowed'}"><strong>${it.name} — ${it.cost}g</strong><span>${it.desc}</span></button>`}).join('')}</div>`).join('');
+    overlay.classList.remove('hidden'); overlayCard.innerHTML=`<h1>LOJA ECLIPSE 🛒</h1><p>Ouro: <strong>${game.gold}</strong> • Relíquias: <strong>${game.meta.relicShards}</strong><br>Arma atual: <strong>${WEAPONS[game.weaponKey]?.name||game.weaponKey}</strong></p>${html}<div class="shop-actions"><button class="main-btn return-shop-btn" id="returnWeaponShopBtn23">↺ Arma Inicial</button><button class="main-btn" id="continueBtn23">Continuar →</button></div>`;
+    overlayCard.querySelectorAll('[data-shop23]').forEach(b=>{const it=flat[Number(b.dataset.shop23)]; if(!it.available)return; b.onclick=()=>{if(game.gold<it.cost){if(typeof eclipseNotice==='function')eclipseNotice('SEM OURO','#ff9ba8',18);return;}game.gold-=it.cost;it.effect();capLifesteal23();updateHUD();openShopMenu();};});
+    document.getElementById('returnWeaponShopBtn23').onclick=()=>{game.weaponKey=CLASSES[game.classKey].weapon;updateHUD();openShopMenu();};
+    document.getElementById('continueBtn23').onclick=()=>{overlay.classList.add('hidden');game.running=true;game.betweenWaves=false;game.shopPending=false;game.wave++;startNextWave();};
+  };
+
+  // Powerup / lifesteal cap and UI text.
+  const updateHUD23=updateHUD; updateHUD=function(){capLifesteal23();updateHUD23();};
+
+  // Chrono-Hero ultimate: time only, no kill gain. Slightly faster than the current very slow version.
+  function syncHeroUltTime23(){
+    if(!game||game.classKey!=='chronoHero') return;
+    if(game._heroTimeUltBank===undefined) game._heroTimeUltBank=0;
+    if(game.heroUltimate) return;
+    game.heroUltCharge=clamp(game._heroTimeUltBank,0,100);
+  }
+  const resetGame23=resetGame;
+  resetGame=function(classKey){
+    resetGame23(classKey); capLifesteal23();
+    if(game){filterMapPads23(); if(classKey==='chronoHero'){game._heroTimeUltBank=0;game.heroUltCharge=0;} }
+  };
+  const updatePlayer23=updatePlayer;
+  updatePlayer=function(dt){
+    const isHero=game&&game.classKey==='chronoHero';
+    if(isHero&&game._heroTimeUltBank===undefined) game._heroTimeUltBank=clamp(game.heroUltCharge||0,0,100);
+    updatePlayer23(dt);
+    capLifesteal23();
+    if(isHero&&!game.heroUltimate){ game._heroTimeUltBank=clamp((game._heroTimeUltBank||0)+dt*0.55,0,100); game.heroUltCharge=game._heroTimeUltBank; }
+    filterMapPads23();
+  };
+  const enemyDeath23=enemyDeath;
+  enemyDeath=function(index,e){
+    const heroBank=game&&game.classKey==='chronoHero'?game._heroTimeUltBank:undefined;
+    if(e&&e.type==='boss'&&game&&game.wave>=16&&shouldBossShieldInsteadDie23(e)){return;}
+    enemyDeath23(index,e);
+    if(game&&game.classKey==='chronoHero'&&heroBank!==undefined&&!game.heroUltimate){game._heroTimeUltBank=heroBank;game.heroUltCharge=heroBank;}
+  };
+
+  // Map cleanup: no minimap and no DASH/SHIELD corner pads.
+  if(typeof drawMiniMap==='function') drawMiniMap=function(){};
+  function filterMapPads23(){ if(game&&game.mapDecor&&Array.isArray(game.mapDecor.pads)) game.mapDecor.pads=game.mapDecor.pads.filter(p=>p.type!=='dash'&&p.type!=='shield'); }
+  const startNextWave23=startNextWave;
+  startNextWave=function(){ startNextWave23(); filterMapPads23(); };
+
+  // Secret boss chance to 5%: source constant is also replaced above; this is just a visible note.
+  window.SECRET_RIFT_CHANCE_NOTE='Secret boss chance: 5%';
+
+  // Wave 16+ boss pressure and monster damage scaling.
+  function wave16DamageMul23(){return game&&game.wave>=16?Math.pow(1.14,game.wave-15):1;}
+  const dealDamageToPlayer23=dealDamageToPlayer;
+  dealDamageToPlayer=function(amount){
+    let a=amount;
+    if(game&&game.wave>=16&&!game.secretArena) a*=wave16DamageMul23();
+    return dealDamageToPlayer23(a);
+  };
+  const bossShoot23=bossShoot;
+  bossShoot=function(e){
+    const before=game.enemyBullets.length;
+    bossShoot23(e);
+    if(e&&e.type==='boss'&&game.wave>=16){
+      const made=game.enemyBullets.slice(before);
+      for(const b of made){b.damage=(b.damage||0)*1.2;b.fromBoss=true;}
+      const extra=Math.floor(made.length*0.5);
+      for(let i=0;i<extra;i++){
+        const base=made[i%made.length]; if(!base)break;
+        const a=Math.atan2(base.vy,base.vx)+rand(-0.18,0.18); const sp=Math.hypot(base.vx,base.vy)*rand(.92,1.08);
+        game.enemyBullets.push({...base,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,damage:(base.damage||9),life:(base.life||3)*0.95});
+      }
+    }
+  };
+  if(typeof summonMinions==='function'){
+    const summonMinions23=summonMinions;
+    summonMinions=function(x,y,count){return summonMinions23(x,y,game&&game.wave>=16?Math.ceil((count||3)*1.5):count);};
+  }
+  if(typeof summonSpecialMinions==='function'){
+    const summonSpecialMinions23=summonSpecialMinions;
+    summonSpecialMinions=function(x,y){const before=game.enemies.length; const r=summonSpecialMinions23(x,y); if(game.wave>=16){const after=game.enemies.length,born=after-before,more=Math.ceil(born*.5);for(let i=0;i<more;i++){const type=['chaser','strafer','leaper','sentinel'][i%4]; if(typeof createSupportEnemy==='function'){const e=createSupportEnemy(type,x+rand(-140,140),y+rand(-90,90),true,true); if(e)game.enemies.push(e);}}} return r;};
+  }
+  function activateBossShield23(e,threshold){
+    e._bossInvuln23=3; e._bossInvulnLock23=Math.max(e.hp,e.maxHp*threshold); e._bossShieldUsed23=e._bossShieldUsed23||{}; e._bossShieldUsed23[threshold]=true; e.hp=e._bossInvulnLock23; e.hitFlash=.45;
+    addRing(e.x,e.y,'#ffffff',e.r+90,7); addRing(e.x,e.y,e.color||'#ff2e63',e.r+120,5); addFloatingText(e.x,e.y-e.r-30,'ESCUDO DO BOSS','#ffffff',17); game.flash=.22; game.flashColor='#ffffff'; game.shake=Math.max(game.shake,14);
+  }
+  function shouldBossShieldInsteadDie23(e){
+    if(!e||e.type!=='boss'||game.wave<16) return false;
+    const used=e._bossShieldUsed23||{};
+    for(const t of [0.75,0.5,0.25]){ if(!used[t]){activateBossShield23(e,t); return true;} }
+    return false;
+  }
+  const updateEnemies23=updateEnemies;
+  updateEnemies=function(dt){
+    updateEnemies23(dt);
+    if(!game) return;
+    for(const e of game.enemies){
+      if(e&&e.type==='boss'&&game.wave>=16){
+        e._bossShieldUsed23=e._bossShieldUsed23||{};
+        if(e._bossInvuln23>0){e._bossInvuln23-=dt;e.hp=Math.max(e.hp,e._bossInvulnLock23||e.hp);e.hitFlash=Math.max(e.hitFlash||0,.12);if(Math.random()<.28)addParticles(e.x+rand(-e.r,e.r),e.y+rand(-e.r,e.r),'#ffffff',1,.25);}
+        else{const pct=e.hp/e.maxHp; for(const t of [0.75,0.5,0.25]) if(pct<=t&&!e._bossShieldUsed23[t]){activateBossShield23(e,t);break;}}
+      }
+      if(e&&e._microStun23>0){e._microStun23-=dt;e.vx=0;e.vy=0;}
+    }
+    updateNanoHijackEnemies23(dt);
+  };
+
+  // Artífice rework: Q nano shockwave -> green hijack drones, 3 temporary turrets max, overclock chain shocks.
+  Object.assign(SKILL_DEFS,{nanoSwarm:{name:'Drones Parasitas',emoji:'🟢',focusCost:45,cooldown:10,desc:'Q: escaneia uma área enorme e lança até 10 drones que infectam inimigos.'},deployTurret:{...(SKILL_DEFS.deployTurret||{}),desc:'E: instala torreta temporária. Máximo 3 em campo.'},overclock:{...(SKILL_DEFS.overclock||{}),desc:'R: torretas disparam choques em cadeia e micro-stun.'}});
+  function ensureNano23(){if(!game)return;game.nanoHijackDrones23=game.nanoHijackDrones23||[];}
+  function spendSkill23(idx,cdOverride){const p=game.player, key=CLASSES[game.classKey].skills[idx], sk=SKILL_DEFS[key]; if(!game.running||game.skillCds[idx]>0||!sk||p.focus<sk.focusCost)return false;p.focus-=sk.focusCost;game.skillCds[idx]=cdOverride??sk.cooldown;return true;}
+  const useSkill23=useSkill;
+  useSkill=function(idx){
+    if(game&&game.classKey==='engineer'){
+      const key=CLASSES.engineer.skills[idx];
+      if(key==='deployTurret'){
+        if(!spendSkill23(idx,SKILL_DEFS.deployTurret.cooldown))return; game.turrets=game.turrets||[]; if(game.turrets.length>=3){const old=game.turrets.shift(); if(old)addRing(old.x,old.y,'#8ff8ff',44,3);} const t={x:clamp(mouse.x,35,W-35),y:clamp(mouse.y,35,H-35),r:13,life:9*(game.upgrades.turretDuration||1),fireCd:0,pulse:0}; game.turrets.push(t); addRing(t.x,t.y,'#8ff8ff',62,4); addFloatingText(t.x,t.y-24,`${game.turrets.length}/3 TORRETAS`,'#8ff8ff',14); return;
+      }
+      if(key==='nanoSwarm'){
+        if(!spendSkill23(idx,10))return; ensureNano23(); const p=game.player, range=455; addRing(p.x,p.y,'#62ff9b',range,6); game.shake=10;
+        const targets=game.enemies.filter(e=>e.type!=='boss'&&dist(p,e)<range).sort((a,b)=>dist(p,a)-dist(p,b)).slice(0,10);
+        targets.forEach((e,n)=>{const a=(Math.PI*2/Math.max(1,targets.length))*n;game.nanoHijackDrones23.push({x:p.x+Math.cos(a)*22,y:p.y+Math.sin(a)*22,target:e,life:2.4,speed:540,r:5,pulse:0});});
+        addFloatingText(p.x,p.y-34,`DRONES x${targets.length}`,'#62ff9b',18); return;
+      }
+    }
+    if(game&&game.classKey==='chronoHero'){
+      const key=CLASSES.chronoHero.skills[idx];
+      if(key==='heroFlame'){
+        if(!spendSkill23(idx,10))return; const p=game.player,a=angleTo(p,mouse); game.heroFlameStreams=game.heroFlameStreams||[]; game.heroFlameStreams.push({x:p.x,y:p.y,ang:a,age:0,life:1.5,maxLife:1.5,range:565,width:1.02,dps:118,burnDps:24,color:'#ff8a35',seed:Math.random()*999,wideFlame:true}); addRing(p.x+Math.cos(a)*240,p.y+Math.sin(a)*240,'#ff8a35',150,5); addFloatingText(p.x,p.y-30,'LABAREDA AMPLIADA','#ff9b45',16); game.shake=12; return;
+      }
+    }
+    if(game&&game.classKey==='mage'){
+      const key=CLASSES.mage.skills[idx];
+      if(key==='voidNova'){
+        if(!spendSkill23(idx,9))return; game.meteors=game.meteors||[]; const tx=clamp(mouse.x,70,W-70),ty=clamp(mouse.y,70,H-70); game.meteors.push({x:tx,y:ty,fromX:tx+rand(-240,240),fromY:-210,t:.9,maxT:.9,r:185,impact:240,fireR:158,fireDps:10,fireLife:3.4,color:'#c06cff',tail:[],mega23:true}); addRing(tx,ty,'#c06cff',185,3); addFloatingText(tx,ty-25,'☄ MEGA METEORO','#ffd0ff',18); game.shake=8; return;
+      }
+    }
+    return useSkill23(idx);
+  };
+  function updateNanoDrones23(dt){ensureNano23();for(let i=game.nanoHijackDrones23.length-1;i>=0;i--){const d=game.nanoHijackDrones23[i];d.life-=dt;d.pulse+=dt*10;if(!d.target||!game.enemies.includes(d.target)||d.life<=0){game.nanoHijackDrones23.splice(i,1);continue;}const a=angleTo(d,d.target);d.x+=Math.cos(a)*d.speed*dt;d.y+=Math.sin(a)*d.speed*dt;if(dist(d,d.target)<d.r+d.target.r+4){const e=d.target;e._hijack23=2.5;e._hijackArmed23=true;e.color='#62ff9b';e.hitFlash=.22;addRing(e.x,e.y,'#62ff9b',55,4);addParticles(e.x,e.y,'#62ff9b',18,.75);game.nanoHijackDrones23.splice(i,1);}}}
+  function updateNanoHijackEnemies23(dt){
+    updateNanoDrones23(dt);
+    for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i];if(!e._hijack23)continue;e._hijack23-=dt;if(e._hijack23<=0){e._hijack23=0;continue;}let target=null,min=99999;for(const o of game.enemies){if(o===e||o.type==='boss')continue;const d=dist(e,o);if(d<min){min=d;target=o;}}if(target){const a=angleTo(e,target);e.x+=Math.cos(a)*430*dt;e.y+=Math.sin(a)*430*dt;e.vx=Math.cos(a)*430;e.vy=Math.sin(a)*430;if(min<e.r+target.r+8){const dmg=135*game.upgrades.damage; e.hp-=dmg; target.hp-=dmg; e.hitFlash=target.hitFlash=.25; addRing(e.x,e.y,'#62ff9b',105,5); addParticles(e.x,e.y,'#62ff9b',28,1.1); if(target.hp<=0){const j=game.enemies.indexOf(target);if(j>=0)enemyDeath(j,target);} if(e.hp<=0){const j=game.enemies.indexOf(e);if(j>=0)enemyDeath(j,e);} e._hijack23=0;}}
+    }
+  }
+  const updateDrones23=updateDrones;
+  updateDrones=function(dt){
+    const before=game&&game.bullets?game.bullets.length:0;
+    updateDrones23(dt);
+    if(!game)return;
+
+    if(game.overclockTimer>0&&game.turrets){
+      for(const t of game.turrets){
+        t._chainCd23=(t._chainCd23||0)-dt;
+        if(t._chainCd23>0)continue;
+
+        let current=null;
+        let min=9999;
+        for(const e of game.enemies){
+          const d=dist(t,e);
+          if(d<470&&d<min){min=d;current=e;}
+        }
+        if(!current)continue;
+
+        const hit=[];
+        let origin=t;
+        for(let n=0;n<4&&current;n++){
+          hit.push(current);
+          current.hp-=18*game.upgrades.damage;
+          current.hitFlash=.15;
+          current._microStun23=.1;
+          addLightning(origin.x,origin.y,current.x,current.y,'#62ff9b');
+          origin=current;
+
+          let nxt=null;
+          let nd=9999;
+          for(const e of game.enemies){
+            if(hit.includes(e))continue;
+            const d=dist(origin,e);
+            if(d<190&&d<nd){nd=d;nxt=e;}
+          }
+          current=nxt;
+        }
+
+        for(let j=game.enemies.length-1;j>=0;j--){
+          if(game.enemies[j].hp<=0)enemyDeath(j,game.enemies[j]);
+        }
+        t._chainCd23=.42;
+      }
+    }
+
+    for(let i=before;i<game.bullets.length;i++){
+      if(game.overclockTimer>0&&game.bullets[i].weaponKey==='pulse'){
+        game.bullets[i].identityColor='#62ff9b';
+        game.bullets[i].damage*=1.1;
+      }
+    }
+  };
+
+  // Red spiky ball for old yellow spark mine; minimap stays disabled.
+  const drawHazards23=drawHazards;
+  drawHazards=function(){
+    drawHazards23(); if(!game)return; ctx.save();ctx.globalCompositeOperation='lighter';
+    for(const h of game.hazards||[]){if(h.type==='sparkMine'||h.type==='stormOrb'){ctx.save();ctx.translate(h.x,h.y);ctx.rotate((h.pulse||0)*1.2);ctx.shadowBlur=22;ctx.shadowColor='#ff1f3d';ctx.fillStyle='#bd0624';ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;ctx.beginPath();const spikes=14;const rr=(h.r||18)+(h.type==='stormOrb'?4:0);for(let i=0;i<spikes*2;i++){const a=i*Math.PI/spikes;const r=i%2?rr*.55:rr*1.25;if(i===0)ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r);else ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);}ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#050005';ctx.beginPath();ctx.arc(0,0,rr*.42,0,Math.PI*2);ctx.fill();ctx.restore();}}
+    for(const d of game.nanoHijackDrones23||[]){ctx.save();ctx.translate(d.x,d.y);ctx.rotate(d.pulse);ctx.shadowBlur=18;ctx.shadowColor='#62ff9b';ctx.fillStyle='#62ff9b';ctx.beginPath();ctx.arc(0,0,6,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#eaffff';ctx.beginPath();ctx.arc(0,0,10,0,Math.PI*2);ctx.stroke();ctx.restore();}
+    ctx.restore();
+  };
+
+  // Upgrade screen cap enforcement and mythic unchanged; no lifesteal above 3.5%.
+  const openUpgradeMenu23=openUpgradeMenu;
+  openUpgradeMenu=function(){openUpgradeMenu23();setTimeout(()=>{overlayCard.querySelectorAll('.upgrade-btn').forEach(btn=>{btn.innerHTML=btn.innerHTML.replace(/limite de 8%|limite 8%|8%/g,'limite de 3.5%');});},0);};
+
+  console.log(PATCH+' carregado');
 })();
 </script>
 
