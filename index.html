@@ -4812,7 +4812,7 @@ render = function(){
           <div class="death-grid" style="max-width:620px;margin-left:auto;margin-right:auto">
             <div class="death-stat"><small>HIGH SCORE</small><b>${Number(meta.highScore||0).toLocaleString()}</b></div>
             <div class="death-stat"><small>RELÍQUIAS</small><b id="startRelicCount">${getRelics()}</b></div>
-            <div class="death-stat"><small>VERSÃO</small><b>2.3</b></div>
+            <div class="death-stat"><small>VERSÃO</small><b>1.6</b></div>
           </div>
           <div class="start-actions">
             <button class="main-btn" id="playBtn">JOGAR</button>
@@ -6129,7 +6129,7 @@ render = function(){
   console.log(SECRET_PATCH_VERSION+' carregado');
 })();
 
-window.openStartMenu();
+/* startup moved to Clean Menu 2.7 */
 requestAnimationFrame(loop);
 </script>
 <script>
@@ -6958,7 +6958,7 @@ requestAnimationFrame(loop);
     game=null; mouse.down=false; overlay.classList.remove('hidden');
     const meta=readMeta23();
     const shards=Array.from({length:42},(_,i)=>`<i class="chrono-shard" style="left:${rand(2,96).toFixed(1)}%;top:${rand(4,92).toFixed(1)}%;--dx:${rand(-90,90).toFixed(0)}px;--dy:${rand(-70,70).toFixed(0)}px;--dur:${rand(2.2,5.9).toFixed(2)}s;animation-delay:${rand(-4,0).toFixed(2)}s"></i>`).join('');
-    overlayCard.innerHTML=`<div class="start-stage v23"><div class="start-shards">${shards}</div><div class="start-layout-v23"><div><div class="start-logo-v23">CHRONO<br>SHARDS</div><p class="start-lore-v23">Entre numa arena temporal, colete fragmentos, sobreviva aos bosses e desbloqueie personagens míticos. Explore o cosmos por sua conta e risco</p><div class="tutorial-panel-v23"><h3>TUTORIAL RÁPIDO</h3><p><b>WASD</b> move • <b>Mouse</b> mira • <b>Clique</b> atira • <b>Shift</b> dash • <b>E/Q/R</b> habilidades • <b>X</b> ultimate quando existir. Use paredes como cobertura: projéteis comuns não atravessam.</p></div></div><div class="start-side-v23"><div class="start-stat-v23"><small>HIGH SCORE</small><b>${Number(meta.highScore||0).toLocaleString()}</b></div><div class="start-stat-v23"><small>RELÍQUIAS</small><b>${relics23()}</b></div><div class="start-stat-v23"><small>VERSÃO</small><b>2.3</b></div><div class="start-actions-v23"><button class="main-btn" id="playBtn23">JOGAR</button><button class="main-btn" id="codesBtn23" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CÓDIGOS</button><button class="main-btn" id="relicsBtn23" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">RELÍQUIAS</button></div></div></div></div>`;
+    overlayCard.innerHTML=`<div class="start-stage v23"><div class="start-shards">${shards}</div><div class="start-layout-v23"><div><div class="start-logo-v23">CHRONO<br>SHARDS</div><p class="start-lore-v23">Entre numa arena temporal, colete fragmentos, sobreviva aos bosses e desbloqueie personagens míticos. Agora com sistema de relíquias, códigos, fissura secreta e builds mais controladas.</p><div class="tutorial-panel-v23"><h3>TUTORIAL RÁPIDO</h3><p><b>WASD</b> move • <b>Mouse</b> mira • <b>Clique</b> atira • <b>Shift</b> dash • <b>E/Q/R</b> habilidades • <b>X</b> ultimate quando existir. Use paredes como cobertura: projéteis comuns não atravessam.</p></div></div><div class="start-side-v23"><div class="start-stat-v23"><small>HIGH SCORE</small><b>${Number(meta.highScore||0).toLocaleString()}</b></div><div class="start-stat-v23"><small>RELÍQUIAS</small><b>${relics23()}</b></div><div class="start-stat-v23"><small>VERSÃO</small><b>2.3</b></div><div class="start-actions-v23"><button class="main-btn" id="playBtn23">JOGAR</button><button class="main-btn" id="codesBtn23" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CÓDIGOS</button><button class="main-btn" id="relicsBtn23" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">RELÍQUIAS</button></div></div></div></div>`;
     document.getElementById('playBtn23').onclick=openClassMenu;
     document.getElementById('codesBtn23').onclick=getCodesMenu();
     document.getElementById('relicsBtn23').onclick=openMetaRelicMenu;
@@ -6973,7 +6973,7 @@ requestAnimationFrame(loop);
 
   openClassMenu=function(){
     const meta=readMeta23(), rs=relics23(), unlocks=readUnlocks23(); overlay.classList.remove('hidden');
-    overlayCard.innerHTML=`<h1>SELEÇÃO DE PERSONAGEM</h1><p>Escolha seu estilo. Clique no <b>i</b> para ver as informações dos personagens.<br>Relíquias: <strong id="classRelicCount23">${rs}</strong> • High Score: <strong>${Number(meta.highScore||0).toLocaleString()}</strong></p><div class="class-grid-v23">${classOrder23().map(k=>{const c=CLASSES[k], col=classColor23(k), unlocked=isClassUnlocked23(k), cost=classCost23(k), skills=skillList23(k).map(s=>`${s.key}:${s.emoji}`).join(' ');return `<div class="class-card-v23 ${unlocked?'':'locked'}" data-class="${k}" style="--c:${col}"><button class="info-btn-v23" data-info="${k}" title="Informações">i</button>${unlocked?'':`<div class="class-lock-v23">🔒</div>`}<div class="class-model-v23"></div><div class="class-title-row-v23"><strong>${c.name}</strong></div><span class="class-tag" style="background:${col}22;color:${col};border:1px solid ${col}55">${c.tag||'CLASSE'}</span><span style="display:block;margin-top:8px;color:#b8cbea;line-height:1.35">${c.desc}</span><span class="muted">HP ${c.hp} • Foco ${c.focus} • ${WEAPONS[c.weapon]?.name||c.weapon}</span><span style="display:block;font-size:11px;margin-top:5px;opacity:.7">${skills}</span>${unlocked?`<button class="select-btn-v23" data-pick="${k}">Selecionar</button>`:`<button class="buy-btn-v23" data-buy="${k}" ${rs<cost?'disabled':''}>Comprar — ${cost} 🜂</button>`}</div>`}).join('')}</div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap"><button class="main-btn" id="backMainBtn23">← Menu inicial</button><button class="main-btn" id="codesFromClassBtn23" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Códigos</button></div>`;
+    overlayCard.innerHTML=`<h1>SELEÇÃO DE PERSONAGEM</h1><p>Escolha seu estilo. Clique no <b>i</b> para ver atributos, especiais e lore.<br>Relíquias: <strong id="classRelicCount23">${rs}</strong> • High Score: <strong>${Number(meta.highScore||0).toLocaleString()}</strong></p><div class="class-grid-v23">${classOrder23().map(k=>{const c=CLASSES[k], col=classColor23(k), unlocked=isClassUnlocked23(k), cost=classCost23(k), skills=skillList23(k).map(s=>`${s.key}:${s.emoji}`).join(' ');return `<div class="class-card-v23 ${unlocked?'':'locked'}" data-class="${k}" style="--c:${col}"><button class="info-btn-v23" data-info="${k}" title="Informações">i</button>${unlocked?'':`<div class="class-lock-v23">🔒</div>`}<div class="class-model-v23"></div><div class="class-title-row-v23"><strong>${c.name}</strong></div><span class="class-tag" style="background:${col}22;color:${col};border:1px solid ${col}55">${c.tag||'CLASSE'}</span><span style="display:block;margin-top:8px;color:#b8cbea;line-height:1.35">${c.desc}</span><span class="muted">HP ${c.hp} • Foco ${c.focus} • ${WEAPONS[c.weapon]?.name||c.weapon}</span><span style="display:block;font-size:11px;margin-top:5px;opacity:.7">${skills}</span>${unlocked?`<button class="select-btn-v23" data-pick="${k}">Selecionar</button>`:`<button class="buy-btn-v23" data-buy="${k}" ${rs<cost?'disabled':''}>Comprar — ${cost} 🜂</button>`}</div>`}).join('')}</div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap"><button class="main-btn" id="backMainBtn23">← Menu inicial</button><button class="main-btn" id="codesFromClassBtn23" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Códigos</button></div>`;
     overlayCard.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{resetGame(b.dataset.pick);overlay.classList.add('hidden')});
     overlayCard.querySelectorAll('[data-info]').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();openClassInfo23(b.dataset.info)});
     overlayCard.querySelectorAll('[data-buy]').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();const k=b.dataset.buy,cost=classCost23(k);if(!spendRelics23(cost)){const el=document.getElementById('classRelicCount23'); if(el)el.innerHTML=`${relics23()} <span style="color:#ff8fa3">insuficiente</span>`;return;}const u=readUnlocks23();u.push(k);writeUnlocks23(u);openClassMenu();});
@@ -6984,7 +6984,7 @@ requestAnimationFrame(loop);
     const meta=readMeta23(); meta.unlockedRelics=Array.isArray(meta.unlockedRelics)?meta.unlockedRelics:[];
     overlay.classList.remove('hidden'); overlayCard.classList.add('relic-page-v23');
     const cards=RELICS.filter(r=>r.id!=='blood_thread').map(r=>{const unlocked=meta.unlockedRelics.includes(r.id);const can=relics23()>=r.cost&&!unlocked;return `<div class="relic-card-v23 ${unlocked?'unlocked':''}"><strong>${unlocked?'✓ ':''}${r.name}</strong><span>${r.desc}</span><span class="muted">Custo: ${r.cost} relíquias</span>${unlocked?'<button disabled>Desbloqueada</button>':`<button data-relic-buy="${r.id}" ${can?'':'disabled'}>Comprar</button>`}</div>`}).join('');
-    overlayCard.innerHTML=`<h1>RELÍQUIAS ✦</h1><div class="relic-top-v23"><p>Relíquias são melhorias permanentes para runs futuras.</p><div class="relic-bank-v23"><small>RELÍQUIAS</small><b>${relics23()}</b></div></div><div class="relic-grid">${cards}<div class="relic-card-v23 removed"><strong>Blood Thread</strong><span>Removida: não concede mais lifesteal inicial.</span><button disabled>Removida</button></div></div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px"><button class="main-btn" id="relicBack23">← Menu inicial</button></div>`;
+    overlayCard.innerHTML=`<h1>RELÍQUIAS ✦</h1><div class="relic-top-v23"><p>Relíquias são melhorias permanentes para runs futuras. O bônus antigo de lifesteal inicial foi removido para manter o jogo balanceado.</p><div class="relic-bank-v23"><small>BANCO</small><b>${relics23()}</b></div></div><div class="relic-grid">${cards}<div class="relic-card-v23 removed"><strong>Blood Thread</strong><span>Removida: não concede mais lifesteal inicial.</span><button disabled>Removida</button></div></div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px"><button class="main-btn" id="relicBack23">← Menu inicial</button></div>`;
     overlayCard.querySelectorAll('[data-relic-buy]').forEach(btn=>btn.onclick=()=>{const id=btn.dataset.relicBuy;const relic=RELICS.find(r=>r.id===id);if(!relic||!spendRelics23(relic.cost))return;const m=readMeta23();m.unlockedRelics=Array.from(new Set([...(m.unlockedRelics||[]),id]));writeMeta23(m);openMetaRelicMenu();});
     document.getElementById('relicBack23').onclick=openStartMenu;
   };
@@ -7219,8 +7219,357 @@ requestAnimationFrame(loop);
 
   // Upgrade screen cap enforcement and mythic unchanged; no lifesteal above 3.5%.
   const openUpgradeMenu23=openUpgradeMenu;
-  openUpgradeMenu=function(){openUpgradeMenu23();setTimeout(()=>{overlayCard.querySelectorAll('.upgrade-btn').forEach(btn=>{btn.innerHTML=btn.innerHTML.replace(/limite de 8%|limite 8%|8%/g,'');});},0);};
+  openUpgradeMenu=function(){openUpgradeMenu23();setTimeout(()=>{overlayCard.querySelectorAll('.upgrade-btn').forEach(btn=>{btn.innerHTML=btn.innerHTML.replace(/limite de 8%|limite 8%|8%/g,'limite de 3.5%');});},0);};
 
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<script>
+(()=>{
+  const PATCH='Chrono Shards Cleanup/Balance 2.6';
+  const LIFESTEAL_CAP_26=0.035;
+  const HERO_ULT_SECONDS_26=60;
+  const HERO_ULT_RATE_26=100/HERO_ULT_SECONDS_26;
+  const rarityColors26={
+    'COMUM':'#61dafb',
+    'RARO':'#4ce0b3',
+    'ÉPICO':'#b26cff',
+    'LENDÁRIO':'#ffd166',
+    'MÍTICO':'#ff2e63'
+  };
+
+  function cap26(v,a,b){return Math.max(a,Math.min(b,v));}
+  function capLifesteal26(){
+    if(game&&game.upgrades){
+      game.upgrades.lifesteal=cap26(Number(game.upgrades.lifesteal||0),0,LIFESTEAL_CAP_26);
+    }
+  }
+  function cleanupLegacyUI26(){
+    document.querySelectorAll('.stats>div').forEach(row=>{
+      const label=(row.querySelector('span')?.textContent||'').trim().toUpperCase();
+      if(['FOCO','DASH','XP'].includes(label)) row.remove();
+    });
+    const ret=document.querySelector('.weapon-return-wrap');
+    if(ret) ret.style.display='none';
+    const title=document.querySelector('.title');
+    if(title) title.remove();
+    if(game&&game.mapDecor&&Array.isArray(game.mapDecor.pads)){
+      game.mapDecor.pads=game.mapDecor.pads.filter(p=>p.type!=='dash'&&p.type!=='shield');
+    }
+  }
+
+  const style26=document.createElement('style');
+  style26.id='cleanupBalance26Styles';
+  style26.textContent=`
+    .weapon-return-wrap,.title{display:none!important}
+    .stats{min-width:210px!important;padding:10px 12px!important}
+    .stats>div{grid-template-columns:58px 1fr!important}
+    .upgrade-grid{grid-template-columns:repeat(3,minmax(180px,1fr))!important;gap:14px!important}
+    @media(max-width:760px){.upgrade-grid{grid-template-columns:1fr!important}}
+    .upgrade-btn.upgrade-rarity-26{position:relative;overflow:hidden;border:2px solid var(--rarity)!important;background:linear-gradient(160deg,rgba(7,11,25,.96),rgba(3,5,14,.98))!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 0 28px color-mix(in srgb,var(--rarity) 26%,transparent)!important;min-height:146px}
+    .upgrade-btn.upgrade-rarity-26::before{content:'';position:absolute;inset:-50%;background:radial-gradient(circle at 30% 20%,color-mix(in srgb,var(--rarity) 30%,transparent),transparent 32%);opacity:.8;pointer-events:none}
+    .upgrade-btn.upgrade-rarity-26 strong,.upgrade-btn.upgrade-rarity-26 span{position:relative;z-index:1}
+    .upgrade-rarity-label-26{display:inline-block;margin-bottom:8px;padding:3px 8px;border-radius:999px;background:color-mix(in srgb,var(--rarity) 22%,transparent);border:1px solid color-mix(in srgb,var(--rarity) 68%,transparent);color:var(--rarity);font:900 10px Orbitron,sans-serif;letter-spacing:.14em;text-shadow:0 0 10px var(--rarity)}
+    .upgrade-btn.upgrade-rarity-26[data-rarity="MÍTICO"]{animation:mythicPulse26 .75s infinite alternate;border-width:3px!important}
+    @keyframes mythicPulse26{to{filter:brightness(1.22);box-shadow:0 0 42px rgba(255,46,99,.55),inset 0 0 36px rgba(255,46,99,.16)!important}}
+    .cleanup-note-26{margin-top:10px;color:#9fbdd8;font-size:12px;line-height:1.45}
+  `;
+  document.head.appendChild(style26);
+
+  // Remove visual leftovers from the old HUD and keep the new HUD as the only visible layer.
+  const oldUpdateHUD26=updateHUD;
+  updateHUD=function(){
+    oldUpdateHUD26();
+    cleanupLegacyUI26();
+    capLifesteal26();
+  };
+
+  // Chrono-Hero ultimate: exactly time-based, 60 seconds from 0 to ready, no kill gain.
+  const oldResetGame26=resetGame;
+  resetGame=function(classKey){
+    oldResetGame26(classKey);
+    if(game){
+      cleanupLegacyUI26();
+      capLifesteal26();
+      if(classKey==='chronoHero'){
+        game.heroUltCharge=0;
+        game._heroUltTimeBank26=0;
+        if(typeof updateUltimateUI==='function') updateUltimateUI();
+      }
+    }
+  };
+
+  const oldUpdatePlayer26=updatePlayer;
+  updatePlayer=function(dt){
+    const wasHero=game&&game.classKey==='chronoHero';
+    const bankBefore=wasHero?Number(game._heroUltTimeBank26??game.heroUltCharge??0):0;
+    oldUpdatePlayer26(dt);
+    if(game){
+      capLifesteal26();
+      cleanupLegacyUI26();
+      if(wasHero&&game.classKey==='chronoHero'&&!game.heroUltimate){
+        const next=cap26(bankBefore+dt*HERO_ULT_RATE_26,0,100);
+        game._heroUltTimeBank26=next;
+        game.heroUltCharge=next;
+        if(typeof updateUltimateUI==='function') updateUltimateUI();
+      }
+    }
+  };
+
+  const oldEnemyDeath26=enemyDeath;
+  enemyDeath=function(index,e){
+    const heroTrack=game&&game.classKey==='chronoHero';
+    const chargeBefore=heroTrack?Number(game._heroUltTimeBank26??game.heroUltCharge??0):0;
+    oldEnemyDeath26(index,e);
+    if(heroTrack&&game&&game.classKey==='chronoHero'&&!game.heroUltimate){
+      game._heroUltTimeBank26=chargeBefore;
+      game.heroUltCharge=chargeBefore;
+      if(typeof updateUltimateUI==='function') updateUltimateUI();
+    }
+    capLifesteal26();
+  };
+
+  const oldStartHeroUltimate26=(typeof startHeroUltimate==='function')?startHeroUltimate:null;
+  if(oldStartHeroUltimate26){
+    startHeroUltimate=function(){
+      if(game&&game.classKey==='chronoHero'&&Number(game.heroUltCharge||0)>=99.5){
+        game.heroUltCharge=100;
+        game._heroUltTimeBank26=100;
+      }
+      return oldStartHeroUltimate26();
+    };
+  }
+
+  // From wave 16 onward, normal waves spawn 10% more enemies than their base amount.
+  const oldStartNextWave26=startNextWave;
+  startNextWave=function(){
+    oldStartNextWave26();
+    if(game){
+      cleanupLegacyUI26();
+      if(game.wave>=16&&!game.waveBoss&&game._spawnBoostWave26!==game.wave){
+        game.enemiesToSpawn=Math.ceil(game.enemiesToSpawn*1.10);
+        game._spawnBoostWave26=game.wave;
+      }
+    }
+  };
+
+  // Slightly lower permanent relic drop rate.
+  const oldSpawnRelicShard26=spawnRelicShard;
+  spawnRelicShard=function(x,y,amount=1){
+    const amt=Number(amount||1);
+    if(amt<=1){
+      if(Math.random()>0.60) return;
+      return oldSpawnRelicShard26(x,y,1);
+    }
+    const reduced=Math.max(1,Math.round(amt*0.75));
+    return oldSpawnRelicShard26(x,y,reduced);
+  };
+
+  // Strong final cap on healing from lifesteal, including old bullet systems that still used 8% internally.
+  const oldUpdateBullets26=updateBullets;
+  updateBullets=function(dt){
+    capLifesteal26();
+    oldUpdateBullets26(dt);
+    capLifesteal26();
+  };
+
+  function weightedPick26(pool){
+    const total=pool.reduce((s,u)=>s+(u.weight||1),0);
+    let roll=Math.random()*total;
+    for(let i=0;i<pool.length;i++){
+      roll-=pool[i].weight||1;
+      if(roll<=0) return pool.splice(i,1)[0];
+    }
+    return pool.pop();
+  }
+  function makeUpgradePool26(){
+    const pool=[
+      {rarity:'COMUM',weight:42,name:'Dano +10%',desc:'Aumenta todo dano causado em 10%.',effect:()=>{game.upgrades.damage+=0.10;}},
+      {rarity:'COMUM',weight:38,name:'Cadência +14%',desc:'Atira mais rápido sem explodir o balanceamento.',effect:()=>{game.upgrades.fireRate+=0.14;}},
+      {rarity:'COMUM',weight:34,name:'Velocidade +10%',desc:'Melhora movimentação e kite.',effect:()=>{game.upgrades.speed+=0.10;}},
+      {rarity:'COMUM',weight:28,name:'Foco máximo +18',desc:'Mais espaço para habilidades e slow.',effect:()=>{game.player.maxFocus+=18;game.player.focus+=18;}},
+      {rarity:'RARO',weight:22,name:'Perfuração +1',desc:'Projéteis atravessam mais um inimigo, mas não atravessam cobertura.',effect:()=>{game.upgrades.pierce+=1;}},
+      {rarity:'RARO',weight:20,name:'Multishot +1',desc:'Adiciona um projétil extra por disparo.',effect:()=>{game.upgrades.multishot+=1;}},
+      {rarity:'RARO',weight:18,name:'Crítico +8%',desc:'Mais chance de dano dobrado.',effect:()=>{game.upgrades.critChance+=0.08;}},
+      {rarity:'RARO',weight:16,name:'Ímã +40',desc:'Puxa loot de mais longe.',effect:()=>{game.upgrades.magnet=(game.upgrades.magnet||0)+40;}},
+      {rarity:'ÉPICO',weight:10,name:'Armadura +10%',desc:'Reduz dano recebido.',effect:()=>{game.upgrades.armor+=0.10;}},
+      {rarity:'ÉPICO',weight:9,name:'Balas Explosivas',desc:'Impactos causam dano em área.',effect:()=>{game.upgrades.explosiveBullets=true;}},
+      {rarity:'ÉPICO',weight:8,name:'Acid Mastery',desc:'Venenos ficam 30% mais fortes.',effect:()=>{game.upgrades.acidMastery=(game.upgrades.acidMastery||0)+0.30;}},
+      {rarity:'LENDÁRIO',weight:3,name:'Contrato de Caça',desc:'Inimigos podem dropar ouro bônus.',effect:()=>{game.upgrades.bounty=(game.upgrades.bounty||0)+3;}},
+      {rarity:'LENDÁRIO',weight:2,name:'Núcleo de Escudo',desc:'+25 de escudo máximo e recarga melhor.',effect:()=>{game.player.maxShield+=25;game.player.shield+=25;}}
+    ];
+    if((game.upgrades.lifesteal||0)<LIFESTEAL_CAP_26-0.0001){
+      pool.push({rarity:'ÉPICO',weight:9,name:'Lifesteal +0.5%',desc:'Cura por dano. Limite máximo: 3.5%.',effect:()=>{game.upgrades.lifesteal=cap26((game.upgrades.lifesteal||0)+0.005,0,LIFESTEAL_CAP_26);}});
+    }
+    return pool;
+  }
+
+  openUpgradeMenu=function(){
+    if(!game) return;
+    capLifesteal26();
+    game.running=false;
+    overlay.classList.remove('hidden');
+    const mythic={rarity:'MÍTICO',name:'Unidade Suprema',desc:'+50% velocidade, +100% cadência, +5 projéteis, +100% HP máximo e +25% dano.',effect:()=>{game.upgrades.speed+=0.50;game.upgrades.fireRate+=1.00;game.upgrades.multishot+=5;game.player.maxHp*=2;game.player.hp=game.player.maxHp;game.upgrades.damage+=0.25;}};
+    const pool=makeUpgradePool26();
+    const choices=[];
+    if(Math.random()<0.01) choices.push(mythic);
+    while(choices.length<3&&pool.length) choices.push(weightedPick26(pool));
+    overlayCard.innerHTML=`
+      <h1>LEVEL UP ${game.level}</h1>
+      <p>Escolha <strong>1 de 3</strong> melhorias. Lifesteal atual: <strong>${((game.upgrades.lifesteal||0)*100).toFixed(1)}%</strong> / 3.5%.</p>
+      <div class="upgrade-grid">
+        ${choices.map((u,i)=>{const col=rarityColors26[u.rarity]||'#61dafb';return `<button class="upgrade-btn upgrade-rarity-26" data-up26="${i}" data-rarity="${u.rarity}" style="--rarity:${col}"><span class="upgrade-rarity-label-26">${u.rarity}</span><strong>${u.name}</strong><span>${u.desc}</span></button>`}).join('')}
+      </div>
+      <div class="cleanup-note-26">Mítico agora tem 1% de chance. Quando o lifesteal chega em 3.5%, ele para de aparecer.</div>`;
+    overlayCard.querySelectorAll('[data-up26]').forEach(btn=>btn.onclick=()=>{
+      const u=choices[Number(btn.dataset.up26)];
+      if(u&&typeof u.effect==='function') u.effect();
+      capLifesteal26();
+      overlay.classList.add('hidden');
+      game.running=true;
+      updateHUD();
+      addFloatingText(game.player.x,game.player.y-34,u.name,rarityColors26[u.rarity]||'#ffffff',16);
+    });
+  };
+
+  cleanupLegacyUI26();
+  capLifesteal26();
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoCleanMenu27) return;
+  window.__chronoCleanMenu27=true;
+  const PATCH='Clean/Menu/Balance 2.7';
+  const CLASS_UNLOCK_KEY=SAVE_KEY+'_class_unlocks_v3';
+  const SECRET_UNLOCK_KEY=SAVE_KEY+'_secret_rift_v1';
+  const FREE_CLASSES=['assault','sniper'];
+  const COSTS={engineer:10,mage:15,ronin:20,alchemist:20,reaper:30,chronoHero:100,shadowChild:150};
+  const ORDER=['assault','sniper','engineer','mage','ronin','alchemist','reaper','chronoHero','shadowChild'];
+  const LIFESTEAL_CAP=.035;
+  const HERO_ULT_RATE=100/60;
+  const COLORS={COMUM:'#54b9ff',RARO:'#4ce0b3','ÉPICO':'#b77cff','LENDÁRIO':'#ffd166','MÍTICO':'#ff2e63'};
+  const LORE={
+    assault:'Um soldado de linha de frente que aprendeu a sobreviver dentro de arenas temporais quebradas. Ele não nasceu especial: ficou forte porque sempre foi o último a cair.',
+    sniper:'Um atirador capaz de enxergar rachaduras no tempo como linhas de mira. Para ele, cada disparo já aconteceu antes de puxar o gatilho.',
+    engineer:'Um artífice que transforma sucata cronológica em drones, torretas e choques em cadeia. Quando ele entra na arena, o mapa vira uma máquina.',
+    mage:'Um mago do vazio que roubou meteoros de outra dimensão. Ele dobra queda, fogo e retorno temporal como se fossem pequenos truques.',
+    ronin:'Um duelista perdido entre eras. Sua lâmina não corta apenas matéria: corta intenção, projétil e destino.',
+    alchemist:'Um pesquisador tóxico que descobriu que veneno também pode ser linguagem. Cada frasco escreve uma sentença no chão da arena.',
+    reaper:'Um carrasco que caça almas marcadas. Quanto mais escura a luta, mais familiar parece o caminho dele.',
+    chronoHero:'Um herói cristalino criado para selar catástrofes. Controla fogo, gelo, singularidades e uma luz prismática capaz de rasgar a arena.',
+    shadowChild:'Um mito escondido atrás da fissura. Usa uma casca negra viva, veias vermelhas e uma raiva antiga demais para caber em uma linha temporal.'
+  };
+
+  const style=document.createElement('style');
+  style.id='cleanMenu27Styles';
+  style.textContent=`
+    .title,.weapon-return-wrap{display:none!important}
+    .hud .stats{min-width:218px!important;padding:10px 12px!important;background:linear-gradient(180deg,rgba(8,13,28,.86),rgba(3,5,14,.92))!important;border:2px solid rgba(130,220,255,.24)!important;border-radius:12px!important;box-shadow:inset 0 0 0 2px rgba(0,0,0,.38),0 0 26px rgba(97,218,251,.09)!important}
+    .hud .stats>div{grid-template-columns:58px 1fr!important;font-size:12px!important}.hud .stats>div[data-old-ui="1"]{display:none!important}
+    .clean-start27{position:relative;overflow:hidden;min-height:620px;text-align:left;border-radius:28px;background:radial-gradient(circle at 78% 18%,rgba(255,107,157,.20),transparent 23%),radial-gradient(circle at 18% 42%,rgba(97,218,251,.25),transparent 28%),linear-gradient(145deg,#030511,#0b1024 48%,#020207);border:2px solid rgba(150,225,255,.24);box-shadow:0 0 100px rgba(97,218,251,.12),inset 0 0 90px rgba(255,255,255,.035)}
+    .clean-start27:before{content:'';position:absolute;inset:-30%;background:conic-gradient(from 0deg,transparent,#61dafb26,transparent,#9f6cff24,transparent,#ff6b9d22,transparent);filter:blur(18px);animation:spinClean27 18s linear infinite}.clean-start27:after{content:'';position:absolute;inset:0;background:linear-gradient(transparent 0 94%,rgba(97,218,251,.04) 95%);background-size:100% 10px;opacity:.3;pointer-events:none}@keyframes spinClean27{to{transform:rotate(360deg)}}
+    .clean-layout27{position:relative;z-index:2;display:grid;grid-template-columns:minmax(320px,1fr) 340px;gap:30px;align-items:center;padding:44px}.clean-logo27{font-family:Orbitron,sans-serif;font-size:60px;font-weight:900;letter-spacing:.13em;line-height:.9;background:linear-gradient(90deg,#fff,#61dafb,#9f6cff,#ff6b9d,#ffd166);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 26px rgba(97,218,251,.38))}.clean-sub27{max-width:680px;margin:18px 0 0;color:#c3dcff;font-size:16px;line-height:1.6}.clean-tutorial27{margin-top:24px;padding:18px 20px;border-radius:18px;border:1px solid rgba(155,237,255,.28);background:linear-gradient(135deg,rgba(97,218,251,.11),rgba(159,108,255,.07));box-shadow:inset 0 0 28px rgba(97,218,251,.04)}.clean-tutorial27 h3{margin:0 0 9px;font-family:Orbitron,sans-serif;font-size:13px;letter-spacing:.15em;color:#eaffff}.clean-tutorial27 p{margin:0;color:#d9ecff;line-height:1.65;font-size:14px}.clean-side27{display:grid;gap:12px}.clean-stat27{padding:14px 16px;border-radius:17px;background:rgba(0,0,0,.30);border:1px solid rgba(255,255,255,.13)}.clean-stat27 small{font-family:Orbitron,sans-serif;font-size:10px;letter-spacing:.16em;opacity:.7}.clean-stat27 b{display:block;margin-top:4px;font-family:Orbitron,sans-serif;font-size:25px;color:#fff;text-shadow:0 0 16px currentColor}.clean-actions27{display:grid;gap:10px;margin-top:8px}.clean-actions27 .main-btn{width:100%;font-family:Orbitron,sans-serif;letter-spacing:.1em}
+    .floating-shards27{position:absolute;inset:0;pointer-events:none}.floating-shards27 i{position:absolute;width:12px;height:24px;background:linear-gradient(180deg,#fff,#61dafb 45%,#9f6cff);clip-path:polygon(50% 0,100% 32%,70% 100%,30% 100%,0 32%);filter:drop-shadow(0 0 14px #61dafb);opacity:.72;animation:shardClean27 var(--d) ease-in-out infinite alternate}.floating-shards27 i:nth-child(3n){background:linear-gradient(180deg,#fff,#ffd166,#ff6b9d);filter:drop-shadow(0 0 13px #ffd166)}@keyframes shardClean27{to{transform:translate(var(--x),var(--y)) rotate(180deg) scale(1.1)}}
+    .class-grid27{display:grid;grid-template-columns:repeat(auto-fit,minmax(236px,1fr));gap:13px;margin-top:18px}.class-card27{position:relative;min-height:300px;padding:14px;text-align:left;border-radius:21px;border:2px solid rgba(120,200,255,.18);background:linear-gradient(160deg,rgba(9,14,31,.96),rgba(3,5,14,.97));box-shadow:inset 0 0 35px rgba(255,255,255,.03);overflow:hidden}.class-card27.locked{filter:saturate(.48);opacity:.84}.class-card27:before{content:'';position:absolute;right:-38px;top:-44px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 25%,transparent),transparent 68%);pointer-events:none}.class-lock27{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:5;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:32px;background:rgba(0,0,0,.66);border:2px solid rgba(255,255,255,.23);box-shadow:0 0 32px rgba(0,0,0,.82),0 0 24px rgba(255,255,255,.08)}.class-model27{height:98px;display:grid;place-items:center;position:relative;margin-bottom:10px}.class-model27:before{content:'';width:58px;height:76px;background:linear-gradient(180deg,var(--c),#05070e 72%);clip-path:polygon(50% 0,72% 18%,90% 46%,70% 100%,30% 100%,10% 46%,28% 18%);filter:drop-shadow(0 0 19px var(--c));animation:modelClean27 1.8s infinite alternate ease-in-out}.class-model27:after{content:'';position:absolute;width:96px;height:96px;border-radius:50%;border:1px solid color-mix(in srgb,var(--c) 60%,transparent);box-shadow:0 0 23px var(--c);opacity:.34}.class-card27[data-class="shadowChild"] .class-model27:before{background:linear-gradient(180deg,#050505,#000 43%,#ff1f3d 78%,#050505);clip-path:polygon(50% 0,62% 18%,82% 8%,75% 34%,96% 48%,74% 61%,78% 95%,50% 100%,22% 95%,26% 61%,4% 48%,25% 34%,18% 8%,38% 18%)}.class-card27[data-class="chronoHero"] .class-model27:before{clip-path:polygon(50% 0,64% 24%,92% 30%,72% 55%,82% 100%,50% 78%,18% 100%,28% 55%,8% 30%,36% 24%)}@keyframes modelClean27{to{transform:translateY(-7px) scale(1.05)}}.class-title27{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.class-title27 strong{font-family:Orbitron,sans-serif;font-size:14px;color:#fff}.info-btn27{width:30px;height:30px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#eaf6ff}.select-btn27,.buy-btn27{width:100%;margin-top:12px;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,var(--c),#fff);color:#07101d;font-family:Orbitron,sans-serif;font-size:12px}.buy-btn27:disabled{opacity:.45;filter:grayscale(.55);cursor:not-allowed}.skill-row27{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);margin-bottom:8px}.lore27{padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.1);color:#c7dcff;line-height:1.55;text-align:left}
+    .relic-top27{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:stretch;margin-bottom:16px;text-align:left}.relic-bank27{border-radius:20px;border:1px solid rgba(255,184,255,.34);background:radial-gradient(circle at 70% 20%,rgba(255,184,255,.24),transparent 42%),rgba(0,0,0,.30);padding:20px;text-align:center}.relic-bank27 small{font-family:Orbitron,sans-serif;letter-spacing:.16em;opacity:.72}.relic-bank27 b{display:block;font-family:Orbitron,sans-serif;font-size:36px;color:#ffb8ff;text-shadow:0 0 20px #ffb8ff}.relic-card27{position:relative;text-align:left;padding:15px 16px;border-radius:18px;border:2px solid rgba(145,220,255,.15);background:linear-gradient(135deg,rgba(97,218,251,.08),rgba(159,108,255,.06));overflow:hidden}.relic-card27.unlocked{border-color:rgba(76,224,179,.42);box-shadow:0 0 22px rgba(76,224,179,.12)}.relic-card27 strong{display:block;font-family:Orbitron,sans-serif;font-size:14px;color:#fff}.relic-card27 span{display:block;margin-top:6px;color:#aecaef;font-size:13px;line-height:1.35}.relic-card27 button{margin-top:10px;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,#ffb8ff,#61dafb);color:#07101d;font-weight:900}.relic-card27 button:disabled{opacity:.45;filter:grayscale(.5);cursor:not-allowed}
+    .upgrade-grid{grid-template-columns:repeat(3,minmax(180px,1fr))!important;gap:14px!important}.upgrade-btn.clean-up27{position:relative;overflow:hidden;border:2px solid var(--rarity)!important;background:linear-gradient(160deg,rgba(7,11,25,.96),rgba(3,5,14,.98))!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 0 28px color-mix(in srgb,var(--rarity) 26%,transparent)!important;min-height:146px}.upgrade-btn.clean-up27:before{content:'';position:absolute;inset:-50%;background:radial-gradient(circle at 30% 20%,color-mix(in srgb,var(--rarity) 30%,transparent),transparent 32%);opacity:.8;pointer-events:none}.upgrade-btn.clean-up27 strong,.upgrade-btn.clean-up27 span{position:relative;z-index:1}.rarity-label27{display:inline-block;margin-bottom:8px;padding:3px 8px;border-radius:999px;background:color-mix(in srgb,var(--rarity) 22%,transparent);border:1px solid color-mix(in srgb,var(--rarity) 68%,transparent);color:var(--rarity);font:900 10px Orbitron,sans-serif;letter-spacing:.14em;text-shadow:0 0 10px var(--rarity)}.upgrade-btn.clean-up27[data-rarity="MÍTICO"]{animation:mythicClean27 .75s infinite alternate;border-width:3px!important}@keyframes mythicClean27{to{filter:brightness(1.2);box-shadow:0 0 42px rgba(255,46,99,.55),inset 0 0 36px rgba(255,46,99,.16)!important}}
+    .death-card27{text-align:left}.death-hero27{padding:22px;border-radius:24px;background:radial-gradient(circle at 72% 22%,rgba(255,107,157,.16),transparent 32%),linear-gradient(135deg,rgba(97,218,251,.11),rgba(159,108,255,.08));border:1px solid rgba(155,237,255,.22);margin-bottom:16px}.death-hero27 h1{text-align:left;margin-bottom:8px}.death-grid27{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:14px 0}.death-stat27{padding:13px;border:1px solid rgba(130,220,255,.16);background:rgba(255,255,255,.045);border-radius:16px}.death-stat27 small{display:block;opacity:.66;letter-spacing:.11em}.death-stat27 b{font-family:Orbitron,sans-serif;font-size:20px;color:#fff}.death-build27{margin-top:12px;text-align:left;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:15px;color:#bdd8ff;line-height:1.55}@media(max-width:760px){.clean-layout27{grid-template-columns:1fr;padding:26px}.clean-logo27{font-size:42px}.relic-top27{grid-template-columns:1fr}.upgrade-grid{grid-template-columns:1fr!important}}
+  `;
+  document.head.appendChild(style);
+
+  function safeJson(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))||d}catch{return d}}
+  function meta(){return safeJson(SAVE_KEY,{})}
+  function writeMeta(m){localStorage.setItem(SAVE_KEY,JSON.stringify(m||{}));}
+  function relics(){return Number(meta().relicShards||0)}
+  function spend(n){const m=meta(),v=Number(m.relicShards||0);if(v<n)return false;m.relicShards=v-n;writeMeta(m);if(game&&game.meta)game.meta.relicShards=m.relicShards;return true}
+  function unlocks(){return Array.from(new Set([...FREE_CLASSES,...safeJson(CLASS_UNLOCK_KEY,[])]))}
+  function writeUnlocks(a){localStorage.setItem(CLASS_UNLOCK_KEY,JSON.stringify(Array.from(new Set(a||[]))))}
+  function secretUnlocked(){return !!safeJson(SECRET_UNLOCK_KEY,{}).lostEmperorDefeated}
+  function isUnlocked(k){return FREE_CLASSES.includes(k)||unlocks().includes(k)}
+  function classCost(k){return COSTS[k]||0}
+  function classColor(k){return CLASSES[k]?.color||CLASSES[k]?.tagColor||'#61dafb'}
+  function classOrder(){return ORDER.filter(k=>CLASSES[k]&&(k!=='shadowChild'||secretUnlocked())).concat(Object.keys(CLASSES).filter(k=>!ORDER.includes(k)))}
+  function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  function skillRows(k){const list=(CLASSES[k]?.skills||[]).map((s,i)=>({key:['E','Q','R'][i]||'?',...(SKILL_DEFS[s]||{name:s,emoji:'✦',desc:'Especial.'})}));return list.map(s=>`<div class="skill-row27"><b>${s.key} — ${s.emoji} ${esc(s.name)}</b><br><span>${esc(s.desc)}</span></div>`).join('')+(k==='chronoHero'?`<div class="skill-row27"><b>X — 💎 Chrono Prism</b><br><span>Ultimate carregada com o tempo; dispara um feixe prismático massivo.</span></div>`:'')+(k==='shadowChild'?`<div class="skill-row27"><b>X — 🩸 Ira Abissal</b><br><span>Transformação mítica temporária com shurikens vampíricas.</span></div>`:'')}
+  function capLS(){if(game&&game.upgrades)game.upgrades.lifesteal=Math.max(0,Math.min(Number(game.upgrades.lifesteal||0),LIFESTEAL_CAP));}
+  function cleanupUI(){
+    document.querySelectorAll('.stats>div').forEach(row=>{const label=(row.querySelector('span')?.textContent||'').trim().toUpperCase();if(['FOCO','DASH','XP'].includes(label)){row.dataset.oldUi='1';}});
+    document.querySelectorAll('.title').forEach(e=>e.remove());
+    const ret=document.querySelector('.weapon-return-wrap');if(ret)ret.style.display='none';
+    if(game&&game.mapDecor&&Array.isArray(game.mapDecor.pads))game.mapDecor.pads=game.mapDecor.pads.filter(p=>p.type!=='dash'&&p.type!=='shield');
+  }
+
+  window.openStartMenu=function(){
+    game=null; mouse.down=false; overlay.classList.remove('hidden'); overlayCard.className='card';
+    const m=meta();
+    const shards=Array.from({length:34},()=>`<i style="left:${rand(2,96).toFixed(1)}%;top:${rand(4,92).toFixed(1)}%;--x:${rand(-70,70).toFixed(0)}px;--y:${rand(-55,55).toFixed(0)}px;--d:${rand(2.4,5.6).toFixed(2)}s;animation-delay:${rand(-4,0).toFixed(2)}s"></i>`).join('');
+    overlayCard.innerHTML=`<div class="clean-start27"><div class="floating-shards27">${shards}</div><div class="clean-layout27"><div><div class="clean-logo27">CHRONO<br>SHARDS</div><p class="clean-sub27">Fragmentos temporais orbitam a arena. Compre personagens, desbloqueie relíquias e sobreviva a ondas cada vez mais absurdas.</p><div class="clean-tutorial27"><h3>TUTORIAL RÁPIDO</h3><p><b>WASD</b> move • <b>Mouse</b> mira • <b>Clique</b> atira • <b>Shift</b> dash • <b>E/Q/R</b> habilidades • <b>X</b> ultimate quando existir. Use paredes como cobertura.</p></div></div><div class="clean-side27"><div class="clean-stat27"><small>HIGH SCORE</small><b>${Number(m.highScore||0).toLocaleString()}</b></div><div class="clean-stat27"><small>RELÍQUIAS</small><b>${relics()}</b></div><div class="clean-stat27"><small>VERSÃO</small><b>2.7</b></div><div class="clean-actions27"><button class="main-btn" id="play27">JOGAR</button><button class="main-btn" id="codes27" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CÓDIGOS</button><button class="main-btn" id="relics27" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">RELÍQUIAS</button></div></div></div></div>`;
+    document.getElementById('play27').onclick=openClassMenu;document.getElementById('codes27').onclick=openCodesMenu27;document.getElementById('relics27').onclick=openRelicsMenu27;
+  };
+
+  function openCodesMenu27(){
+    const used=safeJson(SAVE_KEY+'_redeemed_codes_v1',[]);
+    overlay.classList.remove('hidden');overlayCard.className='card';
+    overlayCard.innerHTML=`<h1>CÓDIGOS</h1><p>Digite um código para receber recompensas. Cada código só funciona uma vez.</p><div class="codes-box"><input id="codeInput27" class="code-input" placeholder="Digite o código"><button class="main-btn" id="redeem27">RESGATAR</button><div class="code-msg" id="codeMsg27"></div></div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backCode27">← Menu inicial</button></div>`;
+    document.getElementById('backCode27').onclick=openStartMenu;
+    document.getElementById('redeem27').onclick=()=>{const raw=document.getElementById('codeInput27').value.trim();const key=raw.toLowerCase();const rewards={chronocode:100,monsterhunter:250};const msg=document.getElementById('codeMsg27');if(!rewards[key]){msg.style.color='#ff8fa3';msg.textContent='Código inválido.';return;}if(used.includes(key)){msg.style.color='#ffd166';msg.textContent='Esse código já foi usado.';return;}const m=meta();m.relicShards=Number(m.relicShards||0)+rewards[key];writeMeta(m);used.push(key);localStorage.setItem(SAVE_KEY+'_redeemed_codes_v1',JSON.stringify(used));msg.style.color='#86ffb0';msg.textContent=`+${rewards[key]} relíquias recebidas!`;};
+  }
+
+  window.openClassMenu=function(){
+    overlay.classList.remove('hidden');overlayCard.className='card';
+    const rs=relics();
+    overlayCard.innerHTML=`<h1>SELEÇÃO DE PERSONAGEM</h1><p>Escolha seu estilo. Clique em <b>i</b> para ver atributos, especiais e lore.<br>Relíquias: <strong id="classRelics27">${rs}</strong></p><div class="class-grid27">${classOrder().map(k=>{const c=CLASSES[k],col=classColor(k),un=isUnlocked(k),cost=classCost(k);return `<div class="class-card27 ${un?'':'locked'}" data-class="${k}" style="--c:${col}"><button class="info-btn27" data-info="${k}">i</button>${un?'':`<div class="class-lock27">🔒</div>`}<div class="class-model27"></div><div class="class-title27"><strong>${c.name}</strong></div><span class="class-tag" style="background:${col}22;color:${col};border:1px solid ${col}55">${c.tag||'CLASSE'}</span><span style="display:block;margin-top:8px;color:#b8cbea;line-height:1.35">${c.desc}</span><span class="muted">HP ${c.hp} • Foco ${c.focus} • ${WEAPONS[c.weapon]?.name||c.weapon}</span>${un?`<button class="select-btn27" data-pick="${k}">Selecionar</button>`:`<button class="buy-btn27" data-buy="${k}" ${rs<cost?'disabled':''}>Comprar — ${cost} 🜂</button>`}</div>`}).join('')}</div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap"><button class="main-btn" id="backStart27">← Menu inicial</button><button class="main-btn" id="codesClass27" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Códigos</button></div>`;
+    overlayCard.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{resetGame(b.dataset.pick);overlay.classList.add('hidden')});
+    overlayCard.querySelectorAll('[data-info]').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();openClassInfo27(b.dataset.info)});
+    overlayCard.querySelectorAll('[data-buy]').forEach(b=>b.onclick=(ev)=>{ev.stopPropagation();const k=b.dataset.buy,cost=classCost(k);if(!spend(cost)){const el=document.getElementById('classRelics27');if(el)el.innerHTML=`${relics()} <span style="color:#ff8fa3">insuficiente</span>`;return;}const u=unlocks();u.push(k);writeUnlocks(u);openClassMenu();});
+    document.getElementById('backStart27').onclick=openStartMenu;document.getElementById('codesClass27').onclick=openCodesMenu27;
+  };
+
+  function openClassInfo27(k){const c=CLASSES[k];if(!c)return;const col=classColor(k);overlayCard.innerHTML=`<div style="text-align:left"><h1>${c.name}</h1><p>${c.desc}</p><div class="death-grid27"><div class="death-stat27"><small>HP</small><b>${c.hp}</b></div><div class="death-stat27"><small>ESCUDO</small><b>${c.shield}</b></div><div class="death-stat27"><small>FOCO</small><b>${c.focus}</b></div><div class="death-stat27"><small>VELOCIDADE</small><b>${c.speed}</b></div></div><h3 style="font-family:Orbitron;color:${col}">ESPECIAIS</h3>${skillRows(k)}<h3 style="font-family:Orbitron;color:${col}">LORE</h3><div class="lore27">${esc(LORE[k]||'Um combatente perdido entre fragmentos de tempo, buscando sentido no caos dos Chronos.')}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backInfo27">← Voltar para seleção</button></div></div>`;document.getElementById('backInfo27').onclick=openClassMenu;}
+
+  function openRelicsMenu27(){
+    overlay.classList.remove('hidden');overlayCard.className='card';
+    const m=meta(),unlocked=Array.isArray(m.unlockedRelics)?m.unlockedRelics:[],rs=relics();
+    const cards=RELICS.filter(r=>r.id!=='blood_thread').map(r=>{const ok=unlocked.includes(r.id);return `<div class="relic-card27 ${ok?'unlocked':''}"><strong>${r.name}</strong><span>${r.desc}</span><button data-relic27="${r.id}" ${ok||rs<r.cost?'disabled':''}>${ok?'Ativa':`Comprar — ${r.cost} 🜂`}</button></div>`}).join('');
+    overlayCard.innerHTML=`<h1>RELÍQUIAS ✦</h1><div class="relic-top27"><p>Relíquias são melhorias permanentes para runs futuras. Monte sua progressão e desbloqueie personagens raros para variar sua build.</p><div class="relic-bank27"><small>BANCO</small><b>${rs}</b></div></div><div class="relic-grid">${cards}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backRelic27">← Menu inicial</button></div>`;
+    document.getElementById('backRelic27').onclick=openStartMenu;
+    overlayCard.querySelectorAll('[data-relic27]').forEach(b=>b.onclick=()=>{const id=b.dataset.relic27,r=RELICS.find(x=>x.id===id);if(!r||!spend(r.cost))return;const mm=meta();mm.unlockedRelics=Array.from(new Set([...(mm.unlockedRelics||[]),id]));writeMeta(mm);openRelicsMenu27();});
+  }
+
+  const oldUpdateHUD27=updateHUD;updateHUD=function(){oldUpdateHUD27();cleanupUI();capLS();};
+  const oldReset27=resetGame;resetGame=function(k){oldReset27(k);cleanupUI();capLS();if(game&&k==='chronoHero'){game.heroUltCharge=0;game._heroUltTimeBank27=0;if(typeof updateUltimateUI==='function')updateUltimateUI();}};
+  const oldUpdatePlayer27=updatePlayer;updatePlayer=function(dt){const hero=game&&game.classKey==='chronoHero',bank=hero?Number(game._heroUltTimeBank27??game.heroUltCharge??0):0;oldUpdatePlayer27(dt);if(game){cleanupUI();capLS();if(hero&&game.classKey==='chronoHero'&&!game.heroUltimate){const v=Math.min(100,bank+dt*HERO_ULT_RATE);game._heroUltTimeBank27=v;game.heroUltCharge=v;if(typeof updateUltimateUI==='function')updateUltimateUI();}}};
+  const oldDeath27=enemyDeath;enemyDeath=function(i,e){const hero=game&&game.classKey==='chronoHero',bank=hero?Number(game._heroUltTimeBank27??game.heroUltCharge??0):0;oldDeath27(i,e);if(hero&&game&&game.classKey==='chronoHero'&&!game.heroUltimate){game._heroUltTimeBank27=bank;game.heroUltCharge=bank;if(typeof updateUltimateUI==='function')updateUltimateUI();}capLS();};
+  if(typeof startHeroUltimate==='function'){const oldStartHero27=startHeroUltimate;startHeroUltimate=function(){if(game&&game.classKey==='chronoHero'&&Number(game.heroUltCharge||0)>=99.5){game.heroUltCharge=100;game._heroUltTimeBank27=100;}return oldStartHero27();};}
+  const oldStartWave27=startNextWave;startNextWave=function(){oldStartWave27();cleanupUI();if(game&&game.wave>=16&&!game.waveBoss&&game._spawnBoostWave27!==game.wave){game.enemiesToSpawn=Math.ceil(game.enemiesToSpawn*1.10);game._spawnBoostWave27=game.wave;}};
+  const oldRelicDrop27=spawnRelicShard;spawnRelicShard=function(x,y,amount=1){const a=Number(amount||1);if(a<=1){if(Math.random()>0.60)return;return oldRelicDrop27(x,y,1);}return oldRelicDrop27(x,y,Math.max(1,Math.round(a*.75)));};
+  const oldBullets27=updateBullets;updateBullets=function(dt){capLS();oldBullets27(dt);capLS();};
+
+  function pickWeighted(pool){const total=pool.reduce((s,u)=>s+(u.weight||1),0);let r=Math.random()*total;for(let i=0;i<pool.length;i++){r-=pool[i].weight||1;if(r<=0)return pool.splice(i,1)[0];}return pool.pop();}
+  function upgradePool(){const p=[
+    {rarity:'COMUM',weight:42,name:'Dano +10%',desc:'Aumenta todo dano causado em 10%.',effect:()=>game.upgrades.damage+=.10},
+    {rarity:'COMUM',weight:38,name:'Cadência +14%',desc:'Atira mais rápido.',effect:()=>game.upgrades.fireRate+=.14},
+    {rarity:'COMUM',weight:34,name:'Velocidade +10%',desc:'Melhora movimentação.',effect:()=>game.upgrades.speed+=.10},
+    {rarity:'COMUM',weight:28,name:'Foco máximo +18',desc:'Mais espaço para habilidades.',effect:()=>{game.player.maxFocus+=18;game.player.focus+=18}},
+    {rarity:'RARO',weight:22,name:'Perfuração +1',desc:'Projéteis atravessam mais um inimigo.',effect:()=>game.upgrades.pierce+=1},
+    {rarity:'RARO',weight:20,name:'Multishot +1',desc:'Adiciona um projétil extra.',effect:()=>game.upgrades.multishot+=1},
+    {rarity:'RARO',weight:18,name:'Crítico +8%',desc:'Mais chance de dano crítico.',effect:()=>game.upgrades.critChance+=.08},
+    {rarity:'ÉPICO',weight:10,name:'Armadura +10%',desc:'Reduz dano recebido.',effect:()=>game.upgrades.armor+=.10},
+    {rarity:'ÉPICO',weight:9,name:'Balas Explosivas',desc:'Impactos causam dano em área.',effect:()=>game.upgrades.explosiveBullets=true},
+    {rarity:'LENDÁRIO',weight:3,name:'Contrato de Caça',desc:'Inimigos podem dropar ouro bônus.',effect:()=>game.upgrades.bounty=(game.upgrades.bounty||0)+3}
+  ];if((game.upgrades.lifesteal||0)<LIFESTEAL_CAP-.0001)p.push({rarity:'ÉPICO',weight:9,name:'Lifesteal +0.5%',desc:'Cura uma pequena parte do dano causado.',effect:()=>game.upgrades.lifesteal=Math.min(LIFESTEAL_CAP,(game.upgrades.lifesteal||0)+.005)});return p;}
+  window.openUpgradeMenu=function(){if(!game)return;capLS();game.running=false;overlay.classList.remove('hidden');const myth={rarity:'MÍTICO',name:'Unidade Suprema',desc:'+50% velocidade, +100% cadência, +5 projéteis, +100% HP máximo e +25% dano.',effect:()=>{game.upgrades.speed+=.5;game.upgrades.fireRate+=1;game.upgrades.multishot+=5;game.player.maxHp*=2;game.player.hp=game.player.maxHp;game.upgrades.damage+=.25}};const pool=upgradePool(),choices=[];if(Math.random()<.01)choices.push(myth);while(choices.length<3&&pool.length)choices.push(pickWeighted(pool));overlayCard.innerHTML=`<h1>LEVEL UP ${game.level}</h1><p>Escolha uma das opções.</p><div class="upgrade-grid">${choices.map((u,i)=>{const col=COLORS[u.rarity]||'#61dafb';return `<button class="upgrade-btn clean-up27" data-up27="${i}" data-rarity="${u.rarity}" style="--rarity:${col}"><span class="rarity-label27">${u.rarity}</span><strong>${u.name}</strong><span>${u.desc}</span></button>`}).join('')}</div>`;overlayCard.querySelectorAll('[data-up27]').forEach(b=>b.onclick=()=>{const u=choices[Number(b.dataset.up27)];if(u?.effect)u.effect();capLS();overlay.classList.add('hidden');game.running=true;updateHUD();addFloatingText(game.player.x,game.player.y-34,u.name,COLORS[u.rarity]||'#fff',16);});};
+
+  window.gameOver=function(){if(!game)return;game.running=false;const m=meta();m.highScore=Math.max(Number(m.highScore||0),game.score||0);writeMeta(m);overlay.classList.remove('hidden');overlayCard.className='card death-card27';const p=game.player||{};overlayCard.innerHTML=`<div class="death-hero27"><h1>RUN ENCERRADA</h1><p>O fragmento caiu, mas a linha temporal registrou sua build.</p></div><div class="death-grid27"><div class="death-stat27"><small>SCORE</small><b>${game.score||0}</b></div><div class="death-stat27"><small>WAVE</small><b>${game.wave||1}</b></div><div class="death-stat27"><small>KILLS</small><b>${game.kills||0}</b></div><div class="death-stat27"><small>LEVEL</small><b>${game.level||1}</b></div><div class="death-stat27"><small>OURO</small><b>${game.gold||0}</b></div><div class="death-stat27"><small>RELÍQUIAS</small><b>${relics()}</b></div></div><div class="death-build27"><b>Classe:</b> ${CLASSES[game.classKey]?.name||game.classKey}<br><b>Arma:</b> ${WEAPONS[game.weaponKey]?.name||game.weaponKey}<br><b>HP máx:</b> ${Math.round(p.maxHp||0)} • <b>Foco máx:</b> ${Math.round(p.maxFocus||0)} • <b>Escudo máx:</b> ${Math.round(p.maxShield||0)}<br><b>Dano:</b> ${Math.round((game.upgrades.damage||1)*100)}% • <b>Cadência:</b> ${Math.round((game.upgrades.fireRate||1)*100)}% • <b>Velocidade:</b> ${Math.round((game.upgrades.speed||1)*100)}% • <b>Armadura:</b> ${Math.round((game.upgrades.armor||0)*100)}% • <b>Lifesteal:</b> ${((game.upgrades.lifesteal||0)*100).toFixed(1)}%</div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap"><button class="main-btn" id="again27">Jogar novamente</button><button class="main-btn" id="home27" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Menu inicial</button></div>`;document.getElementById('again27').onclick=openClassMenu;document.getElementById('home27').onclick=openStartMenu;};
+
+  cleanupUI();capLS();
+  setTimeout(()=>{try{openStartMenu();}catch(e){console.error('Falha ao abrir menu limpo 2.7',e)}},0);
   console.log(PATCH+' carregado');
 })();
 </script>
