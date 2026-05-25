@@ -7745,7 +7745,7 @@ requestAnimationFrame(loop);
       }
       if(key==='colonelGunner'){
         const sk=SKILL_DEFS[key];if(!game.running||game.skillCds[idx]>0||p.focus<sk.focusCost)return;p.focus-=sk.focusCost;game.skillCds[idx]=20;
-        game.colonelGunnerTimer=6.2;game.weaponKey='blaster';p.shield=Math.min(p.maxShield,p.shield+22);addRing(p.x,p.y,'#78d66b',118,5);addFloatingText(p.x,p.y-32,'GUERREIRO DA METRANCA','#caffbd',18);return;
+        game.colonelGunnerTimer=6.2;game.weaponKey='blaster';p.shield=Math.min(p.maxShield,p.shield+22);addRing(p.x,p.y,'#78d66b',118,5);addFloatingText(p.x,p.y-32,'CHEGOU A BETTYYYY!!!!','#caffbd',18);return;
       }
       if(key==='colonelFirstAid'){
         if(game.colonelMedCd>0){addFloatingText(p.x,p.y-26,'EM COOLDOWN','#ffd166',13);return;}
