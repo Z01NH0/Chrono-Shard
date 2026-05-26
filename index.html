@@ -1842,7 +1842,7 @@ Object.assign(CLASSES, {
     name:'Alquimista ☣️', color:'#b6ff7a', hp:118, shield:22,
     focus:145, speed:285, weapon:'acid',
     skills:['toxicCloud','transmuteGold','unstableElixir'],
-    desc:'Áreas venenosas, ouro extra e elixires arriscados.',
+    desc:'Áreas venenosas, catapora extra e elixires bombásticos.',
     tag:'CONTROLE', tagColor:'#b6ff7a'
   }
 });
@@ -3676,7 +3676,7 @@ render = function(){
       name:'Chrono-Hero 💎', color:'#5fffee', hp:125, shield:38,
       focus:150, speed:305, weapon:'heroSplit',
       skills:['heroIceField','heroFlame','heroBlackHole'],
-      desc:'Controle elemental, buraco negro e ultimate exclusiva devastadora.',
+      desc:'Controle elemental e da realidade, como também possui prismas devastadores.',
       tag:'MÍTICO', tagColor:'#5fffee'
     }
   });
@@ -5045,7 +5045,7 @@ render = function(){
     const p=game.player, hs=game.score>=game.meta.highScore;
     overlay.classList.remove('hidden');
     overlayCard.innerHTML=`
-      <h1>RUN ENCERRADA 💀</h1>
+      <h1>VOCÊ EXPLODIU 💀</h1>
       <p>${hs?'<strong style="color:#ffd166">🏆 NOVO HIGH SCORE!</strong><br>':''}Resumo completo da sua tentativa.</p>
       <div class="death-grid">
         <div class="death-stat"><small>SCORE</small><b>${game.score.toLocaleString()}</b></div>
@@ -7340,7 +7340,7 @@ requestAnimationFrame(loop);
   ];if((game.upgrades.lifesteal||0)<LIFESTEAL_CAP-.0001)p.push({rarity:'ÉPICO',weight:9,name:'Lifesteal +0.5%',desc:'Cura uma pequena parte do dano causado.',effect:()=>game.upgrades.lifesteal=Math.min(LIFESTEAL_CAP,(game.upgrades.lifesteal||0)+.005)});return p;}
   window.openUpgradeMenu=function(){if(!game)return;capLS();game.running=false;overlay.classList.remove('hidden');const myth={rarity:'MÍTICO',name:'Unidade Suprema',desc:'+50% velocidade, +100% cadência, +5 projéteis, +100% HP máximo e +25% dano.',effect:()=>{game.upgrades.speed+=.5;game.upgrades.fireRate+=1;game.upgrades.multishot+=5;game.player.maxHp*=2;game.player.hp=game.player.maxHp;game.upgrades.damage+=.25}};const pool=upgradePool(),choices=[];if(Math.random()<.01)choices.push(myth);while(choices.length<3&&pool.length)choices.push(pickWeighted(pool));overlayCard.innerHTML=`<h1>LEVEL UP ${game.level}</h1><p>Escolha uma das opções.</p><div class="upgrade-grid">${choices.map((u,i)=>{const col=COLORS[u.rarity]||'#61dafb';return `<button class="upgrade-btn clean-up27" data-up27="${i}" data-rarity="${u.rarity}" style="--rarity:${col}"><span class="rarity-label27">${u.rarity}</span><strong>${u.name}</strong><span>${u.desc}</span></button>`}).join('')}</div>`;overlayCard.querySelectorAll('[data-up27]').forEach(b=>b.onclick=()=>{const u=choices[Number(b.dataset.up27)];if(u?.effect)u.effect();capLS();overlay.classList.add('hidden');game.running=true;updateHUD();addFloatingText(game.player.x,game.player.y-34,u.name,COLORS[u.rarity]||'#fff',16);});};
 
-  window.gameOver=function(){if(!game)return;game.running=false;const m=meta();m.highScore=Math.max(Number(m.highScore||0),game.score||0);writeMeta(m);overlay.classList.remove('hidden');overlayCard.className='card death-card27';const p=game.player||{};overlayCard.innerHTML=`<div class="death-hero27"><h1>RUN ENCERRADA</h1><p>O fragmento caiu, mas a linha temporal registrou sua build.</p></div><div class="death-grid27"><div class="death-stat27"><small>SCORE</small><b>${game.score||0}</b></div><div class="death-stat27"><small>WAVE</small><b>${game.wave||1}</b></div><div class="death-stat27"><small>KILLS</small><b>${game.kills||0}</b></div><div class="death-stat27"><small>LEVEL</small><b>${game.level||1}</b></div><div class="death-stat27"><small>OURO</small><b>${game.gold||0}</b></div><div class="death-stat27"><small>RELÍQUIAS</small><b>${relics()}</b></div></div><div class="death-build27"><b>Classe:</b> ${CLASSES[game.classKey]?.name||game.classKey}<br><b>Arma:</b> ${WEAPONS[game.weaponKey]?.name||game.weaponKey}<br><b>HP máx:</b> ${Math.round(p.maxHp||0)} • <b>Foco máx:</b> ${Math.round(p.maxFocus||0)} • <b>Escudo máx:</b> ${Math.round(p.maxShield||0)}<br><b>Dano:</b> ${Math.round((game.upgrades.damage||1)*100)}% • <b>Cadência:</b> ${Math.round((game.upgrades.fireRate||1)*100)}% • <b>Velocidade:</b> ${Math.round((game.upgrades.speed||1)*100)}% • <b>Armadura:</b> ${Math.round((game.upgrades.armor||0)*100)}% • <b>Lifesteal:</b> ${((game.upgrades.lifesteal||0)*100).toFixed(1)}%</div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap"><button class="main-btn" id="again27">Jogar novamente</button><button class="main-btn" id="home27" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Menu inicial</button></div>`;document.getElementById('again27').onclick=openClassMenu;document.getElementById('home27').onclick=openStartMenu;};
+  window.gameOver=function(){if(!game)return;game.running=false;const m=meta();m.highScore=Math.max(Number(m.highScore||0),game.score||0);writeMeta(m);overlay.classList.remove('hidden');overlayCard.className='card death-card27';const p=game.player||{};overlayCard.innerHTML=`<div class="death-hero27"><h1>VOCÊ EXPLODIU</h1><p>O fragmento caiu, mas a linha temporal registrou sua build.</p></div><div class="death-grid27"><div class="death-stat27"><small>SCORE</small><b>${game.score||0}</b></div><div class="death-stat27"><small>WAVE</small><b>${game.wave||1}</b></div><div class="death-stat27"><small>KILLS</small><b>${game.kills||0}</b></div><div class="death-stat27"><small>LEVEL</small><b>${game.level||1}</b></div><div class="death-stat27"><small>OURO</small><b>${game.gold||0}</b></div><div class="death-stat27"><small>RELÍQUIAS</small><b>${relics()}</b></div></div><div class="death-build27"><b>Classe:</b> ${CLASSES[game.classKey]?.name||game.classKey}<br><b>Arma:</b> ${WEAPONS[game.weaponKey]?.name||game.weaponKey}<br><b>HP máx:</b> ${Math.round(p.maxHp||0)} • <b>Foco máx:</b> ${Math.round(p.maxFocus||0)} • <b>Escudo máx:</b> ${Math.round(p.maxShield||0)}<br><b>Dano:</b> ${Math.round((game.upgrades.damage||1)*100)}% • <b>Cadência:</b> ${Math.round((game.upgrades.fireRate||1)*100)}% • <b>Velocidade:</b> ${Math.round((game.upgrades.speed||1)*100)}% • <b>Armadura:</b> ${Math.round((game.upgrades.armor||0)*100)}% • <b>Lifesteal:</b> ${((game.upgrades.lifesteal||0)*100).toFixed(1)}%</div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap"><button class="main-btn" id="again27">Jogar novamente</button><button class="main-btn" id="home27" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Menu inicial</button></div>`;document.getElementById('again27').onclick=openClassMenu;document.getElementById('home27').onclick=openStartMenu;};
 
   cleanupUI();capLS();
   setTimeout(()=>{try{openStartMenu();}catch(e){console.error('Falha ao abrir menu limpo 2.7',e)}},0);
@@ -8498,7 +8498,7 @@ requestAnimationFrame(loop);
 
   if(CLASSES.reaper){
     CLASSES.reaper.color='#ff315f';
-    CLASSES.reaper.desc='Uma lâmina vermelha nascida da mesma escola do Ronin, mas guiada por outro juramento.';
+    CLASSES.reaper.desc='Uma lâmina vermelha feita para drenar a vida de seus oponentes. Além de uma agilidade incomparável.';
   }
 
   function drawReaperRoninRed35(p){
@@ -8551,7 +8551,7 @@ requestAnimationFrame(loop);
     mage:'O Void Mage estudou o vazio até o vazio começar a responder. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.',
     ronin:'O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.',
     alchemist:'O Alquimista nunca confiou em armas limpas. Desde sempre suas garrafas carregam o fardo de ser quem ele se tornou. Mas com um sorriso no rosto e uma caipira na medida, ele acredita que toda salvação precisa de um pouco de diversão.',
-    reaper:'Nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.',
+    reaper:'Dizem que a lua e o sol foram nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.',
     colonel:'O Coronel fala pouco sobre família e menos ainda sobre medo. Ainda assim, quando certos soldados avançam demais, seu bombardeio chega com precisão quase imparável, como se ele queria que alguém estivesse olhando para ele.',
     chronoHero:'O Chrono-Hero é uma lenda construída em cristal, fogo e gelo. Criado para suportar colapsos temporais, ele luta como se cada suspiro fosse a última chance de costurar o mundo de volta.',
     shadowChild:'O Demônio que assombra os Chronos, a alma que ecoa nas profundezas. Ele é o eco deixado por uma fissura proibida, uma forma viva de raiva antiga tentando decidir se o caos merece um herdeiro ou uma sentença.'
