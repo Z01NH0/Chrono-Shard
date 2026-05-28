@@ -9991,21 +9991,21 @@ function killKey37(e){
   function esc37q(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
   function classColor37q(k){return (CLASSES[k]?.tagColor||CLASSES[k]?.color||'#61dafb');}
   const LORE37Q={
-    assault:'Um soldado de linha de frente que aprendeu a sobreviver onde o tempo se parte. Ele carrega marcas de antigas campanhas e uma disciplina que parece familiar demais para alguns veteranos.',
-    sniper:'O Sniper mede o mundo em respirações e distância. Dizem que ele nunca atira onde o alvo está, mas onde o futuro obriga o alvo a estar.',
+    assault:'Ele aprendeu com seu pai que coragem não é ausência de medo, é avançar mesmo quando a voz no rádio treme. Carrega técnicas de guerra antigas no corpo, mas nunca admite de quem herdou esse jeito de proteger todo mundo primeiro.',
+    sniper:'Dizem que ele conta segundos melhor do que respira. Em cada disparo há paciência, distância e uma pergunta silenciosa: quantas linhas do tempo podem ser salvas por uma única bala?',
     engineer:'O Artífice enxerga máquinas dentro de sucata e transforma ruínas Chrono em companheiros de combate. Para ele, toda arena é uma oficina sob ataque.',
-    mage:'O Void Mage estudou o vazio até ouvir respostas. Seus feitiços não são explosões simples: são perguntas feitas para dimensões que não deveriam responder.',
-    ronin:'O Ronin atravessa eras com uma lâmina silenciosa. Sua calma carrega a sombra de uma ligação quebrada que ainda sangra em outra forma.',
-    alchemist:'O Alquimista mistura veneno, fogo e instinto. Cada frasco lançado é uma hipótese perigosa, e cada explosão é uma conclusão satisfatória.',
-    reaper:'Reaper nasceu da mesma cicatriz que outro espadachim tenta esconder. Onde um escolheu disciplina, ele escolheu cobrança, vermelho e silêncio.',
-    colonel:'O Coronel é um velho comandante que já viu Chronos caírem como chuva. Seu jeito duro esconde a razão pela qual nunca abandona soldados jovens na linha de frente.',
-    chronoHero:'O Chrono-Hero parece uma lenda lapidada em cristal vivo. Fogo, gelo e gravidade obedecem a ele como se o reconhecessem de eras antigas.',
+    mage:'O Void Mage estudou o vazio até o vazio começar a olhar pra ele de volta. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.',
+    ronin:'O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.',
+    alchemist:'O Alquimista nunca confiou em armas limpas. Desde sempre suas garrafas carregam o fardo de ser quem ele se tornou. Mas com um sorriso no rosto e uma caipira na medida, ele acredita que toda salvação precisa de um pouco de diversão.',
+    reaper:'Dizem que a lua e o sol foram nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.',
+    colonel:'O Coronel fala pouco sobre família e menos ainda sobre medo. Ainda assim, quando certos soldados avançam demais, seu bombardeio chega com precisão quase imparável, como se ele queria que alguém estivesse olhando para ele.',
+    chronoHero:'O Chrono-Hero é uma lenda construída em cristal, fogo e gelo. Criado para suportar colapsos temporais, ele luta como se cada suspiro fosse a última chance de costurar o mundo de volta.',
     moonSlayer:'Nascido nas sombras, mas criado na luz. O Exterminador de Luas é um samurai experiente e muito inteligente. Já ensinou diversos espadachins, até mesmo aqueles que tinham um temperamento difícil de lidar. Com sua lâmina feita de titânio puro, e uma precisão divina, ele corta tudo como se fosse papel. Dizem que olhar nos olhos dele é a mesma coisa que encarar a escuridão, mas ele é gente boa.',
-    shadowChild:'Uma presença que só aparece depois que a fissura mais sombria é vencida. Seu corpo parece uma casca preta pulsando com memórias vermelhas do caos.'
+    shadowChild:'O Demônio. As trevas fundidas em um único ser. Esse é o espectro de filho das trevas, um ser construido da escuridão e moldado pela perdição. Seu maior desejo e destruir todos os Chronos que ele encontra, pois aquele quem o trouxe ao mundo, foi levado a loucura por eles.'
   };
   function skillRows37q(k){
     const keys=(CLASSES[k]?.skills||[]);
-    return keys.map((id,i)=>{const sk=SKILL_DEFS[id]||{};return `<div class="skill-row27"><b>${['E','Q','R'][i]||'?'} — ${esc37q(sk.emoji||'✦')} ${esc37q(sk.name||id)}</b><br><span>${esc37q(sk.desc||'Especial de combate.')}</span></div>`;}).join('') + (k==='moonSlayer'?'<div class="skill-row27"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>Ultimate lunar de cortes massivos, congelamento de cena e quebra final da tela.</span></div>':k==='chronoHero'?'<div class="skill-row27"><b>X — 💎 Ultimate Chrono</b><br><span>Carrega com o tempo e libera um ataque prismático devastador.</span></div>':k==='shadowChild'?'<div class="skill-row27"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>':'');
+    return keys.map((id,i)=>{const sk=SKILL_DEFS[id]||{};return `<div class="skill-row27"><b>${['E','Q','R'][i]||'?'} — ${esc37q(sk.emoji||'✦')} ${esc37q(sk.name||id)}</b><br><span>${esc37q(sk.desc||'Especial de combate.')}</span></div>`;}).join('') + (k==='moonSlayer'?'<div class="skill-row27"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>O Exterminador tira sua espada da bainha e faz cortes multidimensionais azuis, quebrando a linha temporal em pedaços. É como dizem, ele tem um "gatilho diabólico" ao invés de uma espada.</span></div>':k==='chronoHero'?'<div class="skill-row27"><b>X — 💎 Ultimate Chrono</b><br><span>Carrega com o tempo e libera um ataque prismático devastador.</span></div>':k==='shadowChild'?'<div class="skill-row27"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>':'');
   }
   function openClassInfo37q(k){
     const c=CLASSES[k]; if(!c)return;
