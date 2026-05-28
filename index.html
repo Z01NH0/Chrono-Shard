@@ -8757,24 +8757,8 @@ requestAnimationFrame(loop);
       {id:'x_moon',title:'Luar Sangrento',desc:'Colete 5 Fragmentos Chrono.',metric:'chronoFragmentsCollected',target:5,reward:'unlockMoon'}
     ]
   };
-
-  const BESTIARY_37=[
-    {id:'chaser',name:'Chaser',emoji:'🩸',unlock:10,group:'Comum',speed:'Alta',hp:'Baixo',damage:'13',attack:'Corre direto no jogador e tenta esmagar no contato.',lore:'A forma mais simples da agressão temporal: avança sem pensar, guiado apenas pelo instinto de colisão.'},
-    {id:'strafer',name:'Strafer',emoji:'🌀',unlock:10,group:'Comum',speed:'Média',hp:'Médio',damage:'13',attack:'Orbita e ataca em zigue-zague para bagunçar a mira.',lore:'Aprendeu a sobreviver movendo-se fora do ritmo comum do campo de batalha.'},
-    {id:'tank',name:'Tank',emoji:'🛡️',unlock:10,group:'Comum',speed:'Baixa',hp:'Alto',damage:'20',attack:'Anda reto, aguenta muito dano e pune o contato.',lore:'Blindagem grossa, cérebro curto. Um muro ambulante feito para empurrar o caos adiante.'},
-    {id:'bomber',name:'Bomber',emoji:'💣',unlock:10,group:'Comum',speed:'Alta',hp:'Médio',damage:'Explosivo',attack:'Avança rápido e explode ao tocar o alvo.',lore:'Existe para um único instante de glória: chegar perto o bastante para virar um clarão.'},
-    {id:'swarmer',name:'Swarmer',emoji:'🐜',unlock:10,group:'Comum',speed:'Alta',hp:'Baixo',damage:'Leve',attack:'Ataca em enxame com trajetórias caóticas.',lore:'Fragmentos vivos de uma fome coletiva. Sozinho incomoda; em grupo sufoca.'},
-    {id:'sentinel',name:'Sentinel',emoji:'👁️',unlock:10,group:'Comum',speed:'Média',hp:'Médio',damage:'8 por tiro',attack:'Mantém distância e dispara projéteis precisos.',lore:'Foi criado para vigiar fissuras, mas passou a tratar qualquer sobrevivente como invasor.'},
-    {id:'medic',name:'Medic Drone',emoji:'💚',unlock:10,group:'Elite',speed:'Média',hp:'Baixo',damage:'Suporte',attack:'Cura aliados e reposiciona a linha inimiga.',lore:'Uma raridade programada para sustentar o avanço inimigo. Onde ele flutua, a luta demora mais.'},
-    {id:'vomiter',name:'Vomiter',emoji:'☣️',unlock:10,group:'Elite',speed:'Baixa',hp:'Alto',damage:'7 por projétil',attack:'Cospe veneno e gera Pukelings ao morrer.',lore:'Um reservatório ambulante de ácido temporal. Cada respiração dele apodrece o campo.'},
-    {id:'pukeling',name:'Pukeling',emoji:'🧪',unlock:10,group:'Elite',speed:'Alta',hp:'Baixo',damage:'5 + veneno',attack:'Corre em bando e contamina quem toca.',lore:'Pequenos horrores gerados pelos Vomiters. Eles têm vida curta, mas vontade infinita de morder.'},
-    {id:'archon',name:'Archon Core',emoji:'👑',unlock:2,group:'Boss',speed:'Alta',hp:'Escala com a wave',damage:'Alto',attack:'Rajadas rápidas e convocação de lacaios.',lore:'Um núcleo de guerra acelerado demais para ficar estático. Ele prefere transformar ritmo em pressão.'},
-    {id:'titan',name:'Titan Bastion',emoji:'🗿',unlock:2,group:'Boss',speed:'Baixa',hp:'Muito alto',damage:'Muito alto',attack:'Slam, laser e invocações defensivas.',lore:'A muralha viva dos Chronos. Se ele pisa forte, o resto do mapa obedece.'},
-    {id:'oracle',name:'Oracle Bloom',emoji:'🌿',unlock:2,group:'Boss',speed:'Média',hp:'Muito alto',damage:'Alto',attack:'Projéteis, fissuras temporais e apoio tático.',lore:'Uma entidade que floresceu no erro entre eras. Ela prevê padrões e tenta fechar todas as saídas.'},
-    {id:'lostEmperor',name:'Emperador Perdido',emoji:'🕳️',unlock:1,group:'Boss Secreto',speed:'Alta',hp:'Abissal',damage:'Cataclísmico',attack:'Teleporta, cria rupturas, bombardeia e domina a arena inteira.',lore:'Um soberano engolido por uma fissura proibida. O que resta dele é menos rei e mais sentença. Cada passo na arena secreta parece ouvir o próprio vazio respirando.',secret:true}
-  ];
-  function bestiaryById37(id){return BESTIARY_37.find(x=>x.id===id)}
-  function killKey37(e){
+  /* CLEANUP 3.7m: old BESTIARY_37 data/function removed; latest Bestiário 360 is the only route. */
+function killKey37(e){
     if(!e)return 'unknown';
     if(e.type==='boss') return e.bossType||'boss';
     return e.type||'unknown';
@@ -8888,7 +8872,7 @@ requestAnimationFrame(loop);
       <div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="hubBack37">← Voltar</button></div>`;
     document.getElementById('hubRelics37').onclick=openRelicMenu37;
     document.getElementById('hubMissions37').onclick=openMissions37;
-    document.getElementById('hubBestiary37').onclick=openBestiary37;
+    document.getElementById('hubBestiary37').onclick=()=>{ if(window.__openBestiaryLatest) window.__openBestiaryLatest(); else if(window.openBestiaryI) window.openBestiaryI(); };
     document.getElementById('hubBack37').onclick=openStartMenu;
   }
 
@@ -8917,26 +8901,7 @@ requestAnimationFrame(loop);
     const cex=document.getElementById('claimExtreme37');
     if(cex) cex.onclick=()=>{ let mm=readMeta37(); mm.missions37.extreme.claimed=true; mm.moonMissionClaimed=true; writeMeta37(mm); openMissions37(); };
   }
-
-  function openBestiaryDetail37(id){
-    const e=bestiaryById37(id); if(!e)return; const kills=Number(readMeta37().bestiaryKills[id]||0);
-    overlay.classList.remove('hidden'); overlayCard.className='card panel37';
-    overlayCard.innerHTML=`<div class="detail37" style="${e.secret?'border-color:#ff345e;box-shadow:0 0 26px rgba(255,52,94,.18)':''}"><h1>${esc37(e.name)}</h1><span class="badge37" style="--co:${e.secret?'#ff345e':'#61dafb'}">${esc37(e.group)} • ${kills} abates registrados</span><div class="death-grid27" style="margin-top:16px"><div class="death-stat27"><small>VELOCIDADE</small><b>${esc37(e.speed)}</b></div><div class="death-stat27"><small>HP</small><b>${esc37(e.hp)}</b></div><div class="death-stat27"><small>DANO</small><b>${esc37(e.damage)}</b></div><div class="death-stat27"><small>ATAQUE</small><b>${esc37(e.attack)}</b></div></div><h3 style="font-family:Orbitron,sans-serif;color:${e.secret?'#ff345e':'#9bedff'};margin-top:18px">LORE</h3><span>${esc37(e.lore)}</span><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backBestEntry37">← Voltar ao bestiário</button></div></div>`;
-    document.getElementById('backBestEntry37').onclick=openBestiary37;
-  }
-
-  function openBestiary37(){
-    const meta=readMeta37();
-    const cards=BESTIARY_37.map(entry=>{
-      const kills=Number(meta.bestiaryKills[entry.id]||0), unlocked=kills>=entry.unlock;
-      return `<button class="book-slot37 ${unlocked?'':'locked'} ${entry.secret?'secret':''}" data-best37="${entry.id}" ${unlocked?'':'disabled'}><div class="mob37">${unlocked?entry.emoji:'?'}</div><strong>${unlocked?esc37(entry.name):'?? Desconhecido ??'}</strong><span>${unlocked?esc37(entry.group):'Elimine mais criaturas para revelar.'}</span><span style="margin-top:auto">${kills}/${entry.unlock} abates</span></button>`;
-    }).join('');
-    overlay.classList.remove('hidden'); overlayCard.className='card panel37';
-    overlayCard.innerHTML=`<h1>BESTIÁRIO</h1><p>Um tomo vivo que registra tudo que você derrotou. Monstros comuns e elites são liberados com <b>10 abates</b>, bosses com <b>2</b> e o boss secreto com <b>1</b>.</p><div class="book37"><h3>CATÁLOGO DE AMEAÇAS</h3><div class="bestiary-grid37">${cards}</div></div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backBook37">← Voltar</button></div>`;
-    overlayCard.querySelectorAll('[data-best37]').forEach(b=>b.onclick=()=>openBestiaryDetail37(b.dataset.best37));
-    document.getElementById('backBook37').onclick=openHubMenu37;
-  }
-
+  /* CLEANUP 3.7m: old openBestiary37/openBestiaryDetail37 removed. */
   function color37(k){return (CLASSES[k]&&(CLASSES[k].tagColor||CLASSES[k].color))||'#61dafb'}
   function classInfoRows37(k){
     const list=(CLASSES[k]?.skills||[]).map((id,i)=>{const s=SKILL_DEFS[id]||{}; return `<div class="skill-row27"><b>${['Q','E','R'][i]||'?'} — ${esc37(s.emoji||'✦')} ${esc37(s.name||id)}</b><br><span>${esc37(s.desc||'Especial de combate.')}</span></div>`;}).join('');
@@ -8957,7 +8922,7 @@ requestAnimationFrame(loop);
   window.openStartMenu=function(){
     game=null; mouse.down=false; overlay.classList.remove('hidden'); overlayCard.className='card start37';
     const m=readMeta37();
-    overlayCard.innerHTML=`<div class="start-grid37"><div><div class="logo37">CHRONO<br>SHARDS</div><div class="sub37">Fragmentos temporais eclodiram e estão espalhados pelo cosmos. Agora, além de sobreviver, você recebeu uma missão de recuperar todos estes fragmentos espalhados pelas dimensões.</div><div class="tip37"><h3>TUTORIAL RÁPIDO</h3><p><b>WASD</b> move • <b>Mouse</b> mira • <b>Clique</b> atira • <b>Shift</b> dash • <b>Q/E/R</b> habilidades • <b>X</b> ultimate quando existir. Use paredes como cobertura e não subestime bosses.</p></div></div><div class="side37"><div class="stat37"><small>HIGH SCORE</small><b>${Number(m.highScore||0).toLocaleString()}</b></div><div class="stat37"><small>RELÍQUIAS</small><b>${Number(m.relicShards||0)}</b></div><div class="stat37"><small>FRAGMENTOS CHRONO</small><b>${Number(m.chronoFragments||0)}</b></div><div class="stat37"><small>VERSÃO</small><b>4.0 beta</b></div><div class="actions37"><button class="main-btn" id="playStart37">JOGAR</button><button class="main-btn" id="hubStart37" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CONQUISTAS E MISSÕES</button><button class="main-btn" id="cfgStart37" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">CONFIGURAÇÕES</button></div></div></div>`;
+    overlayCard.innerHTML=`<div class="start-grid37"><div><div class="logo37">CHRONO<br>SHARDS</div><div class="sub37">Fragmentos temporais eclodiram e estão espalhados pelo cosmos. Agora, além de sobreviver, você recebeu uma missão de recuperar todos estes fragmentos espalhados pelas dimensões.</div><div class="tip37"><h3>TUTORIAL RÁPIDO</h3><p><b>WASD</b> move • <b>Mouse</b> mira • <b>Clique</b> atira • <b>Shift</b> dash • <b>Q/E/R</b> habilidades • <b>X</b> ultimate quando existir. Use paredes como cobertura e não subestime bosses.</p></div></div><div class="side37"><div class="stat37"><small>HIGH SCORE</small><b>${Number(m.highScore||0).toLocaleString()}</b></div><div class="stat37"><small>RELÍQUIAS</small><b>${Number(m.relicShards||0)}</b></div><div class="stat37"><small>FRAGMENTOS CHRONO</small><b>${Number(m.chronoFragments||0)}</b></div><div class="stat37"><small>VERSÃO</small><b>3.7</b></div><div class="actions37"><button class="main-btn" id="playStart37">JOGAR</button><button class="main-btn" id="hubStart37" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CONQUISTAS E MISSÕES</button><button class="main-btn" id="cfgStart37" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">CONFIGURAÇÕES</button></div></div></div>`;
     document.getElementById('playStart37').onclick=openClassMenu;
     document.getElementById('hubStart37').onclick=openHubMenu37;
     document.getElementById('cfgStart37').onclick=openSettingsMenu37;
@@ -9413,30 +9378,7 @@ requestAnimationFrame(loop);
   console.log(PATCH+' carregado');
 })();
 </script>
-
-
-<script>
-(()=>{
-  if(window.__chronoPatch37d)return; window.__chronoPatch37d=true;
-  const st=document.createElement('style');
-  st.textContent=`
-    .bookWrap38{color:#e9f5ff!important}
-    .bookSection38{background:linear-gradient(160deg,rgba(26,37,68,.98),rgba(14,20,40,.98))!important;border:1px solid rgba(155,220,255,.26)!important;box-shadow:inset 0 0 34px rgba(120,200,255,.045),0 0 26px rgba(0,0,0,.22)!important}
-    .bookSection38 h3{color:#f2fbff!important;text-shadow:0 0 16px rgba(155,220,255,.22)!important}
-    .bookEntry38{background:linear-gradient(150deg,rgba(30,42,76,.98),rgba(15,23,46,.98))!important;border-color:rgba(190,225,255,.20)!important;color:#eef7ff!important}
-    .bookEntry38 strong{color:#ffffff!important;text-shadow:0 0 12px rgba(155,220,255,.20)!important}
-    .bookEntry38 span,.bookMeta38{color:#dbeaff!important}
-    .bookEntry38.locked{background:linear-gradient(150deg,rgba(35,39,58,.96),rgba(22,24,36,.96))!important;opacity:.9!important}
-    .bookEntry38.locked span,.bookEntry38.locked .bookMeta38{color:#c3d1e6!important}
-    .bookEntry38.secret{background:linear-gradient(160deg,#210712,#10040a)!important;border-color:rgba(255,87,124,.62)!important}
-    .bookModelMini38{background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.20),rgba(100,150,255,.075) 55%,rgba(0,0,0,.16))!important}
-  `;
-  document.head.appendChild(st);
-  console.log('Chrono Shards 3.7d — missões em relíquias + bestiário legível');
-})();
-</script>
-
-
+<!-- Removed obsolete patch: __chronoPatch37d -->
 <script>
 (()=>{
   if(window.__chronoPatch40)return; window.__chronoPatch40=true;
@@ -9674,11 +9616,42 @@ requestAnimationFrame(loop);
   function modelI(ctx,e,t){ctx.clearRect(0,0,240,240);ctx.save();ctx.translate(120,120);ctx.rotate(t);ctx.shadowBlur=22;ctx.shadowColor=e.c;ctx.fillStyle=e.c;ctx.strokeStyle='#fff';ctx.lineWidth=2.5;const poly=(n,r1,r2)=>{ctx.beginPath();for(let i=0;i<n*2;i++){const a=i*Math.PI/n-Math.PI/2,r=i%2?r2:r1;if(!i)ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r);else ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);}ctx.closePath();ctx.fill();ctx.stroke();};if(e.shape==='tank'||e.shape==='titan'){ctx.beginPath();ctx.roundRect(-48,-55,96,110,18);ctx.fill();ctx.stroke();}else if(e.shape==='sentinel'||e.shape==='oracle'||e.shape==='medic'){ctx.beginPath();ctx.arc(0,0,e.shape==='oracle'?48:38,0,Math.PI*2);ctx.fill();ctx.stroke();if(e.shape==='medic'){ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(0,-20);ctx.lineTo(0,20);ctx.moveTo(-20,0);ctx.lineTo(20,0);ctx.stroke();}}else if(e.shape==='emperor'){ctx.fillStyle='#080203';poly(6,58,34);ctx.strokeStyle=e.c;ctx.lineWidth=3;ctx.stroke();ctx.fillStyle=e.c;ctx.fillRect(-8,-52,16,104);}else if(e.shape==='bomber'||e.shape==='splitter')poly(7,48,28);else if(e.shape==='swarmer'||e.shape==='pukeling')poly(5,40,22);else {ctx.beginPath();ctx.moveTo(0,-48);ctx.lineTo(40,-8);ctx.lineTo(26,48);ctx.lineTo(-26,48);ctx.lineTo(-40,-8);ctx.closePath();ctx.fill();ctx.stroke();}ctx.restore();}
   function openDetailI(id){const e=BESTI.find(x=>x.id===id);if(!e)return;stopBestI();overlay.classList.remove('hidden');overlayCard.className='card panel37';overlayCard.innerHTML=`<h1>${escI(e.n)}</h1><p>${escI(e.g)} • Registro liberado com ${killsI(e.id)} abates.</p><div class="detailI"><div class="canvasBoxI"><canvas id="bestCanvasI" width="240" height="240"></canvas><span class="badge37" style="--co:${e.secret?'#ff345e':'#61dafb'}">MODELO 360°</span></div><div><div class="statsI"><div class="statI"><small>HP BASE</small><b>${e.hp}</b></div><div class="statI"><small>VELOCIDADE</small><b>${e.spd}</b></div><div class="statI"><small>DANO</small><b>${e.dmg}</b></div><div class="statI"><small>RECOMPENSA</small><b>${e.val}</b></div></div><div class="attackI"><h4>COMPORTAMENTO</h4><span>${escI(e.l)}</span></div></div></div><div class="loreI"><h4>ORIGEM</h4><span>${escI(e.l)}</span></div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backBestI">← Voltar ao bestiário</button></div>`;document.getElementById('backBestI').onclick=openBestiaryI;const c=document.getElementById('bestCanvasI'),ctx=c.getContext('2d');let t=0;const loop=()=>{t+=.025;modelI(ctx,e,t);bestAnimI=requestAnimationFrame(loop)};loop();}
   function openBestiaryI(){stopBestI();const groups=['Comuns','Elites','Bosses','Boss Secreto'];overlay.classList.remove('hidden');overlayCard.className='card panel37';overlayCard.innerHTML=`<h1>BESTIÁRIO</h1><p>Registros organizados por força. Esta área é um catálogo com todas as desgraças que você viu ou vai ver por ai.</p><div class="bookWrapI">${groups.map(g=>`<div class="bookSectionI"><h3>${g.toUpperCase()}</h3><div class="bookGridI">${BESTI.filter(e=>e.g===g).map(e=>{const k=killsI(e.id),ok=k>=e.u;return `<button class="bookEntryI ${ok?'':'locked'} ${e.secret?'secret':''}" data-besti="${e.id}" ${ok?'':'disabled'}><div class="bookMiniI">${ok?e.emoji:'?'}</div><strong>${ok?escI(e.n):'Registro Bloqueado'}</strong><span>${ok?escI(e.g):'Elimine mais criaturas para revelar.'}</span><div class="bookMetaI">${ok?`${k} abates`:`${k}/${e.u} abates`}</div></button>`}).join('')}</div></div>`).join('')}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backBestMenuI">← Voltar</button></div>`;document.getElementById('backBestMenuI').onclick=()=>{const h=document.getElementById('hubStart37');if(h)h.click();else openStartMenu();};overlayCard.querySelectorAll('[data-besti]').forEach(b=>b.onclick=()=>openDetailI(b.dataset.besti));}
+  window.openBestiaryI=openBestiaryI; window.__openBestiaryLatest=openBestiaryI; window.openBestiary37=openBestiaryI; window.openBestiary38=openBestiaryI; window.openBestiaryG=openBestiaryI;
   document.addEventListener('click',e=>{const b=e.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG');if(b){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openBestiaryI();}},true);
   document.addEventListener('click',e=>{const inf=e.target.closest('.info37[data-info37]');if(inf){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();const fn=window.openClassInfo35||window.openClassInfo29||window.openClassInfo28||window.openClassInfo27||window.openClassInfo23;if(fn)fn(inf.dataset.info37);}},true);
   // órbita desaceleradora: 60% de lentidão, não trava
   const playerAfterI=updatePlayer;updatePlayer=function(dt){if(game&&game.upgrades?.orbitSlowAura&&game.orbitAuraState37?.active&&game.player&&Array.isArray(game.enemyBullets)){const p=game.player,before=new Map();for(const b of game.enemyBullets)before.set(b,{vx:b.vx,vy:b.vy,inside:Math.hypot(b.x-p.x,b.y-p.y)<74});playerAfterI(dt);for(const b of game.enemyBullets||[]){const info=before.get(b);if(!info)continue;const inside=Math.hypot(b.x-p.x,b.y-p.y)<74;if(inside){if(!info.inside)b._orbitLock38={vx:info.vx*.4,vy:info.vy*.4};if(b._orbitLock38){b.vx=b._orbitLock38.vx;b.vy=b._orbitLock38.vy;}}else b._orbitLock38=null;}return;}return playerAfterI(dt);};
   console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoCleanup37m)return; window.__chronoCleanup37m=true;
+  const style=document.createElement('style');
+  style.textContent=`
+    .bookSectionI{background:linear-gradient(160deg,rgba(30,39,70,.98),rgba(14,18,35,.98))!important;border:1px solid rgba(154,219,255,.24)!important;box-shadow:0 14px 36px rgba(0,0,0,.32),inset 0 0 34px rgba(255,255,255,.055)!important}
+    .bookSectionI h3{color:#ffffff!important;text-shadow:0 0 18px rgba(97,218,251,.32)!important}
+    .bookEntryI{background:linear-gradient(155deg,rgba(25,36,68,.99),rgba(10,16,32,.99))!important;border:1px solid rgba(176,225,255,.24)!important;color:#eef7ff!important}
+    .bookEntryI strong{color:#ffffff!important;text-shadow:0 0 12px rgba(255,255,255,.14)!important}.bookEntryI span{color:#d5e8ff!important}.bookMetaI{color:#9fe8ff!important;font-weight:800!important}
+    .bookEntryI.locked{opacity:1!important;background:linear-gradient(155deg,rgba(27,31,48,.96),rgba(12,14,25,.98))!important}.bookEntryI.locked strong{color:#e2e8ff!important}.bookEntryI.locked span{color:#b5c7df!important}
+    .bookMiniI{background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.22),rgba(97,218,251,.10) 45%,rgba(7,10,22,.88))!important;border:1px solid rgba(206,241,255,.24)!important;box-shadow:inset 0 0 24px rgba(255,255,255,.06),0 0 18px rgba(97,218,251,.10)!important}
+    .canvasBoxI canvas{background:radial-gradient(circle at 50% 34%,rgba(255,255,255,.12),rgba(97,218,251,.05) 42%,rgba(0,0,0,.28) 80%),linear-gradient(180deg,#101a30,#060913)!important;box-shadow:inset 0 0 30px rgba(255,255,255,.05),0 16px 34px rgba(0,0,0,.28)!important}
+  `;
+  document.head.appendChild(style);
+  function routeBestiary(){ if(window.__openBestiaryLatest) window.__openBestiaryLatest(); else if(window.openBestiaryI) window.openBestiaryI(); }
+  const oldHubClick=HTMLElement.prototype.click;
+  document.addEventListener('click',e=>{
+    const b=e.target.closest&&e.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');
+    if(b){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();routeBestiary();}
+  },true);
+  const mo=new MutationObserver(()=>{
+    const b=document.getElementById('hubBestiary37')||document.getElementById('hubBestiary40')||document.getElementById('hubBestiaryG');
+    if(b && !b.dataset.cleanedBestiary37m){b.dataset.cleanedBestiary37m='1';b.onclick=routeBestiary;}
+  });
+  mo.observe(document.body,{childList:true,subtree:true});
+  console.log('Chrono cleanup 3.7m: obsolete Bestiário routes neutralized.');
 })();
 </script>
 
