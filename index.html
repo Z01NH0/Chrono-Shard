@@ -21,7 +21,6 @@ canvas#game{
   box-shadow:0 0 80px rgba(80,140,255,0.12),inset 0 0 40px rgba(0,0,0,0.6);
   position:relative;z-index:2;cursor:none
 }
-  
 
 .hud{
   position:absolute;top:12px;width:min(98vw,1320px);
@@ -8923,7 +8922,7 @@ function killKey37(e){
   window.openStartMenu=function(){
     game=null; mouse.down=false; overlay.classList.remove('hidden'); overlayCard.className='card start37';
     const m=readMeta37();
-    overlayCard.innerHTML=`<div class="start-grid37"><div><div class="logo37">CHRONO<br>SHARDS</div><div class="sub37">Fragmentos temporais eclodiram e estão espalhados pelo cosmos. Agora, além de sobreviver, você recebeu uma missão de recuperar todos estes fragmentos espalhados pelas dimensões.</div><div class="tip37"><h3>TUTORIAL RÁPIDO</h3><p><b>WASD</b> move • <b>Mouse</b> mira • <b>Clique</b> atira • <b>Shift</b> dash • <b>Q/E/R</b> habilidades • <b>X</b> ultimate quando existir. Use paredes como cobertura e não subestime bosses.</p></div></div><div class="side37"><div class="stat37"><small>HIGH SCORE</small><b>${Number(m.highScore||0).toLocaleString()}</b></div><div class="stat37"><small>RELÍQUIAS</small><b>${Number(m.relicShards||0)}</b></div><div class="stat37"><small>FRAGMENTOS CHRONO</small><b>${Number(m.chronoFragments||0)}</b></div><div class="stat37"><small>VERSÃO</small><b>4.1 Beta</b></div><div class="actions37"><button class="main-btn" id="playStart37">JOGAR</button><button class="main-btn" id="hubStart37" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CONQUISTAS E MISSÕES</button><button class="main-btn" id="cfgStart37" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">CONFIGURAÇÕES</button></div></div></div>`;
+    overlayCard.innerHTML=`<div class="start-grid37"><div><div class="logo37">CHRONO<br>SHARDS</div><div class="sub37">Fragmentos temporais eclodiram e estão espalhados pelo cosmos. Agora, além de sobreviver, você recebeu uma missão de recuperar todos estes fragmentos espalhados pelas dimensões.</div><div class="tip37"><h3>TUTORIAL RÁPIDO</h3><p><b>WASD</b> move • <b>Mouse</b> mira • <b>Clique</b> atira • <b>Shift</b> dash • <b>Q/E/R</b> habilidades • <b>X</b> ultimate quando existir. Use paredes como cobertura e não subestime bosses.</p></div></div><div class="side37"><div class="stat37"><small>HIGH SCORE</small><b>${Number(m.highScore||0).toLocaleString()}</b></div><div class="stat37"><small>RELÍQUIAS</small><b>${Number(m.relicShards||0)}</b></div><div class="stat37"><small>FRAGMENTOS CHRONO</small><b>${Number(m.chronoFragments||0)}</b></div><div class="stat37"><small>VERSÃO</small><b>3.7</b></div><div class="actions37"><button class="main-btn" id="playStart37">JOGAR</button><button class="main-btn" id="hubStart37" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">CONQUISTAS E MISSÕES</button><button class="main-btn" id="cfgStart37" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">CONFIGURAÇÕES</button></div></div></div>`;
     document.getElementById('playStart37').onclick=openClassMenu;
     document.getElementById('hubStart37').onclick=openHubMenu37;
     document.getElementById('cfgStart37').onclick=openSettingsMenu37;
@@ -9562,73 +9561,6 @@ function killKey37(e){
 
 <script>
 (()=>{
-  if(window.__chronoPatch37i)return; window.__chronoPatch37i=true;
-  const PATCH='Chrono Shards 3.7i — Moon Slayer Precision + Bestiário 360';
-  const style=document.createElement('style');
-  style.textContent=`
-    .info37{z-index:20!important;pointer-events:auto!important;cursor:pointer}.class-model37,.class-model37 *{pointer-events:none!important}
-    .class-card37[data-class="moonSlayer"] .class-model37:before{width:56px!important;height:72px!important;background:linear-gradient(180deg,#fff,#8e43ff 34%,#2e0c58 63%,#f5f1ff 86%,#1b0734)!important;clip-path:polygon(50% 0,74% 11%,88% 36%,76% 100%,24% 100%,12% 36%,26% 11%)!important;filter:drop-shadow(0 0 18px rgba(182,125,255,.65))!important}.class-card37[data-class="moonSlayer"] .class-model37:after{width:92px!important;height:92px!important;opacity:.42!important}
-    .qteLineI{position:absolute;left:50%;top:17%;transform:translateX(-50%);z-index:90;width:min(430px,78vw);padding:18px 20px;border-radius:20px;background:linear-gradient(135deg,rgba(6,10,24,.94),rgba(38,12,72,.9));border:1px solid rgba(255,255,255,.18);box-shadow:0 0 42px rgba(120,190,255,.18);pointer-events:none}.qteLineI .label{font:900 13px Orbitron,sans-serif;letter-spacing:.16em;color:#eaf8ff;text-align:center;margin-bottom:12px}.qteLineI .track{position:relative;height:14px;border-radius:999px;background:rgba(255,255,255,.12);overflow:visible;border:1px solid rgba(255,255,255,.18)}.qteLineI .blue{position:absolute;left:61%;top:50%;width:18px;height:34px;border-radius:999px;background:#61dafb;box-shadow:0 0 18px #61dafb;transform:translate(-50%,-50%)}.qteLineI .needle{position:absolute;top:50%;width:16px;height:28px;border-radius:999px;background:#fff;box-shadow:0 0 18px #fff;transform:translate(-50%,-50%)}.qteLineI.good .track{box-shadow:0 0 24px rgba(95,255,160,.45)}.qteLineI.bad .track{box-shadow:0 0 24px rgba(255,73,104,.45)}
-    .bookWrapI{display:grid;gap:18px;margin-top:18px}.bookSectionI{padding:16px;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(160deg,rgba(19,17,31,.96),rgba(8,11,22,.96));box-shadow:inset 0 0 28px rgba(255,255,255,.035)}.bookSectionI h3{margin:0 0 12px;font-family:Orbitron,sans-serif;letter-spacing:.12em;color:#f6e8ff}.bookGridI{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.bookEntryI{position:relative;min-height:178px;padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(150deg,rgba(16,24,48,.98),rgba(7,10,20,.98));display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;cursor:pointer}.bookEntryI.secret{background:linear-gradient(160deg,#160307,#070203);border-color:rgba(255,60,94,.45)}.bookEntryI.locked{opacity:.78;cursor:not-allowed}.bookMiniI{width:78px;height:78px;border-radius:22px;display:grid;place-items:center;background:radial-gradient(circle,rgba(255,255,255,.14),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.16);font-size:34px}.bookMetaI{margin-top:auto;color:#bcd5ff;font-size:12px}.detailI{display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start;margin-top:14px}.canvasBoxI{padding:14px;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(160deg,rgba(8,14,29,.98),rgba(15,6,28,.98));display:flex;align-items:center;flex-direction:column;gap:10px}.canvasBoxI canvas{width:240px;height:240px;border-radius:18px;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.08),rgba(255,255,255,.015) 42%,rgba(0,0,0,.23) 75%),linear-gradient(180deg,#09101f,#060711)}.statsI{display:grid;grid-template-columns:repeat(2,minmax(140px,1fr));gap:10px}.statI{padding:12px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1)}.statI small{display:block;font-family:Orbitron,sans-serif;font-size:10px;letter-spacing:.14em;opacity:.72}.statI b{display:block;margin-top:6px;color:#fff;font-size:18px}.loreI,.attackI{margin-top:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1)}.loreI h4,.attackI h4{margin:0 0 8px;font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:.12em;color:#f2e8ff}@media(max-width:820px){.detailI{grid-template-columns:1fr}.canvasBoxI canvas{width:100%;max-width:240px;height:auto;aspect-ratio:1/1}}
-  `;
-  document.head.appendChild(style);
-
-  const escI=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  const segDistI=(px,py,x1,y1,x2,y2)=>{const dx=x2-x1,dy=y2-y1,l=dx*dx+dy*dy||1;let t=((px-x1)*dx+(py-y1)*dy)/l;t=Math.max(0,Math.min(1,t));return Math.hypot(px-(x1+dx*t),py-(y1+dy*t));};
-  let nextIdI=1; function idsI(){for(const e of game.enemies||[]) if(!e._moonIdI)e._moonIdI=nextIdI++;}
-  function initI(){if(!game)return;game.moonCutsI=game.moonCutsI||[];game.moonBoomsI=game.moonBoomsI||[];game.moonGlassI=game.moonGlassI||[];game.moonSmokeI=game.moonSmokeI||[];game.moonQTEI=game.moonQTEI||null;game.moonAuraI=game.moonAuraI||null;game.moonWorldI=game.moonWorldI||null;game.moonUltI=game.moonUltI||null;game.moonRChargingI=!!game.moonRChargingI;game.moonRChargeI=game.moonRChargeI||0;}
-  function dmgAreaI(x,y,r,dmg,slow=0){for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i];if(Math.hypot(e.x-x,e.y-y)<r+e.r){e.hp-=dmg;e.hitFlash=.18;if(slow)e.frozenTime=Math.max(e.frozenTime||0,slow);if(e.hp<=0)enemyDeath(i,e);}}addRing(x,y,'#f5f0ff',r,5);}
-  function healI(pct){const p=game.player;p.hp=clamp(p.hp+p.maxHp*pct,0,p.maxHp);addFloatingText(p.x,p.y-26,`+${Math.round(pct*100)}% HP`,'#ff8fa3',14);}
-  function cutI(o){initI();game.moonCutsI.push(Object.assign({x:0,y:0,px:null,py:null,vx:0,vy:0,a:0,len:130,w:18,life:.35,maxLife:.35,damage:20,color:'#fff',edge:'#090912',kind:'visual',hit:[],split:0,target:null,home:false,persist:false},o||{}));}
-  function nearestI(x,y,exclude=[],count=1,range=9999){idsI();return [...(game.enemies||[])].filter(e=>!exclude.includes(e._moonIdI)).map(e=>({e,d:Math.hypot(e.x-x,e.y-y)})).filter(o=>o.d<range).sort((a,b)=>a.d-b.d).slice(0,count).map(o=>o.e);}
-  function spawnSplitI(e,baseA,exclude){const targets=nearestI(e.x,e.y,exclude,2,520); if(targets.length===0){targets.push(...nearestI(e.x,e.y,exclude,1,9999));}
-    for(let i=0;i<2;i++){const t=targets[i]||e;const aa=t&&t!==e?angleTo(e,t):baseA+(i?0.45:-0.45);cutI({x:e.x,y:e.y,a:aa,len:92,w:12,life:.42,maxLife:.42,damage:13*game.upgrades.damage,color:'#dfe8ff',edge:'#070712',kind:'split',vx:Math.cos(aa)*760,vy:Math.sin(aa)*760,hit:[...exclude],target:t,home:!!t});}}
-  function hitI(c,e){idsI();const lethal=e.hp<=c.damage;const marked=!!e.moonBloodI;if(marked&&lethal&&(c.kind==='basic'||c.kind==='split')){healI(.03);for(let n=0;n<8;n++)cutI({x:e.x,y:e.y,a:rand(0,Math.PI*2),len:100+rand(-15,25),w:11,life:.26,maxLife:.26,damage:8*game.upgrades.damage,color:'#ff445d',edge:'#230207',kind:'visual'});e.moonBloodI=null;}
-    e.hp-=c.damage;e.hitFlash=.16;if(c.bind)e.moonBloodI={timer:3,max:3};if(e.hp<=0){const idx=game.enemies.indexOf(e);if(idx>=0)enemyDeath(idx,e);} }
-  function spendI(idx,cd){const key=CLASSES.moonSlayer.skills[idx],sk=SKILL_DEFS[key];if(!game.running||game.skillCds[idx]>0||game.player.focus<sk.focusCost)return false;game.player.focus-=sk.focusCost;game.skillCds[idx]=cd??sk.cooldown;updateHUD?.();return true;}
-  function qI(){if(!spendI(0,10))return;idsI();const p=game.player, sx=p.x, sy=p.y, a=angleTo(p,mouse), len=310, ex=clamp(sx+Math.cos(a)*len,26,W-26), ey=clamp(sy+Math.sin(a)*len,26,H-26);let target=null,best=9999;for(const e of game.enemies){const d=segDistI(e.x,e.y,sx,sy,ex,ey);if(d<e.r+44&&d<best){best=d;target=e;}}p.x=ex;p.y=ey;addRing(p.x,p.y,'#f4f0ff',70,4);for(let k=0;k<4;k++)cutI({x:sx+(ex-sx)*(k+1)/5,y:sy+(ey-sy)*(k+1)/5,a:a+rand(-.08,.08),len:140,w:13,life:.18,maxLife:.18,damage:0,color:'#fff',edge:'#111',kind:'visual'});if(target){game.moonQTEI={timer:0,total:.88,good:.62,window:.075,targetId:target._moonIdI,x:target.x,y:target.y,a,done:false,result:null};}else{for(let n=-2;n<=2;n++)cutI({x:p.x,y:p.y,a:a+n*.08,len:145,w:13,life:.22,maxLife:.22,damage:20*game.upgrades.damage,color:'#f4f0ff',edge:'#111',kind:'dash'});}}
-  function resolveQTEI(ok){const q=game.moonQTEI;if(!q||q.done)return;q.done=true;q.result=ok?'good':'bad';if(ok){game.skillCds[0]=15;dmgAreaI(q.x,q.y,205,90*game.upgrades.damage,1.6);game.moonBoomsI.push({x:q.x,y:q.y,r:230,life:.62,maxLife:.62,kind:'moon'});for(let i=0;i<16;i++)cutI({x:q.x+rand(-42,42),y:q.y+rand(-42,42),a:q.a+rand(-1.4,1.4),len:235+rand(-25,65),w:20+rand(-3,7),life:.32,maxLife:.32,damage:12*game.upgrades.damage,color:'#fff',edge:'#0b0b12',kind:'visual'});game.shake=Math.max(game.shake||0,22);}else{for(let n=-3;n<=3;n++)cutI({x:q.x+rand(-25,25),y:q.y+rand(-25,25),a:q.a+n*.1,len:140,w:12,life:.25,maxLife:.25,damage:24*game.upgrades.damage,color:'#f4f0ff',edge:'#111',kind:'dash'});game.shake=Math.max(game.shake||0,12);}setTimeout(()=>{if(game)game.moonQTEI=null;},190);}
-  function eI(){if(!spendI(1,15))return;idsI();const p=game.player, targets=nearestI(p.x,p.y,[],10,900);const base=angleTo(p,mouse);for(let i=0;i<Math.max(1,targets.length);i++){const t=targets[i],a=t?angleTo(p,t):base+rand(-.45,.45);cutI({x:p.x,y:p.y,a,len:125,w:14,life:.55,maxLife:.55,damage:14*game.upgrades.damage,color:'#ff4058',edge:'#220207',kind:'blood',bind:true,vx:Math.cos(a)*850,vy:Math.sin(a)*850,target:t,home:!!t});}}
-  function startRI(){if(game.moonRChargingI)return;if(!spendI(2,10))return;game.moonRChargingI=true;game.moonRChargeI=0;}
-  function releaseRI(){if(!game.moonRChargingI)return;const full=game.moonRChargeI>=1.35;game.moonRChargingI=false;if(full){game.skillCds[2]=20;game.moonWorldI={life:1.35,maxLife:1.35};}else game.moonAuraI={life:5,maxLife:5,r:128,tick:0};game.moonRChargeI=0;}
-  function ultI(){if((game.moonUltCharge37||0)<100||game.moonUltI)return;game.moonUltCharge37=0;game.moonUltPause37=2;game.moonUltI={phase:'prep',time:.85};for(let i=0;i<22;i++)game.moonSmokeI.push({x:game.player.x+rand(-20,20),y:game.player.y+rand(-5,18),vx:rand(-35,35),vy:rand(-130,-55),r:rand(15,36),life:rand(.7,1.2),maxLife:1.2});updateHUD?.();}
-  const resetPrevI=resetGame;resetGame=function(k){resetPrevI(k);if(game){initI();game.moonCutsI=[];game.moonBoomsI=[];game.moonGlassI=[];game.moonSmokeI=[];game.moonQTEI=null;game.moonAuraI=null;game.moonWorldI=null;game.moonUltI=null;game.moonRChargingI=false;game.moonRChargeI=0;if(k==='moonSlayer'){game.moonUltCharge37=0;game.moonUltPause37=0;}}};
-  const usePrevI=useSkill;useSkill=function(idx){if(game&&game.classKey==='moonSlayer')return;return usePrevI(idx);};
-  window.addEventListener('keydown',e=>{if(!game||game.classKey!=='moonSlayer')return;const k=(e.key||'').toLowerCase();if(['q','e','r','x'].includes(k)){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();}if(k==='q'&&game.moonQTEI){const q=game.moonQTEI;resolveQTEI(Math.abs(q.timer-q.good)<=q.window);return;}if(k==='q')qI();if(k==='e')eI();if(k==='r')startRI();if(k==='x')ultI();},true);
-  window.addEventListener('keyup',e=>{if(game&&game.classKey==='moonSlayer'&&(e.key||'').toLowerCase()==='r'){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();releaseRI();}},true);
-  const shootPrevI=shoot;shoot=function(){if(game&&game.classKey==='moonSlayer'){const p=game.player;if(!game.running||p.fireCd>0||game.moonQTEI||game.moonUltI)return;const a=angleTo(p,mouse);cutI({x:p.x+Math.cos(a)*20,y:p.y+Math.sin(a)*20,a,len:128,w:16,life:.70,maxLife:.70,damage:21*game.upgrades.damage,color:'#fff',edge:'#0b0b14',kind:'basic',vx:Math.cos(a)*620,vy:Math.sin(a)*620,hit:[],split:1});p.fireCd=(WEAPONS.moonBlade?.cooldown||.24)/Math.max(.1,game.upgrades.fireRate||1);return;}return shootPrevI();};
-  const enemyDeathPrevI=enemyDeath;enemyDeath=function(index,e){const marked=!!e?.moonBloodI,ex=e?.x,ey=e?.y;enemyDeathPrevI(index,e);if(game&&marked){game.moonBoomsI.push({x:ex,y:ey,r:95,life:.45,maxLife:.45,kind:'blood'});}};
-  const enemiesPrevI=updateEnemies;updateEnemies=function(dt){if(game&&game.classKey==='moonSlayer'){initI();const locked=[];for(const e of game.enemies||[])if(e.moonBloodI)locked.push([e,e.x,e.y]);if(game.moonQTEI||game.moonUltI)return;enemiesPrevI(dt);for(const row of locked){const e=row[0];if(game.enemies.includes(e)&&e.moonBloodI){e.x=row[1];e.y=row[2];e.vx=0;e.vy=0;e.frozenTime=Math.max(e.frozenTime||0,.2);}}return;}return enemiesPrevI(dt);};
-  const bulletsPrevI=updateBullets;updateBullets=function(dt){if(game&&game.classKey==='moonSlayer'&&(game.moonQTEI||game.moonUltI))return;return bulletsPrevI(dt);};
-  const playerPrevI=updatePlayer;updatePlayer=function(dt){if(!(game&&game.classKey==='moonSlayer'))return playerPrevI(dt);initI();const old=game.classKey;game.classKey='assault';playerPrevI(dt);game.classKey=old;const p=game.player;if(!p)return;game.moonSlashes37=[];game.moonQTE37=null;game.moonUltMode37=null;
-    if(game.moonQTEI){p.vx=0;p.vy=0;game.moonQTEI.timer+=dt;if(game.moonQTEI.timer>game.moonQTEI.good+game.moonQTEI.window&&!game.moonQTEI.done)resolveQTEI(false);}if(game.moonRChargingI){game.moonRChargeI=Math.min(1.35,game.moonRChargeI+dt);p.vx*=.72;p.vy*=.72;}if(!game.moonUltI){if(game.moonUltPause37>0)game.moonUltPause37=Math.max(0,game.moonUltPause37-dt);else game.moonUltCharge37=clamp((game.moonUltCharge37||0)+dt*.65,0,100);}else{const u=game.moonUltI;u.time-=dt;p.vx=0;p.vy=0;if(u.phase==='prep'&&u.time<=0){u.phase='storm';u.time=3;}else if(u.phase==='storm'){if(Math.random()<.9)cutI({x:rand(0,W),y:rand(0,H),a:rand(-1.5,1.5),len:rand(W*.45,W*.95),w:rand(16,30),life:3.2,maxLife:3.2,damage:0,color:'#7be8ff',edge:'#07111f',kind:'ult',persist:true});if(u.time<=0){u.phase='break';u.time=.9;game.flash=.7;game.flashColor='#fff';game.shake=30;for(let i=0;i<44;i++)game.moonGlassI.push({x:rand(0,W),y:rand(0,H),vx:rand(-160,160),vy:rand(80,280),w:rand(28,100),h:rand(18,70),r:rand(0,6.28),vr:rand(-5,5),life:1.25,maxLife:1.25});for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i];e.hp-=e.type==='boss'?e.maxHp*.30:999999;if(e.hp<=0)enemyDeath(i,e);}}}else if(u.phase==='break'&&u.time<=0)game.moonUltI=null;}
-    if(game.moonAuraI){const z=game.moonAuraI;z.life-=dt;z.tick+=dt;if(z.life<=0)game.moonAuraI=null;else{let h=0;for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i];if(Math.hypot(e.x-p.x,e.y-p.y)<z.r+e.r&&h<10){e.hp-=24*game.upgrades.damage*dt;if(z.tick>.08){cutI({x:e.x+rand(-8,8),y:e.y+rand(-8,8),a:rand(0,Math.PI*2),len:55,w:8,life:.13,maxLife:.13,damage:0,color:'#fff',edge:'#111',kind:'visual'});}if(e.hp<=0)enemyDeath(i,e);h++;}}if(z.tick>.08)z.tick=0;}}
-    if(game.moonWorldI){const z=game.moonWorldI;z.life-=dt;if(z.life<=0)game.moonWorldI=null;else if(Math.random()<.88){const a=angleTo(p,mouse)+rand(-.55,.55);cutI({x:p.x,y:p.y,a,len:W*.82,w:34,life:.22,maxLife:.22,damage:0,color:['#fff','#7be8ff','#8c5cff'][Math.floor(rand(0,3))],edge:'#080818',kind:'visual'});for(const e of game.enemies){if(Math.hypot(e.x-p.x,e.y-p.y)<W*.75){e.hp-=7*game.upgrades.damage;e.x+=Math.cos(a)*14;e.y+=Math.sin(a)*14;}}}}
-    idsI();for(let i=game.moonCutsI.length-1;i>=0;i--){const c=game.moonCutsI[i];c.px=c.x;c.py=c.y;if(c.home&&c.target&&game.enemies.includes(c.target)){const aa=angleTo(c,c.target);c.a=aa;c.vx=Math.cos(aa)*760;c.vy=Math.sin(aa)*760;}c.x+=c.vx*dt;c.y+=c.vy*dt;if(!(c.persist&&game.moonUltI&&game.moonUltI.phase==='storm'))c.life-=dt;if(c.life<=0||c.x<-160||c.x>W+160||c.y<-160||c.y>H+160){game.moonCutsI.splice(i,1);continue;}if(['basic','split','blood','dash'].includes(c.kind)){for(const e of [...game.enemies]){if(c.hit?.includes(e._moonIdI))continue;const hit=segDistI(e.x,e.y,c.px,c.py,c.x,c.y)<e.r+c.w*1.9;if(hit){hitI(c,e);if(c.hit)c.hit.push(e._moonIdI);if(c.kind==='basic'&&c.split>0)spawnSplitI(e,c.a,c.hit);game.moonCutsI.splice(i,1);break;}}}}
-    for(const e of [...game.enemies])if(e.moonBloodI){e.moonBloodI.timer-=dt;if(e.moonBloodI.timer<=0){game.moonBoomsI.push({x:e.x,y:e.y,r:118,life:.6,maxLife:.6,kind:'blood'});dmgAreaI(e.x,e.y,115,36*game.upgrades.damage,.4);e.moonBloodI=null;}}
-    for(let i=game.moonBoomsI.length-1;i>=0;i--){game.moonBoomsI[i].life-=dt;if(game.moonBoomsI[i].life<=0)game.moonBoomsI.splice(i,1);}for(let i=game.moonSmokeI.length-1;i>=0;i--){const s=game.moonSmokeI[i];s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;if(s.life<=0)game.moonSmokeI.splice(i,1);}for(let i=game.moonGlassI.length-1;i>=0;i--){const s=game.moonGlassI[i];s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.r+=s.vr*dt;if(s.life<=0)game.moonGlassI.splice(i,1);}updateHUD?.();};
-  const renderPrevI=render;function drawCutI(c){const a=Math.max(0,c.life/(c.maxLife||1));ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=a;ctx.shadowBlur=22;ctx.shadowColor=c.color;const len=c.len,w=c.w;ctx.beginPath();ctx.moveTo(-len*.5,-w*.14);ctx.quadraticCurveTo(-len*.15,-w*.85,len*.22,-w*.22);ctx.quadraticCurveTo(len*.46,w*.02,len*.5,w*.32);ctx.quadraticCurveTo(len*.12,w*.95,-len*.38,w*.25);ctx.quadraticCurveTo(-len*.52,w*.05,-len*.5,-w*.14);ctx.closePath();ctx.fillStyle='rgba(0,0,0,.86)';ctx.fill();ctx.strokeStyle='rgba(255,255,255,.82)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(-len*.35,-w*.02);ctx.quadraticCurveTo(-len*.05,-w*.55,len*.22,-w*.08);ctx.quadraticCurveTo(len*.34,w*.04,len*.38,w*.16);ctx.quadraticCurveTo(len*.03,w*.55,-len*.27,w*.12);ctx.closePath();ctx.fillStyle=c.color;ctx.fill();ctx.restore();}
-  render=function(){renderPrevI();if(!game)return;document.getElementById('moonQte37')?.remove();document.getElementById('moonQTEI')?.remove();if(game.classKey==='moonSlayer'){const p=game.player;if(p&&!(game.moonUltI&&game.moonUltI.phase==='storm')){ctx.save();ctx.translate(p.x,p.y);ctx.shadowBlur=18;ctx.shadowColor='#b67dff';ctx.fillStyle='#30135c';ctx.strokeStyle='#fff';ctx.lineWidth=1.7;ctx.beginPath();ctx.moveTo(0,-16);ctx.lineTo(15,-2);ctx.lineTo(10,15);ctx.lineTo(-10,15);ctx.lineTo(-15,-2);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#f7f2ff';ctx.fillRect(-16,-11,32,4);ctx.strokeStyle='#f7f2ff';ctx.beginPath();ctx.arc(-2,-18,8,Math.PI*.22,Math.PI*1.25);ctx.stroke();ctx.restore();if(game.moonRChargingI){ctx.save();const w=88,h=8,pct=game.moonRChargeI/1.35;ctx.fillStyle='rgba(5,12,30,.82)';ctx.fillRect(p.x-w/2,p.y+p.r+15,w,h);ctx.fillStyle=pct>=.95?'#ffd166':'#72d7ff';ctx.fillRect(p.x-w/2,p.y+p.r+15,w*clamp(pct,0,1),h);ctx.strokeStyle='#e9fbff';ctx.strokeRect(p.x-w/2,p.y+p.r+15,w,h);ctx.restore();}}for(const c of game.moonCutsI||[])drawCutI(c);for(const b of game.moonBoomsI||[]){const a=Math.max(0,b.life/b.maxLife);ctx.save();ctx.globalAlpha=a;const g=ctx.createRadialGradient(b.x,b.y,8,b.x,b.y,b.r);g.addColorStop(0,b.kind==='blood'?'rgba(255,230,230,.82)':'rgba(255,255,255,.72)');g.addColorStop(.32,b.kind==='blood'?'rgba(255,40,60,.5)':'rgba(210,190,255,.36)');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();if(b.kind==='blood'){ctx.fillStyle='rgba(255,220,220,.5)';ctx.beginPath();ctx.ellipse(b.x,b.y-b.r*.45,b.r*.2,b.r*.35,0,0,Math.PI*2);ctx.fill();}else{ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(b.x-38,b.y,b.r*.68,-.5,3.8);ctx.stroke();}ctx.restore();}for(const s of game.moonSmokeI||[]){ctx.save();ctx.globalAlpha=Math.max(0,s.life/s.maxLife)*.5;ctx.fillStyle='rgba(180,220,255,.45)';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();ctx.restore();}for(const s of game.moonGlassI||[]){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.r);ctx.globalAlpha=Math.max(0,s.life/s.maxLife)*.88;const gr=ctx.createLinearGradient(-s.w/2,-s.h/2,s.w/2,s.h/2);gr.addColorStop(0,'rgba(255,255,255,.9)');gr.addColorStop(.45,'rgba(120,220,255,.35)');gr.addColorStop(1,'rgba(255,255,255,.08)');ctx.fillStyle=gr;ctx.strokeStyle='rgba(190,240,255,.95)';ctx.fillRect(-s.w/2,-s.h/2,s.w,s.h);ctx.strokeRect(-s.w/2,-s.h/2,s.w,s.h);ctx.restore();}if(game.moonQTEI){let d=document.createElement('div');d.id='moonQTEI';d.className='qteLineI '+(game.moonQTEI.result==='good'?'good':game.moonQTEI.result==='bad'?'bad':'');const pct=clamp(game.moonQTEI.timer/game.moonQTEI.total,0,1)*100;d.innerHTML=`<div class="label">APERTE Q NO PONTO AZUL</div><div class="track"><i class="blue"></i><i class="needle" style="left:${pct}%"></i></div>`;document.body.appendChild(d);}}};
-  // Bestiário estilo antigo, com canvas 360 no detalhe
-  const BESTI=[
-    {id:'swarmer',g:'Comuns',n:'Swarmer',emoji:'🐜',hp:13,spd:197,dmg:'6 contato',val:8,u:10,c:'#ff4fa8',shape:'swarmer',l:'Enxame nascido de fragmentos nervosos de Chrono. Surgem quando partículas pequenas demais para virar um monstro inteiro se juntam por instinto. Atacam em grupo, cercam o alvo e tentam vencer pelo caos.'},{id:'chaser',g:'Comuns',n:'Chaser',emoji:'🩸',hp:28,spd:106,dmg:'13 contato',val:10,u:10,c:'#ff5e7e',shape:'chaser',l:'Criatura direta das fissuras menores. Não caça por inteligência, mas por impulso: escolhe um alvo, corre até ele e força o jogador a se mover sem descanso.'},{id:'strafer',g:'Comuns',n:'Strafer',emoji:'🌀',hp:22,spd:149,dmg:'10 contato',val:14,u:10,c:'#ffb86b',shape:'strafer',l:'Um erro vivo de trajetória. O Strafer aprendeu a sobreviver quebrando linhas retas, girando e entrando pelos cantos da visão para atrapalhar a mira.'},{id:'bomber',g:'Comuns',n:'Bomber',emoji:'💣',hp:28,spd:104,dmg:'Explosivo',val:18,u:10,c:'#ff9966',shape:'bomber',l:'Núcleo instável que existe para virar clarão. Seu corpo armazena energia até o limite e ele corre para transformar a própria morte em ataque.'},{id:'leaper',g:'Comuns',n:'Leaper',emoji:'🦗',hp:36,spd:99,dmg:'14 impacto',val:18,u:10,c:'#ffe066',shape:'leaper',l:'Criado em arenas onde cobertura era comum demais. O Leaper comprime energia no corpo e pula para cortar distâncias que outros monstros não atravessariam.'},{id:'sentinel',g:'Comuns',n:'Sentinel',emoji:'👁️',hp:50,spd:58,dmg:'8 por tiro',val:22,u:10,c:'#4ce0b3',shape:'sentinel',l:'Antigo vigia de passagens Chrono, corrompido até confundir sobreviventes com invasores. Mantém distância e dispara como se estivesse defendendo um portal sagrado.'},{id:'tank',g:'Comuns',n:'Tank',emoji:'🛡️',hp:68,spd:65,dmg:'20 contato',val:20,u:10,c:'#c38bff',shape:'tank',l:'Massa condensada de Chrono endurecido. O Tank não precisa correr: sua função é tomar espaço, aguentar dano e transformar a arena em um corredor apertado.'},{id:'medic',g:'Elites',n:'Medic Drone',emoji:'💚',hp:42,spd:82,dmg:'Suporte',val:26,u:10,c:'#86ffb0',shape:'medic',l:'Protocolo de reparo que enlouqueceu. Ele não nasceu agressivo, mas aprendeu que manter monstros vivos era o jeito mais eficiente de destruir invasores.'},{id:'sniperDrone',g:'Elites',n:'Sniper Drone',emoji:'🎯',hp:30,spd:75,dmg:'15 por tiro',val:24,u:10,c:'#8fd0ff',shape:'sniper',l:'Drone de execução feito para vigiar zonas abertas. Depois das rupturas, passou a escolher ângulos distantes e punir qualquer jogador parado por tempo demais.'},{id:'splitter',g:'Elites',n:'Splitter',emoji:'✂️',hp:55,spd:85,dmg:'Contato médio',val:24,u:10,c:'#ff8cf0',shape:'splitter',l:'Organismo que se recusa a morrer inteiro. Cada pedaço dele guarda uma intenção separada, por isso sua queda quase sempre vira outra ameaça.'},{id:'vomiter',g:'Elites',n:'Vomiter',emoji:'☣️',hp:140,spd:62,dmg:'Veneno',val:34,u:10,c:'#89ff5f',shape:'vomiter',l:'Reservatório vivo das Dunas antigas. Surgiu quando areia, bile e energia Chrono apodreceram juntas. Lento, pesado e perigoso mesmo depois de morto.'},{id:'pukeling',g:'Elites',n:'Pukeling',emoji:'🧪',hp:18,spd:165,dmg:'5 + veneno',val:7,u:10,c:'#b6ff7a',shape:'pukeling',l:'Larvas ácidas expelidas por Vomiters. Vivem pouco, mas nascem com pressa, procurando contaminar qualquer coisa antes que o corpo desmanche.'},{id:'archon',g:'Bosses',n:'Archon Core',emoji:'👑',hp:4100,spd:58,dmg:'Alto',val:360,u:2,c:'#ff2e63',shape:'archon',l:'Motor de guerra acelerado por um coração Chrono quebrado. O Archon governa pelo ritmo: rajadas, pressão e reforços constantes.'},{id:'titan',g:'Bosses',n:'Titan Bastion',emoji:'🗿',hp:5200,spd:34,dmg:'Muito alto',val:560,u:2,c:'#7b61ff',shape:'titan',l:'Bastião de contenção que ganhou vontade própria. O Titan não entra na arena, ele a ocupa, pisando como se cada impacto fosse uma ordem.'},{id:'oracle',g:'Bosses',n:'Oracle Bloom',emoji:'🌿',hp:5200,spd:38,dmg:'Muito alto',val:650,u:2,c:'#b6ff7a',shape:'oracle',l:'Flor Chrono nascida onde natureza e tempo colidiram. Ela lê padrões de combate e tenta fechar todas as saídas com fendas, cura e pressão.'},{id:'lostEmperor',g:'Boss Secreto',n:'Emperador Perdido',emoji:'🕳️',hp:7800,spd:70,dmg:'Catastrófico',val:'???',u:1,c:'#ff345e',shape:'emperor',l:'Um soberano engolido por uma fissura proibida. O que voltou não é exatamente um rei: é dor usando armadura, uma memória viva tentando rasgar o ciclo inteiro.',secret:true}
-  ];
-  const killsI=id=>{try{return Number((JSON.parse(localStorage.getItem(SAVE_KEY)||'{}').bestiaryKills||{})[id]||0)}catch{return 0}};let bestAnimI=0;function stopBestI(){if(bestAnimI)cancelAnimationFrame(bestAnimI);bestAnimI=0;}
-  function modelI(ctx,e,t){ctx.clearRect(0,0,240,240);ctx.save();ctx.translate(120,120);ctx.rotate(t);ctx.shadowBlur=22;ctx.shadowColor=e.c;ctx.fillStyle=e.c;ctx.strokeStyle='#fff';ctx.lineWidth=2.5;const poly=(n,r1,r2)=>{ctx.beginPath();for(let i=0;i<n*2;i++){const a=i*Math.PI/n-Math.PI/2,r=i%2?r2:r1;if(!i)ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r);else ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);}ctx.closePath();ctx.fill();ctx.stroke();};if(e.shape==='tank'||e.shape==='titan'){ctx.beginPath();ctx.roundRect(-48,-55,96,110,18);ctx.fill();ctx.stroke();}else if(e.shape==='sentinel'||e.shape==='oracle'||e.shape==='medic'){ctx.beginPath();ctx.arc(0,0,e.shape==='oracle'?48:38,0,Math.PI*2);ctx.fill();ctx.stroke();if(e.shape==='medic'){ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(0,-20);ctx.lineTo(0,20);ctx.moveTo(-20,0);ctx.lineTo(20,0);ctx.stroke();}}else if(e.shape==='emperor'){ctx.fillStyle='#080203';poly(6,58,34);ctx.strokeStyle=e.c;ctx.lineWidth=3;ctx.stroke();ctx.fillStyle=e.c;ctx.fillRect(-8,-52,16,104);}else if(e.shape==='bomber'||e.shape==='splitter')poly(7,48,28);else if(e.shape==='swarmer'||e.shape==='pukeling')poly(5,40,22);else {ctx.beginPath();ctx.moveTo(0,-48);ctx.lineTo(40,-8);ctx.lineTo(26,48);ctx.lineTo(-26,48);ctx.lineTo(-40,-8);ctx.closePath();ctx.fill();ctx.stroke();}ctx.restore();}
-  function openDetailI(id){const e=BESTI.find(x=>x.id===id);if(!e)return;stopBestI();overlay.classList.remove('hidden');overlayCard.className='card panel37';overlayCard.innerHTML=`<h1>${escI(e.n)}</h1><p>${escI(e.g)} • Registro liberado com ${killsI(e.id)} abates.</p><div class="detailI"><div class="canvasBoxI"><canvas id="bestCanvasI" width="240" height="240"></canvas><span class="badge37" style="--co:${e.secret?'#ff345e':'#61dafb'}">MODELO 360°</span></div><div><div class="statsI"><div class="statI"><small>HP BASE</small><b>${e.hp}</b></div><div class="statI"><small>VELOCIDADE</small><b>${e.spd}</b></div><div class="statI"><small>DANO</small><b>${e.dmg}</b></div><div class="statI"><small>RECOMPENSA</small><b>${e.val}</b></div></div><div class="attackI"><h4>COMPORTAMENTO</h4><span>${escI(e.l)}</span></div></div></div><div class="loreI"><h4>ORIGEM</h4><span>${escI(e.l)}</span></div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backBestI">← Voltar ao bestiário</button></div>`;document.getElementById('backBestI').onclick=openBestiaryI;const c=document.getElementById('bestCanvasI'),ctx=c.getContext('2d');let t=0;const loop=()=>{t+=.025;modelI(ctx,e,t);bestAnimI=requestAnimationFrame(loop)};loop();}
-  function openBestiaryI(){stopBestI();const groups=['Comuns','Elites','Bosses','Boss Secreto'];overlay.classList.remove('hidden');overlayCard.className='card panel37';overlayCard.innerHTML=`<h1>BESTIÁRIO</h1><p>Registros organizados por força. Esta área é um catálogo com todas as desgraças que você viu ou vai ver por ai.</p><div class="bookWrapI">${groups.map(g=>`<div class="bookSectionI"><h3>${g.toUpperCase()}</h3><div class="bookGridI">${BESTI.filter(e=>e.g===g).map(e=>{const k=killsI(e.id),ok=k>=e.u;return `<button class="bookEntryI ${ok?'':'locked'} ${e.secret?'secret':''}" data-besti="${e.id}" ${ok?'':'disabled'}><div class="bookMiniI">${ok?e.emoji:'?'}</div><strong>${ok?escI(e.n):'Registro Bloqueado'}</strong><span>${ok?escI(e.g):'Elimine mais criaturas para revelar.'}</span><div class="bookMetaI">${ok?`${k} abates`:`${k}/${e.u} abates`}</div></button>`}).join('')}</div></div>`).join('')}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backBestMenuI">← Voltar</button></div>`;document.getElementById('backBestMenuI').onclick=()=>{const h=document.getElementById('hubStart37');if(h)h.click();else openStartMenu();};overlayCard.querySelectorAll('[data-besti]').forEach(b=>b.onclick=()=>openDetailI(b.dataset.besti));}
-  window.openBestiaryI=openBestiaryI; window.__openBestiaryLatest=openBestiaryI; window.openBestiary37=openBestiaryI; window.openBestiary38=openBestiaryI; window.openBestiaryG=openBestiaryI;
-  document.addEventListener('click',e=>{const b=e.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG');if(b){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openBestiaryI();}},true);
-  document.addEventListener('click',e=>{const inf=e.target.closest('.info37[data-info37]');if(inf){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();const fn=window.openClassInfo35||window.openClassInfo29||window.openClassInfo28||window.openClassInfo27||window.openClassInfo23;if(fn)fn(inf.dataset.info37);}},true);
-  // órbita desaceleradora: 60% de lentidão, não trava
-  const playerAfterI=updatePlayer;updatePlayer=function(dt){if(game&&game.upgrades?.orbitSlowAura&&game.orbitAuraState37?.active&&game.player&&Array.isArray(game.enemyBullets)){const p=game.player,before=new Map();for(const b of game.enemyBullets)before.set(b,{vx:b.vx,vy:b.vy,inside:Math.hypot(b.x-p.x,b.y-p.y)<74});playerAfterI(dt);for(const b of game.enemyBullets||[]){const info=before.get(b);if(!info)continue;const inside=Math.hypot(b.x-p.x,b.y-p.y)<74;if(inside){if(!info.inside)b._orbitLock38={vx:info.vx*.4,vy:info.vy*.4};if(b._orbitLock38){b.vx=b._orbitLock38.vx;b.vy=b._orbitLock38.vy;}}else b._orbitLock38=null;}return;}return playerAfterI(dt);};
-  console.log(PATCH+' carregado');
-})();
-</script>
-
-
-<script>
-(()=>{
   if(window.__chronoCleanup37m)return; window.__chronoCleanup37m=true;
   const style=document.createElement('style');
   style.textContent=`
@@ -9653,6 +9585,711 @@ function killKey37(e){
   });
   mo.observe(document.body,{childList:true,subtree:true});
   console.log('Chrono cleanup 3.7m: obsolete Bestiário routes neutralized.');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoPatch37n)return; window.__chronoPatch37n=true;
+  const PATCH='Chrono Shards 3.7n — Dunes Rework + Moon Slayer Consolidated';
+  const css=document.createElement('style');
+  css.textContent=`
+    .class-card37[data-class="moonSlayer"] .class-model37{filter:drop-shadow(0 0 24px rgba(175,120,255,.46))}
+    .class-card37[data-class="moonSlayer"] .class-model37:before{width:62px;height:82px;background:linear-gradient(180deg,#fff,#c9b2ff 18%,#6b2cff 46%,#1b0638 72%,#eee8ff);clip-path:polygon(50% 0,70% 10%,89% 33%,80% 50%,92% 67%,68% 100%,32% 100%,8% 67%,20% 50%,11% 33%,30% 10%);box-shadow:0 0 0 2px rgba(255,255,255,.18) inset,0 0 34px rgba(168,105,255,.38)}
+    .class-card37[data-class="moonSlayer"] .class-model37:after{width:116px;height:116px;border-color:rgba(210,190,255,.72);box-shadow:0 0 28px rgba(190,150,255,.45),0 0 60px rgba(80,170,255,.18)}
+    .class-card37[data-class="moonSlayer"] .class-model37 .hat37{top:8px;width:104px;height:18px;background:linear-gradient(90deg,#29104a,#f7f2ff,#6b2cff);box-shadow:0 0 16px rgba(210,190,255,.4)}
+    .class-card37[data-class="moonSlayer"] .class-model37 .moon37{right:64px;top:16px;width:22px;height:22px;box-shadow:9px 0 0 0 #fff,0 0 18px rgba(255,255,255,.45)}
+    .moonQteN{position:absolute;left:50%;top:15%;transform:translateX(-50%);z-index:80;width:min(70vw,420px);padding:16px 18px;border-radius:20px;background:linear-gradient(135deg,rgba(8,12,26,.94),rgba(37,13,70,.92));border:1px solid rgba(220,230,255,.22);box-shadow:0 0 38px rgba(150,115,255,.25);pointer-events:none;text-align:center}
+    .moonQteN .caption{font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:.16em;color:#eff8ff;margin-bottom:10px}.moonQteN .track{height:16px;border-radius:999px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);position:relative;overflow:visible}.moonQteN .target{position:absolute;left:62%;top:50%;width:20px;height:30px;border-radius:10px;background:#66d7ff;box-shadow:0 0 22px #66d7ff;transform:translate(-50%,-50%)}.moonQteN .needle{position:absolute;left:0%;top:50%;width:14px;height:34px;border-radius:9px;background:#fff;box-shadow:0 0 20px #fff;transform:translate(-50%,-50%)}.moonQteN.good .target{background:#7dff99;box-shadow:0 0 24px #7dff99}.moonQteN.bad .target{background:#ff546b;box-shadow:0 0 24px #ff546b}.moonQteN.good .needle{background:#7dff99}.moonQteN.bad .needle{background:#ff546b}
+  `;
+  document.head.appendChild(css);
+
+  // ── DUNES: new arena data and actual desert rendering ─────────────
+  function makeDuneDecorN(wave=16){
+    const obstacles=[],pads=[],lanes=[];
+    const add=(x,y,w,h,type='sandstone')=>obstacles.push({x,y,w,h,type,pulse:rand(0,Math.PI*2)});
+    add(72,128,168,34,'sandstone'); add(W-240,130,168,34,'sandstone');
+    add(W*.18,H*.62,38,150,'obelisk'); add(W*.82,H*.38,38,150,'obelisk');
+    add(W*.42,H*.30,190,30,'ruin'); add(W*.36,H*.72,150,30,'ruin'); add(W*.64,H*.68,180,30,'ruin');
+    add(W*.52-46,H*.50-46,92,92,'chronoCrystal');
+    add(120,H-170,92,30,'sandstone'); add(W-212,H-178,92,30,'sandstone');
+    pads.push({x:96,y:H-92,r:28,type:'focus',pulse:rand(0,6)}); pads.push({x:W-94,y:92,r:28,type:'speed',pulse:rand(0,6)});
+    lanes.push({x:W/2,y:H/2,ang:Math.PI/9,pulse:0});
+    return {dunesN:true,theme:{accent:'#f5c66a',grid:'#d79b45',fog:'rgba(251,202,112,.18)'},obstacles,pads,lanes,rocks:Array.from({length:36},(_,i)=>({x:rand(40,W-40),y:rand(40,H-40),r:rand(3,12),c:i%7===0?'#8ff5ff':i%5===0?'#caa3ff':'#8c6030',a:rand(0,Math.PI*2)})),crystals:Array.from({length:9},()=>({x:rand(60,W-60),y:rand(70,H-60),h:rand(20,48),c:Math.random()<.5?'#9bedff':'#d7b5ff'}))};
+  }
+  const makeMapDecorPrevN=makeMapDecor;
+  makeMapDecor=function(wave){ if((game&&game.duneMap)||wave>=16) return makeDuneDecorN(wave); return makeMapDecorPrevN(wave); };
+  const drawGridPrevN=drawGrid;
+  drawGrid=function(){
+    const md=game?.mapDecor;
+    if(!md?.dunesN) return drawGridPrevN();
+    const t=game.time||0;
+    ctx.save();
+    const sky=ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#37200d'); sky.addColorStop(.42,'#8f6228'); sky.addColorStop(1,'#1a120a'); ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha=.22; ctx.fillStyle='#ffe39a';
+    for(let i=0;i<8;i++){ const y=H*.36+i*54; ctx.beginPath(); ctx.moveTo(-60,y); for(let x=-60;x<W+80;x+=90){ ctx.quadraticCurveTo(x+45,y-22-Math.sin(i+x*.01)*12,x+90,y); } ctx.lineTo(W+80,H); ctx.lineTo(-60,H); ctx.closePath(); ctx.fill(); }
+    ctx.globalAlpha=.18; ctx.strokeStyle='rgba(255,230,160,.55)'; ctx.lineWidth=1;
+    for(let y=44;y<H;y+=42){ ctx.beginPath(); ctx.moveTo(0,y+Math.sin(t+y)*6); ctx.bezierCurveTo(W*.28,y-18,W*.64,y+22,W,y-8); ctx.stroke(); }
+    for(const r of md.rocks||[]){ ctx.save(); ctx.translate(r.x,r.y); ctx.rotate(r.a); ctx.globalAlpha=r.c.includes('ff')?.55:.42; ctx.shadowBlur=r.c.includes('ff')?16:0; ctx.shadowColor=r.c; ctx.fillStyle=r.c; ctx.beginPath(); ctx.ellipse(0,0,r.r*1.5,r.r,.2,0,Math.PI*2); ctx.fill(); ctx.restore(); }
+    for(const c of md.crystals||[]){ ctx.save(); ctx.translate(c.x,c.y); ctx.shadowBlur=18; ctx.shadowColor=c.c; ctx.fillStyle=c.c+'99'; ctx.strokeStyle='#fff8'; ctx.beginPath(); ctx.moveTo(0,-c.h); ctx.lineTo(12,-c.h*.18); ctx.lineTo(5,c.h*.35); ctx.lineTo(-6,c.h*.35); ctx.lineTo(-12,-c.h*.18); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
+    ctx.globalAlpha=.18; ctx.strokeStyle='rgba(255,255,255,.4)'; ctx.lineWidth=2; ctx.strokeRect(10,10,W-20,H-20);
+    for(const pad of md.pads||[]){ const rr=pad.r+Math.sin((pad.pulse||0)+t*2)*3; ctx.globalAlpha=.34; ctx.fillStyle=pad.type==='speed'?'#ffd166':'#8feeff'; ctx.beginPath(); ctx.arc(pad.x,pad.y,rr,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=.9; ctx.strokeStyle=ctx.fillStyle; ctx.stroke(); }
+    for(const o of md.obstacles||[]){
+      o.pulse=(o.pulse||0)+.015; ctx.save(); ctx.globalAlpha=.96; ctx.shadowBlur=o.type==='chronoCrystal'?22:10; ctx.shadowColor=o.type==='chronoCrystal'?'#bdf8ff':'#f5c66a';
+      let g=ctx.createLinearGradient(o.x,o.y,o.x+o.w,o.y+o.h);
+      if(o.type==='chronoCrystal'){g.addColorStop(0,'rgba(165,245,255,.38)');g.addColorStop(.5,'rgba(196,160,255,.26)');g.addColorStop(1,'rgba(45,20,85,.42)');ctx.strokeStyle='rgba(218,255,255,.75)';}
+      else {g.addColorStop(0,'rgba(164,102,40,.86)');g.addColorStop(.5,'rgba(235,185,94,.76)');g.addColorStop(1,'rgba(87,52,21,.88)');ctx.strokeStyle='rgba(255,231,162,.55)';}
+      ctx.fillStyle=g; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(o.x,o.y,o.w,o.h,o.type==='chronoCrystal'?18:9); ctx.fill(); ctx.stroke();
+      ctx.globalAlpha=.25; ctx.fillStyle='#fff'; ctx.fillRect(o.x+8,o.y+5,Math.max(4,o.w-16),2); ctx.restore();
+    }
+    ctx.restore();
+  };
+  // shorten transition and make it independent from old timer length
+  const startNextWavePrevN=startNextWave;
+  startNextWave=function(){ startNextWavePrevN(); if(game?.duneTransition37){game.duneTransition37.max=3.25;game.duneTransition37.timer=Math.min(game.duneTransition37.timer||3.25,3.25);} if(game?.wave>=16){game.duneMap=true;game.mapDecor=makeDuneDecorN(game.wave);} };
+  const updatePlayerTransitionPrevN=updatePlayer;
+  // This wrapper will be replaced below by the Moon Slayer wrapper; keep helper accessible.
+
+  function drawSandTransitionN(){
+    if(!game?.duneTransition37)return;
+    const tr=game.duneTransition37,t=game.time||0,total=tr.max||3.25,prog=1-clamp((tr.timer||0)/total,0,1);
+    ctx.save();
+    const alpha=.55+.35*Math.sin(prog*Math.PI);
+    const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,`rgba(84,45,12,${alpha})`);g.addColorStop(.45,`rgba(229,177,70,${alpha})`);g.addColorStop(1,`rgba(255,231,150,${alpha})`);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    for(let l=0;l<7;l++){ctx.globalAlpha=.10+l*.045;ctx.fillStyle=l%2?'rgba(255,244,190,.8)':'rgba(122,72,26,.72)';const step=32+l*4,sp=420+l*145;for(let y=-80;y<H+90;y+=step){ctx.beginPath();const off=(t*sp+l*79)%W;ctx.moveTo(-160,y);for(let x=-160;x<W+200;x+=70){ctx.lineTo(x,y+Math.sin((x+off)*.018+t*2+l)*18+l*3)}ctx.lineTo(W+200,y+28);ctx.lineTo(-160,y+28);ctx.closePath();ctx.fill();}}
+    ctx.globalAlpha=.9;ctx.fillStyle='rgba(255,234,170,.86)';for(let i=0;i<150;i++){const x=(i*61+t*(520+i%9*31))%(W+220)-110,y=(i*37+Math.sin(t*2+i)*90)%(H+100)-50,s=1+(i%6);ctx.fillRect(x,y,s*5,Math.max(1,s));}
+    ctx.globalAlpha=1;ctx.textAlign='center';ctx.font='900 32px Orbitron,Arial';ctx.fillStyle='#fff3c8';ctx.shadowBlur=28;ctx.shadowColor='#fff0a8';ctx.fillText('Antigas Dunas do Lorde Chronos',W/2,H/2-10);ctx.font='14px Orbitron,Arial';ctx.fillStyle='rgba(255,255,255,.9)';ctx.fillText('A arena antiga desperta sob a areia…',W/2,H/2+28);
+    ctx.restore();
+  }
+
+  // ── Moon Slayer consolidated system ─────────────────────────────
+  function ensureMoonN(){if(!game)return;game.moonCutsN=game.moonCutsN||[];game.moonFxN=game.moonFxN||[];game.moonGlassN=game.moonGlassN||[];game.moonQteN=game.moonQteN||null;game.moonBloodFormN=game.moonBloodFormN||0;game.moonAuraN=game.moonAuraN||null;game.moonWorldN=game.moonWorldN||null;game.moonUltN=game.moonUltN||null;game.moonImpactsN=game.moonImpactsN||[];}
+  const resetGamePrevN=resetGame;
+  resetGame=function(classKey){resetGamePrevN(classKey);if(game){ensureMoonN();game.moonCutsN=[];game.moonFxN=[];game.moonGlassN=[];game.moonQteN=null;game.moonBloodFormN=0;game.moonAuraN=null;game.moonWorldN=null;game.moonUltN=null;game.moonImpactsN=[];if(classKey==='moonSlayer'){game.moonUltCharge37=0;game.moonUltPause37=0;}}};
+  function moonHealN(){if(game?.classKey==='moonSlayer'&&game.moonBloodFormN>0){const p=game.player;p.hp=clamp(p.hp+p.maxHp*.02,0,p.maxHp);if(Math.random()<.25)addFloatingText(p.x,p.y-22,'+2%','#ff5b72',12);}}
+  function spendMoonN(idx,cd){const key=CLASSES.moonSlayer.skills[idx],sk=SKILL_DEFS[key];if(!game?.running||game.skillCds[idx]>0||game.player.focus<sk.focusCost)return false;game.player.focus-=sk.focusCost;game.skillCds[idx]=cd??sk.cooldown;updateHUD?.();return true;}
+  function segDistN(px,py,x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,l=dx*dx+dy*dy||1;const t=clamp(((px-x1)*dx+(py-y1)*dy)/l,0,1);return Math.hypot(px-(x1+dx*t),py-(y1+dy*t));}
+  function nearestEnemyN(x,y,exclude=[],range=9999){let best=null,bd=range;for(const e of game.enemies||[]){if(exclude.includes(e))continue;const d=Math.hypot(e.x-x,e.y-y);if(d<bd){bd=d;best=e;}}return best;}
+  function addCutN(o){ensureMoonN();const a=o.a||0;game.moonCutsN.push(Object.assign({x:0,y:0,px:o.x||0,py:o.y||0,a,length:120,width:24,life:.35,maxLife:.35,damage:20*game.upgrades.damage,color:'#fff',edge:'#111',vx:0,vy:0,kind:'fx',hits:[],maxHits:1,split:false,homing:null,wall:true,through:0},o));}
+  function hitCutN(c,e){if(c.hits&&c.hits.includes(e))return; c.hits=c.hits||[]; c.hits.push(e);e.hp-=c.damage;e.hitFlash=.16;moonHealN();if(e.hp<=0){const idx=game.enemies.indexOf(e);if(idx>=0)enemyDeath(idx,e);}if(c.split){for(let s of [-1,1]){const target=nearestEnemyN(e.x,e.y,[e],340);const aa=target?angleTo(e,target):c.a+s*.55;addCutN({x:e.x,y:e.y,px:e.x,py:e.y,a:aa+s*.22,length:72,width:14,life:.55,maxLife:.55,damage:c.damage*1.35,color:game.moonBloodFormN>0?'#ff4f62':'#f8f5ff',edge:'#100413',vx:Math.cos(aa+s*.22)*620,vy:Math.sin(aa+s*.22)*620,kind:'child',homing:target,wall:true,maxHits:1});}}}
+  function castBasicMoonN(){const p=game.player;if(!game.running||p.fireCd>0)return;const a=angleTo(p,mouse),red=game.moonBloodFormN>0;addCutN({x:p.x+Math.cos(a)*28,y:p.y+Math.sin(a)*28,px:p.x,py:p.y,a,length:118,width:26,life:.68,maxLife:.68,damage:22*game.upgrades.damage,color:red?'#ff4f62':'#ffffff',edge:red?'#250208':'#090a12',vx:Math.cos(a)*620,vy:Math.sin(a)*620,kind:'main',split:true,maxHits:4,wall:true});p.fireCd=(WEAPONS.moonBlade?.cooldown||.24)/(game.upgrades.fireRate*(red?1.5:1));}
+  function castMoonQN(){if(!spendMoonN(0,10))return;const p=game.player,a=angleTo(p,mouse),sx=p.x,sy=p.y,ex=clamp(sx+Math.cos(a)*340,24,W-24),ey=clamp(sy+Math.sin(a)*340,24,H-24);let target=null,td=9999;for(const e of game.enemies||[]){const d=segDistN(e.x,e.y,sx,sy,ex,ey)-e.r;if(d<58&&d<td){td=d;target=e;}}p.x=ex;p.y=ey;addRing(ex,ey,'#f8f5ff',92,5);game.shake=Math.max(game.shake||0,8);if(target){game.moonQteN={timer:0,total:.78,target:.62,window:.055,targetEnemy:target,angle:a,result:null};}else{for(let i=-2;i<=2;i++)addCutN({x:ex,y:ey,a:a+i*.09,length:170,width:18,damage:24*game.upgrades.damage,life:.28,color:'#fff',edge:'#111'});}}
+  function resolveQteN(success){const q=game.moonQteN;if(!q)return;const e=q.targetEnemy,p=game.player,a=q.angle||angleTo(p,mouse),x=e?.x??p.x+Math.cos(a)*120,y=e?.y??p.y+Math.sin(a)*120;game.moonQteN=null;if(success){game.skillCds[0]=15;game.moonImpactsN.push({x,y,fromY:-160,t:.62,max:.62,r:310,damage:145*game.upgrades.damage});addFloatingText(x,y-40,'ECLIPSE PERFEITO','#eaf6ff',22);game.shake=Math.max(game.shake||0,18);}else{for(let i=-3;i<=3;i++)addCutN({x,y,a:a+i*.12,length:145,width:17,damage:28*game.upgrades.damage,life:.26,color:'#fff',edge:'#111'});game.shake=Math.max(game.shake||0,10);}}
+  function castMoonEN(){if(!spendMoonN(1,15))return;game.moonBloodFormN=3.5;addRing(game.player.x,game.player.y,'#ff4f62',120,5);addFloatingText(game.player.x,game.player.y-32,'LÂMINA SANGRENTA','#ff4f62',18);}
+  function startMoonRN(){if(game.moonRChargeN)return;if(!spendMoonN(2,10))return;game.moonRChargeN={t:0,max:1.35};}
+  function releaseMoonRN(){const c=game?.moonRChargeN;if(!c)return;const full=c.t>=c.max;game.moonRChargeN=null;if(full){game.skillCds[2]=20;game.moonWorldN={life:1.35,maxLife:1.35,tick:0};game.shake=Math.max(game.shake||0,16);}else{game.moonAuraN={life:5,maxLife:5,r:135,tick:0};}}
+  function startMoonUltN(){if(!game||game.classKey!=='moonSlayer'||game.moonUltN||(game.moonUltCharge37||0)<100)return;game.moonUltCharge37=0;game.moonUltPause37=2;game.moonUltN={phase:'prep',time:.7,cuts:[],clearCuts:false};for(let i=0;i<18;i++)game.moonFxN.push({kind:'smoke',x:game.player.x+rand(-24,24),y:game.player.y+rand(-4,10),vx:rand(-28,28),vy:rand(-130,-40),r:rand(18,36),life:1.1,maxLife:1.1});game.shake=18;updateMoonUltUI37?.();}
+  // Key capture: block old moon systems.
+  document.addEventListener('keydown',e=>{if(!game||game.classKey!=='moonSlayer')return;const k=(e.key||'').toLowerCase();if(['q','e','r','x'].includes(k)){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();}
+    if(game.moonQteN&&k==='q'){const progress=game.moonQteN.timer/game.moonQteN.total;resolveQteN(Math.abs(progress-game.moonQteN.target)<=game.moonQteN.window);return;}
+    if(k==='q')castMoonQN(); if(k==='e')castMoonEN(); if(k==='r')startMoonRN(); if(k==='x')startMoonUltN();
+  },true);
+  document.addEventListener('keyup',e=>{if(game?.classKey==='moonSlayer'&&(e.key||'').toLowerCase()==='r'){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();releaseMoonRN();}},true);
+  const useSkillPrevN=useSkill;useSkill=function(idx){if(game?.classKey==='moonSlayer')return;return useSkillPrevN(idx);};
+  const shootPrevN=shoot;shoot=function(){if(game?.classKey==='moonSlayer')return castBasicMoonN();return shootPrevN();};
+
+  const enemyDeathPrevN=enemyDeath;enemyDeath=function(index,e){enemyDeathPrevN(index,e);};
+  const updatePlayerPrevN=updatePlayer;
+  updatePlayer=function(dt){
+    if(game?.duneTransition37){game.duneTransition37.max=3.25;game.duneTransition37.timer=Math.min(game.duneTransition37.timer||3.25,3.25);}
+    if(game?.classKey==='moonSlayer'){
+      ensureMoonN();const p=game.player;const old=game.classKey;game.classKey='assault';updatePlayerPrevN(dt);game.classKey=old;
+      if(game.moonBloodFormN>0){game.moonBloodFormN=Math.max(0,game.moonBloodFormN-dt);p.vx*=1.14;p.vy*=1.14;}
+      if(game.moonQteN){const q=game.moonQteN;q.timer+=dt;if(q.timer/q.total>q.target+q.window)resolveQteN(false);p.vx=0;p.vy=0;}
+      if(game.moonRChargeN){game.moonRChargeN.t=Math.min(game.moonRChargeN.max,game.moonRChargeN.t+dt);p.vx*=.65;p.vy*=.65;}
+      if(!game.moonUltN){if(game.moonUltPause37>0)game.moonUltPause37=Math.max(0,game.moonUltPause37-dt);else game.moonUltCharge37=clamp((game.moonUltCharge37||0)+dt*.62,0,100);}else{const u=game.moonUltN;u.time-=dt;p.vx=0;p.vy=0;if(u.phase==='prep'&&u.time<=0){u.phase='storm';u.time=3.0;}else if(u.phase==='storm'){if(Math.random()<.86){const a=rand(-Math.PI,Math.PI),x=rand(-80,W+80),y=rand(-60,H+60);const cut={x,y,a,len:rand(W*.36,W*.95),w:rand(15,30),life:999,color:Math.random()<.75?'#7de7ff':'#ffffff'};u.cuts.push(cut);addCutN({x,y,a,length:cut.len,width:cut.w,damage:0,life:999,maxLife:999,color:cut.color,edge:'#061021'});}if(u.time<=.1&&!u.clearCuts){game.moonCutsN=game.moonCutsN.filter(c=>c.life<900);u.clearCuts=true;}if(u.time<=0){u.phase='break';u.time=.55;game.flash=.18;game.flashColor='#ffffff';game.shake=30;for(let i=0;i<42;i++)game.moonGlassN.push({x:rand(0,W),y:rand(-40,H*.45),vx:rand(-190,190),vy:rand(180,430),w:rand(24,96),h:rand(20,80),a:rand(0,6.28),va:rand(-5,5),life:1.4,maxLife:1.4,poly:Array.from({length:5+randi(0,3)},()=>[rand(-.5,.5),rand(-.5,.5)])});for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i];if(e.type==='boss')e.hp-=e.maxHp*.30;else e.hp-=999999;if(e.hp<=0)enemyDeath(i,e);}}}else if(u.phase==='break'&&u.time<=0){game.moonUltN=null;}}
+      // update cuts
+      for(let i=game.moonCutsN.length-1;i>=0;i--){const c=game.moonCutsN[i];c.life-=dt;c.px=c.x;c.py=c.y;if(c.homing&&game.enemies.includes(c.homing)){const aa=angleTo(c,c.homing);c.vx+=(Math.cos(aa)*720-c.vx)*dt*7;c.vy+=(Math.sin(aa)*720-c.vy)*dt*7;c.a=aa;}c.x+=c.vx*dt;c.y+=c.vy*dt;if(c.wall&&typeof shotBlockedByMap==='function'&&shotBlockedByMap(c.px,c.py,{x:c.x,y:c.y,r:6}))c.life=-1;if(c.life<=0||c.x<-120||c.x>W+120||c.y<-120||c.y>H+120){game.moonCutsN.splice(i,1);continue;}if(c.damage>0){const nx=-Math.sin(c.a),ny=Math.cos(c.a);const x1=c.x+nx*c.length*.5,y1=c.y+ny*c.length*.5,x2=c.x-nx*c.length*.5,y2=c.y-ny*c.length*.5;for(const e of [...game.enemies]){if(c.hits?.includes(e))continue;if(segDistN(e.x,e.y,x1,y1,x2,y2)<e.r+c.width*.55){hitCutN(c,e);if(c.hits.length>=c.maxHits&&c.kind!=='main'){c.life=-1;break;}if(c.kind==='main'&&c.hits.length>=4){c.life=-1;break;}}}}
+      }
+      // aura short R
+      if(game.moonAuraN){const z=game.moonAuraN;z.life-=dt;z.tick-=dt;if(z.life<=0)game.moonAuraN=null;else if(z.tick<=0){z.tick=.09;let n=0;for(const e of game.enemies){if(dist(p,e)<z.r+e.r&&n<10){e.hp-=14*game.upgrades.damage;e.hitFlash=.1;moonHealN();addCutN({x:e.x+rand(-10,10),y:e.y+rand(-10,10),a:rand(0,Math.PI*2),length:62,width:9,damage:0,life:.16,color:game.moonBloodFormN>0?'#ff4f62':'#fff',edge:'#111'});if(e.hp<=0){const idx=game.enemies.indexOf(e);if(idx>=0)enemyDeath(idx,e);}n++;}}}}
+      // world cut charged R
+      if(game.moonWorldN){const w=game.moonWorldN;w.life-=dt;w.tick-=dt;if(w.life<=0)game.moonWorldN=null;else if(w.tick<=0){w.tick=.07;for(let k=0;k<5;k++){const a=rand(-Math.PI,Math.PI),x=rand(40,W-40),y=rand(40,H-40),len=rand(W*.42,W*.9);addCutN({x,y,a,length:len,width:34,damage:0,life:.2,color:['#fff','#88ecff','#9b6dff','#ff4f62'][randi(0,3)],edge:'#080510',wall:false});const nx=-Math.sin(a),ny=Math.cos(a),x1=x+nx*len*.5,y1=y+ny*len*.5,x2=x-nx*len*.5,y2=y-ny*len*.5;for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i];if(segDistN(e.x,e.y,x1,y1,x2,y2)<e.r+55){e.hp-=e.type==='boss'?42*game.upgrades.damage:130*game.upgrades.damage;e.hitFlash=.18;const push=angleTo({x,y},e);e.x+=Math.cos(push)*22;e.y+=Math.sin(push)*22;if(e.hp<=0)enemyDeath(i,e);}}}}}
+      // moon impacts
+      for(let i=game.moonImpactsN.length-1;i>=0;i--){const m=game.moonImpactsN[i];m.t-=dt;if(!m.done&&m.t<=0){m.done=true;game.moonFxN.push({kind:'moonBoom',x:m.x,y:m.y,r:m.r,life:.75,maxLife:.75});game.shake=26;game.flash=.22;game.flashColor='#fff';for(let j=game.enemies.length-1;j>=0;j--){const e=game.enemies[j];if(dist(m,e)<m.r+e.r){e.hp-=m.damage*(e.type==='boss'?.55:1);e.hitFlash=.2;if(e.hp<=0)enemyDeath(j,e);}}for(let k=0;k<16;k++)addCutN({x:m.x+rand(-50,50),y:m.y+rand(-50,50),a:rand(0,Math.PI*2),length:rand(100,260),width:rand(12,25),damage:0,life:.34,color:'#fff',edge:'#111',wall:false});}if(m.t<=-.35)game.moonImpactsN.splice(i,1);}
+      for(let i=game.moonFxN.length-1;i>=0;i--){const f=game.moonFxN[i];f.life-=dt;f.x+=(f.vx||0)*dt;f.y+=(f.vy||0)*dt;if(f.life<=0)game.moonFxN.splice(i,1);}for(let i=game.moonGlassN.length-1;i>=0;i--){const s=game.moonGlassN[i];s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.a+=s.va*dt;if(s.life<=0)game.moonGlassN.splice(i,1);}updateHUD?.();return;
+    }
+    return updatePlayerPrevN(dt);
+  };
+  const updateBulletsPrevN=updateBullets;
+  updateBullets=function(dt){if(game?.bullets){for(const b of game.bullets){if(b?.sniperCharged){b.sniperPierceShot=false;b.noPierceHp=true;}}}return updateBulletsPrevN(dt);};
+  const updateEnemiesPrevN=updateEnemies;updateEnemies=function(dt){if(game?.classKey==='moonSlayer'&&(game.moonQteN||game.moonUltN))return;return updateEnemiesPrevN(dt);};
+  const updateEnemyBulletsPrevN=updateEnemyBullets;updateEnemyBullets=function(dt){if(game?.classKey==='moonSlayer'&&(game.moonQteN||game.moonUltN))return;return updateEnemyBulletsPrevN(dt);};
+
+  const updateHUDPrevN=updateHUD;updateHUD=function(){updateHUDPrevN();if(game?.classKey==='moonSlayer'){document.querySelector('#skillIcon1 .key-hint').textContent='Q';document.querySelector('#skillIcon2 .key-hint').textContent='E';document.querySelector('#skillIcon3 .key-hint').textContent='R';document.getElementById('skillEmoji1').textContent='☾';document.getElementById('skillEmoji2').textContent='🩸';document.getElementById('skillEmoji3').textContent='🌙';}else{document.querySelector('#skillIcon1 .key-hint').textContent='E';document.querySelector('#skillIcon2 .key-hint').textContent='Q';document.querySelector('#skillIcon3 .key-hint').textContent='R';}};
+
+  const renderPrevN=render;
+  function drawCutShapeN(c){const alpha=clamp(c.life/(c.maxLife||1),0,1);ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=alpha;ctx.shadowBlur=24;ctx.shadowColor=c.color;const len=c.length,w=c.width;ctx.beginPath();ctx.moveTo(-len*.48,-w*.22);ctx.quadraticCurveTo(-len*.16,-w*.95,len*.28,-w*.24);ctx.quadraticCurveTo(len*.52,w*.05,len*.42,w*.42);ctx.quadraticCurveTo(len*.08,w*.92,-len*.46,w*.22);ctx.closePath();ctx.fillStyle='rgba(0,0,0,.82)';ctx.fill();ctx.strokeStyle='rgba(255,255,255,.86)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(-len*.35,-w*.02);ctx.quadraticCurveTo(-len*.06,-w*.55,len*.32,w*.04);ctx.quadraticCurveTo(-len*.02,w*.56,-len*.35,w*.16);ctx.closePath();ctx.fillStyle=c.color;ctx.fill();ctx.restore();}
+  render=function(){renderPrevN();if(!game)return;drawSandTransitionN();document.getElementById('moonQte37')?.remove();document.getElementById('moonQTEI')?.remove();
+    if(game.classKey==='moonSlayer'){const p=game.player;if(p){ctx.save();ctx.translate(p.x,p.y);const red=game.moonBloodFormN>0;ctx.shadowBlur=red?30:24;ctx.shadowColor=red?'#ff4f62':'#b995ff';ctx.strokeStyle=red?'#ffb3bd':'#f5efff';ctx.fillStyle=red?'#4a0710':'#2b0c58';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-20);ctx.lineTo(18,-8);ctx.lineTo(23,8);ctx.lineTo(10,21);ctx.lineTo(-10,21);ctx.lineTo(-23,8);ctx.lineTo(-18,-8);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#f5efff';ctx.fillRect(-22,-15,44,5);ctx.strokeStyle='#ffffff';ctx.beginPath();ctx.arc(-3,-22,10,Math.PI*.22,Math.PI*1.28);ctx.stroke();ctx.strokeStyle=red?'rgba(255,80,100,.75)':'rgba(185,149,255,.75)';for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(0,0,30+i*9,0,Math.PI*2);ctx.stroke();}if(game.moonRChargeN){const pct=game.moonRChargeN.t/game.moonRChargeN.max,w=92,h=8;ctx.fillStyle='rgba(5,12,30,.82)';ctx.fillRect(-w/2,34,w,h);ctx.fillStyle=pct>=.95?'#ffd166':'#72d7ff';ctx.fillRect(-w/2,34,w*clamp(pct,0,1),h);ctx.strokeStyle='#e9fbff';ctx.strokeRect(-w/2,34,w,h);}ctx.restore();if(game.moonAuraN){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=red?'#ff4f62':'#c8eaff';ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(p.x,p.y,game.moonAuraN.r,0,Math.PI*2);ctx.stroke();ctx.restore();}}
+      for(const m of game.moonImpactsN||[]){ctx.save();const prog=1-clamp(m.t/m.max,0,1);const y=-160+(m.y+160)*prog;ctx.globalAlpha=clamp(prog*1.4,0,1);ctx.shadowBlur=34;ctx.shadowColor='#fff';ctx.fillStyle='#f3f0ff';ctx.beginPath();ctx.arc(m.x,y,54+prog*16,0,Math.PI*2);ctx.fill();ctx.fillStyle='#211044';ctx.beginPath();ctx.arc(m.x+26,y-4,42+prog*12,0,Math.PI*2);ctx.fill();ctx.restore();}
+      for(const c of game.moonCutsN||[])drawCutShapeN(c);for(const f of game.moonFxN||[]){ctx.save();const a=clamp(f.life/f.maxLife,0,1);ctx.globalAlpha=a;if(f.kind==='moonBoom'){const g=ctx.createRadialGradient(f.x,f.y,8,f.x,f.y,f.r);g.addColorStop(0,'rgba(255,255,255,.66)');g.addColorStop(.32,'rgba(205,190,255,.36)');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(f.x-62,f.y,f.r*.52,-.5,3.85);ctx.stroke();}else{ctx.fillStyle='rgba(190,225,255,.45)';ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
+      for(const s of game.moonGlassN||[]){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a);ctx.globalAlpha=clamp(s.life/s.maxLife,0,1)*.92;const gr=ctx.createLinearGradient(-s.w/2,-s.h/2,s.w/2,s.h/2);gr.addColorStop(0,'rgba(255,255,255,.92)');gr.addColorStop(.25,'rgba(180,235,255,.38)');gr.addColorStop(.62,'rgba(255,255,255,.18)');gr.addColorStop(1,'rgba(100,180,255,.08)');ctx.fillStyle=gr;ctx.strokeStyle='rgba(230,250,255,.95)';ctx.beginPath();const pts=s.poly||[[-.5,-.5],[.5,-.4],[.45,.5],[-.45,.4]];pts.forEach((p,i)=>{const x=p[0]*s.w,y=p[1]*s.h;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y)});ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+      let q=document.getElementById('moonQteN');if(game.moonQteN){if(!q){q=document.createElement('div');q.id='moonQteN';q.className='moonQteN';q.innerHTML='<div class="caption">APERTE Q NO PONTO AZUL</div><div class="track"><i class="target"></i><i class="needle"></i></div>';document.body.appendChild(q);}const pct=clamp(game.moonQteN.timer/game.moonQteN.total,0,1)*100;q.querySelector('.needle').style.left=pct+'%';q.classList.toggle('good',Math.abs(pct/100-game.moonQteN.target)<=game.moonQteN.window);q.classList.toggle('bad',pct/100>game.moonQteN.target+game.moonQteN.window);}else q?.remove();
+    }else document.getElementById('moonQteN')?.remove();
+  };
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+<script>
+(()=>{
+  if(window.__chronoPatch37o)return; window.__chronoPatch37o=true;
+  const PATCH='Chrono Shards 3.7o — Moon Slayer Stable + Bestiário Real';
+
+  // Fallback global so old 3.7n code never crashes on ultimate UI calls.
+  window.updateMoonUltUI37 = window.updateMoonUltUI37 || function(){
+    try{
+      const el=document.getElementById('moonUltimate37');
+      if(!el||!window.game)return;
+      if(game.classKey!=='moonSlayer'){el.style.display='none';return;}
+      el.style.display='flex';
+      const c=Math.max(0,Math.min(100,game.moonUltCharge37||0));
+      const fill=el.querySelector('.skill-fill'); if(fill) fill.style.height=c+'%';
+      const txt=document.getElementById('moonUltimateTxt37'); if(txt) txt.textContent=(game.moonUltO?'ULT':(c>=100?'PRONTO':Math.floor(c)+'%'));
+    }catch(_){ }
+  };
+
+  const css=document.createElement('style');
+  css.textContent=`
+    .moonQteO{position:absolute;left:50%;top:13%;transform:translateX(-50%);z-index:95;width:min(520px,82vw);padding:16px 18px;border-radius:18px;background:linear-gradient(135deg,rgba(7,12,28,.95),rgba(20,8,48,.92));border:1px solid rgba(185,220,255,.25);box-shadow:0 0 40px rgba(112,210,255,.16);pointer-events:none;text-align:center}
+    .moonQteO .label{font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:.18em;color:#dff8ff;margin-bottom:10px}
+    .moonQteO .track{height:18px;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,.09),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.16);position:relative;overflow:hidden}
+    .moonQteO .track:before{content:'';position:absolute;left:0;top:0;bottom:0;width:100%;background:repeating-linear-gradient(90deg,transparent 0 22px,rgba(255,255,255,.035) 22px 24px)}
+    .moonQteO .target{position:absolute;left:62%;top:-6px;width:9px;height:30px;border-radius:999px;background:#5deaff;box-shadow:0 0 18px #5deaff,0 0 34px rgba(93,234,255,.45);transform:translateX(-50%)}
+    .moonQteO .window{position:absolute;left:56%;top:0;height:100%;width:12%;background:rgba(93,234,255,.12);border-left:1px solid rgba(93,234,255,.45);border-right:1px solid rgba(93,234,255,.45)}
+    .moonQteO .needle{position:absolute;left:0;top:-5px;width:8px;height:28px;border-radius:999px;background:#fff;box-shadow:0 0 16px #fff;transform:translateX(-50%)}
+    .moonQteO.good .needle{background:#87ff9a;box-shadow:0 0 20px #87ff9a}.moonQteO.bad .needle{background:#ff5770;box-shadow:0 0 20px #ff5770}
+    .moonRewardO{position:absolute;left:50%;top:18%;transform:translateX(-50%);z-index:96;padding:14px 24px;border-radius:18px;background:linear-gradient(135deg,rgba(18,10,48,.95),rgba(4,18,38,.95));border:1px solid rgba(255,255,255,.2);font-family:Orbitron,sans-serif;color:#fff;box-shadow:0 0 36px rgba(125,231,255,.2);animation:moonRewardO .9s ease both;pointer-events:none}@keyframes moonRewardO{0%{opacity:0;transform:translateX(-50%) translateY(14px) scale(.92)}20%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-26px) scale(1.04)}}
+    .bestiaryO{width:min(94vw,1060px);text-align:left;background:linear-gradient(135deg,#151c35,#101323 55%,#171027);border:1px solid rgba(151,220,255,.24);box-shadow:0 0 70px rgba(97,218,251,.1),inset 0 0 80px rgba(255,255,255,.025)}
+    .bestiaryO h1{text-align:center}.bookIntroO{color:#e0edff!important;text-align:center;max-width:760px;margin:0 auto 18px!important}.bookWrapO{display:grid;gap:18px}.bookSectionO{padding:16px;border-radius:22px;background:linear-gradient(150deg,rgba(255,255,255,.075),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.16)}.bookSectionO h3{margin:0 0 12px;font-family:Orbitron,sans-serif;letter-spacing:.16em;color:#fff;text-shadow:0 0 16px rgba(125,231,255,.25)}.bookGridO{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.bookCardO{min-height:178px;padding:14px;border-radius:18px;background:linear-gradient(155deg,rgba(17,27,55,.96),rgba(10,13,28,.94));border:1px solid rgba(150,220,255,.18);color:#ecf7ff;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.22),inset 0 0 28px rgba(255,255,255,.025)}.bookCardO:hover{transform:translateY(-2px);filter:brightness(1.08)}.bookCardO.locked{opacity:.72;filter:saturate(.6)}.bookEmojiO{width:70px;height:70px;display:grid;place-items:center;font-size:30px;border-radius:20px;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.18),rgba(255,255,255,.045));border:1px solid rgba(255,255,255,.17)}.bookCardO strong{font-family:Orbitron,sans-serif;font-size:13px;color:#fff}.bookCardO span{color:#cfe4ff;font-size:13px}.bookKillsO{margin-top:auto;color:#9bedff!important;font-weight:700}.bookProgressO{width:100%;height:8px;border-radius:999px;background:rgba(255,255,255,.09);overflow:hidden}.bookProgressO i{display:block;height:100%;background:linear-gradient(90deg,#61dafb,#c6a0ff)}.bookSecretO{background:linear-gradient(155deg,#18050a,#070207);border-color:rgba(255,65,95,.5);box-shadow:0 0 28px rgba(255,65,95,.14)}.bookDetailO{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}.bookModelO{padding:16px;border-radius:22px;background:linear-gradient(160deg,rgba(255,255,255,.075),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.14);text-align:center}.bookModelO canvas{width:260px;height:260px;border-radius:18px;background:radial-gradient(circle at 50% 34%,rgba(255,255,255,.08),rgba(255,255,255,.02) 45%,rgba(0,0,0,.24) 80%),#080d1e}.bookStatsO{display:grid;grid-template-columns:repeat(2,minmax(135px,1fr));gap:10px}.bookStatO{padding:12px;border-radius:16px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.13)}.bookStatO small{display:block;font-family:Orbitron,sans-serif;font-size:10px;letter-spacing:.14em;color:#9edfff}.bookStatO b{display:block;margin-top:6px;color:#fff;font-size:18px}.bookTextO{margin-top:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);color:#dcecff;line-height:1.55}.bookTextO h4{font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:.13em;color:#fff;margin:0 0 8px}@media(max-width:820px){.bookDetailO{grid-template-columns:1fr}.bookModelO canvas{max-width:260px;width:100%;height:auto;aspect-ratio:1/1}}
+  `;
+  document.head.appendChild(css);
+
+  const enemyBookO=[
+    {id:'swarmer',g:'Comuns',e:'🐜',name:'Swarmer',hp:13,spd:197,dmg:'6 contato',atk:'Enxameia em curvas rápidas e tenta cercar o jogador.',lore:'Swarmers surgiram de pequenas lascas vivas de Chrono, multiplicadas por calor e fome. Eles não têm liderança individual: cada um reage ao movimento do grupo, formando uma maré nervosa que tenta fechar as rotas de fuga.'},
+    {id:'chaser',g:'Comuns',e:'🩸',name:'Chaser',hp:28,spd:106,dmg:'13 contato',atk:'Corre diretamente no alvo e mantém pressão constante.',lore:'O Chaser é a forma mais simples de vida hostil nas arenas: perseguição transformada em corpo. Nasceu de fissuras instáveis que precisavam expulsar intrusos e, com o tempo, aprendeu apenas uma coisa: nunca parar.'},
+    {id:'strafer',g:'Comuns',e:'🌀',name:'Strafer',hp:22,spd:149,dmg:'10 contato',atk:'Move em zigue-zague, tentando quebrar sua mira.',lore:'Strafers apareceram em arenas onde o espaço dobrava em pequenos desvios. O corpo deles ainda carrega essa memória, por isso nunca avançam reto; preferem dançar fora do ângulo perfeito do disparo.'},
+    {id:'bomber',g:'Comuns',e:'💣',name:'Bomber',hp:28,spd:104,dmg:'Explosão alta',atk:'Corre para perto e explode.',lore:'Bombers são núcleos de energia mal selados. Eles existem por pouco tempo, mas esse pouco tempo é suficiente para transformar o próprio corpo em uma granada orgânica.'},
+    {id:'leaper',g:'Comuns',e:'🦗',name:'Leaper',hp:36,spd:99,dmg:'14 impacto',atk:'Salta em direção ao jogador quando encontra abertura.',lore:'Leapers evoluíram em terrenos cheios de ruínas e paredes. Seus músculos temporais acumulam impulso em rajadas curtas, permitindo atacar por cima de espaços que outras criaturas precisam contornar.'},
+    {id:'sentinel',g:'Comuns',e:'👁️',name:'Sentinel',hp:50,spd:58,dmg:'8 por tiro',atk:'Mantém distância e dispara projéteis.',lore:'Sentinels eram drones de vigia deixados por civilizações antigas. Após anos absorvendo Chrono instável, começaram a considerar qualquer vida móvel como uma violação do perímetro.'},
+    {id:'tank',g:'Comuns',e:'🛡️',name:'Tank',hp:68,spd:65,dmg:'20 contato',atk:'Avança devagar, absorvendo dano e bloqueando espaço.',lore:'Tanks são muralhas vivas formadas por placas de matéria comprimida. Não caçam com pressa; eles conquistam terreno até que a arena pareça menor para todos menos para eles.'},
+    {id:'medic',g:'Elites',e:'💚',name:'Medic Drone',hp:42,spd:82,dmg:'Suporte',atk:'Procura aliados, cura e fortalece a linha inimiga.',lore:'Médicos nasceram de protocolos de reparo que perderam a noção de lado certo. Eles não odeiam o jogador; apenas reconhecem a horda como algo que precisa continuar existindo.'},
+    {id:'sniperDrone',g:'Elites',e:'🎯',name:'Sniper Drone',hp:30,spd:75,dmg:'15 por tiro',atk:'Fica afastado e dispara tiros precisos.',lore:'Sniper Drones foram projetados para eliminar ameaças antes que alcançassem as relíquias Chrono. Corrompidos, passaram a atirar em qualquer coisa que respire perto demais da arena.'},
+    {id:'splitter',g:'Elites',e:'🧬',name:'Splitter',hp:55,spd:85,dmg:'Contato moderado',atk:'Divide-se em unidades menores ao morrer.',lore:'Splitters são organismos que aprenderam a sobreviver perdendo partes de si. Matar o corpo principal apenas libera as cópias que cresciam presas dentro dele.'},
+    {id:'vomiter',g:'Elites',e:'☣️',name:'Vomiter',hp:140,spd:62,dmg:'Veneno',atk:'Cospe toxina e gera criaturas menores ao morrer.',lore:'Nas dunas antigas, Chrono e podridão se misturaram sob a areia. O Vomiter é uma cisterna viva desse veneno, lento e pesado, mas capaz de transformar o chão em uma ameaça.'},
+    {id:'pukeling',g:'Elites',e:'🧪',name:'Pukeling',hp:18,spd:165,dmg:'5 + veneno',atk:'Corre em bando depois de surgir de um Vomiter.',lore:'Pukelings são respingos de vida tóxica. Não foram feitos para durar, apenas para espalhar o suficiente do veneno antes de se desfazerem.'},
+    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',atk:'Rajadas rápidas, invocações e pressão constante.',lore:'O Archon Core é um coração de guerra acelerado por Chrono. Ele governa pela cadência: ataca, convoca e força o jogador a lutar no ritmo dele.'},
+    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',atk:'Pisões, lasers e controle de área.',lore:'O Titan Bastion foi feito para selar rupturas, mas a energia que tentava conter acabou acordando sua vontade. Agora ele avança como um monumento irritado.'},
+    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',atk:'Fendas, projéteis, summons e suporte.',lore:'A Oracle Bloom floresceu numa rachadura onde natureza e tempo se fundiram. Ela prevê padrões e poda a arena como se cada monstro fosse parte de um jardim cruel.'},
+    {id:'lostEmperor',g:'Boss Secreto',e:'🕳️',name:'Emperador Perdido',hp:7800,spd:70,dmg:'Catastrófico',atk:'Teleporta, distorce, bombardeia e domina a arena.',lore:'O Emperador tentou comandar o caos e foi coroado por ele. O que voltou da fissura não é rei nem cadáver: é uma sentença em forma de samurai negro.',secret:true}
+  ];
+  const byIdO=id=>enemyBookO.find(x=>x.id===id);
+  function metaO(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{}}catch{return {}}}
+  function killsO(id){const m=metaO();return Number((m.bestiaryKills||{})[id]||0)}
+  function escO(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+  let bookAnimO=0;
+  function stopBookAnimO(){if(bookAnimO)cancelAnimationFrame(bookAnimO);bookAnimO=0;}
+  function drawModelO(ctx,e,t){
+    ctx.clearRect(0,0,280,280);ctx.save();ctx.translate(140,138);ctx.rotate(t*.75);ctx.shadowBlur=26;ctx.shadowColor=e.secret?'#ff345e':'#7de7ff';
+    const col=e.secret?'#ff345e':e.g==='Bosses'?'#9f6cff':e.g==='Elites'?'#86ffb0':'#61dafb';
+    function poly(points,fill=col,stroke='#fff'){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=2.3;ctx.stroke();}
+    function orb(r,fill=col){ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2.2;ctx.stroke();}
+    if(e.id==='tank'||e.id==='titan') {ctx.beginPath();ctx.roundRect(-48,-56,96,112,18);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.stroke();ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(-24,-26,48,52);}
+    else if(e.id==='archon'||e.id==='lostEmperor') poly([[0,-66],[52,-20],[34,64],[0,44],[-34,64],[-52,-20]],e.secret?'#090207':col,e.secret?'#ff345e':'#fff');
+    else if(e.id==='oracle') {orb(46,col);for(let i=0;i<8;i++){ctx.rotate(Math.PI/4);ctx.beginPath();ctx.moveTo(0,-48);ctx.lineTo(10,-72);ctx.lineTo(-10,-72);ctx.closePath();ctx.fillStyle='rgba(182,255,122,.72)';ctx.fill();}}
+    else if(e.id==='sentinel'||e.id==='sniperDrone') {ctx.beginPath();ctx.ellipse(0,0,52,32,0,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='#fff';ctx.stroke();ctx.fillStyle='#06101d';ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-62,0);ctx.lineTo(62,0);ctx.stroke();}
+    else if(e.id==='bomber'||e.id==='pukeling') {const pts=[];for(let i=0;i<12;i++){const a=i*Math.PI*2/12,r=i%2?30:54;pts.push([Math.cos(a)*r,Math.sin(a)*r]);}poly(pts,col,'#fff');}
+    else if(e.id==='swarmer') {for(let i=0;i<4;i++){ctx.save();ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-24,14,34,0,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='#fff';ctx.stroke();ctx.restore();}}
+    else if(e.id==='vomiter') {ctx.beginPath();ctx.ellipse(0,8,54,64,0,0,Math.PI*2);ctx.fillStyle='#8cff68';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.stroke();ctx.fillStyle='rgba(10,30,8,.55)';ctx.beginPath();ctx.arc(0,10,17,0,Math.PI*2);ctx.fill();}
+    else poly([[0,-55],[42,-14],[28,52],[-28,52],[-42,-14]],col,'#fff');
+    ctx.globalAlpha=.42;ctx.strokeStyle=col;ctx.lineWidth=2;for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(0,0,62+i*14,0,Math.PI*2);ctx.stroke();}
+    ctx.restore();
+  }
+  function openBookDetailO(id){const e=byIdO(id);if(!e)return;stopBookAnimO();overlay.classList.remove('hidden');overlayCard.className='card bestiaryO';overlayCard.innerHTML=`<h1>${escO(e.name)}</h1><p class="bookIntroO">Registro desbloqueado do Bestiário Chrono.</p><div class="bookDetailO"><div class="bookModelO"><canvas id="bookCanvasO" width="280" height="280"></canvas><div style="margin-top:10px;color:#9bedff;font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.13em">MODELO 360°</div></div><div><div class="bookStatsO"><div class="bookStatO"><small>HP BASE</small><b>${escO(e.hp)}</b></div><div class="bookStatO"><small>VELOCIDADE</small><b>${escO(e.spd)}</b></div><div class="bookStatO"><small>DANO</small><b>${escO(e.dmg)}</b></div><div class="bookStatO"><small>ABATES</small><b>${killsO(e.id)}</b></div></div><div class="bookTextO"><h4>PADRÃO DE ATAQUE</h4>${escO(e.atk)}</div></div></div><div class="bookTextO"><h4>ORIGEM E COMPORTAMENTO</h4>${escO(e.lore)}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="bookBackO">← Voltar</button></div>`;document.getElementById('bookBackO').onclick=openBestiaryO;const canvas=document.getElementById('bookCanvasO'),cx=canvas.getContext('2d');let t=0;function loop(){t+=.025;drawModelO(cx,e,t);bookAnimO=requestAnimationFrame(loop)}loop();}
+  function openBestiaryO(){stopBookAnimO();const groups=['Comuns','Elites','Bosses','Boss Secreto'];overlay.classList.remove('hidden');overlayCard.className='card bestiaryO';overlayCard.innerHTML=`<h1>BESTIÁRIO</h1><p class="bookIntroO">Catálogo organizado por força. Monstros comuns e elites liberam com 10 abates, bosses com 2 e o Emperador Perdido com 1.</p><div class="bookWrapO">${groups.map(g=>`<div class="bookSectionO"><h3>${g.toUpperCase()}</h3><div class="bookGridO">${enemyBookO.filter(e=>e.g===g).map(e=>{const k=killsO(e.id),need=e.g==='Bosses'?2:e.g==='Boss Secreto'?1:10,un=k>=need;return `<button class="bookCardO ${un?'':'locked'} ${e.secret?'bookSecretO':''}" data-book-o="${e.id}"><div class="bookEmojiO">${un?e.e:'?'}</div><strong>${un?escO(e.name):'Registro bloqueado'}</strong><span>${un?escO(e.g):'Derrote mais para revelar.'}</span>${un?`<span class="bookKillsO">${k} abates</span>`:`<div class="bookProgressO"><i style="width:${Math.min(100,k/need*100)}%"></i></div><span class="bookKillsO">${k}/${need}</span>`}</button>`}).join('')}</div></div>`).join('')}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="bookHubBackO">← Voltar</button></div>`;document.getElementById('bookHubBackO').onclick=()=>{if(window.openHubMenu37)openHubMenu37();else openStartMenu?.()};overlayCard.querySelectorAll('[data-book-o]').forEach(b=>{const id=b.dataset.bookO,e=byIdO(id),k=killsO(id),need=e.g==='Bosses'?2:e.g==='Boss Secreto'?1:10;if(k>=need)b.onclick=()=>openBookDetailO(id);});}
+  window.__openBestiaryLatest=openBestiaryO;window.openBestiary37=openBestiaryO;window.openBestiary38=openBestiaryO;window.openBestiaryG=openBestiaryO;window.openBestiaryI=openBestiaryO;
+  function routeBookO(ev){const b=ev.target.closest&&ev.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiaryO();}}
+  document.addEventListener('click',routeBookO,true);
+
+  // ── Moon Slayer stable system ─────────────────────────────────
+  function moonInitO(){if(!game)return;game.moonCutsO=game.moonCutsO||[];game.moonFxO=game.moonFxO||[];game.moonGlassO=game.moonGlassO||[];game.moonQteO=game.moonQteO||null;game.moonBloodO=game.moonBloodO||0;game.moonAuraO=game.moonAuraO||null;game.moonWorldO=game.moonWorldO||null;game.moonUltO=game.moonUltO||null;game.moonImpactsO=game.moonImpactsO||[];}
+  const resetPrevO=resetGame;resetGame=function(classKey){resetPrevO(classKey);if(game){moonInitO();game.moonCutsO=[];game.moonFxO=[];game.moonGlassO=[];game.moonQteO=null;game.moonBloodO=0;game.moonAuraO=null;game.moonWorldO=null;game.moonUltO=null;game.moonImpactsO=[];if(classKey==='moonSlayer'){game.moonUltCharge37=0;game.moonUltPause37=0;}}};
+  function segDistO(px,py,x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,l=dx*dx+dy*dy||1,t=Math.max(0,Math.min(1,((px-x1)*dx+(py-y1)*dy)/l));return Math.hypot(px-(x1+dx*t),py-(y1+dy*t));}
+  function nearestO(x,y,exclude=[],range=9999){let best=null,bd=range;for(const e of game.enemies||[]){if(exclude.includes(e))continue;const d=Math.hypot(e.x-x,e.y-y);if(d<bd){bd=d;best=e;}}return best;}
+  function moonHealO(){if(game?.classKey==='moonSlayer'&&game.moonBloodO>0){const p=game.player;p.hp=clamp(p.hp+p.maxHp*.02,0,p.maxHp);}}
+  function moonCutO(o){moonInitO();game.moonCutsO.push(Object.assign({x:0,y:0,px:o.x||0,py:o.y||0,a:0,length:120,width:30,life:.55,maxLife:.55,damage:20*game.upgrades.damage,color:'#fff',edge:'#080810',vx:0,vy:0,hits:[],maxHits:1,split:false,homing:null,kind:'fx',wall:true},o||{}));}
+  function moonHitO(c,e){if(c.hits.includes(e))return;c.hits.push(e);e.hp-=c.damage;e.hitFlash=.18;moonHealO();if(e.hp<=0){const idx=game.enemies.indexOf(e);if(idx>=0)enemyDeath(idx,e);}if(c.split){for(const side of [-1,1]){const target=nearestO(e.x,e.y,[e],420);const a=target?angleTo(e,target):c.a+side*.72;moonCutO({x:e.x,y:e.y,px:e.x,py:e.y,a:a+side*.1,length:78,width:16,life:.7,maxLife:.7,damage:c.damage*1.4,color:game.moonBloodO>0?'#ff5269':'#f8faff',edge:game.moonBloodO>0?'#2b0208':'#0b0d16',vx:Math.cos(a)*720,vy:Math.sin(a)*720,homing:target,kind:'child',maxHits:1,wall:true});}}}
+  function castBasicO(){const p=game.player;if(!game.running||p.fireCd>0)return;const a=angleTo(p,mouse),red=game.moonBloodO>0;moonCutO({x:p.x+Math.cos(a)*32,y:p.y+Math.sin(a)*32,px:p.x,py:p.y,a,length:138,width:38,life:.72,maxLife:.72,damage:24*game.upgrades.damage,color:red?'#ff5269':'#ffffff',edge:red?'#2b0208':'#0b0d16',vx:Math.cos(a)*690,vy:Math.sin(a)*690,kind:'main',split:true,maxHits:4,wall:true});p.fireCd=(WEAPONS.moonBlade?.cooldown||.24)/(Math.max(.1,game.upgrades.fireRate)*(red?1.5:1));}
+  function spendO(idx,cd){const key=CLASSES.moonSlayer.skills[idx],sk=SKILL_DEFS[key];if(!game?.running||game.skillCds[idx]>0||game.player.focus<sk.focusCost)return false;game.player.focus-=sk.focusCost;game.skillCds[idx]=cd;updateHUD?.();return true;}
+  function castQO(){if(!spendO(0,10))return;const p=game.player,a=angleTo(p,mouse),sx=p.x,sy=p.y,ex=clamp(sx+Math.cos(a)*335,24,W-24),ey=clamp(sy+Math.sin(a)*335,24,H-24);let target=null,td=9999;for(const e of game.enemies||[]){const d=segDistO(e.x,e.y,sx,sy,ex,ey)-e.r;if(d<70&&d<td){td=d;target=e;}}p.x=ex;p.y=ey;addRing(ex,ey,'#f8faff',90,4);if(target){game.moonQteO={timer:0,total:.95,target:.62,window:.075,target,angle:a};}else{for(let i=-2;i<=2;i++)moonCutO({x:ex,y:ey,a:a+i*.1,length:170,width:20,damage:26*game.upgrades.damage,life:.28,color:'#fff',edge:'#111',wall:false});}}
+  function resolveQO(success){const q=game.moonQteO;if(!q)return;const e=q.target,p=game.player,a=q.angle||angleTo(p,mouse),x=e?.x??p.x+Math.cos(a)*130,y=e?.y??p.y+Math.sin(a)*130;game.moonQteO=null;if(success){game.skillCds[0]=15;game.moonImpactsO.push({x,y,t:.55,max:.55,r:390,damage:175*game.upgrades.damage,done:false});game.shake=18;addFloatingText(x,y-38,'ECLIPSE PERFEITO','#eaf6ff',22);}else{for(let i=-4;i<=4;i++)moonCutO({x,y,a:a+i*.12,length:165,width:18,damage:32*game.upgrades.damage,life:.28,color:'#fff',edge:'#111',wall:false});game.shake=12;}}
+  function castEO(){if(!spendO(1,15))return;game.moonBloodO=3.5;addRing(game.player.x,game.player.y,'#ff5269',126,5);addFloatingText(game.player.x,game.player.y-28,'LÂMINA SANGRENTA','#ff5269',17);}
+  function startRO(){if(game.moonRChargeO)return;if(!spendO(2,10))return;game.moonRChargeO={t:0,max:1.35};}
+  function releaseRO(){const c=game?.moonRChargeO;if(!c)return;const full=c.t>=c.max;game.moonRChargeO=null;if(full){game.skillCds[2]=20;game.moonWorldO={life:1.45,maxLife:1.45,tick:0};game.shake=16;}else{game.moonAuraO={life:5,maxLife:5,r:145,tick:0};}}
+  function startUltO(){if(!game||game.classKey!=='moonSlayer'||game.moonUltO||(game.moonUltCharge37||0)<100)return;game.moonUltCharge37=0;game.moonUltPause37=2;game.moonUltO={phase:'prep',time:.65,cuts:[],cleared:false};for(let i=0;i<22;i++)game.moonFxO.push({kind:'smoke',x:game.player.x+rand(-26,26),y:game.player.y+rand(-6,10),vx:rand(-32,32),vy:rand(-140,-50),r:rand(18,38),life:1.15,maxLife:1.15});game.shake=20;window.updateMoonUltUI37?.();}
+  window.addEventListener('keydown',ev=>{if(!game||game.classKey!=='moonSlayer')return;const k=(ev.key||'').toLowerCase();if(['q','e','r','x'].includes(k)){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();}if(game.moonQteO&&k==='q'){const p=game.moonQteO.timer/game.moonQteO.total;resolveQO(Math.abs(p-game.moonQteO.target)<=game.moonQteO.window);return;}if(k==='q')castQO();else if(k==='e')castEO();else if(k==='r')startRO();else if(k==='x')startUltO();},true);
+  window.addEventListener('keyup',ev=>{if(game?.classKey==='moonSlayer'&&(ev.key||'').toLowerCase()==='r'){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();releaseRO();}},true);
+  const useSkillPrevO=useSkill;useSkill=function(idx){if(game?.classKey==='moonSlayer')return;return useSkillPrevO(idx);};
+  const shootPrevO=shoot;shoot=function(){if(game?.classKey==='moonSlayer')return castBasicO();return shootPrevO();};
+
+  const updatePlayerPrevO=updatePlayer;
+  updatePlayer=function(dt){
+    if(game?.classKey==='moonSlayer'){
+      moonInitO();const md=mouse.down;mouse.down=false;const old=game.classKey;game.classKey='assault';updatePlayerPrevO(dt);game.classKey=old;mouse.down=md;const p=game.player;if(!p)return;if(md)castBasicO();
+      if(game.moonBloodO>0){game.moonBloodO=Math.max(0,game.moonBloodO-dt);p.vx*=1.12;p.vy*=1.12;}
+      if(game.moonQteO){const q=game.moonQteO;q.timer+=dt;if(q.timer/q.total>q.target+q.window)resolveQO(false);p.vx=0;p.vy=0;}
+      if(game.moonRChargeO){game.moonRChargeO.t=Math.min(game.moonRChargeO.max,game.moonRChargeO.t+dt);p.vx*=.65;p.vy*=.65;}
+      if(!game.moonUltO){if(game.moonUltPause37>0)game.moonUltPause37=Math.max(0,game.moonUltPause37-dt);else game.moonUltCharge37=clamp((game.moonUltCharge37||0)+dt*.62,0,100);}else{const u=game.moonUltO;u.time-=dt;p.vx=0;p.vy=0;if(u.phase==='prep'&&u.time<=0){u.phase='storm';u.time=3;}else if(u.phase==='storm'){if(Math.random()<.9){const a=rand(-Math.PI,Math.PI),x=rand(-80,W+80),y=rand(-60,H+60);u.cuts.push({x,y,a,len:rand(W*.4,W),w:rand(16,32),life:999,color:Math.random()<.7?'#7de7ff':'#fff'});moonCutO({x,y,a,length:rand(W*.4,W),width:rand(18,34),life:.22,damage:0,color:Math.random()<.7?'#7de7ff':'#fff',edge:'#06111d',wall:false});}if(u.time<=.1&&!u.cleared){u.cleared=true;u.cuts=[];}if(u.time<=0){u.phase='break';u.time=.55;game.flash=.32;game.flashColor='#fff';game.shake=32;for(let i=0;i<48;i++)game.moonGlassO.push({x:rand(0,W),y:rand(-30,H*.55),vx:rand(-210,210),vy:rand(180,460),w:rand(24,100),h:rand(18,86),a:rand(0,6.28),va:rand(-5,5),life:1.45,maxLife:1.45,poly:Array.from({length:5+randi(0,3)},()=>[rand(-.55,.55),rand(-.55,.55)])});for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i];if(e.type==='boss')e.hp-=e.maxHp*.30;else e.hp-=999999;if(e.hp<=0)enemyDeath(i,e);}}}else if(u.phase==='break'&&u.time<=0){game.moonUltO=null;}}
+      for(let i=game.moonCutsO.length-1;i>=0;i--){const c=game.moonCutsO[i];c.life-=dt;c.px=c.x;c.py=c.y;if(c.homing&&game.enemies.includes(c.homing)){const aa=angleTo(c,c.homing);c.vx+=(Math.cos(aa)*760-c.vx)*dt*7;c.vy+=(Math.sin(aa)*760-c.vy)*dt*7;c.a=aa;}c.x+=c.vx*dt;c.y+=c.vy*dt;if(c.wall&&typeof shotBlockedByMap==='function'&&shotBlockedByMap(c.px,c.py,{x:c.x,y:c.y,r:7}))c.life=-1;if(c.life<=0||c.x<-140||c.x>W+140||c.y<-140||c.y>H+140){game.moonCutsO.splice(i,1);continue;}if(c.damage>0){const nx=-Math.sin(c.a),ny=Math.cos(c.a),x1=c.x+nx*c.length*.5,y1=c.y+ny*c.length*.5,x2=c.x-nx*c.length*.5,y2=c.y-ny*c.length*.5;for(const e of [...game.enemies]){if(c.hits.includes(e))continue;if(segDistO(e.x,e.y,x1,y1,x2,y2)<e.r+c.width*.7){moonHitO(c,e);if(c.hits.length>=c.maxHits){c.life=-1;break;}}}}}
+      if(game.moonAuraO){const z=game.moonAuraO;z.life-=dt;z.tick-=dt;if(z.life<=0)game.moonAuraO=null;else if(z.tick<=0){z.tick=.08;let n=0;for(const e of game.enemies){if(dist(p,e)<z.r+e.r&&n<10){e.hp-=18*game.upgrades.damage;e.hitFlash=.1;moonHealO();moonCutO({x:e.x+rand(-10,10),y:e.y+rand(-10,10),a:rand(0,Math.PI*2),length:70,width:10,damage:0,life:.16,color:game.moonBloodO>0?'#ff5269':'#fff',edge:'#111',wall:false});if(e.hp<=0){const idx=game.enemies.indexOf(e);if(idx>=0)enemyDeath(idx,e);}n++;}}}}
+      if(game.moonWorldO){const w=game.moonWorldO;w.life-=dt;w.tick-=dt;if(w.life<=0)game.moonWorldO=null;else if(w.tick<=0){w.tick=.06;for(let k=0;k<6;k++){const a=rand(-Math.PI,Math.PI),x=rand(30,W-30),y=rand(30,H-30),len=rand(W*.45,W*.95);moonCutO({x,y,a,length:len,width:36,damage:0,life:.2,color:['#fff','#88ecff','#9b6dff','#ff5269'][randi(0,3)],edge:'#080510',wall:false});const nx=-Math.sin(a),ny=Math.cos(a),x1=x+nx*len*.5,y1=y+ny*len*.5,x2=x-nx*len*.5,y2=y-ny*len*.5;for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i];if(segDistO(e.x,e.y,x1,y1,x2,y2)<e.r+60){e.hp-=e.type==='boss'?52*game.upgrades.damage:160*game.upgrades.damage;e.hitFlash=.18;if(e.hp<=0)enemyDeath(i,e);}}}}}
+      for(let i=game.moonImpactsO.length-1;i>=0;i--){const m=game.moonImpactsO[i];m.t-=dt;if(!m.done&&m.t<=0){m.done=true;game.moonFxO.push({kind:'moonBoom',x:m.x,y:m.y,r:m.r,life:.85,maxLife:.85});game.shake=30;game.flash=.3;game.flashColor='#fff';for(let j=game.enemies.length-1;j>=0;j--){const e=game.enemies[j];if(dist(m,e)<m.r+e.r){e.hp-=m.damage*(e.type==='boss'?.6:1);e.hitFlash=.2;if(e.hp<=0)enemyDeath(j,e);}}for(let k=0;k<20;k++)moonCutO({x:m.x+rand(-70,70),y:m.y+rand(-70,70),a:rand(0,Math.PI*2),length:rand(120,320),width:rand(12,28),damage:0,life:.36,color:'#fff',edge:'#111',wall:false});}if(m.t<=-.4)game.moonImpactsO.splice(i,1);}for(let i=game.moonFxO.length-1;i>=0;i--){const f=game.moonFxO[i];f.life-=dt;f.x+=(f.vx||0)*dt;f.y+=(f.vy||0)*dt;if(f.life<=0)game.moonFxO.splice(i,1);}for(let i=game.moonGlassO.length-1;i>=0;i--){const s=game.moonGlassO[i];s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.a+=s.va*dt;if(s.life<=0)game.moonGlassO.splice(i,1);}window.updateMoonUltUI37();updateHUD?.();return;
+    }
+    return updatePlayerPrevO(dt);
+  };
+  const updateEnemiesPrevO=updateEnemies;updateEnemies=function(dt){if(game?.classKey==='moonSlayer'&&(game.moonQteO||game.moonUltO))return;return updateEnemiesPrevO(dt)};
+  const updateEnemyBulletsPrevO=updateEnemyBullets;updateEnemyBullets=function(dt){if(game?.classKey==='moonSlayer'&&(game.moonQteO||game.moonUltO))return;return updateEnemyBulletsPrevO(dt)};
+  const updateHUDPrevO=updateHUD;updateHUD=function(){updateHUDPrevO();if(game?.classKey==='moonSlayer'){classLabel.textContent=CLASSES.moonSlayer.name;weaponLabel.textContent=WEAPONS.moonBlade?.name||'Lâmina Lunar';document.querySelector('#skillIcon1 .key-hint').textContent='Q';document.querySelector('#skillIcon2 .key-hint').textContent='E';document.querySelector('#skillIcon3 .key-hint').textContent='R';document.getElementById('skillEmoji1').textContent='☾';document.getElementById('skillEmoji2').textContent='🩸';document.getElementById('skillEmoji3').textContent='🌙';window.updateMoonUltUI37();}else{document.querySelector('#skillIcon1 .key-hint').textContent='E';document.querySelector('#skillIcon2 .key-hint').textContent='Q';document.querySelector('#skillIcon3 .key-hint').textContent='R';}};
+
+  const renderPrevO=render;
+  function drawSlashO(c){const alpha=clamp(c.life/(c.maxLife||1),0,1);ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=alpha;ctx.shadowBlur=26;ctx.shadowColor=c.color;const len=c.length,w=c.width;ctx.beginPath();ctx.moveTo(-len*.5,-w*.22);ctx.quadraticCurveTo(-len*.12,-w*1.05,len*.32,-w*.18);ctx.quadraticCurveTo(len*.55,w*.06,len*.38,w*.48);ctx.quadraticCurveTo(len*.04,w*.95,-len*.48,w*.18);ctx.closePath();ctx.fillStyle='rgba(0,0,0,.84)';ctx.fill();ctx.strokeStyle='rgba(255,255,255,.88)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(-len*.34,-w*.02);ctx.quadraticCurveTo(-len*.08,-w*.58,len*.34,w*.02);ctx.quadraticCurveTo(-len*.02,w*.56,-len*.34,w*.16);ctx.closePath();ctx.fillStyle=c.color;ctx.fill();ctx.restore();}
+  render=function(){
+    if(game?.classKey==='moonSlayer'){const old=game.classKey;game.classKey='assault';renderPrevO();game.classKey=old;}else renderPrevO();
+    if(!game)return;
+    if(game.classKey==='moonSlayer'){
+      const p=game.player;if(p){const red=game.moonBloodO>0;ctx.save();ctx.translate(p.x,p.y);ctx.shadowBlur=red?26:24;ctx.shadowColor=red?'#ff5269':'#d8c4ff';ctx.fillStyle=red?'#4e0712':'#2a0b52';ctx.strokeStyle='#f7f2ff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(18,-8);ctx.lineTo(23,8);ctx.lineTo(10,20);ctx.lineTo(-10,20);ctx.lineTo(-23,8);ctx.lineTo(-18,-8);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#f8f5ff';ctx.fillRect(-23,-15,46,5);ctx.strokeStyle='#ffffff';ctx.beginPath();ctx.arc(-3,-22,10,Math.PI*.22,Math.PI*1.28);ctx.stroke();ctx.strokeStyle=red?'rgba(255,82,105,.55)':'rgba(216,196,255,.55)';for(let i=0;i<2;i++){ctx.beginPath();ctx.arc(0,0,24+i*10,0,Math.PI*2);ctx.stroke();}if(game.moonRChargeO){const pct=game.moonRChargeO.t/game.moonRChargeO.max,w=92,h=8;ctx.fillStyle='rgba(5,12,30,.82)';ctx.fillRect(-w/2,34,w,h);ctx.fillStyle=pct>=.95?'#ffd166':'#72d7ff';ctx.fillRect(-w/2,34,w*clamp(pct,0,1),h);ctx.strokeStyle='#e9fbff';ctx.strokeRect(-w/2,34,w,h);}ctx.restore();if(game.moonAuraO){ctx.save();ctx.globalAlpha=.5;ctx.strokeStyle=red?'#ff5269':'#c8eaff';ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(p.x,p.y,game.moonAuraO.r,0,Math.PI*2);ctx.stroke();ctx.restore();}}
+      for(const m of game.moonImpactsO||[]){ctx.save();const prog=1-clamp(m.t/m.max,0,1);const y=-180+(m.y+180)*prog;ctx.globalAlpha=clamp(prog*1.5,0,1);ctx.shadowBlur=42;ctx.shadowColor='#fff';ctx.fillStyle='#f5f2ff';ctx.beginPath();ctx.arc(m.x,y,70+prog*26,0,Math.PI*2);ctx.fill();ctx.fillStyle='#27124b';ctx.beginPath();ctx.arc(m.x+34,y-4,54+prog*20,0,Math.PI*2);ctx.fill();ctx.restore();}
+      for(const c of game.moonCutsO||[])drawSlashO(c);for(const f of game.moonFxO||[]){ctx.save();const a=clamp(f.life/f.maxLife,0,1);ctx.globalAlpha=a;if(f.kind==='moonBoom'){const g=ctx.createRadialGradient(f.x,f.y,8,f.x,f.y,f.r);g.addColorStop(0,'rgba(255,255,255,.72)');g.addColorStop(.26,'rgba(205,190,255,.42)');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.beginPath();ctx.arc(f.x-74,f.y,f.r*.52,-.5,3.85);ctx.stroke();}else{ctx.fillStyle='rgba(190,225,255,.46)';ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
+      if(game.moonUltO?.phase==='storm'){for(const c of game.moonUltO.cuts){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=.78;ctx.shadowBlur=28;ctx.shadowColor=c.color;ctx.strokeStyle=c.color;ctx.lineWidth=c.w;ctx.beginPath();ctx.moveTo(-c.len/2,0);ctx.lineTo(c.len/2,0);ctx.stroke();ctx.restore();}}
+      for(const s of game.moonGlassO||[]){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a);ctx.globalAlpha=clamp(s.life/s.maxLife,0,1)*.92;const gr=ctx.createLinearGradient(-s.w/2,-s.h/2,s.w/2,s.h/2);gr.addColorStop(0,'rgba(255,255,255,.92)');gr.addColorStop(.25,'rgba(180,235,255,.42)');gr.addColorStop(.62,'rgba(255,255,255,.18)');gr.addColorStop(1,'rgba(100,180,255,.08)');ctx.fillStyle=gr;ctx.strokeStyle='rgba(235,250,255,.95)';ctx.beginPath();const pts=s.poly||[[-.5,-.5],[.5,-.4],[.45,.5],[-.45,.4]];pts.forEach((p,i)=>{const x=p[0]*s.w,y=p[1]*s.h;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y)});ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+      let q=document.getElementById('moonQteO');if(game.moonQteO){if(!q){q=document.createElement('div');q.id='moonQteO';q.className='moonQteO';q.innerHTML='<div class="label">APERTE Q NO PONTO AZUL</div><div class="track"><i class="window"></i><i class="target"></i><i class="needle"></i></div>';document.body.appendChild(q);}const pct=clamp(game.moonQteO.timer/game.moonQteO.total,0,1)*100;q.querySelector('.needle').style.left=pct+'%';q.classList.toggle('good',Math.abs(pct/100-game.moonQteO.target)<=game.moonQteO.window);q.classList.toggle('bad',pct/100>game.moonQteO.target+game.moonQteO.window);}else q?.remove();
+    }else document.getElementById('moonQteO')?.remove();
+  };
+  console.log(PATCH+' carregado');
+})();
+
+</script>
+<script>
+(()=>{
+  if(window.__chronoPatch37p)return; window.__chronoPatch37p=true;
+  const PATCH='Chrono Shards 3.7p — Bestiário Colorido + Moon Slayer Polish';
+
+  const css=document.createElement('style');
+  css.textContent=`
+    .bestiaryP{width:min(94vw,1080px);text-align:left;background:linear-gradient(135deg,#18223e,#11172c 55%,#1d1430);border:1px solid rgba(170,230,255,.32);box-shadow:0 0 70px rgba(97,218,251,.12),inset 0 0 80px rgba(255,255,255,.035)}
+    .bestiaryP h1{text-align:center}.bookIntroP{color:#e9f5ff!important;text-align:center;max-width:790px;margin:0 auto 18px!important}.bookWrapP{display:grid;gap:18px}.bookSectionP{padding:16px;border-radius:22px;background:linear-gradient(150deg,rgba(255,255,255,.09),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.18)}.bookSectionP h3{margin:0 0 12px;font-family:Orbitron,sans-serif;letter-spacing:.16em;color:#fff;text-shadow:0 0 16px rgba(125,231,255,.28)}.bookGridP{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.bookCardP{min-height:178px;padding:14px;border-radius:18px;background:linear-gradient(155deg,rgba(20,32,63,.97),rgba(12,16,34,.96));border:1px solid rgba(150,220,255,.2);color:#ecf7ff;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.22),inset 0 0 28px rgba(255,255,255,.035)}.bookCardP:hover{transform:translateY(-2px);filter:brightness(1.08)}.bookCardP.locked{opacity:.74;filter:saturate(.58)}.bookEmojiP{width:70px;height:70px;display:grid;place-items:center;font-size:30px;border-radius:20px;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.2),rgba(255,255,255,.055));border:1px solid rgba(255,255,255,.18)}.bookCardP strong{font-family:Orbitron,sans-serif;font-size:13px;color:#fff}.bookCardP span{color:#d5e9ff;font-size:13px}.bookKillsP{margin-top:auto;color:#9bedff!important;font-weight:700}.bookProgressP{width:100%;height:8px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}.bookProgressP i{display:block;height:100%;background:linear-gradient(90deg,#61dafb,#c6a0ff)}.bookSecretP{background:linear-gradient(155deg,#1c050b,#080207);border-color:rgba(255,65,95,.55);box-shadow:0 0 28px rgba(255,65,95,.16)}.bookDetailP{display:grid;grid-template-columns:310px 1fr;gap:20px;align-items:start}.bookModelP{padding:16px;border-radius:22px;background:linear-gradient(160deg,rgba(255,255,255,.085),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.16);text-align:center}.bookModelP canvas{width:270px;height:270px;border-radius:18px;background:radial-gradient(circle at 50% 34%,rgba(255,255,255,.10),rgba(255,255,255,.025) 45%,rgba(0,0,0,.26) 80%),#080d1e}.bookStatsP{display:grid;grid-template-columns:repeat(2,minmax(135px,1fr));gap:10px}.bookStatP{padding:12px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14)}.bookStatP small{display:block;font-family:Orbitron,sans-serif;font-size:10px;letter-spacing:.14em;color:#9edfff}.bookStatP b{display:block;margin-top:6px;color:#fff;font-size:18px}.bookTextP{margin-top:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);color:#e1efff;line-height:1.55}.bookTextP h4{font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:.13em;color:#fff;margin:0 0 8px}@media(max-width:820px){.bookDetailP{grid-template-columns:1fr}.bookModelP canvas{max-width:270px;width:100%;height:auto;aspect-ratio:1/1}}
+    .moonQteO .window{left:59.2%!important;width:5.6%!important;background:rgba(93,234,255,.18)!important}.moonQteO .target{left:62%!important;width:7px!important}.moonQteO .label{color:#effcff!important}.moonQteO .track{height:20px!important}
+  `;
+  document.head.appendChild(css);
+
+  const enemyBookP=[
+    {id:'swarmer',g:'Comuns',e:'🐜',name:'Swarmer',hp:13,spd:197,dmg:'6 contato',col:'#ff4fa8',atk:'Enxameia em curvas rápidas e tenta cercar o jogador.',lore:'Swarmers surgiram de pequenas lascas vivas de Chrono, multiplicadas por calor e fome. Eles não têm liderança individual: cada um reage ao movimento do grupo, formando uma maré nervosa que tenta fechar as rotas de fuga.'},
+    {id:'chaser',g:'Comuns',e:'🩸',name:'Chaser',hp:28,spd:106,dmg:'13 contato',col:'#ff5e7e',atk:'Corre diretamente no alvo e mantém pressão constante.',lore:'O Chaser é a forma mais simples de vida hostil nas arenas: perseguição transformada em corpo. Nasceu de fissuras instáveis que precisavam expulsar intrusos e, com o tempo, aprendeu apenas uma coisa: nunca parar.'},
+    {id:'strafer',g:'Comuns',e:'🌀',name:'Strafer',hp:22,spd:149,dmg:'10 contato',col:'#ffb86b',atk:'Move em zigue-zague, tentando quebrar sua mira.',lore:'Strafers apareceram em arenas onde o espaço dobrava em pequenos desvios. O corpo deles ainda carrega essa memória, por isso nunca avançam reto; preferem dançar fora do ângulo perfeito do disparo.'},
+    {id:'bomber',g:'Comuns',e:'💣',name:'Bomber',hp:28,spd:104,dmg:'Explosão alta',col:'#ff9966',atk:'Corre para perto e explode.',lore:'Bombers são núcleos de energia mal selados. Eles existem por pouco tempo, mas esse pouco tempo é suficiente para transformar o próprio corpo em uma granada orgânica.'},
+    {id:'leaper',g:'Comuns',e:'🦗',name:'Leaper',hp:36,spd:99,dmg:'14 impacto',col:'#ffe066',atk:'Salta em direção ao jogador quando encontra abertura.',lore:'Leapers evoluíram em terrenos cheios de ruínas e paredes. Seus músculos temporais acumulam impulso em rajadas curtas, permitindo atacar por cima de espaços que outras criaturas precisam contornar.'},
+    {id:'sentinel',g:'Comuns',e:'👁️',name:'Sentinel',hp:50,spd:58,dmg:'8 por tiro',col:'#4ce0b3',atk:'Mantém distância e dispara projéteis.',lore:'Sentinels eram drones de vigia deixados por civilizações antigas. Após anos absorvendo Chrono instável, começaram a considerar qualquer vida móvel como uma violação do perímetro.'},
+    {id:'tank',g:'Comuns',e:'🛡️',name:'Tank',hp:68,spd:65,dmg:'20 contato',col:'#c38bff',atk:'Avança devagar, absorvendo dano e bloqueando espaço.',lore:'Tanks são muralhas vivas formadas por placas de matéria comprimida. Não caçam com pressa; eles conquistam terreno até que a arena pareça menor para todos menos para eles.'},
+    {id:'medic',g:'Elites',e:'💚',name:'Medic Drone',hp:42,spd:82,dmg:'Suporte',col:'#86ffb0',atk:'Procura aliados, cura e fortalece a linha inimiga.',lore:'Médicos nasceram de protocolos de reparo que perderam a noção de lado certo. Eles não odeiam o jogador; apenas reconhecem a horda como algo que precisa continuar existindo.'},
+    {id:'sniperDrone',g:'Elites',e:'🎯',name:'Sniper Drone',hp:30,spd:75,dmg:'15 por tiro',col:'#8fd0ff',atk:'Fica afastado e dispara tiros precisos.',lore:'Sniper Drones foram projetados para eliminar ameaças antes que alcançassem as relíquias Chrono. Corrompidos, passaram a atirar em qualquer coisa que respire perto demais da arena.'},
+    {id:'splitter',g:'Elites',e:'🧬',name:'Splitter',hp:55,spd:85,dmg:'Contato moderado',col:'#ff8cf0',atk:'Divide-se em unidades menores ao morrer.',lore:'Splitters são organismos que aprenderam a sobreviver perdendo partes de si. Matar o corpo principal apenas libera as cópias que cresciam presas dentro dele.'},
+    {id:'vomiter',g:'Elites',e:'☣️',name:'Vomiter',hp:140,spd:62,dmg:'Veneno',col:'#a6ff5d',atk:'Cospe toxina e gera criaturas menores ao morrer.',lore:'Nas dunas antigas, Chrono e podridão se misturaram sob a areia. O Vomiter é uma cisterna viva desse veneno, lento e pesado, mas capaz de transformar o chão em uma ameaça.'},
+    {id:'pukeling',g:'Elites',e:'🧪',name:'Pukeling',hp:18,spd:165,dmg:'5 + veneno',col:'#b6ff7a',atk:'Corre em bando após surgir de um Vomiter.',lore:'Pukelings são larvas de veneno vivo, expelidas em meio ao caos. Vivem pouco, mas atacam com urgência e sem medo, como se já soubessem que só existem para ganhar alguns segundos a mais para a infestação.'},
+    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',col:'#ff2e63',atk:'Rajadas rápidas, explosões e invocação de lacaios.',lore:'O Archon Core é um motor de guerra desperto dentro de um coração Chrono quebrado. Ele não governa com peso, e sim com ritmo: ataca rápido, convoca reforços e transforma a luta em uma perseguição frenética.'},
+    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',col:'#7b61ff',atk:'Pisões, lasers e pressão de área com enorme resistência.',lore:'Nasceu para ser um bastião de contenção, mas a própria energia que deveria selar rupturas o transformou num colosso consciente. O Titan Bastion avança como um cerco: lento, inevitável e brutal.'},
+    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',col:'#b6ff7a',atk:'Fendas, rajadas, invocações e controle total da arena.',lore:'A Oracle Bloom floresceu onde natureza e Chrono se fundiram de modo irreversível. Ela enxerga padrões onde outros veem caos, e manipula o campo de batalha como se estivesse podando um jardim hostil.'},
+    {id:'lostEmperor',g:'Boss Secreto',e:'🕳️',name:'Emperador Perdido',hp:7800,spd:70,dmg:'Catastrófico',col:'#ff345e',secret:true,atk:'Teleporta, enche a arena de projéteis, distorce o vazio e pune qualquer hesitação.',lore:'Antes de se perder, foi um soberano que tentou dobrar o próprio fluxo de Chrono. Falhou. O que voltou da fissura não é exatamente um rei nem exatamente um monstro — é uma vontade antiga vestida de vazio, alimentada por dor, ruína e memória.'}
+  ];
+  const byIdP=id=>enemyBookP.find(e=>e.id===id);
+  function escP(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+  function metaP(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{}}catch{return {}}}
+  function killsP(id){return Number((metaP().bestiaryKills||{})[id]||0)}
+  function needP(e){return e.g==='Bosses'?2:e.g==='Boss Secreto'?1:10}
+  let bookAnimP=0;
+  function stopBookP(){if(bookAnimP)cancelAnimationFrame(bookAnimP);bookAnimP=0;}
+  function drawModelP(ctx,e,t){
+    const c=e.col||'#61dafb';ctx.clearRect(0,0,300,300);ctx.save();ctx.translate(150,144);ctx.rotate(t*.78);ctx.shadowBlur=30;ctx.shadowColor=c;
+    const stroke='#f4fbff';
+    function poly(points,fill=c,sw=2.3){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=sw;ctx.stroke();}
+    function orb(r,fill=c){ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=2.2;ctx.stroke();}
+    if(e.id==='tank'||e.id==='titan'){ctx.beginPath();ctx.roundRect(-52,-60,104,120,18);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=2.6;ctx.stroke();ctx.fillStyle='rgba(0,0,0,.23)';ctx.fillRect(-26,-28,52,56);ctx.strokeStyle='rgba(255,255,255,.45)';ctx.strokeRect(-20,-22,40,44);}
+    else if(e.id==='archon'||e.id==='lostEmperor'){poly([[0,-70],[58,-22],[38,66],[0,48],[-38,66],[-58,-22]],e.secret?'#080208':c,2.6);ctx.strokeStyle=e.secret?c:'#fff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-58);ctx.lineTo(0,48);ctx.stroke();}
+    else if(e.id==='oracle'){orb(48,c);for(let i=0;i<8;i++){ctx.save();ctx.rotate(i*Math.PI/4+t*.2);poly([[0,-48],[12,-76],[-12,-76]],c,1.8);ctx.restore();}ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.fill();}
+    else if(e.id==='sentinel'||e.id==='sniperDrone'){ctx.beginPath();ctx.ellipse(0,0,56,34,0,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=2.4;ctx.stroke();ctx.fillStyle='#06101d';ctx.beginPath();ctx.arc(0,0,14,0,Math.PI*2);ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-70,0);ctx.lineTo(70,0);ctx.stroke();}
+    else if(e.id==='bomber'||e.id==='pukeling'){const pts=[];for(let i=0;i<14;i++){const a=i*Math.PI*2/14,r=i%2?30:56;pts.push([Math.cos(a)*r,Math.sin(a)*r]);}poly(pts,c,2.2);}
+    else if(e.id==='swarmer'){for(let i=0;i<4;i++){ctx.save();ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-26,14,36,0,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();ctx.restore();}}
+    else if(e.id==='vomiter'){ctx.beginPath();ctx.ellipse(0,9,56,66,0,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=2.6;ctx.stroke();ctx.fillStyle='rgba(10,30,8,.55)';ctx.beginPath();ctx.arc(0,11,18,0,Math.PI*2);ctx.fill();}
+    else poly([[0,-58],[46,-16],[30,56],[-30,56],[-46,-16]],c,2.3);
+    ctx.globalAlpha=.48;ctx.strokeStyle=c;ctx.lineWidth=2;for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(0,0,64+i*13+t*0,0,Math.PI*2);ctx.stroke();}
+    ctx.restore();
+  }
+  function startBookP(id){stopBookP();const canvas=document.getElementById('bookCanvasP');if(!canvas)return;const ctx=canvas.getContext('2d');canvas.width=300;canvas.height=300;const e=byIdP(id);let t=0;function loop(){t+=.026;drawModelP(ctx,e,t);bookAnimP=requestAnimationFrame(loop)}loop();}
+  function openBookDetailP(id){const e=byIdP(id);if(!e)return;stopBookP();overlay.classList.remove('hidden');overlayCard.className='card bestiaryP';overlayCard.innerHTML=`<h1>${escP(e.name)}</h1><p class="bookIntroP">Registro desbloqueado do Bestiário Chrono.</p><div class="bookDetailP"><div class="bookModelP"><canvas id="bookCanvasP" width="300" height="300"></canvas><div style="margin-top:10px;color:${e.col};font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.13em">MODELO 360° • COR REAL</div></div><div><div class="bookStatsP"><div class="bookStatP"><small>HP BASE</small><b>${escP(e.hp)}</b></div><div class="bookStatP"><small>VELOCIDADE</small><b>${escP(e.spd)}</b></div><div class="bookStatP"><small>DANO</small><b>${escP(e.dmg)}</b></div><div class="bookStatP"><small>ABATES</small><b>${killsP(e.id)}</b></div></div><div class="bookTextP"><h4>PADRÃO DE ATAQUE</h4>${escP(e.atk)}</div></div></div><div class="bookTextP"><h4>ORIGEM E COMPORTAMENTO</h4>${escP(e.lore)}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="bookBackP">← Voltar</button></div>`;document.getElementById('bookBackP').onclick=openBestiaryP;startBookP(id);}
+  function openBestiaryP(){stopBookP();const groups=['Comuns','Elites','Bosses','Boss Secreto'];overlay.classList.remove('hidden');overlayCard.className='card bestiaryP';overlayCard.innerHTML=`<h1>BESTIÁRIO</h1><p class="bookIntroP">Catálogo organizado por força. Os modelos 360° usam a mesma cor que cada criatura possui durante a partida.</p><div class="bookWrapP">${groups.map(g=>`<div class="bookSectionP"><h3>${g.toUpperCase()}</h3><div class="bookGridP">${enemyBookP.filter(e=>e.g===g).map(e=>{const k=killsP(e.id),need=needP(e),un=k>=need;return `<button class="bookCardP ${un?'':'locked'} ${e.secret?'bookSecretO':''}" data-book-p="${e.id}"><div class="bookEmojiP" style="box-shadow:0 0 22px ${e.col}44;border-color:${e.col}66">${un?e.e:'?'}</div><strong>${un?escP(e.name):'Registro bloqueado'}</strong><span>${un?escP(e.g):'Derrote mais para revelar.'}</span>${un?`<span class="bookKillsP" style="color:${e.col}!important">${k} abates</span>`:`<div class="bookProgressP"><i style="width:${Math.min(100,k/need*100)}%;background:linear-gradient(90deg,${e.col},#fff)"></i></div><span class="bookKillsP">${k}/${need}</span>`}</button>`}).join('')}</div></div>`).join('')}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="bookHubBackP">← Voltar</button></div>`;document.getElementById('bookHubBackP').onclick=()=>{if(window.openHubMenu37)openHubMenu37();else openStartMenu?.()};overlayCard.querySelectorAll('[data-book-p]').forEach(b=>{const e=byIdP(b.dataset.bookP);if(killsP(e.id)>=needP(e))b.onclick=()=>openBookDetailP(e.id);});}
+  window.__openBestiaryLatest=openBestiaryP;window.openBestiary37=openBestiaryP;window.openBestiary38=openBestiaryP;window.openBestiaryG=openBestiaryP;window.openBestiaryI=openBestiaryP;
+  window.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiaryP();}},true);
+
+  function segDistP(px,py,x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,l2=dx*dx+dy*dy||1;let t=((px-x1)*dx+(py-y1)*dy)/l2;t=Math.max(0,Math.min(1,t));return Math.hypot(px-(x1+dx*t),py-(y1+dy*t));}
+  function nearestP(x,y,exclude=[],range=9999){let best=null,bd=range;for(const e of game.enemies||[]){if(exclude.includes(e))continue;const d=Math.hypot(e.x-x,e.y-y);if(d<bd){bd=d;best=e;}}return best;}
+  function moonInitP(){if(!game)return;game.moonBladesP=game.moonBladesP||[];game.moonMeteorsP=game.moonMeteorsP||[];game.moonDash2P=game.moonDash2P??100;game.moonDashFxP=game.moonDashFxP||[];}
+  function healP(){if(game?.classKey==='moonSlayer'&&game.moonBloodO>0){const p=game.player;p.hp=clamp(p.hp+p.maxHp*.02,0,p.maxHp);}}
+  function pushBladeP(o){moonInitP();game.moonBladesP.push(Object.assign({x:0,y:0,px:0,py:0,a:0,vx:0,vy:0,len:104,w:15,life:.55,maxLife:.55,damage:14,color:'#f8faff',edge:'#0c0e18',hits:[],maxHits:1,split:false,purple:false,homing:null,wall:true,child:false},o||{}));}
+  function spawnMeteorP(x,y,damage){moonInitP();game.moonMeteorsP.push({x,y,t:.28,max:.28,r:92,damage,done:false});}
+  function hitBladeP(b,e){if(b.hits.includes(e))return;b.hits.push(e);e.hp-=b.damage;e.hitFlash=.14;if(game.moonBloodO>0)healP();if(b.purple)spawnMeteorP(e.x,e.y,30*game.upgrades.damage);if(e.hp<=0){const idx=game.enemies.indexOf(e);if(idx>=0)enemyDeath(idx,e);}if(b.split&&!b.child){for(const s of [-1,1]){const target=nearestP(e.x,e.y,[e],430);const aa=target?angleTo(e,target):b.a+s*.72;pushBladeP({x:e.x,y:e.y,px:e.x,py:e.y,a:aa+s*.08,vx:Math.cos(aa)*760,vy:Math.sin(aa)*760,len:62,w:10,life:.55,maxLife:.55,damage:22*game.upgrades.damage,color:game.moonBloodO>0?'#ff5269':'#f7fbff',edge:game.moonBloodO>0?'#2b0208':'#0b0d16',homing:target,child:true,maxHits:1,wall:true});}}}
+  function castBasicP(){moonInitP();const p=game.player;if(!game?.running||p.fireCd>0)return;const a=angleTo(p,mouse),red=game.moonBloodO>0;const speed=650;pushBladeP({x:p.x+Math.cos(a)*22,y:p.y+Math.sin(a)*22,px:p.x,py:p.y,a,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,len:100,w:14,life:.58,maxLife:.58,damage:14*game.upgrades.damage,color:red?'#ff5269':'#ffffff',edge:red?'#2b0208':'#0b0d16',split:true,maxHits:4,wall:true});setTimeout(()=>{if(!game||game.classKey!=='moonSlayer')return;const pp=game.player,aa=angleTo(pp,mouse);pushBladeP({x:pp.x+Math.cos(aa)*22,y:pp.y+Math.sin(aa)*22,px:pp.x,py:pp.y,a:aa,vx:Math.cos(aa)*620,vy:Math.sin(aa)*620,len:90,w:13,life:.55,maxLife:.55,damage:10*game.upgrades.damage,color:red?'#ff5269':'#b77cff',edge:'#1a082c',split:false,maxHits:2,purple:true,wall:true});},110);p.fireCd=0.42/(Math.max(.1,game.upgrades.fireRate)*(red?1.5:1));}
+
+  const shootPrevP=shoot;shoot=function(){if(game?.classKey==='moonSlayer')return castBasicP();return shootPrevP();};
+  const updatePlayerPrevP=updatePlayer;updatePlayer=function(dt){
+    if(game?.classKey==='moonSlayer'){
+      moonInitP();const wasDown=mouse.down;mouse.down=false;const hpBefore=game.player.hp, auraBefore=!!game.moonAuraO, bloodBefore=(game.moonBloodO||0)>0;updatePlayerPrevP(dt);mouse.down=wasDown;const p=game.player;if(auraBefore&&bloodBefore&&game.moonAuraO&&p.hp>hpBefore)p.hp=hpBefore;
+      if(game.moonQteO){game.moonQteO.target=.62;game.moonQteO.window=.032;}
+      game.moonDash2P=clamp((game.moonDash2P??100)+38*dt,0,100);
+      if(wasDown)castBasicP();
+      for(let i=game.moonBladesP.length-1;i>=0;i--){const b=game.moonBladesP[i];b.life-=dt;b.px=b.x;b.py=b.y;if(b.homing&&game.enemies.includes(b.homing)){const aa=angleTo(b,b.homing);b.vx+=(Math.cos(aa)*760-b.vx)*dt*6;b.vy+=(Math.sin(aa)*760-b.vy)*dt*6;b.a=aa;}b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.wall&&typeof shotBlockedByMap==='function'&&shotBlockedByMap({x:b.px,y:b.py,r:6},{x:b.x,y:b.y,r:6}))b.life=-1;if(b.life<=0||b.x<-100||b.x>W+100||b.y<-100||b.y>H+100){game.moonBladesP.splice(i,1);continue;}const nx=-Math.sin(b.a),ny=Math.cos(b.a),x1=b.x+nx*b.len*.5,y1=b.y+ny*b.len*.5,x2=b.x-nx*b.len*.5,y2=b.y-ny*b.len*.5;for(const e of [...game.enemies]){if(b.hits.includes(e))continue;if(segDistP(e.x,e.y,x1,y1,x2,y2)<e.r+b.w*.85){hitBladeP(b,e);if(b.hits.length>=b.maxHits){b.life=-1;break;}}}}
+      for(let i=game.moonMeteorsP.length-1;i>=0;i--){const m=game.moonMeteorsP[i];m.t-=dt;if(!m.done&&m.t<=0){m.done=true;game.shake=Math.max(game.shake||0,12);addRing(m.x,m.y,'#b77cff',m.r,5);addParticles(m.x,m.y,'#b77cff',18,.9);for(let j=game.enemies.length-1;j>=0;j--){const e=game.enemies[j];if(dist(m,e)<m.r+e.r){e.hp-=m.damage*(e.type==='boss'?.6:1);e.hitFlash=.18;if(game.moonBloodO>0)healP();if(e.hp<=0)enemyDeath(j,e);}}}if(m.t<=-.32)game.moonMeteorsP.splice(i,1);}
+      for(let i=game.moonDashFxP.length-1;i>=0;i--){game.moonDashFxP[i].life-=dt;if(game.moonDashFxP[i].life<=0)game.moonDashFxP.splice(i,1);}return;
+    }
+    return updatePlayerPrevP(dt);
+  };
+
+  window.addEventListener('keydown',ev=>{if(!game||game.classKey!=='moonSlayer'||ev.key!=='Shift')return;const p=game.player;moonInitP();if(p.dashCharge<100&&game.moonDash2P>=100){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();let dx=0,dy=0;if(keys['w']||keys['arrowup'])dy=-1;if(keys['s']||keys['arrowdown'])dy+=1;if(keys['a']||keys['arrowleft'])dx=-1;if(keys['d']||keys['arrowright'])dx+=1;let a=Math.atan2(dy,dx);if(!dx&&!dy)a=angleTo(p,mouse);game.moonDash2P=0;p.dashTime=.18;p.dashAngle=a;game.shake=Math.max(game.shake||0,8);game.moonDashFxP.push({x:p.x,y:p.y,life:.45,maxLife:.45,r:74});addRing(p.x,p.y,'#d8c4ff',70,4);for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i];if(dist(p,e)<78+e.r){e.hp-=28*game.upgrades.damage;e.hitFlash=.14;if(e.hp<=0)enemyDeath(i,e);}}}},true);
+
+  const renderPrevP=render;render=function(){renderPrevP();if(!game)return;
+    if(game.classKey==='moonSlayer'){
+      const p=game.player;
+      if(p){ctx.save();ctx.translate(p.x,p.y);const red=game.moonBloodO>0;ctx.shadowBlur=red?22:18;ctx.shadowColor=red?'#ff5269':'#e8d8ff';ctx.strokeStyle='#f9f6ff';ctx.lineWidth=1.8;ctx.fillStyle=red?'rgba(88,8,20,.98)':'rgba(40,14,78,.98)';ctx.beginPath();ctx.moveTo(0,-15);ctx.lineTo(16,-5);ctx.lineTo(19,8);ctx.lineTo(9,18);ctx.lineTo(-9,18);ctx.lineTo(-19,8);ctx.lineTo(-16,-5);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#f5f0ff';ctx.fillRect(-20,-13,40,4);ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(-3,-19,8,Math.PI*.18,Math.PI*1.3);ctx.stroke();ctx.strokeStyle=red?'rgba(255,80,105,.55)':'rgba(255,255,255,.35)';ctx.beginPath();ctx.moveTo(-23,2);ctx.lineTo(23,2);ctx.stroke();ctx.fillStyle=red?'#ff5269':'#cdb7ff';ctx.beginPath();ctx.arc(0,-4,3,0,Math.PI*2);ctx.fill();ctx.restore();
+        // Dash bars moved to HUD dash icon by patch 3.7q.
+      }
+      for(const b of game.moonBladesP||[]){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.a);const al=clamp(b.life/b.maxLife,0,1);ctx.globalAlpha=al;ctx.shadowBlur=b.purple?18:16;ctx.shadowColor=b.color;ctx.beginPath();ctx.moveTo(-b.len*.48,-b.w*.18);ctx.quadraticCurveTo(-b.len*.1,-b.w*.9,b.len*.44,-b.w*.06);ctx.quadraticCurveTo(b.len*.52,b.w*.15,b.len*.25,b.w*.52);ctx.quadraticCurveTo(-b.len*.16,b.w*.68,-b.len*.48,b.w*.18);ctx.closePath();ctx.fillStyle='rgba(5,5,10,.82)';ctx.fill();ctx.strokeStyle=b.color;ctx.lineWidth=1.8;ctx.stroke();ctx.fillStyle=b.color;ctx.globalAlpha=al*.75;ctx.beginPath();ctx.moveTo(-b.len*.28,0);ctx.quadraticCurveTo(-b.len*.02,-b.w*.42,b.len*.34,b.w*.05);ctx.quadraticCurveTo(0,b.w*.35,-b.len*.26,b.w*.1);ctx.closePath();ctx.fill();ctx.restore();}
+      for(const m of game.moonMeteorsP||[]){ctx.save();const prog=1-clamp(m.t/m.max,0,1);const y=-80+(m.y+80)*prog;ctx.globalAlpha=clamp(prog*1.6,0,1);ctx.shadowBlur=28;ctx.shadowColor='#b77cff';ctx.fillStyle='#d6b7ff';ctx.beginPath();ctx.arc(m.x,y,20+prog*14,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();if(m.done){ctx.globalAlpha=clamp((m.t+.32)/.32,0,1);const g=ctx.createRadialGradient(m.x,m.y,8,m.x,m.y,m.r);g.addColorStop(0,'rgba(255,255,255,.55)');g.addColorStop(.32,'rgba(183,124,255,.34)');g.addColorStop(1,'rgba(183,124,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(m.x,m.y,m.r,0,Math.PI*2);ctx.fill();}ctx.restore();}
+      for(const f of game.moonDashFxP||[]){ctx.save();const a=clamp(f.life/f.maxLife,0,1);ctx.globalAlpha=a;ctx.strokeStyle='#f4f0ff';ctx.lineWidth=3;ctx.shadowBlur=20;ctx.shadowColor='#c389ff';ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1-a*.25),Math.PI*.2,Math.PI*1.3);ctx.stroke();ctx.globalAlpha=a*.45;ctx.fillStyle='#c389ff';ctx.beginPath();ctx.arc(f.x,f.y,f.r*.55,0,Math.PI*2);ctx.fill();ctx.restore();}
+      if(game.moonUltO?.phase==='storm'){for(const c of game.moonUltO.cuts||[]){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=.62;ctx.shadowBlur=22;ctx.shadowColor=c.color||'#7de7ff';ctx.strokeStyle=c.color||'#7de7ff';ctx.lineWidth=Math.max(5,(c.w||16)*.45);ctx.beginPath();ctx.moveTo(-c.len/2,0);ctx.quadraticCurveTo(0,-22,c.len/2,0);ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(-c.len*.48,-4);ctx.quadraticCurveTo(0,-28,c.len*.48,-4);ctx.stroke();ctx.restore();}}
+    }
+  };
+  console.log(PATCH+' carregado');
+})();
+
+</script>
+
+<script>
+(()=>{
+  if(window.__chronoPatch37q)return; window.__chronoPatch37q=true;
+  const PATCH='Chrono Shards 3.7q — Info buttons, Moon dash HUD meter, Colonel R balance';
+  const st=document.createElement('style');
+  st.textContent=`
+    .info37,.info-btn27,.info-btn-v23,[data-info],[data-info37]{position:relative;z-index:9999!important;pointer-events:auto!important;cursor:pointer!important}
+    .class-model37,.class-model27,.class-model-v23,.class-lock27,.class-lock-v23{pointer-events:none!important}
+    .moon-dash-meter37q{position:absolute;left:6px;right:6px;top:5px;height:5px;border-radius:999px;background:rgba(195,137,255,.12);border:1px solid rgba(220,190,255,.32);overflow:hidden;box-shadow:0 0 9px rgba(195,137,255,.15);pointer-events:none;z-index:7}
+    .moon-dash-meter37q i{display:block;height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,#7d35ff,#e9d7ff);box-shadow:0 0 12px rgba(195,137,255,.9)}
+    .moon-dash-meter37q.ready{box-shadow:0 0 12px rgba(195,137,255,.55),0 0 24px rgba(195,137,255,.22)}
+  `;
+  document.head.appendChild(st);
+
+  function esc37q(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+  function classColor37q(k){return (CLASSES[k]?.tagColor||CLASSES[k]?.color||'#61dafb');}
+  const LORE37Q={
+    assault:'Um soldado de linha de frente que aprendeu a sobreviver onde o tempo se parte. Ele carrega marcas de antigas campanhas e uma disciplina que parece familiar demais para alguns veteranos.',
+    sniper:'O Sniper mede o mundo em respirações e distância. Dizem que ele nunca atira onde o alvo está, mas onde o futuro obriga o alvo a estar.',
+    engineer:'O Artífice enxerga máquinas dentro de sucata e transforma ruínas Chrono em companheiros de combate. Para ele, toda arena é uma oficina sob ataque.',
+    mage:'O Void Mage estudou o vazio até ouvir respostas. Seus feitiços não são explosões simples: são perguntas feitas para dimensões que não deveriam responder.',
+    ronin:'O Ronin atravessa eras com uma lâmina silenciosa. Sua calma carrega a sombra de uma ligação quebrada que ainda sangra em outra forma.',
+    alchemist:'O Alquimista mistura veneno, fogo e instinto. Cada frasco lançado é uma hipótese perigosa, e cada explosão é uma conclusão satisfatória.',
+    reaper:'Reaper nasceu da mesma cicatriz que outro espadachim tenta esconder. Onde um escolheu disciplina, ele escolheu cobrança, vermelho e silêncio.',
+    colonel:'O Coronel é um velho comandante que já viu Chronos caírem como chuva. Seu jeito duro esconde a razão pela qual nunca abandona soldados jovens na linha de frente.',
+    chronoHero:'O Chrono-Hero parece uma lenda lapidada em cristal vivo. Fogo, gelo e gravidade obedecem a ele como se o reconhecessem de eras antigas.',
+    moonSlayer:'Nascido nas sombras, mas criado na luz. O Exterminador de Luas é um samurai experiente e muito inteligente. Já ensinou diversos espadachins, até mesmo aqueles que tinham um temperamento difícil de lidar. Com sua lâmina feita de titânio puro, e uma precisão divina, ele corta tudo como se fosse papel. Dizem que olhar nos olhos dele é a mesma coisa que encarar a escuridão, mas ele é gente boa.',
+    shadowChild:'Uma presença que só aparece depois que a fissura mais sombria é vencida. Seu corpo parece uma casca preta pulsando com memórias vermelhas do caos.'
+  };
+  function skillRows37q(k){
+    const keys=(CLASSES[k]?.skills||[]);
+    return keys.map((id,i)=>{const sk=SKILL_DEFS[id]||{};return `<div class="skill-row27"><b>${['E','Q','R'][i]||'?'} — ${esc37q(sk.emoji||'✦')} ${esc37q(sk.name||id)}</b><br><span>${esc37q(sk.desc||'Especial de combate.')}</span></div>`;}).join('') + (k==='moonSlayer'?'<div class="skill-row27"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>Ultimate lunar de cortes massivos, congelamento de cena e quebra final da tela.</span></div>':k==='chronoHero'?'<div class="skill-row27"><b>X — 💎 Ultimate Chrono</b><br><span>Carrega com o tempo e libera um ataque prismático devastador.</span></div>':k==='shadowChild'?'<div class="skill-row27"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>':'');
+  }
+  function openClassInfo37q(k){
+    const c=CLASSES[k]; if(!c)return;
+    const co=classColor37q(k);
+    overlay.classList.remove('hidden'); overlayCard.className='card';
+    overlayCard.innerHTML=`<div style="text-align:left"><h1>${esc37q(c.name)}</h1><p>${esc37q(c.desc||'')}</p><div class="death-grid27"><div class="death-stat27"><small>HP</small><b>${c.hp??'-'}</b></div><div class="death-stat27"><small>ESCUDO</small><b>${c.shield??'-'}</b></div><div class="death-stat27"><small>FOCO</small><b>${c.focus??'-'}</b></div><div class="death-stat27"><small>VELOCIDADE</small><b>${c.speed??'-'}</b></div></div><h3 style="font-family:Orbitron;color:${co};margin-top:18px">ESPECIAIS</h3>${skillRows37q(k)}<h3 style="font-family:Orbitron;color:${co};margin-top:18px">LORE</h3><div class="lore27">${esc37q(LORE37Q[k]||'Um combatente perdido entre fragmentos de tempo, tentando sobreviver ao caos dos Chronos.')}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backInfo37q">← Voltar para seleção</button></div></div>`;
+    const back=document.getElementById('backInfo37q'); if(back)back.onclick=()=>{if(window.openClassMenu)openClassMenu();};
+  }
+  window.openClassInfo35=openClassInfo37q; window.openClassInfo37=openClassInfo37q; window.openClassInfo29=openClassInfo37q; window.openClassInfo28=openClassInfo37q; window.openClassInfo27=openClassInfo37q; window.openClassInfo23=openClassInfo37q;
+  window.addEventListener('click',ev=>{
+    const b=ev.target.closest?.('[data-info37],[data-info],.info37,.info-btn27,.info-btn-v23');
+    if(!b)return;
+    const k=b.dataset.info37||b.dataset.info||b.closest?.('[data-class]')?.dataset.class;
+    if(!k||!CLASSES[k])return;
+    ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation();
+    openClassInfo37q(k);
+  },true);
+
+  function ensureMoonDashMeter37q(){
+    const icon=document.getElementById('dashIcon'); if(!icon)return null;
+    let meter=icon.querySelector('.moon-dash-meter37q');
+    if(!meter){meter=document.createElement('div');meter.className='moon-dash-meter37q';meter.innerHTML='<i></i>';icon.appendChild(meter);}
+    return meter;
+  }
+  function updateMoonDashMeter37q(){
+    const meter=ensureMoonDashMeter37q(); if(!meter)return;
+    if(!game||game.classKey!=='moonSlayer'){meter.style.display='none';return;}
+    meter.style.display='block';
+    const v=clamp((game.moonDash2P??0),0,100);
+    meter.querySelector('i').style.width=v+'%';
+    meter.classList.toggle('ready',v>=99.5);
+  }
+  const hudPrev37q=updateHUD;
+  updateHUD=function(){hudPrev37q(); updateMoonDashMeter37q();};
+  const renderPrev37q=render;
+  render=function(){renderPrev37q(); updateMoonDashMeter37q();};
+
+  function ensureColonelKills37q(){if(!game)return;game.colonelMedKills37q=game.colonelMedKills37q||0;}
+  function colonelLevelFromKills37q(k){return k>=20?3:k>=10?2:k>=3?1:0;}
+  const enemyDeathPrev37q=enemyDeath;
+  enemyDeath=function(index,e){
+    const wasColonel=game&&game.classKey==='colonel';
+    const canCharge=wasColonel&&game.colonelMedCd<=0&&!(game.colonelGunnerTimer>0);
+    enemyDeathPrev37q(index,e);
+    if(canCharge&&game&&game.classKey==='colonel'){
+      ensureColonelKills37q();
+      game.colonelMedKills37q+=1;
+      game.colonelMedCharge=colonelLevelFromKills37q(game.colonelMedKills37q);
+      if(typeof updateColonelMeter29==='function')try{updateColonelMeter29();}catch(_){;}
+    }
+  };
+  const useSkillPrev37q=useSkill;
+  useSkill=function(idx){
+    const wasFirstAid=game&&game.classKey==='colonel'&&CLASSES.colonel?.skills?.[idx]==='colonelFirstAid';
+    const beforeCd=game?.colonelMedCd||0;
+    useSkillPrev37q(idx);
+    if(wasFirstAid&&game&&game.classKey==='colonel'&&(game.colonelMedCd||0)>beforeCd){
+      game.colonelMedKills37q=0;
+      game.colonelMedCharge=0;
+      if(typeof updateColonelMeter29==='function')try{updateColonelMeter29();}catch(_){;}
+    }
+  };
+  const updatePlayerPrev37q=updatePlayer;
+  updatePlayer=function(dt){
+    updatePlayerPrev37q(dt);
+    if(game&&game.classKey==='colonel'){
+      ensureColonelKills37q();
+      if(game.colonelMedCd>0){game.colonelMedKills37q=0;game.colonelMedCharge=0;}
+      else game.colonelMedCharge=colonelLevelFromKills37q(game.colonelMedKills37q);
+      if(typeof updateColonelMeter29==='function')try{updateColonelMeter29();}catch(_){;}
+    }
+    updateMoonDashMeter37q();
+  };
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoPatch43r)return; window.__chronoPatch43r=true;
+  const VERSION_43R='4.3';
+  const st=document.createElement('style');
+  st.textContent=`
+    .class-card37,.class-card27,.class-card-v23,[data-class].class-card37,[data-class].class-card27,[data-class].class-card-v23{position:relative!important;overflow:hidden!important;padding-top:18px!important}
+    .class-card37 .info37,.class-card37 [data-info37],.class-card37 [data-info],
+    .class-card27 .info-btn27,.class-card27 [data-info],
+    .class-card-v23 .info-btn-v23,.class-card-v23 [data-info],
+    [data-class]>.info37,[data-class]>.info-btn27,[data-class]>.info-btn-v23,[data-class]>[data-info],[data-class]>[data-info37]{
+      position:absolute!important;top:12px!important;right:12px!important;left:auto!important;bottom:auto!important;
+      width:34px!important;height:34px!important;min-width:34px!important;padding:0!important;
+      display:grid!important;place-items:center!important;border-radius:12px!important;
+      background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(97,218,251,.16))!important;
+      border:1px solid rgba(190,235,255,.34)!important;color:#eafbff!important;
+      box-shadow:0 0 18px rgba(97,218,251,.16),inset 0 0 18px rgba(255,255,255,.045)!important;
+      font-family:Orbitron,sans-serif!important;font-size:14px!important;line-height:1!important;z-index:99999!important;pointer-events:auto!important;cursor:pointer!important;
+      transform:none!important;margin:0!important;
+    }
+    .class-card37 .info37:hover,.class-card37 [data-info37]:hover,.class-card37 [data-info]:hover,
+    .class-card27 .info-btn27:hover,.class-card-v23 .info-btn-v23:hover{filter:brightness(1.18)!important;box-shadow:0 0 24px rgba(97,218,251,.3)!important}
+  `;
+  document.head.appendChild(st);
+
+  const LORE43R={
+    assault:'Ele aprendeu com seu pai que coragem não é ausência de medo, é avançar mesmo quando a voz no rádio treme. Carrega técnicas de guerra antigas no corpo, mas nunca admite de quem herdou esse jeito de proteger todo mundo primeiro.',
+    sniper:'Dizem que ele conta segundos melhor do que respira. Em cada disparo há paciência, distância e uma pergunta silenciosa: quantas linhas do tempo podem ser salvas por uma única bala?',
+    mage:'O Void Mage estudou o vazio até o vazio começar a responder. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.',
+    ronin:'O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.',
+    alchemist:'O Alquimista nunca confiou em armas limpas. Desde sempre suas garrafas carregam o fardo de ser quem ele se tornou. Mas com um sorriso no rosto e uma caipira na medida, ele acredita que toda salvação precisa de um pouco de diversão.',
+    reaper:'Nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.',
+    colonel:'O Coronel fala pouco sobre família e menos ainda sobre medo. Ainda assim, quando certos soldados avançam demais, seu bombardeio chega com precisão quase imparável, como se ele queria que alguém estivesse olhando para ele.',
+    chronoHero:'O Chrono-Hero é uma lenda construída em cristal, fogo e gelo. Criado para suportar colapsos temporais, ele luta como se cada suspiro fosse a última chance de costurar o mundo de volta.',
+    moonSlayer:'Nascido nas sombras, mas criado na luz. O Exterminador de Luas é um samurai experiente e muito inteligente. Já ensinou diversos espadachins, até mesmo aqueles que tinham um temperamento difícil de lidar. Com sua lâmina feita de titânio puro, e uma precisão divina, ele corta tudo como se fosse papel. Dizem que olhar nos olhos dele é a mesma coisa que encarar a escuridão, mas ele é gente boa.',
+    engineer:'O Artífice transforma sucata Chrono em máquinas vivas, torretas e drones que caçam por ele.',
+    shadowChild:'Uma presença que só aparece depois que a fissura mais sombria é vencida. Seu corpo parece uma casca preta pulsando com memórias vermelhas do caos.'
+  };
+  const MOON_DESC43R={
+    moonDash:'Dê um avanço que atravessa paredes, ao acertar aparecerá um Quick Time Event para você acertar, se errar apenas cortará tudo em volta, mas se acertar, explodirá tudo com o poder do luar.',
+    moonBloodBlades:'Entre em um modo sedento por sangue, cada corte disparado por suas lâminas enche suas mãos de sangue, recuperando um pouco do seu HP.',
+    moonDarkSide:'Um ataque com dois modos. Se apenas clicar, você criará uma aura em volta de si que cortará tudo dentro dela, mas se clicar e segurar até o máximo, lançara inúmeros cortes, em todas as regiões do mapa.',
+    moonUltimate:'O Exterminador tira sua espada da bainha, criando cortes atemporais em milissegundos. Ninguém pode para-lo agora!'
+  };
+  for(const [id,desc] of Object.entries(MOON_DESC43R)){
+    if(SKILL_DEFS[id]) SKILL_DEFS[id].desc=desc;
+  }
+  if(SKILL_DEFS.moonDash){SKILL_DEFS.moonDash.name='Corte do Luar';SKILL_DEFS.moonDash.emoji='☾';}
+  if(SKILL_DEFS.moonBloodBlades){SKILL_DEFS.moonBloodBlades.name='Lâmina Sangrenta';SKILL_DEFS.moonBloodBlades.emoji='🩸';}
+  if(SKILL_DEFS.moonDarkSide){SKILL_DEFS.moonDarkSide.name='Lado Escuro da Lua / Corte que Corta o Mundo';SKILL_DEFS.moonDarkSide.emoji='🌙';}
+
+  function esc43r(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+  function classColor43r(k){return CLASSES[k]?.tagColor||CLASSES[k]?.color||'#61dafb';}
+  function moonSkillRows43r(){
+    return `<div class="skill-row27"><b>E — ☾ Corte do Luar</b><br><span>${esc43r(MOON_DESC43R.moonDash)}</span></div>
+      <div class="skill-row27"><b>Q — 🩸 Lâmina Sangrenta</b><br><span>${esc43r(MOON_DESC43R.moonBloodBlades)}</span></div>
+      <div class="skill-row27"><b>R — 🌙 Lado Escuro da Lua / Corte que Corta o Mundo</b><br><span>${esc43r(MOON_DESC43R.moonDarkSide)}</span></div>
+      <div class="skill-row27"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>${esc43r(MOON_DESC43R.moonUltimate)}</span></div>`;
+  }
+  function skillRows43r(k){
+    if(k==='moonSlayer') return moonSkillRows43r();
+    const keys=CLASSES[k]?.skills||[];
+    return keys.map((id,i)=>{const sk=SKILL_DEFS[id]||{};return `<div class="skill-row27"><b>${['E','Q','R'][i]||'?'} — ${esc43r(sk.emoji||'✦')} ${esc43r(sk.name||id)}</b><br><span>${esc43r(sk.desc||'Especial de combate.')}</span></div>`;}).join('')+
+      (k==='chronoHero'?'<div class="skill-row27"><b>X — 💎 Ultimate Chrono</b><br><span>Carrega com o tempo e libera um ataque prismático devastador.</span></div>':k==='shadowChild'?'<div class="skill-row27"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>':'');
+  }
+  function openClassInfo43r(k){
+    const c=CLASSES[k]; if(!c)return;
+    const co=classColor43r(k);
+    overlay.classList.remove('hidden'); overlayCard.className='card';
+    overlayCard.innerHTML=`<div style="text-align:left"><h1>${esc43r(c.name)}</h1><p>${esc43r(c.desc||'')}</p><div class="death-grid27"><div class="death-stat27"><small>HP</small><b>${c.hp??'-'}</b></div><div class="death-stat27"><small>ESCUDO</small><b>${c.shield??'-'}</b></div><div class="death-stat27"><small>FOCO</small><b>${c.focus??'-'}</b></div><div class="death-stat27"><small>VELOCIDADE</small><b>${c.speed??'-'}</b></div></div><h3 style="font-family:Orbitron;color:${co};margin-top:18px">ESPECIAIS</h3>${skillRows43r(k)}<h3 style="font-family:Orbitron;color:${co};margin-top:18px">LORE</h3><div class="lore27">${esc43r(LORE43R[k]||'Um combatente perdido entre fragmentos de tempo, tentando sobreviver ao caos dos Chronos.')}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backInfo43r">← Voltar para seleção</button></div></div>`;
+    const back=document.getElementById('backInfo43r'); if(back)back.onclick=()=>{if(window.openClassMenu)openClassMenu();};
+  }
+  window.openClassInfo43r=openClassInfo43r;
+  window.openClassInfo35=openClassInfo43r; window.openClassInfo37=openClassInfo43r; window.openClassInfo29=openClassInfo43r; window.openClassInfo28=openClassInfo43r; window.openClassInfo27=openClassInfo43r; window.openClassInfo23=openClassInfo43r;
+  window.addEventListener('click',ev=>{
+    const b=ev.target.closest?.('[data-info37],[data-info],.info37,.info-btn27,.info-btn-v23');
+    if(!b)return;
+    const k=b.dataset.info37||b.dataset.info||b.closest?.('[data-class]')?.dataset.class;
+    if(!k||!CLASSES[k])return;
+    ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openClassInfo43r(k);
+  },true);
+
+  function applyVersion43r(){
+    if(!overlayCard)return;
+    overlayCard.querySelectorAll('small').forEach(s=>{
+      if((s.textContent||'').trim().toUpperCase().includes('VERSÃO')){
+        const b=s.parentElement?.querySelector('b'); if(b)b.textContent=VERSION_43R;
+      }
+    });
+    overlayCard.querySelectorAll('b').forEach(b=>{if(/^3\.7\w*/.test((b.textContent||'').trim()))b.textContent=VERSION_43R;});
+  }
+  const openStartPrev43r=window.openStartMenu;
+  if(typeof openStartPrev43r==='function'){
+    window.openStartMenu=function(){const r=openStartPrev43r.apply(this,arguments);setTimeout(applyVersion43r,0);return r;};
+  }
+  const openClassPrev43r=window.openClassMenu;
+  if(typeof openClassPrev43r==='function'){
+    window.openClassMenu=function(){const r=openClassPrev43r.apply(this,arguments);setTimeout(()=>{
+      document.querySelectorAll('.class-card37,.class-card27,.class-card-v23,[data-class]').forEach(card=>card.style.position='relative');
+    },0);return r;};
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(applyVersion43r,0));
+  setTimeout(applyVersion43r,0);
+  console.log('Chrono Shards 4.3 lore/info patch loaded');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoPatch43S)return; window.__chronoPatch43S=true;
+  const VERSION_43S='4.3';
+  const LORE_43S={
+    assault:"Ele aprendeu com seu pai que coragem não é ausência de medo, é avançar mesmo quando a voz no rádio treme. Carrega técnicas de guerra antigas no corpo, mas nunca admite de quem herdou esse jeito de proteger todo mundo primeiro.",
+    sniper:"Dizem que ele conta segundos melhor do que respira. Em cada disparo há paciência, distância e uma pergunta silenciosa: quantas linhas do tempo podem ser salvas por uma única bala?",
+    mage:"O Void Mage estudou o vazio até o vazio começar a responder. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.",
+    ronin:"O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.",
+    alchemist:"O Alquimista nunca confiou em armas limpas. Desde sempre suas garrafas carregam o fardo de ser quem ele se tornou. Mas com um sorriso no rosto e uma caipira na medida, ele acredita que toda salvação precisa de um pouco de diversão.",
+    reaper:"Nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.",
+    colonel:"O Coronel fala pouco sobre família e menos ainda sobre medo. Ainda assim, quando certos soldados avançam demais, seu bombardeio chega com precisão quase imparável, como se ele queria que alguém estivesse olhando para ele.",
+    chronoHero:"O Chrono-Hero é uma lenda construída em cristal, fogo e gelo. Criado para suportar colapsos temporais, ele luta como se cada suspiro fosse a última chance de costurar o mundo de volta."
+  };
+  const MOON_DESC_43S={
+    moonDash:"Dê um avanço que atravessa paredes, ao acertar aparecerá um Quick Time Event para você acertar, se errar apenas cortará tudo em volta, mas se acertar, explodirá tudo com o poder do luar.",
+    moonBloodBlades:"Entre em um modo sedento por sangue, cada corte disparado por suas lâminas enche suas mãos de sangue, recuperando um pouco do seu HP.",
+    moonDarkSide:"Um ataque com dois modos. Se apenas clicar, você criará uma aura em volta de si que cortará tudo dentro dela, mas se clicar e segurar até o máximo, lançara inúmeros cortes, em todas as regiões do mapa.",
+    moonUltimate:"O Exterminador tira sua espada da bainha, criando cortes atemporais em milissegundos. Ninguém pode para-lo agora!"
+  };
+  const DEFAULT_LORE_43S={
+    engineer:'O Artífice transforma sucata Chrono em máquinas vivas, torretas e drones que caçam por ele.',
+    shadowChild:'Filho de uma fissura proibida, escondido até a queda do Emperador Perdido. Sua casca negra pulsa como uma lembrança viva do caos.',
+    moonSlayer:'Nascido nas sombras, mas criado na luz. O Exterminador de Luas é um samurai experiente e muito inteligente. Já ensinou diversos espadachins, até mesmo aqueles que tinham um temperamento difícil de lidar. Com sua lâmina feita de titânio puro, e uma precisão divina, ele corta tudo como se fosse papel. Dizem que olhar nos olhos dele é a mesma coisa que encarar a escuridão, mas ele é gente boa.'
+  };
+  function esc43s(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+  function col43s(k){return (window.CLASSES&&CLASSES[k]&&(CLASSES[k].tagColor||CLASSES[k].color))||'#61dafb';}
+  function applySkillText43s(){
+    if(!window.SKILL_DEFS)return;
+    if(SKILL_DEFS.moonDash){SKILL_DEFS.moonDash.name='Corte do Luar';SKILL_DEFS.moonDash.emoji='☾';SKILL_DEFS.moonDash.desc=MOON_DESC_43S.moonDash;}
+    if(SKILL_DEFS.moonBloodBlades){SKILL_DEFS.moonBloodBlades.name='Lâmina Sangrenta';SKILL_DEFS.moonBloodBlades.emoji='🩸';SKILL_DEFS.moonBloodBlades.desc=MOON_DESC_43S.moonBloodBlades;}
+    if(SKILL_DEFS.moonDarkSide){SKILL_DEFS.moonDarkSide.name='Lado Escuro da Lua / Corte que Corta o Mundo';SKILL_DEFS.moonDarkSide.emoji='🌙';SKILL_DEFS.moonDarkSide.desc=MOON_DESC_43S.moonDarkSide;}
+  }
+  applySkillText43s();
+  const style=document.createElement('style');
+  style.id='chronoPatch43SStyle';
+  style.textContent=`
+    .class-card-v23,.class-card27,.class-card37,.class-cardP,.class-card43,.class-card43r,[data-class]{position:relative!important}
+    .info-btn-v23,.info-btn27,.info37,.info43,.info43r,[data-info],[data-info37],[data-info43r]{
+      position:absolute!important;top:12px!important;right:12px!important;left:auto!important;bottom:auto!important;
+      width:34px!important;height:34px!important;z-index:80!important;border-radius:12px!important;
+      display:grid!important;place-items:center!important;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(97,218,251,.13))!important;
+      border:1px solid rgba(180,235,255,.35)!important;color:#eefbff!important;font:900 15px Orbitron,sans-serif!important;
+      box-shadow:0 0 18px rgba(97,218,251,.18),inset 0 0 14px rgba(255,255,255,.05)!important;pointer-events:auto!important;cursor:pointer!important;
+    }
+    .info-btn-v23:hover,.info-btn27:hover,.info37:hover,.info43:hover,.info43r:hover,[data-info]:hover,[data-info37]:hover,[data-info43r]:hover{filter:brightness(1.2)!important;transform:translateY(-1px) scale(1.06)!important}
+    .lore43s{padding:15px 16px;border-radius:18px;background:linear-gradient(135deg,rgba(97,218,251,.08),rgba(159,108,255,.055));border:1px solid rgba(180,235,255,.16);color:#d8e8ff;line-height:1.62;text-align:left}
+    .skill-row43s{padding:11px 13px;border-radius:15px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.11);margin-bottom:8px;color:#cfe3ff}.skill-row43s b{color:#fff}
+  `;
+  document.head.appendChild(style);
+
+  function skillRows43s(k){
+    applySkillText43s();
+    if(k==='moonSlayer'){
+      return `<div class="skill-row43s"><b>E — ☾ Corte do Luar</b><br><span>${esc43s(MOON_DESC_43S.moonDash)}</span></div>
+        <div class="skill-row43s"><b>Q — 🩸 Lâmina Sangrenta</b><br><span>${esc43s(MOON_DESC_43S.moonBloodBlades)}</span></div>
+        <div class="skill-row43s"><b>R — 🌙 Lado Escuro da Lua / Corte que Corta o Mundo</b><br><span>${esc43s(MOON_DESC_43S.moonDarkSide)}</span></div>
+        <div class="skill-row43s"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>${esc43s(MOON_DESC_43S.moonUltimate)}</span></div>`;
+    }
+    const keys=(CLASSES[k]?.skills||[]);
+    const base=keys.map((id,i)=>{const sk=SKILL_DEFS[id]||{};return `<div class="skill-row43s"><b>${['E','Q','R'][i]||'?'} — ${esc43s(sk.emoji||'✦')} ${esc43s(sk.name||id)}</b><br><span>${esc43s(sk.desc||'Especial de combate.')}</span></div>`;}).join('');
+    const ult=k==='chronoHero'?'<div class="skill-row43s"><b>X — 💎 Ultimate Chrono</b><br><span>Carrega com o tempo e libera um ataque prismático devastador.</span></div>':k==='shadowChild'?'<div class="skill-row43s"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>':'';
+    return base+ult;
+  }
+  function openClassInfo43s(k){
+    applySkillText43s();
+    const c=CLASSES[k]; if(!c)return;
+    const co=col43s(k);
+    overlay.classList.remove('hidden'); overlayCard.className='card';
+    overlayCard.innerHTML=`<div style="text-align:left"><h1>${esc43s(c.name)}</h1><p>${esc43s(c.desc||'')}</p>
+      <div class="death-grid27"><div class="death-stat27"><small>HP</small><b>${c.hp??'-'}</b></div><div class="death-stat27"><small>ESCUDO</small><b>${c.shield??'-'}</b></div><div class="death-stat27"><small>FOCO</small><b>${c.focus??'-'}</b></div><div class="death-stat27"><small>VELOCIDADE</small><b>${c.speed??'-'}</b></div></div>
+      <h3 style="font-family:Orbitron;color:${co};margin-top:18px">ESPECIAIS</h3>${skillRows43s(k)}
+      <h3 style="font-family:Orbitron;color:${co};margin-top:18px">LORE</h3><div class="lore43s">${esc43s(LORE_43S[k]||DEFAULT_LORE_43S[k]||'Um combatente perdido entre fragmentos de tempo, tentando sobreviver ao caos dos Chronos.')}</div>
+      <div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="backInfo43s">← Voltar para seleção</button></div></div>`;
+    const back=document.getElementById('backInfo43s'); if(back) back.onclick=()=>{try{openClassMenu();}catch(_){overlay.classList.add('hidden');}};
+  }
+  window.openClassInfo43s=openClassInfo43s;
+  window.openClassInfo43r=openClassInfo43s;
+  window.openClassInfo37q=openClassInfo43s;
+  window.openClassInfo35=openClassInfo43s; window.openClassInfo37=openClassInfo43s; window.openClassInfo29=openClassInfo43s; window.openClassInfo28=openClassInfo43s; window.openClassInfo27=openClassInfo43s; window.openClassInfo23=openClassInfo43s;
+  function fixVersion43s(root=document){
+    root.querySelectorAll('*').forEach(el=>{
+      const txt=(el.textContent||'').trim().toUpperCase();
+      if(txt==='3.7'||txt==='3.7Q'||txt==='3.7P'||txt==='3.7O'||txt==='3.7M'||txt==='2.3'||txt==='1.6') el.textContent=VERSION_43S;
+      if(el.tagName==='SMALL'&&txt.includes('VERSÃO')){const b=el.parentElement?.querySelector('b'); if(b)b.textContent=VERSION_43S;}
+    });
+  }
+  document.addEventListener('click',ev=>{
+    const btn=ev.target.closest('.info-btn-v23,.info-btn27,.info37,.info43,.info43r,[data-info],[data-info37],[data-info43r]');
+    if(btn){
+      const k=btn.dataset.info||btn.dataset.info37||btn.dataset.info43r||btn.closest('[data-class]')?.dataset.class;
+      if(k&&CLASSES[k]){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openClassInfo43s(k);return;}
+    }
+  },true);
+  const mo=new MutationObserver(muts=>{for(const m of muts){m.addedNodes&&m.addedNodes.forEach(n=>{if(n.nodeType===1)fixVersion43s(n);});}fixVersion43s();});
+  mo.observe(document.body,{childList:true,subtree:true});
+  setTimeout(()=>{applySkillText43s();fixVersion43s();},0);
+  console.log('Chrono Shards 4.3 final lore/description patch loaded');
 })();
 </script>
 
