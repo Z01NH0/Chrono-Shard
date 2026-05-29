@@ -10005,7 +10005,7 @@ function killKey37(e){
   };
   function skillRows37q(k){
     const keys=(CLASSES[k]?.skills||[]);
-    return keys.map((id,i)=>{const sk=SKILL_DEFS[id]||{};return `<div class="skill-row27"><b>${['E','Q','R'][i]||'?'} — ${esc37q(sk.emoji||'✦')} ${esc37q(sk.name||id)}</b><br><span>${esc37q(sk.desc||'Especial de combate.')}</span></div>`;}).join('') + (k==='moonSlayer'?'<div class="skill-row27"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>O Exterminador tira sua espada da bainha e faz cortes multidimensionais azuis, quebrando a linha temporal em pedaços. É como dizem, ele tem um "gatilho diabólico" ao invés de uma espada.</span></div>':k==='chronoHero'?'<div class="skill-row27"><b>X — 💎 Ultimate Chrono</b><br><span>Carrega com o tempo e libera um ataque prismático devastador.</span></div>':k==='shadowChild'?'<div class="skill-row27"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>':'');
+    return keys.map((id,i)=>{const sk=SKILL_DEFS[id]||{};return `<div class="skill-row27"><b>${['E','Q','R'][i]||'?'} — ${esc37q(sk.emoji||'✦')} ${esc37q(sk.name||id)}</b><br><span>${esc37q(sk.desc||'Especial de combate.')}</span></div>`;}).join('') + (k==='moonSlayer'?'<div class="skill-row27"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>O Exterminador tira sua espada da bainha e faz cortes multidimensionais azuis, quebrando a linha temporal em pedaços. É como dizem, ele tem um "gatilho diabólico" ao invés de uma espada.</span></div>':k==='chronoHero'?'<div class="skill-row27"><b>X — 💎 Rajada prismática x1.000</b><br><span>Um dos únicos com ultimate. Essa habilidade suprema faz tudo parar ao ser ativada e dá uma rajada imensa de energia aonde estiver mirando. Eu não iria querer ficar no caminho.</span></div>':k==='shadowChild'?'<div class="skill-row27"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>':'');
   }
   function openClassInfo37q(k){
     const c=CLASSES[k]; if(!c)return;
@@ -10147,7 +10147,7 @@ function killKey37(e){
     if(k==='moonSlayer') return moonSkillRows43r();
     const keys=CLASSES[k]?.skills||[];
     return keys.map((id,i)=>{const sk=SKILL_DEFS[id]||{};return `<div class="skill-row27"><b>${['E','Q','R'][i]||'?'} — ${esc43r(sk.emoji||'✦')} ${esc43r(sk.name||id)}</b><br><span>${esc43r(sk.desc||'Especial de combate.')}</span></div>`;}).join('')+
-      (k==='chronoHero'?'<div class="skill-row27"><b>X — 💎 Ultimate Chrono</b><br><span>Carrega com o tempo e libera um ataque prismático devastador.</span></div>':k==='shadowChild'?'<div class="skill-row27"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>':'');
+      (k==='chronoHero'?'<div class="skill-row27"><b>X — 💎 Rajada prismática x1.000</b><br><span>Um dos únicos com ultimate. Essa habilidade suprema faz tudo parar ao ser ativada e dá uma rajada imensa de energia aonde estiver mirando. Eu não iria querer ficar no caminho.</span></div>':k==='shadowChild'?'<div class="skill-row27"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>':'');
   }
   function openClassInfo43r(k){
     const c=CLASSES[k]; if(!c)return;
