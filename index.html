@@ -10907,5 +10907,66 @@ function killKey37(e){
   console.log(PATCH+' carregado');
 })();
 </script>
+
+
+<script>
+(()=>{
+  if(window.__chronoPatch465)return; window.__chronoPatch465=true;
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const CHRONO='⧖';
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const SLOT_ORDER_465=['easy','easy','easy','medium','medium','hard'];
+  const CD_465={easy:60000,medium:180000,hard:360000};
+  const LABEL_465={easy:'FÁCIL',medium:'MÉDIA',hard:'DIFÍCIL'};
+  const COLOR_465={easy:'#86ffb0',medium:'#ffd166',hard:'#ff8a66'};
+  const REWARD_465={easy:5,medium:10,hard:20};
+  const POOL_465={
+    easy:[
+      {id:'m461_kills100',title:'Limpeza das Dunas',desc:'Mate 100 inimigos.',metric:'totalKills',target:100},
+      {id:'m461_wave8',title:'Primeira Travessia',desc:'Alcance a wave 8.',metric:'maxWave',target:8},
+      {id:'m465_swarm35',title:'Varredura de Enxame',desc:'Mate 35 Swarmers.',metric:'typeKills.swarmer',target:35},
+      {id:'m465_chaser45',title:'Rastro Vermelho',desc:'Mate 45 Chasers.',metric:'typeKills.chaser',target:45},
+      {id:'m465_skill20',title:'Aquecimento de Arsenal',desc:'Use 20 habilidades.',metric:'skillsUsed',target:20},
+      {id:'m465_bomber10',title:'Desarme Improvisado',desc:'Mate 10 Bombers.',metric:'typeKills.bomber',target:10}
+    ],
+    medium:[
+      {id:'m461_elites8',title:'Caçador de Elite',desc:'Mate 8 elites.',metric:'eliteKills',target:8},
+      {id:'m461_boss3',title:'Boss Hunter',desc:'Derrote 3 bosses.',metric:'bossKills',target:3},
+      {id:'m465_sentinel12',title:'Sentinelas Silenciadas',desc:'Mate 12 Sentinels.',metric:'typeKills.sentinel',target:12},
+      {id:'m465_tank18',title:'Quebra-Casco',desc:'Mate 18 Tanks.',metric:'typeKills.tank',target:18},
+      {id:'m465_vomiter5',title:'Controle de Contaminação',desc:'Mate 5 Vomiters.',metric:'typeKills.vomiter',target:5}
+    ],
+    hard:[
+      {id:'m461_wave16',title:'Entrada nas Dunas Chrono',desc:'Alcance a wave 16.',metric:'maxWave',target:16},
+      {id:'m461_chrono3',title:'Relógio Quebrado',desc:`Colete 3 ${CHRONO} Fragmentos Chrono.`,metric:'chronoFragmentsCollected',target:3},
+      {id:'m465_elite18',title:'Troféus Instáveis',desc:'Mate 18 elites.',metric:'eliteKills',target:18},
+      {id:'m465_boss5',title:'Quebra-Tronos',desc:'Derrote 5 bosses.',metric:'bossKills',target:5},
+      {id:'m465_phase8',title:'Caçada Fora de Fase',desc:'Mate 8 Escavadores de Fase.',metric:'typeKills.phaseLurker',target:8}
+    ]
+  };
+  function readMeta465(){let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{m={}};m.relicShards=Number(m.relicShards||0);m.stats=m.stats||{};m.stats.typeKills=m.stats.typeKills||{};m.stats.classKills=m.stats.classKills||{};m.stats.classBossKills=m.stats.classBossKills||{};m.stats.classSkillUses=m.stats.classSkillUses||{};m.stats.chronoFragmentsCollected=Number(m.stats.chronoFragmentsCollected||0);m.bestiaryKills=m.bestiaryKills||{};m.missions465=m.missions465||{slots:[],v:465};return m;}
+  function saveMeta465(m){localStorage.setItem(SAVE,JSON.stringify(m||{}));try{if(game)game.meta=m}catch{}return m;}
+  function metric465(key,m=readMeta465()){const s=m.stats||{};if(String(key).includes('.')){const [a,b]=String(key).split('.');if(a==='typeKills')return Number((s.typeKills||{})[b]||m.bestiaryKills?.[b]||0);if(a==='classKills')return Number((s.classKills||{})[b]||0);if(a==='classBossKills')return Number((s.classBossKills||{})[b]||0);if(a==='classSkillUses')return Number((s.classSkillUses||{})[b]||0);}return Number(s[key]||0);}
+  function addRelics465(n){const m=readMeta465();m.relicShards=Number(m.relicShards||0)+Number(n||0);saveMeta465(m);return m.relicShards;}
+  function toast465(text,color='#ffd166'){try{if(typeof rewardBurst==='function'){rewardBurst(0,text,color);return;}}catch{}try{if(game?.player&&typeof addFloatingText==='function')addFloatingText(game.player.x,game.player.y-44,text,color,18);}catch{}const d=document.createElement('div');d.textContent=text;d.style.cssText=`position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:99999;padding:12px 18px;border-radius:999px;background:rgba(5,8,18,.94);border:1px solid ${color};box-shadow:0 0 28px ${color}55;color:#fff;font:900 12px Orbitron,Arial;letter-spacing:.12em`;document.body.appendChild(d);setTimeout(()=>d.remove(),1100);}
+  function activeMissionIds465(ms,ignoreIndex=-1){return (ms.slots||[]).map((s,i)=>i===ignoreIndex?null:(s&&s.missionId&&(!s.cooldownUntil||s.cooldownUntil<=Date.now())?s.missionId:null)).filter(Boolean);}
+  function pick465(diff,m,forbidden=[]){const pool=POOL_465[diff]||[];const banned=new Set(forbidden);let arr=pool.filter(x=>!banned.has(x.id));if(!arr.length)arr=pool;return arr[Math.floor(Math.random()*arr.length)];}
+  function makeSlot465(diff,m,index){const miss=pick465(diff,m,activeMissionIds465(m.missions465,index));return {difficulty:diff,missionId:miss.id,baseline:metric465(miss.metric,m),cooldownUntil:0,createdAt:Date.now(),v:465};}
+  function missionById465(id){for(const diff of Object.keys(POOL_465)){const f=POOL_465[diff].find(x=>x.id===id);if(f)return {...f,difficulty:diff,section:LABEL_465[diff],color:COLOR_465[diff],reward:REWARD_465[diff]};}return null;}
+  function ensureSlots465(m=readMeta465()){m.missions465=m.missions465||{slots:[],v:465};m.missions465.slots=Array.isArray(m.missions465.slots)?m.missions465.slots:[];const now=Date.now();let changed=false;SLOT_ORDER_465.forEach((diff,i)=>{let s=m.missions465.slots[i];const miss=s&&missionById465(s.missionId);if(s&&s.cooldownUntil&&s.cooldownUntil>now){s.difficulty=diff;s.v=465;m.missions465.slots[i]=s;return;}if(!s||!miss||s.difficulty!==diff||s.v!==465||s.cooldownUntil){s=makeSlot465(diff,m,i);changed=true;}if(typeof s.baseline!=='number'){s.baseline=metric465(missionById465(s.missionId).metric,m);changed=true;}s.cooldownUntil=0;s.difficulty=diff;s.v=465;m.missions465.slots[i]=s;});if(m.missions465.slots.length>SLOT_ORDER_465.length){m.missions465.slots.length=SLOT_ORDER_465.length;changed=true;}if(changed)saveMeta465(m);return m;}
+  function progress465(slot,m=readMeta465()){const miss=missionById465(slot.missionId);if(!miss)return {mission:null,cur:0,target:1,pct:0,done:false,cooldown:false};if(slot.cooldownUntil&&slot.cooldownUntil>Date.now())return {mission:miss,cur:0,target:miss.target,pct:0,done:false,cooldown:true,remaining:slot.cooldownUntil-Date.now()};const cur=Math.max(0,metric465(miss.metric,m)-Number(slot.baseline||0));return {mission:miss,cur:Math.min(cur,miss.target),target:miss.target,pct:Math.min(100,cur/miss.target*100),done:cur>=miss.target,cooldown:false,remaining:0};}
+  function fmtTime465(ms){const total=Math.max(0,Number(ms||0));const min=Math.floor(total/60000),sec=Math.ceil((total%60000)/1000);return min>0?`${min}m ${String(sec).padStart(2,'0')}s`:`${sec}s`;}
+  function card465(slot,idx,m){const info=progress465(slot,m),ms=info.mission,diff=slot.difficulty,color=COLOR_465[diff],label=LABEL_465[diff],reward=REWARD_465[diff];if(info.cooldown){return `<div class="duneMission461 coolMission463"><span class="badge461" style="--co:${color}">${label} • ${reward} RELÍQUIAS</span><strong>Espere até a próxima missão!</strong><span>Quando o tempo acabar, este slot receberá uma missão ${label.toLowerCase()} nova, começando do zero.</span><div class="slotcool463">Volta em ${fmtTime465(info.remaining)}</div></div>`;}return `<div class="duneMission461 ${info.done?'ready':''}"><span class="badge461" style="--co:${color}">${label} • ${reward} RELÍQUIAS</span><strong>${esc(ms.title)}</strong><span>${esc(ms.desc)}</span><div class="progress461" style="--co:${color}"><i style="width:${info.pct}%"></i></div><span>${info.cur}/${info.target}</span>${info.done?`<button class="duneBtn461" data-claimmission465="${idx}" style="margin-top:12px">Resgatar +${reward}</button>`:''}</div>`;}
+  function replaceMissionCards465(){let m=ensureSlots465(readMeta465());const grid=overlayCard&&overlayCard.querySelector('.missionGrid461');if(!grid)return;const children=[...grid.children];const extreme=children.find(el=>/Luar Sangrento/i.test(el.textContent||''));children.forEach(el=>{if(el!==extreme)el.remove();});const html=m.missions465.slots.map((s,i)=>card465(s,i,m)).join('');if(extreme)extreme.insertAdjacentHTML('beforebegin',html);else grid.insertAdjacentHTML('afterbegin',html);grid.querySelectorAll('[data-claimmission465]').forEach(btn=>btn.onclick=()=>{let mm=ensureSlots465(readMeta465());const idx=Number(btn.dataset.claimmission465),slot=mm.missions465.slots[idx],info=progress465(slot,mm);if(!info.done||info.cooldown)return;const reward=REWARD_465[slot.difficulty]||0;addRelics465(reward);toast465(`+${reward} RELÍQUIAS`,COLOR_465[slot.difficulty]);mm=ensureSlots465(readMeta465());mm.missions465.slots[idx]={difficulty:slot.difficulty,missionId:null,baseline:0,cooldownUntil:Date.now()+(CD_465[slot.difficulty]||60000),v:465};saveMeta465(mm);setTimeout(openMissions465,260);});}
+  const prevOpenMissions465=window.openMissions461||window.openMissions40||window.openMissions39||window.openMissions37;
+  function openMissions465(){if(typeof prevOpenMissions465==='function')prevOpenMissions465();setTimeout(replaceMissionCards465,0);}
+  window.openMissions465=openMissions465;window.openMissions461=openMissions465;
+  window.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubMissions461,#classMissions461,#hubMissions37,#hubMissions40,#toMis37,[data-open-missions]');if(!b)return;ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openMissions465();},true);
+  const mo=new MutationObserver(()=>{for(const id of ['hubMissions461','classMissions461','hubMissions37','hubMissions40','toMis37']){const b=document.getElementById(id);if(b&&!b.dataset.missions465){b.dataset.missions465='1';b.onclick=e=>{e?.preventDefault?.();openMissions465();};}}});
+  mo.observe(document.body,{childList:true,subtree:true});
+  console.log('Chrono Shards 4.6.5 — Missões rotativas restauradas carregado');
+})();
+</script>
+
 </body>
 </html>
