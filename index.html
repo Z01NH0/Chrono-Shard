@@ -280,7 +280,7 @@ const CLASSES = {
     name:'Assault 🔫', color:'#7fe9ff', hp:130, shield:30,
     focus:100, speed:295, weapon:'blaster',
     skills:['shockwave','energyShield','grenadeStorm'],
-    desc:'Equilibrada. Resistente. Perigosa em grupo.',
+    desc:'Clássico e moderado, com um leve tempero de explosões.',
     tag:'VERSÁTIL', tagColor:'#61dafb'
   },
   sniper:{
@@ -294,7 +294,7 @@ const CLASSES = {
     name:'Void Mage 🧙', color:'#c6a0ff', hp:100, shield:20,
     focus:160, speed:305, weapon:'orb',
     skills:['blinkBurst','voidNova','temporalLoop'],
-    desc:'Teletransporte, explosões e física duvidosa.',
+    desc:'Magia negra, explosões e física duvidosa.',
     tag:'MOBILIDADE', tagColor:'#c6a0ff'
   },
   reaper:{
@@ -310,8 +310,8 @@ const CLASSES = {
 const WEAPONS = {
   blaster:{name:'Blaster',cooldown:0.13,bulletSpeed:580,damage:14,spread:0.10,projectiles:1,life:1.1},
   shotgun:{name:'Shotgun',cooldown:0.38,bulletSpeed:460,damage:12,spread:0.22,projectiles:5,life:0.55},
-  rail:{name:'Rail Gun',cooldown:0.52,bulletSpeed:880,damage:38,spread:0.01,projectiles:1,life:0.75},
-  orb:{name:'Void Orb',cooldown:0.20,bulletSpeed:370,damage:17,spread:0.04,projectiles:1,life:1.4},
+  rail:{name:'AWP-ChR',cooldown:0.52,bulletSpeed:880,damage:38,spread:0.01,projectiles:1,life:0.75},
+  orb:{name:'Orbe do Abismo',cooldown:0.20,bulletSpeed:370,damage:17,spread:0.04,projectiles:1,life:1.4},
   plasma:{name:'Plasma',cooldown:0.25,bulletSpeed:420,damage:20,spread:0.08,projectiles:2,life:1.0},
   chainsaw:{name:'Chainsaw',cooldown:0.08,bulletSpeed:320,damage:8,spread:0.18,projectiles:1,life:0.5},
   minigun:{name:'Minigun',cooldown:0.06,bulletSpeed:500,damage:7,spread:0.25,projectiles:1,life:0.8},
@@ -1827,29 +1827,29 @@ Object.assign(CLASSES, {
     name:'Artífice 🛠️', color:'#8ff8ff', hp:105, shield:42,
     focus:130, speed:285, weapon:'pulse',
     skills:['deployTurret','nanoSwarm','overclock'],
-    desc:'Torretas, enxame tecnológico e cadência absurda.',
+    desc:'Lança amiguinhos robóticos na arena e tem fome de energia.',
     tag:'TÁTICO', tagColor:'#8ff8ff'
   },
   ronin:{
     name:'Chrono Ronin 🗡️', color:'#ffdf8a', hp:112, shield:18,
     focus:115, speed:335, weapon:'katana',
     skills:['bladeDash','parryField','chronoSlash'],
-    desc:'Dashes cortantes, contra-ataques e golpes em arco.',
+    desc:'Desvia e da parry em tudo. Também com um treinamento intenso de samurai, mas ele ainda não é um samurai.',
     tag:'DUELO', tagColor:'#ffd166'
   },
   alchemist:{
     name:'Alquimista ☣️', color:'#b6ff7a', hp:118, shield:22,
     focus:145, speed:285, weapon:'acid',
     skills:['toxicCloud','transmuteGold','unstableElixir'],
-    desc:'Áreas venenosas, catapora extra e elixires bombásticos.',
+    desc:'Veneno pra todo lado, catapora extra e elixires bombásticos.',
     tag:'CONTROLE', tagColor:'#b6ff7a'
   }
 });
 
 Object.assign(WEAPONS, {
-  pulse:{name:'Pulse Carbine',cooldown:0.16,bulletSpeed:620,damage:13,spread:0.045,projectiles:2,life:0.95},
-  katana:{name:'Chrono Blade',cooldown:0.24,bulletSpeed:760,damage:24,spread:0.18,projectiles:2,life:0.20,pierceBonus:1},
-  acid:{name:'Acid Spitter',cooldown:0.22,bulletSpeed:430,damage:18,spread:0.10,projectiles:1,life:1.15,poison:true},
+  pulse:{name:'Carabina de Íon',cooldown:0.16,bulletSpeed:620,damage:13,spread:0.045,projectiles:2,life:0.95},
+  katana:{name:'Katana Chrono',cooldown:0.24,bulletSpeed:760,damage:24,spread:0.18,projectiles:2,life:0.20,pierceBonus:1},
+  acid:{name:'Fragmentador de Ácido',cooldown:0.22,bulletSpeed:430,damage:18,spread:0.10,projectiles:1,life:1.15,poison:true},
   tesla:{name:'Tesla Coil',cooldown:0.30,bulletSpeed:500,damage:22,spread:0.05,projectiles:1,life:0.9,chain:true}
 });
 
@@ -2416,7 +2416,7 @@ function openShopMenu(){
     {key:'minigun',name:'Comprar Minigun',desc:'Cadência insana, pouca precisão.',cost:cost(58),available:game.weaponKey!=='minigun'&&game.shopCounts.minigun<game.shopLimits.minigun,effect:()=>{game.weaponKey='minigun';game.shopCounts.minigun++}},
     {key:'tesla',name:'Comprar Tesla Coil',desc:'Arcos elétricos extras.',cost:cost(64),available:game.weaponKey!=='tesla'&&game.shopCounts.tesla<game.shopLimits.tesla,effect:()=>{game.weaponKey='tesla';game.shopCounts.tesla++}},
     {key:'acid',name:'Comprar Acid Spitter',desc:'Tiros criam nuvens tóxicas.',cost:cost(50),available:game.weaponKey!=='acid'&&game.shopCounts.acid<game.shopLimits.acid,effect:()=>{game.weaponKey='acid';game.shopCounts.acid++}},
-    {key:'katana',name:'Comprar Chrono Blade',desc:'Curto alcance, dano alto e perfurante.',cost:cost(48),available:game.weaponKey!=='katana'&&game.shopCounts.katana<game.shopLimits.katana,effect:()=>{game.weaponKey='katana';game.shopCounts.katana++}},
+    {key:'katana',name:'Comprar Katana Chrono',desc:'Curto alcance, dano alto e perfurante.',cost:cost(48),available:game.weaponKey!=='katana'&&game.shopCounts.katana<game.shopLimits.katana,effect:()=>{game.weaponKey='katana';game.shopCounts.katana++}},
     {key:'hpMax',name:'HP máximo +24',cost:cost(44*Math.pow(1.35,game.shopCounts.hpMax)),desc:'Mais resistência.',available:game.shopCounts.hpMax<game.shopLimits.hpMax,effect:()=>{game.player.maxHp+=24;game.player.hp+=24;game.shopCounts.hpMax++}},
     {key:'focusMax',name:'Foco máximo +30',cost:cost(38*Math.pow(1.30,game.shopCounts.focusMax)),desc:'Mais slow e skills.',available:game.shopCounts.focusMax<game.shopLimits.focusMax,effect:()=>{game.player.maxFocus+=30;game.player.focus+=30;game.shopCounts.focusMax++}},
     {key:'damageBoost',name:'Dano +18%',cost:cost(48*Math.pow(1.45,game.shopCounts.damageBoost)),desc:'Escala tudo.',available:game.shopCounts.damageBoost<game.shopLimits.damageBoost,effect:()=>{game.upgrades.damage+=0.18;game.shopCounts.damageBoost++}},
@@ -3038,8 +3038,8 @@ function openShopMenu(){
   const discount=1-Math.min(game.upgrades.shopDiscount,0.45);
   const cost=n=>Math.max(1,Math.floor(n*discount));
   const items=[
-    {key:'shotgun',name:'Comprar Shotgun',desc:'Única arma de loja além da Rail Gun. Forte em curta distância.',cost:cost(34),available:game.weaponKey!=='shotgun'&&game.shopCounts.shotgun<game.shopLimits.shotgun,effect:()=>{game.weaponKey='shotgun';game.shopCounts.shotgun++}},
-    {key:'rail',name:'Comprar Rail Gun',desc:'Tiro preciso e forte, mas cobertura agora bloqueia o disparo.',cost:cost(46),available:game.weaponKey!=='rail'&&game.shopCounts.rail<game.shopLimits.rail,effect:()=>{game.weaponKey='rail';game.shopCounts.rail++}},
+    {key:'shotgun',name:'Comprar Shotgun',desc:'Única arma de loja além da AWP-ChR. Forte em curta distância.',cost:cost(34),available:game.weaponKey!=='shotgun'&&game.shopCounts.shotgun<game.shopLimits.shotgun,effect:()=>{game.weaponKey='shotgun';game.shopCounts.shotgun++}},
+    {key:'rail',name:'Comprar AWP-ChR',desc:'Tiro preciso e forte, mas cobertura agora bloqueia o disparo.',cost:cost(46),available:game.weaponKey!=='rail'&&game.shopCounts.rail<game.shopLimits.rail,effect:()=>{game.weaponKey='rail';game.shopCounts.rail++}},
     {key:'hpMax',name:'HP máximo +24',cost:cost(44*Math.pow(1.35,game.shopCounts.hpMax)),desc:'Mais resistência.',available:game.shopCounts.hpMax<game.shopLimits.hpMax,effect:()=>{game.player.maxHp+=24;game.player.hp+=24;game.shopCounts.hpMax++}},
     {key:'focusMax',name:'Foco máximo +30',cost:cost(38*Math.pow(1.30,game.shopCounts.focusMax)),desc:'Mais slow e skills.',available:game.shopCounts.focusMax<game.shopLimits.focusMax,effect:()=>{game.player.maxFocus+=30;game.player.focus+=30;game.shopCounts.focusMax++}},
     {key:'damageBoost',name:'Dano +18%',cost:cost(48*Math.pow(1.45,game.shopCounts.damageBoost)),desc:'Escala tudo.',available:game.shopCounts.damageBoost<game.shopLimits.damageBoost,effect:()=>{game.upgrades.damage+=0.18;game.shopCounts.damageBoost++}},
@@ -3057,7 +3057,7 @@ function openShopMenu(){
       ${items.map((item,i)=>`<button class="shop-btn" data-shop="${i}" ${item.available?'':'disabled'} style="${item.available?'':'opacity:.35;cursor:not-allowed'}"><strong>${item.name} — ${item.cost}g</strong><span>${item.desc}</span></button>`).join('')}
     </div>
     <div style="margin-top:16px"><button class="main-btn" id="continueBtn">Continuar →</button></div>
-    <div class="tipline">Armas de loja reduzidas para Shotgun e Rail Gun. As outras ficam ligadas a classes/builds.</div>`;
+    <div class="tipline">Armas de loja reduzidas para Shotgun e AWP-ChR. As outras ficam ligadas a classes/builds.</div>`;
   [...overlayCard.querySelectorAll('[data-shop]')].forEach(btn=>{
     const item=items[Number(btn.dataset.shop)]; if(!item.available) return;
     btn.addEventListener('click',()=>{if(game.gold<item.cost){addFloatingText(W/2,H/2,'SEM OURO','#ff9ba8',20);return}game.gold-=item.cost;item.effect();updateHUD();openShopMenu();});
@@ -5006,7 +5006,7 @@ render = function(){
     const itemGroups=[
       {title:'ARMAS',items:[
         {key:'shotgun',name:'Shotgun',desc:'Cone curto com vários pellets. Recomprável se não estiver equipada.',cost:cost(34),available:game.weaponKey!=='shotgun',effect:()=>{game.weaponKey='shotgun'}},
-        {key:'rail',name:'Rail Gun',desc:'Disparo forte e preciso, bloqueado por cobertura.',cost:cost(46),available:game.weaponKey!=='rail',effect:()=>{game.weaponKey='rail'}}
+        {key:'rail',name:'AWP-ChR',desc:'Disparo forte e preciso, bloqueado por cobertura.',cost:cost(46),available:game.weaponKey!=='rail',effect:()=>{game.weaponKey='rail'}}
       ]},
       {title:'APRIMORAMENTOS',items:[
         {key:'hpMax',name:'HP máximo +24',cost:cost(44*Math.pow(1.35,game.shopCounts.hpMax||0)),desc:'Mais resistência.',available:(game.shopCounts.hpMax||0)<(game.shopLimits.hpMax||8),effect:()=>{game.player.maxHp+=24;game.player.hp+=24;game.shopCounts.hpMax=(game.shopCounts.hpMax||0)+1}},
@@ -5076,7 +5076,7 @@ render = function(){
   };
 
   // Chrono-Hero: tiros mais completos, labareda maior, buraco negro maior e ultimate ainda mais rara.
-  WEAPONS.heroSplit={name:'Tri-Gem Splitter',cooldown:0.34,bulletSpeed:560,damage:17,spread:0.09,projectiles:3,life:1.25};
+  WEAPONS.heroSplit={name:'Fragmentator Chromático',cooldown:0.34,bulletSpeed:560,damage:17,spread:0.09,projectiles:3,life:1.25};
   function heroCanPay(idx,cd){
     if(!game||!game.running||game.classKey!=='chronoHero') return false;
     const key=CLASSES[game.classKey].skills[idx], sk=SKILL_DEFS[key], p=game.player;
@@ -5408,7 +5408,7 @@ render = function(){
   // Atualiza descrições e substitui o Q do Sniper por tiro carregado.
   if(CLASSES.sniper){
     CLASSES.sniper.skills=['pierceMode','chargedShot','timeStop'];
-    CLASSES.sniper.desc='Precisão, overdrive perfurante e um tiro carregado que rasga o mapa.';
+    CLASSES.sniper.desc='Tiros que precisam de uma boa mira, além de segredos que só os snipers sabem.';
   }
   Object.assign(SKILL_DEFS,{
     chargedShot:{name:'Tiro Carregado',emoji:'☄️',focusCost:45,cooldown:8.5,desc:'A próxima bala que você atirar vai ser imensa, soltando raios que pegam nos inimigos e dando bem mais dano.'}
@@ -6988,7 +6988,7 @@ requestAnimationFrame(loop);
     const groups=[
       {title:'ARMAS',items:[
         {name:'Shotgun',key:'shotgun',cost:cost(34),desc:'Cone curto com vários pellets. Recomprável se não equipada.',available:game.weaponKey!=='shotgun',effect:()=>{game.weaponKey='shotgun'}},
-        {name:'Rail Gun',key:'rail',cost:cost(46),desc:'Disparo forte e preciso, ótimo para cobertura.',available:game.weaponKey!=='rail',effect:()=>{game.weaponKey='rail'}}]},
+        {name:'AWP-ChR',key:'rail',cost:cost(46),desc:'Disparo forte e preciso, ótimo para cobertura.',available:game.weaponKey!=='rail',effect:()=>{game.weaponKey='rail'}}]},
       {title:'APRIMORAMENTOS',items:[
         {name:'HP máximo +16',key:'hpMax',cost:cost(64*Math.pow(1.48,game.shopCounts.hpMax||0)),desc:'Menos HP por compra, mas ainda salva runs longas.',available:(game.shopCounts.hpMax||0)<(game.shopLimits.hpMax||8),effect:()=>{game.player.maxHp+=16;game.player.hp+=16;game.shopCounts.hpMax=(game.shopCounts.hpMax||0)+1}},
         {name:'Foco máximo +30',key:'focusMax',cost:cost(42*Math.pow(1.32,game.shopCounts.focusMax||0)),desc:'Mais espaço para skills e slow.',available:(game.shopCounts.focusMax||0)<(game.shopLimits.focusMax||6),effect:()=>{game.player.maxFocus+=30;game.player.focus+=30;game.shopCounts.focusMax=(game.shopCounts.focusMax||0)+1}},
@@ -7361,7 +7361,7 @@ requestAnimationFrame(loop);
       name:'Coronel 🪖', color:'#78d66b', hp:100, shield:34,
       focus:120, speed:285, weapon:'colonelBurst',
       skills:['colonelGunner','colonelAirstrike','colonelFirstAid'],
-      desc:'Soldado tático de camuflagem, rajadas, bombardeio e primeiros socorros.',
+      desc:'Soldado tático de camuflagem. Esse experiente em guerras sabe como fazer tudo explodir de uma vez.',
       tag:'TÁTICO', tagColor:'#78d66b'
     }
   });
@@ -8810,9 +8810,9 @@ function killKey37(e){
   function missionProgress37(slot,meta){ const mission=getMission37(slot.missionId); if(!mission)return {mission:null,done:false,cur:0,target:1}; const cur=Math.min(getMetric37(mission.metric,meta),mission.target); return {mission,done:cur>=mission.target,cur,target:mission.target}; }
 
   if(!CLASSES.moonSlayer){
-    CLASSES.moonSlayer={name:'Exterminador de Luas ☾',color:'#b67dff',hp:118,shield:22,focus:130,speed:320,weapon:'moonBlade',skills:['moonDash','moonBloodBlades','moonDarkSide'],desc:'Samurai lunar de cortes absurdos e controle brutal.',tag:'LUNAR',tagColor:'#cdb7ff'};
+    CLASSES.moonSlayer={name:'Exterminador de Luas ☾',color:'#b67dff',hp:118,shield:22,focus:130,speed:320,weapon:'moonBlade',skills:['moonDash','moonBloodBlades','moonDarkSide'],desc:'Samurai lunar que transcendeu além do Chrono.',tag:'LUNAR',tagColor:'#cdb7ff'};
   }
-  WEAPONS.moonBlade=WEAPONS.moonBlade||{name:'Lâmina Lunar',cooldown:0.24,bulletSpeed:690,damage:22,spread:0.04,projectiles:1,life:0.72};
+  WEAPONS.moonBlade=WEAPONS.moonBlade||{name:'Katana Titânica do Luar',cooldown:0.24,bulletSpeed:690,damage:22,spread:0.04,projectiles:1,life:0.72};
   SKILL_DEFS.moonDash=SKILL_DEFS.moonDash||{name:'Corte do Luar',emoji:'☾',focusCost:42,cooldown:10,desc:'Avanço imenso. Ao tocar um alvo, surge um QTE de Q. Acertando: explosão lunar gigante; errando: corte reto devastador.'};
   SKILL_DEFS.moonBloodBlades=SKILL_DEFS.moonBloodBlades||{name:'Lâmina Sangrenta',emoji:'🩸',focusCost:55,cooldown:15,desc:'Lança até 5 lâminas sedentas por sangue. Alvos presos explodem depois de 3s, ou disparam cortes se morrerem antes.'};
   SKILL_DEFS.moonDarkSide=SKILL_DEFS.moonDarkSide||{name:'Lado Escuro da Lua / Corte que Corta o Mundo',emoji:'🌙',focusCost:60,cooldown:10,desc:'Toque rápido: aura cortante por 5s. Segure até o máximo: chuva de cortes pela arena inteira.'};
@@ -9850,7 +9850,7 @@ function killKey37(e){
   };
   const updateEnemiesPrevO=updateEnemies;updateEnemies=function(dt){if(game?.classKey==='moonSlayer'&&(game.moonQteO||game.moonUltO))return;return updateEnemiesPrevO(dt)};
   const updateEnemyBulletsPrevO=updateEnemyBullets;updateEnemyBullets=function(dt){if(game?.classKey==='moonSlayer'&&(game.moonQteO||game.moonUltO))return;return updateEnemyBulletsPrevO(dt)};
-  const updateHUDPrevO=updateHUD;updateHUD=function(){updateHUDPrevO();if(game?.classKey==='moonSlayer'){classLabel.textContent=CLASSES.moonSlayer.name;weaponLabel.textContent=WEAPONS.moonBlade?.name||'Lâmina Lunar';document.querySelector('#skillIcon1 .key-hint').textContent='Q';document.querySelector('#skillIcon2 .key-hint').textContent='E';document.querySelector('#skillIcon3 .key-hint').textContent='R';document.getElementById('skillEmoji1').textContent='☾';document.getElementById('skillEmoji2').textContent='🩸';document.getElementById('skillEmoji3').textContent='🌙';window.updateMoonUltUI37();}else{document.querySelector('#skillIcon1 .key-hint').textContent='E';document.querySelector('#skillIcon2 .key-hint').textContent='Q';document.querySelector('#skillIcon3 .key-hint').textContent='R';}};
+  const updateHUDPrevO=updateHUD;updateHUD=function(){updateHUDPrevO();if(game?.classKey==='moonSlayer'){classLabel.textContent=CLASSES.moonSlayer.name;weaponLabel.textContent=WEAPONS.moonBlade?.name||'Katana Titânica do Luar';document.querySelector('#skillIcon1 .key-hint').textContent='Q';document.querySelector('#skillIcon2 .key-hint').textContent='E';document.querySelector('#skillIcon3 .key-hint').textContent='R';document.getElementById('skillEmoji1').textContent='☾';document.getElementById('skillEmoji2').textContent='🩸';document.getElementById('skillEmoji3').textContent='🌙';window.updateMoonUltUI37();}else{document.querySelector('#skillIcon1 .key-hint').textContent='E';document.querySelector('#skillIcon2 .key-hint').textContent='Q';document.querySelector('#skillIcon3 .key-hint').textContent='R';}};
 
   const renderPrevO=render;
   function drawSlashO(c){const alpha=clamp(c.life/(c.maxLife||1),0,1);ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=alpha;ctx.shadowBlur=26;ctx.shadowColor=c.color;const len=c.length,w=c.width;ctx.beginPath();ctx.moveTo(-len*.5,-w*.22);ctx.quadraticCurveTo(-len*.12,-w*1.05,len*.32,-w*.18);ctx.quadraticCurveTo(len*.55,w*.06,len*.38,w*.48);ctx.quadraticCurveTo(len*.04,w*.95,-len*.48,w*.18);ctx.closePath();ctx.fillStyle='rgba(0,0,0,.84)';ctx.fill();ctx.strokeStyle='rgba(255,255,255,.88)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(-len*.34,-w*.02);ctx.quadraticCurveTo(-len*.08,-w*.58,len*.34,w*.02);ctx.quadraticCurveTo(-len*.02,w*.56,-len*.34,w*.16);ctx.closePath();ctx.fillStyle=c.color;ctx.fill();ctx.restore();}
@@ -10611,7 +10611,7 @@ function killKey37(e){
     {id:'front',name:'LINHA DE FRENTE',desc:'Pressão, resistência e combate direto.',keys:['assault','ronin','reaper'],color:'#ff6b9d'},
     {id:'precision',name:'PRECISÃO',desc:'Posicionamento, mira e dano calculado.',keys:['sniper'],color:'#ffd166'},
     {id:'tactic',name:'TÁTICOS',desc:'Ferramentas, controle de campo e suporte agressivo.',keys:['engineer','colonel'],color:'#61dafb'},
-    {id:'anomaly',name:'ANÔMALOS',desc:'Alquimia, vazio, tempo e forças fora da linha normal.',keys:['mage','alchemist','chronoHero'],color:'#c6a0ff'},
+    {id:'anomaly',name:'ANÔMALOS',desc:'Tudo que é de sinistro tá aqui.',keys:['mage','alchemist','chronoHero'],color:'#c6a0ff'},
     {id:'secret',name:'SECRETOS',desc:'Personagens que só aparecem após condições específicas.',keys:['moonSlayer','shadowChild'],color:'#ff345e'}
   ];
   const LORE={
@@ -10662,9 +10662,9 @@ function killKey37(e){
   function rewardBurst(amount,label='RELÍQUIAS',color='#ffd166'){const div=document.createElement('div');div.className='rewardBurst461';div.style.background=`linear-gradient(135deg,${color},rgba(255,255,255,.96))`;div.textContent=(amount?`+${amount} `:'')+label;document.body.appendChild(div);setTimeout(()=>div.remove(),1200);}
 
   function openStartMenu461(){game=null;mouse.down=false;setCard();const m=meta();overlayCard.innerHTML=`<div class="startStage461"><div class="startInner461"><div class="duneTop461"><div class="duneUpdate461">DUNE UPDATE</div><div class="duneTitle461">CHRONO<br>SHARDS</div></div><p class="duneSub461">As Dunas Chrono abriram novas interfaces, recompensas, registros e rotas de progressão. Escolha sua classe, colete relíquias, recupere ${CHRONO} Fragmentos Chrono e sobreviva aos ecos que acordaram sob a areia temporal.</p><div class="duneStats461" style="grid-template-columns:repeat(3,1fr)"><div class="duneStat461"><small>HIGH SCORE</small><b>${fmt(m.highScore)}</b></div><div class="duneStat461"><small>RELÍQUIAS</small><b>${fmt(m.relicShards)}</b></div><div class="duneStat461"><small>${CHRONO} FRAGMENTOS</small><b>${fmt(m.chronoFragments)}</b></div></div><div class="startButtonsMain462"><button class="duneBtn461" id="play461">JOGAR</button><button class="duneBtn461 blue" id="hub461">CONQUISTAS & MISSÕES</button><button class="duneBtn461 purple" id="cfg461">CONFIGURAÇÕES</button></div><div class="startTutorial462"><button class="duneBtn461 dark" id="tutorial461">TUTORIAL</button></div></div></div>`;document.getElementById('play461').onclick=openClassMenu461;document.getElementById('hub461').onclick=openHub461;document.getElementById('tutorial461').onclick=openTutorial461;document.getElementById('cfg461').onclick=openSettings461;}
-    function openTutorial461(){setCard();overlayCard.innerHTML=`<h1 style="text-align:center">TUTORIAL</h1><p class="duneSub461">Guia completo do jogo separado por categoria, substituindo o tutorial rápido da tela inicial.</p><div class="duneGrid461"><div class="dunePanel461"><span class="badge461" style="--co:#61dafb">MOVIMENTAÇÃO E COMANDOS</span><strong>Controle da arena</strong><span><b>WASD/Setas</b> movem. <b>Mouse</b> mira. <b>Clique</b> atira. <b>Shift</b> usa dash. <b>Espaço</b> ativa modo lento consumindo foco. <b>E/Q/R</b> usam habilidades conforme a classe. Classes especiais podem ter <b>X</b> como ultimate.</span></div><div class="dunePanel461"><span class="badge461" style="--co:#ffd166">MOEDAS E RECOMPENSAS</span><strong>Relíquias, ouro e ${CHRONO} Fragmentos Chrono</strong><span><b>Ouro</b> cai durante a run e compra upgrades entre waves. <b>Relíquias</b> vêm de códigos, missões, bosses, elites e recompensas do bestiário. <b>${CHRONO} Fragmentos Chrono</b> são raros: aparecem em bosses, bosses raros e eventos especiais, além do código FragChrono.</span></div><div class="dunePanel461"><span class="badge461" style="--co:#c6a0ff">PROGRESSÃO</span><strong>Waves, bosses e níveis</strong><span>Cada wave aumenta a pressão. A cada 5 waves vem uma boss wave. Ao ganhar XP você sobe de level e escolhe poderes. A partir das waves avançadas surgem monstros das Dunas Chrono, bosses raros e recompensas maiores.</span></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="tutBack461">← Início</button></div>`;document.getElementById('tutBack461').onclick=openStartMenu461;}
-  function openSettings461(){setCard();const m=meta();overlayCard.innerHTML=`<h1 style="text-align:center">CONFIGURAÇÕES</h1><p class="duneSub461">Ajustes do jogo e área de códigos. O modo leve fica somente aqui.</p><div class="duneGrid461"><div class="dunePanel461 settingsLow462" id="lowBox461" style="border-color:${m.gfxLow?'#86ffb0':'rgba(255,255,255,.14)'}"><span class="badge461" style="--co:${m.gfxLow?'#86ffb0':'#ffd166'}">LOW GFX ${m.gfxLow?'ATIVO':'DESATIVADO'}</span><strong>Modo visual leve</strong><span>Simplifica projéteis, modelos e efeitos para deixar o jogo mais leve.</span><button class="lowSwitch462 ${m.gfxLow?'':'off'}" id="lowGfx461">${m.gfxLow?'Desativar Low GFX':'Ativar Low GFX'}</button></div><div class="dunePanel461 codeClean462"><span class="badge461" style="--co:#9f6cff">CÓDIGOS</span><strong>Resgate recompensas secretas</strong><span>Digite um código válido para receber uma recompensa. Cada código só pode ser usado uma vez.</span><div class="codeRow461"><input id="codeInput461" placeholder="Digite o código"><button class="duneBtn461" id="redeem461">Resgatar</button></div><div id="codeMsg461" style="margin-top:10px;color:#bcd6ff"></div></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="cfgBack461">← Início</button></div>`;document.getElementById('cfgBack461').onclick=openStartMenu461;document.getElementById('lowGfx461').onclick=()=>{const mm=meta();mm.gfxLow=!mm.gfxLow;save(mm);openSettings461();};document.getElementById('redeem461').onclick=()=>{const raw=(document.getElementById('codeInput461').value||'').trim().toLowerCase();const msg=document.getElementById('codeMsg461');const used=usedCodes();if(!raw){msg.textContent='Digite um código.';return;}if(used.includes(raw)){msg.style.color='#ffd166';msg.textContent='Esse código já foi usado.';return;}if(raw==='chronocode'){addRelics(100);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent='+100 relíquias recebidas!';rewardBurst(100,'RELÍQUIAS');return;}if(raw==='monsterhunter'){addRelics(250);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent='+250 relíquias recebidas!';rewardBurst(250,'RELÍQUIAS');return;}if(raw==='fragchrono'){addChrono(7);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent=`+7 ${CHRONO} Fragmentos Chrono!`;rewardBurst(7,`${CHRONO} FRAGMENTOS`,'#9be6ff');return;}msg.style.color='#ff8fa3';msg.textContent='Código inválido.';};}
-    function openHub461(){setCard();const m=meta();overlayCard.innerHTML=`<h1 style="text-align:center">CONQUISTAS & MISSÕES</h1><p class="duneSub461">Área central da progressão fora da batalha, organizada apenas com loja, missões e bestiário.</p><div class="duneGrid461 hubThree462"><button class="dunePanel461" id="hubRelics461"><span class="badge461" style="--co:#ffd166">LOJA</span><strong>Relíquias</strong><span>Compre bônus permanentes e acompanhe suas moedas.</span><span class="small461">Disponível: ${m.relicShards} relíquias</span></button><button class="dunePanel461" id="hubMissions461"><span class="badge461" style="--co:#86ffb0">OBJETIVOS</span><strong>Missões</strong><span>Missões, extrema de liberação do Exterminador e Awakenings progressivos.</span></button><button class="dunePanel461" id="hubBestiary461"><span class="badge461" style="--co:#ff6b9d">ARQUIVO</span><strong>Bestiário</strong><span>Registros desbloqueáveis por kills com resgate de relíquias.</span></button></div><div class="duneActions461"><button class="duneBtn461 dark" id="hubBack461">← Início</button></div>`;document.getElementById('hubRelics461').onclick=openRelics461;document.getElementById('hubMissions461').onclick=openMissions461;document.getElementById('hubBestiary461').onclick=openBestiary461;document.getElementById('hubBack461').onclick=openStartMenu461;}
+    function openTutorial461(){setCard();overlayCard.innerHTML=`<h1 style="text-align:center">TUTORIAL</h1><p class="duneSub461">Guia completo do jogo separado por categoria. Entenda o básico do jogo!</p><div class="duneGrid461"><div class="dunePanel461"><span class="badge461" style="--co:#61dafb">MOVIMENTAÇÃO E COMANDOS</span><strong>Controle da arena</strong><span><b>WASD/Setas</b> movem o seu personagem. <b>Mouse</b> mira. <b>Clicar e segurar</b> faz você atirar. <b>Shift</b> você utliza o dash. <b>Espaço</b> ativa modo câmera lenta, mas consume foco. <b>E/Q/R</b> usam habilidades conforme a classe, mas as habilidades também consumem foco. Classes especiais podem ter <b>X</b> como ultimate. <b>FOCO:</b> O foco é uma barrinha roxa que fica embaixo de seu personagem, ela funciona como uma stamina, usada para utilização de habilidades e câmera lenta</span></div><div class="dunePanel461"><span class="badge461" style="--co:#ffd166">MOEDAS E RECOMPENSAS</span><strong>Relíquias, ouro e ${CHRONO} Fragmentos Chrono</strong><span><b>Ouro</b> é um drop de monstros/bosses, que é utilizado somente para upgrades em uma loja que aparece após a derrota do boss de 5 em 5 waves. <b>Relíquias</b> vêm de códigos, missões, bosses, monstros e recompensas do bestiário. Ela é a moeda principal do jogo, servindo para compra de personagens e buffs permanentes. <b>${CHRONO} Fragmentos Chrono</b> são raros: aparecem em bosses, bosses raros e eventos especiais. Atualmente esses fragmentos servem somente para liberar um personagem muito forte. <b>Chaves de Awakening</b> são drop de bosses, mais comuns do que os fragmento, essas chaves servem especialmente para liberar as missões de awakening de personagens no menu de missões.</span></div><div class="dunePanel461"><span class="badge461" style="--co:#c6a0ff">PROGRESSÃO</span><strong>Waves, bosses e níveis</strong><span>Seu objetivo aqui é sobreviver e ir cada vez mais adiante nas waves, com cada wave seguinte sendo mais dificil. A partir das waves avançadas surgem, bosses raros e recompensas maiores. <b>Nível:</b> Durante a partida, você irá ganhar XP, com esse XP acontecerá um upgrade de nível no meio da partida, podendo escolher entre 3 upgrades, mas se você morrer, vai começar tudo novamente. Existem poderes míticos incríveis!</span></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="tutBack461">← Início</button></div>`;document.getElementById('tutBack461').onclick=openStartMenu461;}
+  function openSettings461(){setCard();const m=meta();overlayCard.innerHTML=`<h1 style="text-align:center">CONFIGURAÇÕES</h1><p class="duneSub461">Ajustes do jogo e área de códigos. Ative o modo leve se seu PC for uma batata.</p><div class="duneGrid461"><div class="dunePanel461 settingsLow462" id="lowBox461" style="border-color:${m.gfxLow?'#86ffb0':'rgba(255,255,255,.14)'}"><span class="badge461" style="--co:${m.gfxLow?'#86ffb0':'#ffd166'}">LOW GFX ${m.gfxLow?'ATIVO':'DESATIVADO'}</span><strong>Modo visual leve</strong><span>Simplifica projéteis, modelos e efeitos para deixar o jogo mais leve.</span><button class="lowSwitch462 ${m.gfxLow?'':'off'}" id="lowGfx461">${m.gfxLow?'Desativar Low GFX':'Ativar Low GFX'}</button></div><div class="dunePanel461 codeClean462"><span class="badge461" style="--co:#9f6cff">CÓDIGOS</span><strong>Resgate recompensas secretas</strong><span>Digite um código válido para receber uma recompensa. Cada código só pode ser usado uma vez.</span><div class="codeRow461"><input id="codeInput461" placeholder="Digite o código"><button class="duneBtn461" id="redeem461">Resgatar</button></div><div id="codeMsg461" style="margin-top:10px;color:#bcd6ff"></div></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="cfgBack461">← Início</button></div>`;document.getElementById('cfgBack461').onclick=openStartMenu461;document.getElementById('lowGfx461').onclick=()=>{const mm=meta();mm.gfxLow=!mm.gfxLow;save(mm);openSettings461();};document.getElementById('redeem461').onclick=()=>{const raw=(document.getElementById('codeInput461').value||'').trim().toLowerCase();const msg=document.getElementById('codeMsg461');const used=usedCodes();if(!raw){msg.textContent='Digite um código.';return;}if(used.includes(raw)){msg.style.color='#ffd166';msg.textContent='Esse código já foi usado.';return;}if(raw==='chronocode'){addRelics(100);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent='+100 relíquias recebidas!';rewardBurst(100,'RELÍQUIAS');return;}if(raw==='monsterhunter'){addRelics(250);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent='+250 relíquias recebidas!';rewardBurst(250,'RELÍQUIAS');return;}if(raw==='fragchrono'){addChrono(7);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent=`+7 ${CHRONO} Fragmentos Chrono!`;rewardBurst(7,`${CHRONO} FRAGMENTOS`,'#9be6ff');return;}msg.style.color='#ff8fa3';msg.textContent='Código inválido.';};}
+    function openHub461(){setCard();const m=meta();overlayCard.innerHTML=`<h1 style="text-align:center">CONQUISTAS & MISSÕES</h1><p class="duneSub461">Área central da progressão fora da batalha, organizada apenas com loja, missões e bestiário.</p><div class="duneGrid461 hubThree462"><button class="dunePanel461" id="hubRelics461"><span class="badge461" style="--co:#ffd166">LOJA</span><strong>Relíquias</strong><span>Compre bônus permanentes e acompanhe suas moedas.</span><span class="small461">Disponível: ${m.relicShards} relíquias</span></button><button class="dunePanel461" id="hubMissions461"><span class="badge461" style="--co:#86ffb0">OBJETIVOS</span><strong>Missões</strong><span>Missões de várias dificuldades que te dão relíquias em troca. Além de missões de awakening, que dão ultimates para personagens específicos!</span></button><button class="dunePanel461" id="hubBestiary461"><span class="badge461" style="--co:#ff6b9d">ARQUIVO</span><strong>Bestiário</strong><span>Registros de tudo e todos os bixos que você mata, além de te dar recompensas ao completar os registros.</span></button></div><div class="duneActions461"><button class="duneBtn461 dark" id="hubBack461">← Início</button></div>`;document.getElementById('hubRelics461').onclick=openRelics461;document.getElementById('hubMissions461').onclick=openMissions461;document.getElementById('hubBestiary461').onclick=openBestiary461;document.getElementById('hubBack461').onclick=openStartMenu461;}
     function classModel(k){return `<div class="modelBox461"><div class="heroModel461" data-hero="${esc(k)}" style="--c:${classColor(k)}"><i></i><b></b><em></em></div></div>`;}
   function comingSoonCard461(n){return `<div class="classCard461 comingCard462"><div class="comingModel462"></div><span class="badge461" style="--co:#d8d8d8">PRECISÃO</span><strong>Em Breve</strong><span>Slot reservado para um futuro personagem de precisão.</span><span class="small461">Arquivo bloqueado • ???</span></div>`;}
   function renderClassCard461(k,relics,chrono){const c=CLASSES[k],un=isUnlocked(k),co=classColor(k),cost=classCost(k),afford=k==='moonSlayer'?chrono>=cost:relics>=cost;return `<div class="classCard461 ${un?'':'locked'}" data-card461="${esc(k)}" style="--c:${co}"><button class="classInfo461" data-info461="${esc(k)}" title="Informações">i</button>${un?'':`<div class="classLock461">🔒</div>`}${classModel(k)}<span class="badge461" style="--co:${co}">${esc(c.tag||'CLASSE')}</span><strong>${esc(c.name)}</strong><span>${esc(c.desc||'Classe sem descrição.')}</span><span class="small461">HP ${c.hp} • Escudo ${c.shield} • Foco ${c.focus} • ${esc(WEAPONS[c.weapon]?.name||c.weapon)}</span>${un?`<button class="pick461" data-pick461="${esc(k)}">Selecionar</button>`:`<button class="buy461" data-buy461="${esc(k)}" ${afford?'':'disabled'}>Comprar — ${cost} ${classCurrency(k)}</button>`}</div>`;}
