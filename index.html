@@ -11111,7 +11111,7 @@ function killKey37(e){
   const ULT_480={
     assault:{name:'Zona de Guerra',emoji:'🔥',color:'#7fe9ff',desc:'O Assault transforma a arena em território de combate, ganhando rajadas pesadas, explosões de apoio e resistência temporária.'},
     sniper:{name:'Protocolo Olho-Morto',emoji:'🎯',color:'#ffe38c',desc:'Desacelera o tempo e marca os inimigos mais resistentes da arena. Quando o fluxo volta ao normal, o Sniper executa disparos precisos com dano baseado na vida dos alvos. Contra bosses, o dano é limitado.'},
-    reaper:{name:'Ceifador Absoluto',emoji:'🩸',color:'#ff7b9c',desc:'Assume uma forma sombria temporária. Almas orbitam o Reaper, atacam inimigos próximos e explodem ao fim da colheita.'},
+    reaper:{name:'Espíritos Vingativos',emoji:'🩸',color:'#ff7b9c',desc:'Desperta espíritos vingativos que caçam inimigos, retornam ao Reaper e explodem ao fim da vingança.'},
     alchemist:{name:'Transmutação Proibida',emoji:'☣️',color:'#4ce0b3',desc:'Mistura veneno, fogo químico e ácido em uma reação instável. A arena vira laboratório e inimigos abatidos espalham novas nuvens tóxicas.'},
     engineer:{name:'Protocolo Fortaleza',emoji:'🛠️',color:'#8ff8ff',desc:'Monta uma fortaleza temporária com torretas especiais, drones de apoio e um campo de proteção que segura a arena por alguns segundos.'},
     colonel:{name:'Ordem de Extermínio',emoji:'✈️',color:'#78d66b',desc:'Autoriza apoio militar total. Aviões cruzam o campo, rajadas cortam a arena e mísseis procuram os inimigos mais perigosos.'},
@@ -11210,7 +11210,7 @@ function killKey37(e){
   const ULT481={
     assault:{name:'Zona de Guerra',emoji:'🔥',color:'#7fe9ff',desc:'O Assault transforma a arena em território de combate total: rajadas pesadas, granadas de apoio e resistência temporária para avançar no meio do caos.'},
     sniper:{name:'Protocolo Olho-Morto',emoji:'🎯',color:'#ffe38c',desc:'Desacelera o tempo e marca os alvos mais resistentes da arena. Quando o fluxo volta, disparos letais atravessam os alvos marcados, causando dano brutal baseado na vida deles. Contra bosses, o dano é limitado.'},
-    reaper:{name:'Ceifador Absoluto',emoji:'🩸',color:'#ff7b9c',desc:'O Reaper assume uma forma de colheita sombria. Almas giram ao redor dele, rasgam inimigos próximos e explodem quando a ceifa termina.'},
+    reaper:{name:'Espíritos Vingativos',emoji:'🩸',color:'#ff7b9c',desc:'O Reaper desperta espíritos vingativos que orbitam sua lâmina, caçam inimigos, retornam carregando almas e explodem quando a vingança termina.'},
     alchemist:{name:'Transmutação Proibida',emoji:'☣️',color:'#4ce0b3',desc:'O Alquimista mistura veneno, fogo químico e ácido em uma reação proibida, criando poças instáveis e explosões tóxicas em cadeia.'},
     engineer:{name:'Protocolo Fortaleza',emoji:'🛠️',color:'#8ff8ff',desc:'O Artífice ergue uma fortaleza temporária com torretas especiais, drones de apoio e uma descarga final de energia concentrada.'},
     colonel:{name:'Ordem de Extermínio',emoji:'✈️',color:'#78d66b',desc:'O Coronel autoriza apoio militar total: aviões cruzam a arena, rajadas varrem o campo e mísseis procuram os inimigos mais perigosos.'},
@@ -11263,7 +11263,7 @@ function killKey37(e){
     if(k==='assault'){game.ults481.assault={life:8,fire:.02,gren:.16,pulse:0};addFloatingText(p.x,p.y-42,'ZONA DE GUERRA',u.color,22);} 
     else if(k==='sniper'){const targets=[...(game.enemies||[])].sort((a,b)=>(b.maxHp||b.hp||0)-(a.maxHp||a.hp||0)).slice(0,Math.min(16,game.enemies.length));game.ults481.sniper={life:1.55,max:1.55,targets,shot:false};game.timeStopActive=Math.max(game.timeStopActive||0,1.35);targets.forEach((e,n)=>game.floatingMarks481.push({e,life:1.6,max:1.6,n:n+1,col:u.color}));addFloatingText(p.x,p.y-42,'PROTOCOLO OLHO-MORTO',u.color,21);} 
     else if(k==='reaper'){game.ults481.reaper={life:9,pulse:0,slash:.05};game.reaperSouls481=Array.from({length:14},(_,i)=>({a:i*Math.PI*2/14,d:62+18*(i%4),life:9,x:p.x,y:p.y,hit:.1}));addFloatingText(p.x,p.y-42,'CEIFADOR ABSOLUTO',u.color,21);} 
-    else if(k==='alchemist'){game.ults481.alchemist={life:8,pulse:0,burst:.2};const cols=['#4ce0b3','#b6ff7a','#9f6cff','#ffd166','#ff6b9d'];game.alchemyFields481=[];for(let i=0;i<15;i++){const a=i*Math.PI*2/15+rnd(-.2,.2),rr=rnd(80,320);game.alchemyFields481.push({x:clamp481(p.x+Math.cos(a)*rr,45,W-45),y:clamp481(p.y+Math.sin(a)*rr,45,H-45),r:rnd(70,105),life:8,col:cols[i%cols.length],tick:.05,p:rnd(0,6)});}addFloatingText(p.x,p.y-42,'TRANSMUTAÇÃO PROIBIDA',u.color,20);} 
+    else if(k==='alchemist'){game.ults481.alchemist={life:8,pulse:0,burst:.2};const cols=['#4ce0b3','#b6ff7a','#9f6cff','#ffd166','#ff6b9d'];game.alchemyFields481=[];for(let i=0;i<15;i++){const a=i*Math.PI*2/15+rnd(-.2,.2),rr=rnd(80,320);game.alchemyFields481.push({x:clamp481(p.x+Math.cos(a)*rr,45,W-45),y:clamp481(p.y+Math.sin(a)*rr,45,H-45),r:rnd(70,105),life:2.5,col:cols[i%cols.length],tick:.05,p:rnd(0,6)});}addFloatingText(p.x,p.y-42,'TRANSMUTAÇÃO PROIBIDA',u.color,20);} 
     else if(k==='engineer'){game.ults481.engineer={life:12,pulse:0,laser:11.6,final:false};game.fortressTurrets481=Array.from({length:5},(_,i)=>{const a=i*Math.PI*2/5;return {x:p.x+Math.cos(a)*95,y:p.y+Math.sin(a)*95,a,life:12,fire:.05,beam:0}});addFloatingText(p.x,p.y-42,'PROTOCOLO FORTALEZA',u.color,20);} 
     else if(k==='colonel'){game.ults481.colonel={life:8,t:0,wave:.05};addFloatingText(p.x,p.y-42,'ORDEM DE EXTERMÍNIO',u.color,20);} 
     else if(k==='archer'){const a=angleTo(p,mouse);game.fera481={x:p.x+Math.cos(a)*45,y:p.y+Math.sin(a)*45,a,life:4.4,max:4.4,r:135,pull:310,speed:385,pulse:0,col:u.color};addFloatingText(p.x,p.y-42,'FERA DO TEMPO',u.color,23);}
@@ -11542,7 +11542,7 @@ function killKey37(e){
     game.reaperSouls485=[];
     const p=game.player;
     for(let i=0;i<8;i++)addReaperSoul485(p.x+Math.cos(i)*18,p.y+Math.sin(i)*18,'orbit');
-    try{addFloatingText(p.x,p.y-52,'ALMAS DESPERTAS','#ff7b9c',22);addRing(p.x,p.y,'#ff7b9c',210,7);game.flash=.35;game.flashColor='#ff7b9c';game.shake=18;}catch{}
+    try{addFloatingText(p.x,p.y-52,'ESPÍRITOS VINGATIVOS','#ff7b9c',22);addRing(p.x,p.y,'#ff7b9c',210,7);game.flash=.35;game.flashColor='#ff7b9c';game.shake=18;}catch{}
   }
   function endReaper485(){
     if(!game)return;
@@ -11632,7 +11632,7 @@ function killKey37(e){
       b.trail.unshift({x:b.x,y:b.y}); if(b.trail.length>8)b.trail.pop();
       if(q>=1){
         const rad=rand(64,104),dmg=rand(38,68)*(game.upgrades?.damage||1);
-        if(game.alchemyFields481)game.alchemyFields481.push({x:b.tx,y:b.ty,r:rad,life:rand(4.8,7.5),col:b.col,tick:.02,p:rand(0,6)});
+        if(game.alchemyFields481)game.alchemyFields481.push({x:b.tx,y:b.ty,r:rad,life:2.5,col:b.col,tick:.02,p:rand(0,6)});
         area485(b.tx,b.ty,rad*.76,dmg,b.col,{particles:22,push:12});
         game.alchemyPotions485.splice(i,1);
       }
@@ -11672,7 +11672,30 @@ function killKey37(e){
       ctx.save();ctx.globalAlpha=low?.18:.22+Math.sin((f.p||0)*1.7)*.04;ctx.strokeStyle=f.col;ctx.lineWidth=2;ctx.shadowBlur=low?0:18;ctx.shadowColor=f.col;for(let i=0;i<3&&!low;i++){ctx.beginPath();ctx.arc(f.x+Math.cos((f.p||0)+i*2.1)*f.r*.25,f.y+Math.sin((f.p||0)+i*2.1)*f.r*.25,10+Math.sin((f.p||0)+i)*5,0,Math.PI*2);ctx.stroke();}ctx.restore();
     }
     for(const s of game.reaperSouls485||[]){
-      ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.sin(s.pulse)*.18);ctx.globalCompositeOperation=low?'source-over':'lighter';ctx.shadowBlur=low?0:24;ctx.shadowColor=s.col;const a=Math.max(.2,Math.min(1,s.life/9));ctx.globalAlpha=a;ctx.fillStyle=s.col==='white'?'#ffffff':'rgba(255,123,156,.82)';ctx.strokeStyle='#ffe3ea';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-18);ctx.bezierCurveTo(18,-12,15,12,4,18);ctx.quadraticCurveTo(0,28,-6,18);ctx.bezierCurveTo(-18,10,-17,-12,0,-18);ctx.fill();ctx.stroke();ctx.fillStyle='#21040b';ctx.beginPath();ctx.arc(-5,-5,2.2,0,Math.PI*2);ctx.arc(5,-5,2.2,0,Math.PI*2);ctx.fill();ctx.restore();
+      ctx.save();
+      ctx.translate(s.x,s.y);ctx.rotate(Math.sin(s.pulse)*.22);
+      ctx.globalCompositeOperation=low?'source-over':'lighter';
+      const a=Math.max(.24,Math.min(1,s.life/9));ctx.globalAlpha=a;
+      const main=s.col==='#ffffff'||s.col==='white'?'#f8fbff':'#ff7b9c';
+      ctx.shadowBlur=low?0:32;ctx.shadowColor=main;
+      const aura=ctx.createRadialGradient(0,0,2,0,0,34);
+      aura.addColorStop(0,main);aura.addColorStop(.42,'rgba(255,123,156,.38)');aura.addColorStop(1,'rgba(0,0,0,0)');
+      if(!low){ctx.fillStyle=aura;ctx.beginPath();ctx.arc(0,0,34+Math.sin(s.pulse)*4,0,Math.PI*2);ctx.fill();}
+      const g=ctx.createLinearGradient(0,-24,0,30);
+      g.addColorStop(0,'#ffffff');g.addColorStop(.28,main);g.addColorStop(1,'rgba(65,4,22,.88)');
+      ctx.fillStyle=g;ctx.strokeStyle='#ffe3ea';ctx.lineWidth=2.2;
+      ctx.beginPath();
+      ctx.moveTo(0,-23);
+      ctx.bezierCurveTo(18,-18,22,4,10,17);
+      ctx.quadraticCurveTo(4,24,7,33);
+      ctx.quadraticCurveTo(0,27,-7,33);
+      ctx.quadraticCurveTo(-4,23,-11,16);
+      ctx.bezierCurveTo(-23,2,-18,-18,0,-23);
+      ctx.fill();ctx.stroke();
+      ctx.fillStyle='#23040d';ctx.beginPath();ctx.ellipse(-5,-6,2.7,3.5,0,0,Math.PI*2);ctx.ellipse(5,-6,2.7,3.5,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.72)';ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(0,1,8,.25,Math.PI-.25);ctx.stroke();
+      if(!low){ctx.strokeStyle=main;ctx.lineWidth=1.4;for(let k=0;k<3;k++){ctx.beginPath();ctx.arc(0,0,22+k*8+Math.sin(s.pulse+k)*2,0,Math.PI*2);ctx.stroke();}}
+      ctx.restore();
     }
     for(const v of game.vfx485||[]){
       const a=Math.max(0,v.life/v.max);ctx.save();ctx.globalAlpha=a;if(v.type==='blast'){const g=ctx.createRadialGradient(v.x,v.y,0,v.x,v.y,v.r);g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.28,v.col);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(v.x,v.y,v.r,0,Math.PI*2);ctx.fill();}else if(v.type==='soulHit'){ctx.translate(v.x,v.y);ctx.strokeStyle=v.col;ctx.shadowBlur=low?0:20;ctx.shadowColor=v.col;ctx.lineWidth=8*a;ctx.beginPath();ctx.arc(0,0,44*(1.2-a*.2),0,Math.PI*2);ctx.stroke();}ctx.restore();
@@ -11692,6 +11715,580 @@ function killKey37(e){
   };
 
   console.log('Chrono Shards 4.8.5 — carga 45-70s, Transmutação Proibida aprimorada e Reaper com almas reais carregado');
+})();
+</script>
+
+
+
+<script>
+(()=>{
+  if(window.__chronoPatch487RestoreAwakenPlayFix)return; window.__chronoPatch487RestoreAwakenPlayFix=true;
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const UNLOCK_KEY=SAVE+'_class_unlocks_v3';
+  const ARCHER='archer';
+  const ARCHER_COST=55;
+  const ARCHER_COLOR='#6fdcff';
+  const ARCHER_GOLD='#ffd166';
+  function read(){try{return JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{return {}}}
+  function write(m){localStorage.setItem(SAVE,JSON.stringify(m||{}));}
+  function unlocks(){try{const a=JSON.parse(localStorage.getItem(UNLOCK_KEY)||'[]');return Array.isArray(a)?a:[]}catch{return []}}
+  function saveUnlocks(a){localStorage.setItem(UNLOCK_KEY,JSON.stringify(Array.from(new Set((a||[]).filter(Boolean).filter(k=>!['assault','sniper'].includes(k))))));}
+  function isUnlocked(k){return k==='assault'||k==='sniper'||unlocks().includes(k);}
+  function spendRelics(n){const m=read();const have=Number(m.relicShards||0);if(have<n)return false;m.relicShards=have-n;write(m);if(game&&game.meta)game.meta.relicShards=m.relicShards;return true;}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function archerModel(){return `<div class="modelBox461"><div class="heroModel461" data-hero="archer" style="--c:${ARCHER_COLOR}"><em></em><i></i><b></b></div></div>`;}
+  function archerCard(){
+    const c=CLASSES?.archer||{name:'Arqueiro do Chrono 🏹',desc:'Um caçador temporal de precisão.',tag:'CAÇADOR',hp:100,shield:3,focus:120,weapon:'chronoBow'};
+    const un=isUnlocked(ARCHER), m=read(), afford=Number(m.relicShards||0)>=ARCHER_COST;
+    return `<div class="classCard461 archer487 ${un?'':'locked'}" data-card461="archer" style="--c:${ARCHER_COLOR}">
+      <button class="classInfo461" data-info461="archer" title="Informações">i</button>
+      ${un?'':'<div class="classLock461">🔒</div>'}
+      ${archerModel()}
+      <span class="badge461" style="--co:${ARCHER_GOLD}">${esc(c.tag||'CAÇADOR')}</span>
+      <strong>${esc(c.name||'Arqueiro do Chrono 🏹')}</strong>
+      <span>${esc(c.desc||'Um caçador temporal de precisão.')}</span>
+      <span class="small461">HP ${esc(c.hp)} • Escudo ${esc(c.shield)} • Foco ${esc(c.focus)} • ${esc((WEAPONS?.[c.weapon]||{}).name||c.weapon||'Arco Chrono')}</span>
+      ${un?'<button class="pick461" data-pick461="archer">Selecionar</button>':`<button class="buy461" data-buy461="archer" ${afford?'':'disabled'}>Comprar — ${ARCHER_COST} 🜂 Relíquias</button>`}
+    </div>`;
+  }
+  function normalizeArcherCard487(){
+    if(!overlayCard||!overlayCard.querySelector)return;
+    const groups=[...overlayCard.querySelectorAll('.classGroup461')];
+    const precision=groups.find(g=>/PRECIS[ÃA]O/i.test(g.textContent||''));
+    if(!precision)return;
+    const grid=precision.querySelector('.classGrid461');
+    if(!grid)return;
+    grid.querySelectorAll('[data-card-archer470],[data-card461="archer"],.archer470,.archer486,.archer487').forEach(n=>n.remove());
+    const coming=grid.querySelector('.comingCard462,.comingCard461');
+    if(coming)coming.insertAdjacentHTML('beforebegin',archerCard()); else grid.insertAdjacentHTML('beforeend',archerCard());
+    const badge=precision.querySelector('.classGroupHead461 .badge461');
+    if(badge)badge.textContent=`${grid.children.length} slot(s)`;
+    const info=grid.querySelector('[data-info461="archer"]');
+    if(info)info.onclick=e=>{e.preventDefault();e.stopPropagation();if(typeof window.openInfo481==='function')window.openInfo481('archer');else if(typeof window.openClassInfo480==='function')window.openClassInfo480('archer');else if(typeof openClassInfo461==='function')openClassInfo461('archer');};
+    grid.querySelectorAll('[data-pick461="archer"]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();resetGame('archer');overlay.classList.add('hidden');});
+    grid.querySelectorAll('[data-buy461="archer"]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();if(!spendRelics(ARCHER_COST))return;const arr=unlocks();arr.push(ARCHER);saveUnlocks(arr);setTimeout(()=>{if(typeof window.openClassMenu==='function')window.openClassMenu();},40);});
+    const card=grid.querySelector('[data-card461="archer"]');
+    if(card)card.onclick=e=>{if(e.target.closest('button'))return;if(isUnlocked(ARCHER)){resetGame(ARCHER);overlay.classList.add('hidden');}};
+  }
+  function forcePlayRoute487(){
+    const b=document.getElementById('play461');
+    if(b&&!b.dataset.fix487){
+      b.dataset.fix487='1';
+      b.onclick=e=>{e?.preventDefault?.(); if(typeof window.openClassMenu==='function')window.openClassMenu(); setTimeout(normalizeArcherCard487,30);};
+    }
+  }
+  const previousOpenClass=window.openClassMenu||(typeof openClassMenu461==='function'?openClassMenu461:null);
+  function openClassMenu487(){
+    if(previousOpenClass)previousOpenClass.apply(this,arguments);
+    [0,40,140,320].forEach(t=>setTimeout(normalizeArcherCard487,t));
+  }
+  window.openClassMenu=openClassMenu487;
+  try{openClassMenu=openClassMenu487;}catch{}
+  if(typeof window.openClassMenu461==='function')window.openClassMenu461=openClassMenu487;
+  try{if(typeof openClassMenu461==='function')openClassMenu461=openClassMenu487;}catch{}
+  const previousStart=window.openStartMenu||(typeof openStartMenu461==='function'?openStartMenu461:null);
+  if(previousStart){
+    window.openStartMenu=function(){const r=previousStart.apply(this,arguments);setTimeout(forcePlayRoute487,0);return r;};
+    try{openStartMenu=window.openStartMenu;}catch{}
+    if(typeof window.openStartMenu461==='function')window.openStartMenu461=window.openStartMenu;
+    try{if(typeof openStartMenu461==='function')openStartMenu461=window.openStartMenu;}catch{}
+  }
+  document.addEventListener('click',e=>{
+    const play=e.target.closest&&e.target.closest('#play461');
+    if(play){setTimeout(()=>{forcePlayRoute487();normalizeArcherCard487();},30);}
+  },true);
+  [0,80,240,700].forEach(t=>setTimeout(()=>{forcePlayRoute487();normalizeArcherCard487();},t));
+  console.log('Chrono Shards 4.8.7 — Awakening antigo restaurado, botão Jogar verificado e card do Arqueiro padronizado');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoPatch489)return; window.__chronoPatch489=true;
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const KEY_ICON='🗝️';
+  const AWAKEN_488={
+    assault:{name:'Assault',emoji:'🔫',color:'#7fe9ff',missions:[['Cerco de Vanguarda','Mate 500 inimigos com o Assault depois de desbloquear esta etapa.','classKills.assault',500],['Motor de Guerra','Use 120 habilidades com o Assault depois de desbloquear esta etapa.','classSkillUses.assault',120],['Linha Inquebrável','Derrote 12 bosses com o Assault depois de desbloquear esta etapa.','classBossKills.assault',12],['Modo Turbo Letal','Derrote 10 bosses enquanto o Modo Turbo estiver ativo depois de desbloquear esta etapa.','assaultTurboBossKills',10],['Comandante de Vanguarda','Mate 1600 inimigos com o Assault depois de desbloquear esta etapa.','classKills.assault',1600]]},
+    sniper:{name:'Sniper',emoji:'🎯',color:'#ffe38c',missions:[['Calma Absoluta','Mate 450 inimigos com o Sniper depois de desbloquear esta etapa.','classKills.sniper',450],['Respiração de Aço','Mate 30 Sentinels depois de desbloquear esta etapa.','typeKills.sentinel',30],['Tiro Impossível','Mate 35 elites depois de desbloquear esta etapa.','eliteKills',35],['Executor Distante','Derrote 14 bosses com o Sniper depois de desbloquear esta etapa.','classBossKills.sniper',14],['Linha Perfeita','Mate 1450 inimigos com o Sniper depois de desbloquear esta etapa.','classKills.sniper',1450]]},
+    reaper:{name:'Reaper',emoji:'⚔️',color:'#ff7b9c',missions:[['Primeira Ceifa','Mate 520 inimigos com o Reaper depois de desbloquear esta etapa.','classKills.reaper',520],['Fome de Almas','Use 120 habilidades com o Reaper depois de desbloquear esta etapa.','classSkillUses.reaper',120],['Ceifador de Elites','Mate 38 elites depois de desbloquear esta etapa.','eliteKills',38],['Contrato Final','Derrote 14 bosses com o Reaper depois de desbloquear esta etapa.','classBossKills.reaper',14],['Lâmina do Fim','Mate 1650 inimigos com o Reaper depois de desbloquear esta etapa.','classKills.reaper',1650]]},
+    alchemist:{name:'Alquimista',emoji:'⚗️',color:'#4ce0b3',missions:[['Fórmula Instável','Mate 460 inimigos com o Alquimista depois de desbloquear esta etapa.','classKills.alchemist',460],['Mistura Perigosa','Use 125 habilidades com o Alquimista depois de desbloquear esta etapa.','classSkillUses.alchemist',125],['Controle Químico','Mate 28 Vomiters depois de desbloquear esta etapa.','typeKills.vomiter',28],['Experimento Maior','Derrote 12 bosses com o Alquimista depois de desbloquear esta etapa.','classBossKills.alchemist',12],['Transmutação Total','Mate 1500 inimigos com o Alquimista depois de desbloquear esta etapa.','classKills.alchemist',1500]]},
+    colonel:{name:'Coronel',emoji:'🪖',color:'#78d66b',missions:[['Ordem de Avanço','Mate 520 inimigos com o Coronel depois de desbloquear esta etapa.','classKills.colonel',520],['Apoio Aéreo','Use 130 habilidades com o Coronel depois de desbloquear esta etapa.','classSkillUses.colonel',130],['Linha Mantida','Alcance a wave 30 depois de desbloquear esta etapa.','maxWave',30],['Operação Colosso','Derrote 15 bosses com o Coronel depois de desbloquear esta etapa.','classBossKills.colonel',15],['General das Dunas','Mate 1700 inimigos com o Coronel depois de desbloquear esta etapa.','classKills.colonel',1700]]},
+    engineer:{name:'Artífice',emoji:'🛠️',color:'#8ff8ff',missions:[['Primeira Máquina','Mate 470 inimigos com o Artífice depois de desbloquear esta etapa.','classKills.engineer',470],['Engenharia de Guerra','Use 130 habilidades com o Artífice depois de desbloquear esta etapa.','classSkillUses.engineer',130],['Anti-Horda','Mate 80 Swarmers depois de desbloquear esta etapa.','typeKills.swarmer',80],['Torre Contra Titã','Derrote 13 bosses com o Artífice depois de desbloquear esta etapa.','classBossKills.engineer',13],['Fábrica de Vitória','Mate 1550 inimigos com o Artífice depois de desbloquear esta etapa.','classKills.engineer',1550]]},
+    archer:{name:'Arqueiro do Chrono',emoji:'🏹',color:'#6fdcff',missions:[['Lobo Solitário','Mate 520 inimigos com o Arqueiro do Chrono depois de desbloquear esta etapa.','classKills.archer',520],['Puxada Perfeita','Use 130 habilidades com o Arqueiro do Chrono depois de desbloquear esta etapa.','classSkillUses.archer',130],['Ponta Meteórica','Derrote 12 bosses com o Arqueiro do Chrono depois de desbloquear esta etapa.','classBossKills.archer',12],['Caçada Completa','Alcance a wave 30 com o Arqueiro do Chrono depois de desbloquear esta etapa.','maxWave',30],['Sobrevivente da Explosão','Mate 1650 inimigos com o Arqueiro do Chrono depois de desbloquear esta etapa.','classKills.archer',1650]]}
+  };
+  const ULT_NAME_488={assault:'Zona de Guerra',sniper:'Protocolo Olho-Morto',reaper:'Espíritos Vingativos',alchemist:'Transmutação Proibida',engineer:'Protocolo Fortaleza',colonel:'Ordem de Extermínio',archer:'Fera do Tempo'};
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const read=()=>{let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{m={}};m.awakeningKeys=Number(m.awakeningKeys||0);m.awakenings463=m.awakenings463||{};m.awakenings463.completed=m.awakenings463.completed||{};m.awakeningUltimates=m.awakeningUltimates||{};m.awakeningRewards480=m.awakeningRewards480||{};m.stats=m.stats||{};return m;};
+  const write=m=>localStorage.setItem(SAVE,JSON.stringify(m||{}));
+  function getMetric(path,m=read()){
+    if(typeof metric==='function'){try{return Number(metric(path,m)||0)}catch{}}
+    return String(path).split('.').reduce((o,k)=>o&&o[k],m.stats)||0;
+  }
+  function doneCount(id,m=read()){return Math.max(0,Math.min(5,Number(m.awakenings463?.completed?.[id]||0)));}
+  function isUltUnlocked(id,m=read()){return !!m.awakeningUltimates?.[id];}
+  function activeProg(active,m=read()){
+    const a=AWAKEN_488[active?.id], mi=a?.missions?.[active?.stage];
+    if(!mi)return {cur:0,target:1,pct:0,done:false};
+    const cur=Math.max(0,getMetric(mi[2],m)-Number(active.baseline||0));
+    return {cur:Math.min(cur,mi[3]),target:mi[3],pct:Math.min(100,cur/mi[3]*100),done:cur>=mi[3]};
+  }
+  function toast488(text,color='#ffd166'){
+    try{if(typeof rewardBurst==='function')return rewardBurst(0,text,color);if(typeof burst==='function')return burst(text,color);}catch{}
+    const d=document.createElement('div');d.textContent=text;d.style.cssText=`position:fixed;left:50%;top:15%;transform:translateX(-50%);z-index:99999;padding:13px 18px;border-radius:999px;background:rgba(6,8,18,.95);border:1px solid ${color};box-shadow:0 0 30px ${color}55;color:#fff;font:900 13px Orbitron,sans-serif;letter-spacing:.08em`;document.body.appendChild(d);setTimeout(()=>d.remove(),1300);
+  }
+  function ensureStyle488(){
+    if(document.getElementById('awakStyle488'))return;
+    const st=document.createElement('style');st.id='awakStyle488';st.textContent=`
+      .awakDetail488{width:min(96vw,1120px)!important;text-align:left!important;background:radial-gradient(circle at 50% 0,rgba(97,218,251,.14),transparent 34%),linear-gradient(145deg,#0c1024,#080a16 58%,#130d1b)!important}
+      .awakTop488{display:grid;grid-template-columns:84px 1fr auto;gap:16px;align-items:center;padding:16px;border-radius:24px;border:1px solid color-mix(in srgb,var(--c) 48%,rgba(255,255,255,.12));background:linear-gradient(135deg,color-mix(in srgb,var(--c) 14%,transparent),rgba(255,255,255,.045));box-shadow:0 0 34px color-mix(in srgb,var(--c) 14%,transparent)}
+      .awakAvatar488{width:76px;height:76px;border-radius:24px;display:grid;place-items:center;font-size:35px;background:radial-gradient(circle at 50% 24%,color-mix(in srgb,var(--c) 36%,transparent),rgba(0,0,0,.28));border:1px solid color-mix(in srgb,var(--c) 55%,rgba(255,255,255,.2));box-shadow:inset 0 0 28px rgba(255,255,255,.04),0 0 25px color-mix(in srgb,var(--c) 20%,transparent)}
+      .awakKeyTotal488{justify-self:end;min-width:142px;text-align:center;padding:13px 15px;border-radius:18px;background:rgba(255,209,102,.09);border:1px solid rgba(255,209,102,.35);box-shadow:0 0 22px rgba(255,209,102,.1)}
+      .awakKeyTotal488 b{display:block;font:900 24px Orbitron,sans-serif;color:#ffe08c}.awakKeyTotal488 span{display:block;font-size:11px;letter-spacing:.11em;opacity:.75}
+      .awakList488{display:grid;gap:12px;margin-top:16px}.awakMission488{display:grid;grid-template-columns:50px 1fr minmax(148px,190px);gap:14px;align-items:center;padding:14px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(135deg,rgba(255,255,255,.065),rgba(255,255,255,.025));position:relative;overflow:hidden}.awakMission488:before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 18%,transparent),transparent 46%);opacity:.45;pointer-events:none}.awakMission488.done{border-color:rgba(134,255,176,.42)}.awakMission488.active{box-shadow:0 0 28px color-mix(in srgb,var(--c) 22%,transparent);border-color:color-mix(in srgb,var(--c) 55%,rgba(255,255,255,.12))}.awakMission488.locked{opacity:.62;filter:saturate(.55)}
+      .awakNum488{position:relative;z-index:1;width:42px;height:42px;border-radius:16px;display:grid;place-items:center;font:900 14px Orbitron,sans-serif;background:rgba(0,0,0,.34);border:1px solid color-mix(in srgb,var(--c) 45%,rgba(255,255,255,.16));color:#fff}.awakText488{position:relative;z-index:1}.awakText488 strong{display:block;color:#fff;font-size:15px}.awakText488 span{display:block;color:#b8cbea;font-size:12px;line-height:1.35;margin-top:4px}.awakText488 .progress461{margin-top:9px!important}
+      .awakRight488{position:relative;z-index:1;display:grid;gap:8px;justify-items:stretch;text-align:center}.keyPill488{padding:8px 10px;border-radius:999px;border:1px solid rgba(255,209,102,.36);background:rgba(255,209,102,.08);color:#ffe08c;font:900 11px Orbitron,sans-serif;letter-spacing:.08em}.statePill488{font:900 10px Orbitron,sans-serif;letter-spacing:.08em;color:#dbeaff;opacity:.84}.statePill488.good{color:#86ffb0}.statePill488.bad{color:#ffb3c3}.awakRight488 .duneBtn461{width:100%;padding:9px 10px!important;font-size:11px!important;margin:0!important}
+      .awakReward488{margin-top:16px;padding:17px;border-radius:22px;border:1px solid rgba(255,209,102,.46);background:radial-gradient(circle at 50% 0,rgba(255,209,102,.18),rgba(255,255,255,.04));text-align:center;box-shadow:0 0 30px rgba(255,209,102,.1)}.awakReward488 strong{display:block;color:#fff;font-family:Orbitron,sans-serif;margin:5px 0}.awakReward488 span{display:block;color:#c8d8f7;font-size:13px}.awakReward488 button{margin-top:12px}
+      @media(max-width:720px){.awakTop488{grid-template-columns:64px 1fr}.awakKeyTotal488{grid-column:1/-1;justify-self:stretch}.awakMission488{grid-template-columns:42px 1fr}.awakRight488{grid-column:1/-1}}
+    `;document.head.appendChild(st);
+  }
+  function openAwakening488(id){
+    const a=AWAKEN_488[id];if(!a)return;ensureStyle488();overlay.classList.remove('hidden');overlayCard.className='card dune461 awakDetail488';overlayCard.style.setProperty('--c',a.color);
+    let m=read();write(m);m=read();const completed=doneCount(id,m),active=m.awakenings463.active,ult=isUltUnlocked(id,m);
+    const rows=a.missions.map((mi,i)=>{
+      const stepDone=i<completed,own=!!(active&&active.id===id&&active.stage===i),other=!!(active&&!own),next=!active&&i===completed&&!stepDone,visible=stepDone||own||next;
+      const ap=own?activeProg(active,m):{cur:0,target:mi[3],pct:0,done:false};
+      const canUnlock=next&&m.awakeningKeys>0; const title=visible?mi[0]:'Etapa bloqueada'; const desc=visible?mi[1]:(other?'Conclua a missão de Awakening atualmente ativa antes de abrir outra.':'Use uma chave de Awakening para revelar esta etapa.');
+      let status=stepDone?'CONCLUÍDA':own?'ATIVA':other?'OUTRA ATIVA':canUnlock?'PRONTA':'BLOQUEADA';
+      return `<div class="awakMission488 ${stepDone?'done':''} ${own?'active':''} ${visible?'':'locked'}" style="--c:${a.color}"><div class="awakNum488">${stepDone?'✓':i+1}</div><div class="awakText488"><strong>${esc(title)}</strong><span>${esc(desc)}</span><div class="progress461" style="--co:${a.color}"><i style="width:${stepDone?100:own?ap.pct:0}%"></i></div><span>${stepDone?'Concluída':own?`${ap.cur}/${mi[3]}`:visible?`0/${mi[3]}`:'???'}</span></div><div class="awakRight488"><div class="keyPill488">${KEY_ICON} ${m.awakeningKeys} chave(s)</div><div class="statePill488 ${stepDone?'good':(!visible||other)?'bad':''}">${status}</div>${canUnlock?`<button class="duneBtn461" data-unlockawak488="${i}">Usar 1 ${KEY_ICON}</button>`:''}${own&&ap.done?`<button class="duneBtn461" data-claimawak488="${i}">Concluir etapa</button>`:''}</div></div>`;
+    }).join('');
+    const canReward=completed>=a.missions.length&&!ult;
+    overlayCard.innerHTML=`<div class="awakTop488"><div class="awakAvatar488">${a.emoji}</div><div><span class="badge461" style="--co:${a.color}">AWAKENING</span><h1 style="text-align:left;margin:4px 0 0">${esc(a.name)}</h1><p class="duneSub461" style="text-align:left;margin:6px 0 0!important">Complete as 5 etapas e resgate a recompensa para liberar a Ultimate deste personagem.</p></div><div class="awakKeyTotal488"><span>CHAVES</span><b>${KEY_ICON} ${m.awakeningKeys}</b></div></div><div class="dunePanel461" style="border-color:${a.color}66;margin-top:14px"><span class="badge461" style="--co:${a.color}">PROGRESSÃO COM CHAVE</span><strong>${completed}/${a.missions.length} etapas concluídas</strong><span>${active?`Missão ativa: ${esc(AWAKEN_488[active.id]?.name||'Awakening')} — etapa ${active.stage+1}`:'Nenhuma missão de Awakening ativa.'}</span><div class="progress461" style="--co:${a.color}"><i style="width:${completed/a.missions.length*100}%"></i></div></div><div class="awakList488">${rows}</div>${canReward?`<div class="awakReward488"><span class="badge461" style="--co:${a.color}">RECOMPENSA FINAL</span><strong>${esc(ULT_NAME_488[id]||'Ultimate')} pronta para despertar</strong><span>As 5 etapas foram concluídas. Resgate para liberar o ataque X do ${esc(a.name)}.</span><button class="duneBtn461" id="claimUlt488">Resgatar Recompensa</button></div>`:ult?`<div class="awakReward488"><span class="badge461" style="--co:#86ffb0">RECOMPENSA RESGATADA</span><strong>${esc(ULT_NAME_488[id]||'Ultimate')} liberada</strong></div>`:''}<div class="duneActions461"><button class="duneBtn461 dark" id="awakBack488">← Missões</button></div>`;
+    overlayCard.querySelectorAll('[data-unlockawak488]').forEach(b=>b.onclick=()=>{let mm=read();const st=Number(b.dataset.unlockawak488);if(mm.awakeningKeys<=0||mm.awakenings463.active||st!==doneCount(id,mm))return;mm.awakeningKeys--;mm.awakenings463.active={id,stage:st,baseline:getMetric(a.missions[st][2],mm),startedAt:Date.now()};write(mm);setTimeout(()=>openAwakening488(id),100);});
+    overlayCard.querySelectorAll('[data-claimawak488]').forEach(b=>b.onclick=()=>{let mm=read();const ac=mm.awakenings463.active;if(!ac||ac.id!==id)return;const ap=activeProg(ac,mm);if(!ap.done)return;mm.awakenings463.completed[id]=Math.max(doneCount(id,mm),ac.stage+1);mm.awakenings463.active=null;write(mm);toast488('ETAPA CONCLUÍDA',a.color);setTimeout(()=>openAwakening488(id),250);});
+    const rb=document.getElementById('claimUlt488');if(rb)rb.onclick=()=>{let mm=read();mm.awakeningUltimates=mm.awakeningUltimates||{};mm.awakeningRewards480=mm.awakeningRewards480||{};mm.awakeningUltimates[id]=true;mm.awakeningRewards480[id]=true;write(mm);toast488(`ULTIMATE DO ${a.name.toUpperCase()} LIBERADA`,a.color);setTimeout(()=>openAwakening488(id),280);};
+    const back=document.getElementById('awakBack488');if(back)back.onclick=()=>{if(typeof window.openMissions461==='function')window.openMissions461();else if(typeof openMissions461==='function')openMissions461();};
+  }
+  function enhanceMissions488(){
+    if(!overlayCard||!overlayCard.querySelector)return;
+    const grid=overlayCard.querySelector('.awakGrid461'); if(!grid)return;
+    for(const id of Object.keys(AWAKEN_488)){
+      let card=grid.querySelector(`[data-awak488="${id}"],[data-awak480="${id}"],[data-awak461="${id}"]`);
+      if(!card){const a=AWAKEN_488[id];card=document.createElement('button');card.className='awakCard461';grid.appendChild(card);}
+      const a=AWAKEN_488[id], m=read(), done=doneCount(id,m), ult=isUltUnlocked(id,m);
+      card.dataset.awak488=id;card.removeAttribute('data-awak480');card.removeAttribute('data-awak461');card.style.setProperty('--c',a.color);
+      card.innerHTML=`<div class="awakPortrait461">${a.emoji}</div><span class="badge461" style="--co:${a.color}">AWAKENING</span><strong>Desbloqueie a Ultimate do ${a.name}!</strong><span>${ult?'Ultimate liberada':`Progresso: ${Math.min(done,5)}/5 etapas`}</span><div class="progress461" style="--co:${a.color}"><i style="width:${Math.min(100,done/5*100)}%"></i></div>`;
+      card.onclick=e=>{e.preventDefault();e.stopPropagation();openAwakening488(id);};
+    }
+  }
+  const prevMissions488=window.openMissions461||(typeof openMissions461==='function'?openMissions461:(window.openMissions||null));
+  function openMissions488(){if(prevMissions488&&prevMissions488!==openMissions488)prevMissions488.apply(this,arguments);[0,60,180].forEach(t=>setTimeout(enhanceMissions488,t));}
+  window.openAwakening488=openAwakening488;window.openAwakening480=openAwakening488;window.openAwakening464=openAwakening488;window.openAwakening461=openAwakening488;
+  try{openAwakening461=openAwakening488;}catch{}
+  window.openMissions461=openMissions488;window.openMissions=openMissions488;try{openMissions461=openMissions488;}catch{}
+  document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('[data-awak488],[data-awak480],[data-awak461]');if(c){const id=c.dataset.awak488||c.dataset.awak480||c.dataset.awak461;if(AWAKEN_488[id]){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openAwakening488(id);}}},true);
+  // 4.8.9: sem MutationObserver aqui. A versão 4.8.8 re-renderizava os cards em toda mutação do DOM,
+  // causando loop/travamento ao abrir Missões. A atualização agora roda apenas quando a tela de missões abre
+  // e quando o jogador clica em cards de Awakening.
+  console.log('Chrono Shards 4.8.9 — Missões/Awakening sem travamento por observer');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoPatch490FinalTouches)return; window.__chronoPatch490FinalTouches=true;
+  function finite490(v){return Number.isFinite(Number(v));}
+  function cleanupWaveBlockers490(){
+    if(!window.game||!game.running)return;
+    if(Array.isArray(game.enemies)){
+      for(let i=game.enemies.length-1;i>=0;i--){
+        const e=game.enemies[i];
+        if(!e||!finite490(e.x)||!finite490(e.y)||!finite490(e.hp)||e.hp<=0){game.enemies.splice(i,1);continue;}
+        const far=e.x<-620||e.x>W+620||e.y<-620||e.y>H+620;
+        if(far&&e.type!=='boss'&&(game.enemiesSpawnedThisWave||0)>=(game.enemiesToSpawn||0)){
+          game.enemies.splice(i,1);
+          try{addFloatingText(W/2,H*.52,'Rastro congelado dissipado','#8fcfff',13);}catch{}
+        }
+      }
+    }
+    if(Array.isArray(game.enemyBullets)){
+      for(let i=game.enemyBullets.length-1;i>=0;i--){
+        const b=game.enemyBullets[i];
+        if(!b||!finite490(b.x)||!finite490(b.y)||!finite490(b.life)||b.life<=0||b.x<-720||b.x>W+720||b.y<-720||b.y>H+720){game.enemyBullets.splice(i,1);}
+      }
+    }
+    // A Besta Gélida só pode nascer em boss wave 10+; este fail-safe evita que projéteis/inimigos inválidos
+    // de waves altas segurem a transição quando tudo visível já morreu.
+    if(!game.waveBoss&&(game.enemiesSpawnedThisWave||0)>=(game.enemiesToSpawn||0)&&(!game.enemies||game.enemies.length===0)){
+      game._emptyWaveSince490=game._emptyWaveSince490||performance.now();
+      if(game.enemyBullets&&game.enemyBullets.length&&performance.now()-game._emptyWaveSince490>2600){game.enemyBullets.length=0;}
+    }else game._emptyWaveSince490=0;
+  }
+  const updateWaveStatePrev490=updateWaveState;
+  updateWaveState=function(){cleanupWaveBlockers490();return updateWaveStatePrev490.apply(this,arguments);};
+  // Garantia extra: se uma poção antiga da Transmutação Proibida entrar com tempo maior, ela é normalizada.
+  const updatePlayerPrev490=updatePlayer;
+  updatePlayer=function(dt){
+    const r=updatePlayerPrev490.apply(this,arguments);
+    if(game&&Array.isArray(game.alchemyFields481)){
+      for(const f of game.alchemyFields481){if(f&&game.ults481?.alchemist&&f.life>2.5)f.life=Math.min(f.life,2.5);}
+    }
+    return r;
+  };
+  console.log('Chrono Shards 4.9.0 — poções 2.5s, Espíritos Vingativos e fail-safe de wave glacial carregado');
+})();
+</script>
+
+<script>
+(()=>{
+  if(window.__chronoPatch491UltVisualAndAlchemyFix)return; window.__chronoPatch491UltVisualAndAlchemyFix=true;
+
+  const rand=(a,b)=>Math.random()*(b-a)+a;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const hypot=(a,b)=>Math.hypot((a.x||0)-(b.x||0),(a.y||0)-(b.y||0));
+  const colAssault='#7fe9ff', colArt='#8ff8ff', colColonel='#78d66b', colReaper='#ff7b9c';
+
+  function ensure491(){
+    if(!game)return;
+    game.assaultMissiles491=game.assaultMissiles491||[];
+    game.vfx491=game.vfx491||[];
+  }
+  function nearest491(x,y,range=99999,limit=1){
+    const arr=[...(game?.enemies||[])].filter(e=>Math.hypot(e.x-x,e.y-y)<range)
+      .sort((a,b)=>Math.hypot(a.x-x,a.y-y)-Math.hypot(b.x-x,b.y-y));
+    return limit===1?arr[0]:arr.slice(0,limit);
+  }
+  function damage491(e,dmg){
+    if(!game||!e)return false;
+    const i=game.enemies.indexOf(e);
+    if(i<0)return false;
+    e.hp-=dmg;
+    e.hitFlash=.22;
+    if(e.hp<=0){enemyDeath(i,e);return true;}
+    return false;
+  }
+  function area491(x,y,r,dmg,col,opts={}){
+    if(!game)return;
+    try{addRing(x,y,col,r,opts.width||6);addParticles(x,y,col,opts.particles||34,opts.force||1.2);}catch{}
+    game.vfx491.push({type:'explosion',x,y,r,life:.62,max:.62,col});
+    for(let i=(game.enemies||[]).length-1;i>=0;i--){
+      const e=game.enemies[i];
+      if(Math.hypot(e.x-x,e.y-y)<r+(e.r||0)){
+        e.hp-=dmg;
+        e.hitFlash=.20;
+        if(opts.push){const a=Math.atan2(e.y-y,e.x-x);e.x+=Math.cos(a)*opts.push;e.y+=Math.sin(a)*opts.push;}
+        if(e.hp<=0)enemyDeath(i,e);
+      }
+    }
+  }
+  function cleanAlchemyFields491(dt){
+    if(!game)return;
+    const cap=(arr)=>{
+      if(!Array.isArray(arr))return [];
+      for(const f of arr){
+        if(f&&f._ttl491===undefined)f._ttl491=2.5;
+        if(f)f._ttl491-=dt;
+      }
+      return arr.filter(f=>f&&f._ttl491>0&&Number(f.life||0)>-0.05);
+    };
+    // alchemyFields481 are the visible poison/chemical puddles from Alchemist awakening.
+    game.alchemyFields481=cap(game.alchemyFields481);
+    // Some older routes used awakFields480 for the same ultimate. Cap those too.
+    game.awakFields480=cap(game.awakFields480);
+  }
+
+  function spawnAssaultMissile491(){
+    if(!game||!game.player)return;
+    const p=game.player;
+    const target=nearest491(p.x,p.y,980,1);
+    const base=target?Math.atan2(target.y-p.y,target.x-p.x):angleTo(p,mouse);
+    const side=(Math.random()<.5?-1:1);
+    const sx=p.x+Math.cos(base+Math.PI/2*side)*18;
+    const sy=p.y+Math.sin(base+Math.PI/2*side)*18-4;
+    game.assaultMissiles491.push({
+      x:sx,y:sy,tx:target?target.x:p.x+Math.cos(base)*480,ty:target?target.y:p.y+Math.sin(base)*480,
+      target,a:base,v:0,life:1.8,trail:[],spin:rand(0,6),col:colAssault
+    });
+    try{addParticles(sx,sy,'#d8fbff',4,.35);}catch{}
+  }
+  function updateAssault491(dt){
+    if(!game)return;
+    ensure491();
+    const active=!!(game.ults481&&game.ults481.assault);
+    if(active){
+      const a=game.ults481.assault;
+      // Disable old random ground explosions; this patch replaces them with body-launched missiles.
+      a.gren=999;
+      if(a._miss491===undefined)a._miss491=.03;
+      a._miss491-=dt;
+      while(a._miss491<=0){spawnAssaultMissile491();a._miss491+=.22;}
+    }
+    for(let i=game.assaultMissiles491.length-1;i>=0;i--){
+      const m=game.assaultMissiles491[i];
+      m.life-=dt;
+      if(m.target&&game.enemies.includes(m.target)){m.tx=m.target.x;m.ty=m.target.y;}
+      const desired=Math.atan2(m.ty-m.y,m.tx-m.x);
+      let da=((desired-m.a+Math.PI*3)%(Math.PI*2))-Math.PI;
+      m.a+=clamp(da,-dt*5.4,dt*5.4);
+      m.v=Math.min(760,m.v+1400*dt);
+      m.x+=Math.cos(m.a)*m.v*dt;
+      m.y+=Math.sin(m.a)*m.v*dt;
+      m.trail.unshift({x:m.x,y:m.y}); if(m.trail.length>10)m.trail.pop();
+      const hit=(Math.hypot(m.x-m.tx,m.y-m.ty)<24)||(m.target&&game.enemies.includes(m.target)&&Math.hypot(m.x-m.target.x,m.y-m.target.y)<(m.target.r||12)+18);
+      if(hit||m.life<=0||m.x<-80||m.x>W+80||m.y<-80||m.y>H+80){
+        area491(m.x,m.y,94,62*(game.upgrades?.damage||1),'#7fe9ff',{particles:34,push:26});
+        game.assaultMissiles491.splice(i,1);
+      }
+    }
+  }
+
+  function updateSniperExtra491(before){
+    if(!game||!before)return;
+    const s=game.ults481&&game.ults481.sniper;
+    if(!s||before.shot||!s.shot||s._extra491)return;
+    s._extra491=true;
+    const p=game.player;
+    for(const e of s.targets||[]){
+      if(!e||!game.enemies.includes(e))continue;
+      const max=e.maxHp||e.hp||1;
+      const base=e.type==='boss'?Math.min(max*.30,e.hp):Math.max(max*.65,e.hp*.95);
+      const extra=base*.30;
+      game.vfx491.push({type:'sniperPulse',x:e.x,y:e.y,r:(e.r||12)+42,life:.55,max:.55,col:'#ffe38c'});
+      try{addLightning(p.x,p.y,e.x,e.y,'#ffe38c');addRing(e.x,e.y,'#ffe38c',(e.r||12)+44,3);}catch{}
+      damage491(e,extra);
+    }
+  }
+
+  function updateEngineer491(dt){
+    if(!game||!game.player)return;
+    const active=!!(game.ults481&&game.ults481.engineer);
+    if(active){
+      // Replace several static turrets with one fortress mortar-turret.
+      game.fortressTurrets481=[];
+      if(!game.bigFortress491){
+        const p=game.player;
+        game.bigFortress491={x:p.x,y:p.y,life:Math.max(1,game.ults481.engineer.life||9),fire:.05,pulse:0,healR:172,barrel:0};
+        try{addFloatingText(p.x,p.y-58,'FORTALEZA CENTRAL','#8ff8ff',19);addRing(p.x,p.y,'#8ff8ff',210,6);}catch{}
+      }
+    }
+    const t=game.bigFortress491;
+    if(!t)return;
+    t.pulse+=dt*4.2;t.fire-=dt;
+    if(!active){game.bigFortress491=null;return;}
+    t.life=game.ults481.engineer.life;
+    const p=game.player;
+    if(Math.hypot(p.x-t.x,p.y-t.y)<t.healR){
+      p.hp=clamp(p.hp+p.maxHp*.03*dt,0,p.maxHp);
+      if(Math.random()<dt*5)try{addParticles(p.x,p.y,'#9ef5d8',2,.25);}catch{}
+    }
+    if(t.fire<=0){
+      const targets=nearest491(t.x,t.y,780,7);
+      for(const e of targets){
+        const a=Math.atan2(e.y-t.y,e.x-t.x);
+        t.barrel=a;
+        if(game.beams481)game.beams481.push({x1:t.x+Math.cos(a)*24,y1:t.y+Math.sin(a)*24,x2:e.x,y2:e.y,life:.20,max:.20,col:'#8ff8ff'});
+        damage491(e,28*(game.upgrades?.damage||1));
+        try{addParticles(e.x,e.y,'#8ff8ff',4,.35);}catch{}
+      }
+      t.fire=.16;
+    }
+  }
+
+  const updatePlayerPrev491=updatePlayer;
+  updatePlayer=function(dt){
+    const beforeSniper=game?.ults481?.sniper?{shot:!!game.ults481.sniper.shot}:null;
+    // Pre-disable old Assault/Engineer simple effects before older update handlers execute.
+    if(game?.ults481?.assault)game.ults481.assault.gren=999;
+    if(game?.ults481?.engineer)game.fortressTurrets481=[];
+    updatePlayerPrev491(dt);
+    if(!game)return;
+    ensure491();
+    cleanAlchemyFields491(dt);
+    updateAssault491(dt);
+    updateSniperExtra491(beforeSniper);
+    updateEngineer491(dt);
+    for(const v of game.vfx491||[])v.life-=dt;
+    game.vfx491=(game.vfx491||[]).filter(v=>v.life>0);
+  };
+
+  const drawParticlesPrev491=drawParticles;
+  drawParticles=function(){
+    drawParticlesPrev491();
+    if(!game)return;
+    const low=false; // drawn lightweight enough; keep visible even outside Low GFX.
+    ctx.save();
+    // Assault missiles
+    for(const m of game.assaultMissiles491||[]){
+      ctx.save();
+      for(let i=m.trail.length-1;i>=0;i--){const tr=m.trail[i];ctx.globalAlpha=(1-i/m.trail.length)*.36;ctx.fillStyle='#bffaff';ctx.beginPath();ctx.arc(tr.x,tr.y,Math.max(2,8*(1-i/m.trail.length)),0,Math.PI*2);ctx.fill();}
+      ctx.globalAlpha=1;ctx.translate(m.x,m.y);ctx.rotate(m.a);ctx.shadowBlur=22;ctx.shadowColor='#7fe9ff';ctx.fillStyle='#18222a';ctx.strokeStyle='#7fe9ff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(-14,-8);ctx.lineTo(-8,0);ctx.lineTo(-14,8);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#ff5a3d';ctx.beginPath();ctx.arc(-15,0,4,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
+    // Artificer fortress turret + healing field
+    const t=game.bigFortress491;
+    if(t){
+      ctx.save();
+      ctx.globalAlpha=.16+.05*Math.sin(t.pulse);ctx.fillStyle='#8ff8ff';ctx.beginPath();ctx.arc(t.x,t.y,t.healR,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=.75;ctx.strokeStyle='#9ef5d8';ctx.lineWidth=2;ctx.setLineDash([8,7]);ctx.beginPath();ctx.arc(t.x,t.y,t.healR,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+      ctx.translate(t.x,t.y);ctx.shadowBlur=28;ctx.shadowColor='#8ff8ff';
+      ctx.fillStyle='#061018';ctx.strokeStyle='#8ff8ff';ctx.lineWidth=4;ctx.beginPath();ctx.roundRect?ctx.roundRect(-38,-30,76,60,14):ctx.rect(-38,-30,76,60);ctx.fill();ctx.stroke();
+      ctx.strokeStyle='#eaffff';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(t.barrel||0)*56,Math.sin(t.barrel||0)*56);ctx.stroke();
+      ctx.fillStyle='#8ff8ff';for(let i=0;i<4;i++){const a=i*Math.PI/2+t.pulse*.2;ctx.beginPath();ctx.arc(Math.cos(a)*27,Math.sin(a)*20,5+Math.sin(t.pulse+i)*1.5,0,Math.PI*2);ctx.fill();}
+      ctx.restore();
+    }
+    // Reaper souls: draw a more ghost-like silhouette over existing souls.
+    for(const s of game.reaperSouls485||[]){
+      ctx.save();ctx.translate(s.x,s.y);ctx.globalCompositeOperation='lighter';ctx.shadowBlur=26;ctx.shadowColor=s.col||colReaper;ctx.fillStyle=(s.col==='#ffffff')?'rgba(255,255,255,.58)':'rgba(255,90,145,.58)';ctx.strokeStyle=s.col||colReaper;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-15);ctx.bezierCurveTo(16,-10,17,10,6,18);ctx.quadraticCurveTo(2,23,6,28);ctx.quadraticCurveTo(0,24,-6,28);ctx.quadraticCurveTo(-2,22,-8,17);ctx.bezierCurveTo(-19,7,-15,-11,0,-15);ctx.fill();ctx.stroke();ctx.fillStyle='rgba(20,0,10,.8)';ctx.beginPath();ctx.ellipse(-4,-3,2.3,3.2,0,0,Math.PI*2);ctx.ellipse(4,-3,2.3,3.2,0,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
+    // Colonel special aircraft overlays, larger and more cinematic than normal planes.
+    for(const a of game.air481||[]){
+      ctx.save();ctx.translate(a.x,a.y);ctx.scale(a.vx<0?-1:1,1);ctx.shadowBlur=24;ctx.shadowColor='#78d66b';ctx.fillStyle='#172819';ctx.strokeStyle='#b6ff7a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(48,0);ctx.lineTo(-34,-20);ctx.lineTo(-22,-5);ctx.lineTo(-48,-4);ctx.lineTo(-48,4);ctx.lineTo(-22,5);ctx.lineTo(-34,20);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#eaffd6';ctx.beginPath();ctx.arc(16,-7,4,0,Math.PI*2);ctx.arc(16,7,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(182,255,122,.55)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-48,-10);ctx.lineTo(-78,-20);ctx.moveTo(-48,10);ctx.lineTo(-78,20);ctx.stroke();ctx.restore();
+    }
+    // Extra blast/snipe visuals
+    for(const v of game.vfx491||[]){
+      const a=Math.max(0,v.life/v.max);ctx.save();ctx.globalAlpha=a;
+      if(v.type==='explosion'){const g=ctx.createRadialGradient(v.x,v.y,0,v.x,v.y,v.r);g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.25,v.col||'#7fe9ff');g.addColorStop(.68,'rgba(255,130,60,.22)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(v.x,v.y,v.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=v.col||'#7fe9ff';ctx.lineWidth=4*a;ctx.stroke();}
+      if(v.type==='sniperPulse'){ctx.strokeStyle=v.col;ctx.shadowBlur=28;ctx.shadowColor=v.col;ctx.lineWidth=5*a;ctx.beginPath();ctx.arc(v.x,v.y,v.r*(1.1-a*.15),0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(v.x-v.r-12,v.y);ctx.lineTo(v.x+v.r+12,v.y);ctx.moveTo(v.x,v.y-v.r-12);ctx.lineTo(v.x,v.y+v.r+12);ctx.stroke();}
+      ctx.restore();
+    }
+    ctx.restore();
+  };
+
+  const drawPlayerPrev491=drawPlayer;
+  drawPlayer=function(){
+    drawPlayerPrev491();
+    if(!game||!game.player)return;
+    if(game.ults481?.assault){
+      const p=game.player;ctx.save();ctx.translate(p.x,p.y);ctx.globalCompositeOperation='lighter';ctx.shadowBlur=26;ctx.shadowColor='#7fe9ff';
+      ctx.strokeStyle='#7fe9ff';ctx.fillStyle='rgba(10,28,38,.82)';ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(0,-p.r-12);ctx.lineTo(p.r+14,-3);ctx.lineTo(p.r+8,p.r+13);ctx.lineTo(0,p.r+8);ctx.lineTo(-p.r-10,p.r+12);ctx.lineTo(-p.r-15,-2);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle='#d8fbff';ctx.beginPath();ctx.arc(-p.r-8,-5,5,0,Math.PI*2);ctx.arc(p.r+8,-5,5,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(255,95,60,.85)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-p.r-12,4);ctx.lineTo(-p.r-22,14);ctx.moveTo(p.r+12,4);ctx.lineTo(p.r+22,14);ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  console.log('Chrono Shards 4.9.1 — ultimates polidas: Alquimista limpa poças, Assault mísseis, Sniper +30%, Artífice fortaleza única, Coronel aviões especiais');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoPatch492ColonelUltFix)return; window.__chronoPatch492ColonelUltFix=true;
+  const GREEN='#78d66b', LIME='#caff7a', FIRE='#ffb14d';
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const rnd=(a,b)=>Math.random()*(b-a)+a;
+  function ensure492(){ if(!window.game)return; game.colonelJets492=game.colonelJets492||[]; game.colonelBlasts492=game.colonelBlasts492||[]; }
+  function nearest492(x,y,range=9999){
+    if(!game||!Array.isArray(game.enemies))return null;
+    let best=null,bd=range;
+    for(const e of game.enemies){const d=Math.hypot(e.x-x,e.y-y);if(d<bd){bd=d;best=e;}}
+    return best;
+  }
+  function blast492(x,y,r,dmg,col=GREEN){
+    if(!game)return;
+    try{addRing(x,y,col,r,8);addRing(x,y,'#fff4b8',r*.55,4);addParticles(x,y,col,64,1.65);addParticles(x,y,FIRE,34,1.25);}catch{}
+    game.colonelBlasts492.push({x,y,r,life:.75,max:.75,col});
+    for(let i=(game.enemies||[]).length-1;i>=0;i--){
+      const e=game.enemies[i];
+      if(Math.hypot(e.x-x,e.y-y)<r+(e.r||0)){
+        e.hp-=dmg; e.hitFlash=.26;
+        const a=Math.atan2(e.y-y,e.x-x); e.x+=Math.cos(a)*44; e.y+=Math.sin(a)*44;
+        if(e.hp<=0)enemyDeath(i,e);
+      }
+    }
+  }
+  function spawnJet492(){
+    if(!game)return;
+    const target=nearest492(W/2,H/2,9999);
+    const lane=target?clamp(target.y+rnd(-120,120),70,H-70):rnd(70,H-70);
+    const side=Math.random()<.5?-150:W+150;
+    const dir=side<0?1:-1;
+    game.colonelJets492.push({
+      x:side,y:lane,vx:dir*rnd(980,1120),life:1.75,drop:.04,burst:0,roll:rnd(0,6),dir,
+      trail:[]
+    });
+  }
+  function updateJets492(dt){
+    if(!game)return; ensure492();
+    const ult=game.ults481&&game.ults481.colonel;
+    // Bloqueia o spawn antigo de aviões pequenos da 4.8/4.9.1; esta versão usa jatos próprios.
+    if(ult){
+      ult.wave=999;
+      ult._jet492=(ult._jet492??0)-dt;
+      while(ult._jet492<=0){spawnJet492();ult._jet492+=.22;}
+    }else{
+      // Ao acabar a ultimate, remove qualquer avião antigo ou novo que tenha ficado vivo.
+      if(game.air481&&game.air481.length)game.air481.length=0;
+      if(game.colonelJets492&&game.colonelJets492.length)game.colonelJets492.length=0;
+    }
+    for(let i=game.colonelJets492.length-1;i>=0;i--){
+      const a=game.colonelJets492[i];
+      a.life-=dt; a.x+=a.vx*dt; a.roll+=dt*8; a.drop-=dt;
+      a.trail.unshift({x:a.x,y:a.y}); if(a.trail.length>12)a.trail.pop();
+      if(a.drop<=0){
+        const t=nearest492(a.x,a.y,620);
+        const tx=t?clamp(t.x+rnd(-65,65),35,W-35):clamp(a.x+rnd(-40,40),35,W-35);
+        const ty=t?clamp(t.y+rnd(-65,65),35,H-35):clamp(a.y+rnd(-115,115),35,H-35);
+        blast492(tx,ty,118,72*(game.upgrades?.damage||1),GREEN);
+        a.drop=.16;
+      }
+      if(a.life<=0||a.x<-220||a.x>W+220){game.colonelJets492.splice(i,1);}
+    }
+    for(const b of game.colonelBlasts492||[])b.life-=dt;
+    game.colonelBlasts492=(game.colonelBlasts492||[]).filter(b=>b.life>0);
+  }
+  const updatePlayerPrev492=updatePlayer;
+  updatePlayer=function(dt){
+    if(game?.ults481?.colonel)game.ults481.colonel.wave=999;
+    const r=updatePlayerPrev492.apply(this,arguments);
+    updateJets492(dt);
+    return r;
+  };
+  const drawParticlesPrev492=drawParticles;
+  drawParticles=function(){
+    const savedAir=game&&game.air481?game.air481:null;
+    if(savedAir)game.air481=[]; // impede o modelo antigo/feio de ser desenhado.
+    drawParticlesPrev492.apply(this,arguments);
+    if(savedAir)game.air481=savedAir;
+    if(!game)return;
+    ctx.save();
+    for(const b of game.colonelBlasts492||[]){
+      const a=Math.max(0,b.life/b.max);
+      ctx.save();ctx.globalAlpha=a;ctx.globalCompositeOperation='lighter';
+      const g=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
+      g.addColorStop(0,'rgba(255,255,235,.95)');
+      g.addColorStop(.22,'rgba(202,255,122,.62)');
+      g.addColorStop(.52,'rgba(255,177,77,.34)');
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(202,255,122,.9)';ctx.lineWidth=5*a;ctx.beginPath();ctx.arc(b.x,b.y,b.r*(1.02-a*.15),0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+    }
+    for(const a of game.colonelJets492||[]){
+      ctx.save();
+      for(let i=a.trail.length-1;i>=0;i--){
+        const tr=a.trail[i],alpha=(1-i/a.trail.length)*.22;
+        ctx.globalAlpha=alpha;ctx.fillStyle='rgba(202,255,122,.75)';
+        ctx.beginPath();ctx.ellipse(tr.x,tr.y,38*(1-i/a.trail.length),5,0,0,Math.PI*2);ctx.fill();
+      }
+      ctx.globalAlpha=1;ctx.translate(a.x,a.y);ctx.scale(a.dir,1);
+      ctx.shadowBlur=30;ctx.shadowColor='rgba(202,255,122,.95)';
+      ctx.lineWidth=3;
+      // Jato especial: silhueta militar mais robusta, diferente do avião normal.
+      ctx.fillStyle='#101d13';ctx.strokeStyle=LIME;
+      ctx.beginPath();
+      ctx.moveTo(66,0);ctx.lineTo(24,-12);ctx.lineTo(-18,-28);ctx.lineTo(-8,-8);ctx.lineTo(-60,-9);ctx.lineTo(-42,0);ctx.lineTo(-60,9);ctx.lineTo(-8,8);ctx.lineTo(-18,28);ctx.lineTo(24,12);ctx.closePath();
+      ctx.fill();ctx.stroke();
+      ctx.fillStyle='rgba(234,255,214,.95)';ctx.beginPath();ctx.ellipse(24,0,10,5,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(255,245,185,.75)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-50,-16);ctx.lineTo(-95,-30);ctx.moveTo(-50,16);ctx.lineTo(-95,30);ctx.stroke();
+      ctx.fillStyle='rgba(255,120,45,.9)';ctx.beginPath();ctx.arc(-62,-4,4,0,Math.PI*2);ctx.arc(-62,4,4,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  };
+  console.log('Chrono Shards 4.9.2 — Coronel ultimate: aviões somem ao acabar, jatos refeitos e explosões maiores');
 })();
 </script>
 
