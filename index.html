@@ -11261,7 +11261,7 @@ function killKey37(e){
   function drawBombAndUltObjects(){if(!game)return;const simple=!!read().gfxLow;ctx.save();for(const b of game.bomberBombs||[]){ctx.save();ctx.translate(b.x,b.y);ctx.shadowBlur=simple?0:16;ctx.shadowColor=b.color;ctx.fillStyle=b.big?BOMB_LIGHT:b.color;ctx.strokeStyle='#2a1008';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,b.r,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();}for(const m of game.bomberMines||[]){ctx.save();ctx.globalAlpha=.75+.2*Math.sin(m.pulse);ctx.fillStyle=BOMB_DARK;ctx.strokeStyle=BOMB_LIGHT;ctx.lineWidth=2;ctx.beginPath();ctx.arc(m.x,m.y,m.r,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=BOMB_LIGHT;ctx.beginPath();ctx.arc(m.x,m.y,4,0,Math.PI*2);ctx.fill();ctx.restore();}for(const mt of game.bomberMortars||[]){ctx.save();ctx.translate(mt.x,mt.y);ctx.rotate(-.5);ctx.shadowBlur=simple?0:18;ctx.shadowColor=BOMB;ctx.fillStyle='#17110d';ctx.strokeStyle=BOMB;ctx.lineWidth=3;ctx.fillRect(-18,-10,36,20);ctx.strokeRect(-18,-10,36,20);ctx.fillStyle=BOMB_LIGHT;ctx.fillRect(0,-7,42,14);ctx.restore();}for(const f of game.awakFields480||[]){ctx.save();ctx.globalAlpha=simple?.22:.32+Math.sin(f.p||0)*.06;ctx.fillStyle=f.color||'#4ce0b3';ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=f.color||'#4ce0b3';ctx.lineWidth=2;ctx.stroke();ctx.restore();}for(const t of game.awakTurrets480||[]){ctx.save();ctx.translate(t.x,t.y);ctx.fillStyle='#07131a';ctx.strokeStyle='#8ff8ff';ctx.lineWidth=2;ctx.fillRect(-13,-13,26,26);ctx.strokeRect(-13,-13,26,26);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(25,0);ctx.stroke();ctx.restore();}for(const s of game.reaperSouls480||[]){ctx.save();ctx.shadowBlur=simple?0:18;ctx.shadowColor='#ff7b9c';ctx.fillStyle='#ff7b9c';ctx.beginPath();ctx.arc(s.x,s.y,10,0,Math.PI*2);ctx.fill();ctx.restore();}for(const f of game.awakFera480||[]){ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.a);ctx.globalCompositeOperation=simple?'source-over':'lighter';ctx.shadowBlur=simple?0:42;ctx.shadowColor='#6fdcff';const grad=ctx.createLinearGradient(-110,0,120,0);grad.addColorStop(0,'rgba(111,220,255,.18)');grad.addColorStop(.45,'rgba(255,209,102,.42)');grad.addColorStop(1,'rgba(255,255,255,.75)');ctx.fillStyle=grad;ctx.beginPath();ctx.ellipse(0,0,135,70+Math.sin(f.pulse)*8,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#6fdcff';ctx.lineWidth=4;ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(120,0);ctx.lineTo(65,-36);ctx.lineTo(76,0);ctx.lineTo(65,36);ctx.closePath();ctx.fill();ctx.restore();}ctx.restore();}
   const drawParticlesPrev480=drawParticles;drawParticles=function(){drawBombAndUltObjects();drawParticlesPrev480();};
   const drawPlayerPrev480=drawPlayer;drawPlayer=function(){if(game?.classKey==='bomber'){const p=game.player,a=angleTo(p,mouse);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);ctx.shadowBlur=18;ctx.shadowColor=BOMB;ctx.fillStyle='#362016';ctx.strokeStyle=BOMB;ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<6;i++){const ang=Math.PI/6+i*Math.PI*2/6;ctx.lineTo(Math.cos(ang)*(p.r+4),Math.sin(ang)*(p.r+4));}ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle=BOMB_LIGHT;ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1b0c05';ctx.fillRect(10,-8,25,16);ctx.strokeRect(10,-8,25,16);ctx.restore();if(game.bomberQCharging){const q=clamp(game.bomberQCharging.t/1.05,0,1),x=p.x+p.r+16,y=p.y-24;ctx.save();ctx.fillStyle='rgba(0,0,0,.58)';ctx.fillRect(x,y,7,48);ctx.fillStyle=q>=1?BOMB_LIGHT:BOMB;ctx.fillRect(x,y+48-48*q,7,48*q);ctx.strokeStyle='#fff2b0';ctx.strokeRect(x,y,7,48);ctx.restore();}if(typeof drawShieldSegmentsAround470==='function')drawShieldSegmentsAround470(p);return;}drawPlayerPrev480();};
-  function unlockAll(){let m=read();m.relicShards=Math.max(Number(m.relicShards||0),9999);m.chronoFragments=Math.max(Number(m.chronoFragments||0),999);m.unlockedMoonSlayer=true;m.moonMissionClaimed=true;m.awakeningKeys=Math.max(Number(m.awakeningKeys||0),99);m.awakenings463=m.awakenings463||{completed:{},active:null};m.awakenings463.completed=m.awakenings463.completed||{};m.awakeningUltimates=m.awakeningUltimates||{};for(const id of Object.keys(AWAKEN_480)){m.awakenings463.completed[id]=5;m.awakeningUltimates[id]=true;}const allBookIds=Array.from(new Set((BOOK_IDS_480||[]).concat(['chaser','strafer','tank','bomber','swarmer','sentinel','vomiter','riftTick','glassMantis','phaseLurker','leaper','medic','medicDrone','sniperDrone','splitter','pukeling','elite','dreadbus','nullHerald','archon','titan','oracle','oracleBloom','eclipseInquisitor','glacialBeast','lostEmperor'])));m.bestiaryKills=m.bestiaryKills||{};m.bestiaryClaimed461=m.bestiaryClaimed461||{};m.bestiaryClaimed460=m.bestiaryClaimed460||{};m.bestiaryClaimed455=m.bestiaryClaimed455||{};for(const id of allBookIds){m.bestiaryKills[id]=Math.max(Number(m.bestiaryKills[id]||0),999);m.bestiaryClaimed461[id]=true;m.bestiaryClaimed460[id]=true;m.bestiaryClaimed455[id]=true;}m.unlockedRelics=Array.from(new Set((RELICS||[]).map(r=>r.id)));write(m);saveUnlocks(['engineer','mage','ronin','alchemist','reaper','colonel','bomber','archer','chronoHero','shadowChild','moonSlayer']);localStorage.setItem(SECRET_KEY,JSON.stringify({lostEmperorDefeated:true}));}
+  function unlockAll(){let m=read();m.relicShards=Math.max(Number(m.relicShards||0),9999);m.chronoFragments=Math.max(Number(m.chronoFragments||0),999);m.unlockedMoonSlayer=true;m.moonMissionClaimed=true;m.awakeningKeys=Math.max(Number(m.awakeningKeys||0),99);m.awakenings463=m.awakenings463||{completed:{},active:null};m.awakenings463.completed=m.awakenings463.completed||{};m.awakeningUltimates=m.awakeningUltimates||{};for(const id of Object.keys(AWAKEN_480)){m.awakenings463.completed[id]=5;m.awakeningUltimates[id]=true;}const allBookIds=Array.from(new Set((BOOK_IDS_480||[]).concat(['chaser','strafer','tank','bomber','swarmer','sentinel','vomiter','riftTick','glassMantis','phaseLurker','leaper','medic','medicDrone','sniperDrone','splitter','pukeling','elite','dreadbus','nullHerald','archon','titan','oracle','oracleBloom','eclipseInquisitor','glacialBeast','lostEmperor'])));m.bestiaryKills=m.bestiaryKills||{};m.bestiaryClaimed461=m.bestiaryClaimed461||{};m.bestiaryClaimed460=m.bestiaryClaimed460||{};m.bestiaryClaimed455=m.bestiaryClaimed455||{};for(const id of allBookIds){m.bestiaryKills[id]=Math.max(Number(m.bestiaryKills[id]||0),999);m.bestiaryClaimed461[id]=true;m.bestiaryClaimed460[id]=true;m.bestiaryClaimed455[id]=true;}m.unlockedRelics=Array.from(new Set((RELICS||[]).map(r=>r.id)));m.riftModeUnlocked525=true;m.riftModeUnlocked=true;m.allUnlocked=true;m.allInUnlocked=true;m.stats=m.stats||{};m.stats.maxWave=Math.max(Number(m.stats.maxWave||0),16);write(m);saveUnlocks(['engineer','mage','ronin','alchemist','reaper','colonel','bomber','archer','chronoHero','shadowChild','moonSlayer']);localStorage.setItem(SECRET_KEY,JSON.stringify({lostEmperorDefeated:true}));}
   window.addEventListener('click',e=>{const btn=e.target.closest&&e.target.closest('#redeem461,#redeem37,#redeem27,#redeemBtn');if(!btn)return;const input=document.getElementById('codeInput461')||document.getElementById('code37')||document.getElementById('codeInput27')||document.getElementById('codeInput');const raw=(input?.value||'').trim().toLowerCase();if(raw==='allin'){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();unlockAll();const msg=document.getElementById('codeMsg461')||document.getElementById('codeMsg37')||document.getElementById('codeMsg27')||document.getElementById('codeMsg');if(msg){msg.style.color='#86ffb0';msg.textContent='Tudo liberado.';}burst('TUDO LIBERADO','#ffd166');}},true);
   
   const routeMo480=new MutationObserver(()=>{const play=document.getElementById('play461');if(play&&!play.dataset.aw480){play.dataset.aw480='1';play.onclick=openClassMenu461;}const hubMis=document.getElementById('hubMissions461');if(hubMis&&!hubMis.dataset.aw480){hubMis.dataset.aw480='1';hubMis.onclick=openMissions461;}const classMis=document.getElementById('classMissions461');if(classMis&&!classMis.dataset.aw480){classMis.dataset.aw480='1';classMis.onclick=openMissions461;}const classRel=document.getElementById('classRelics461');if(classRel&&!classRel.dataset.aw480&&typeof openRelics461==='function'){classRel.dataset.aw480='1';classRel.onclick=openRelics461;}const classCfg=document.getElementById('classCfg461');if(classCfg&&!classCfg.dataset.aw480&&typeof openSettings461==='function'){classCfg.dataset.aw480='1';classCfg.onclick=openSettings461;}});
@@ -15504,6 +15504,208 @@ function killKey37(e){
     try{ if(typeof resetGame!=='undefined') resetGame=window.resetGame; }catch{}
   }
 
+  console.log(PATCH);
+})();
+</script>
+
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.2.7 — ALQUIMISTA POÇAS + ALLIN RIFT FIX
+   - Blinda poisonCloud/ácido/fogo/fields contra limpezas antigas do mapa das fissuras
+   - Renderiza poças do Alquimista por cima do mapa galáctico no Modo das Fissuras
+   - Garante que Allin desbloqueie o Modo das Fissuras mesmo se o listener antigo capturar o clique
+   ──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoRift527AlchemistPuddlesAllin)return;
+  window.__chronoRift527AlchemistPuddlesAllin=true;
+  const PATCH='Chrono Shards 5.2.7 — poças do Alquimista preservadas e Allin libera Rift';
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  let hid=0;
+  const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const isRift=()=>!!(window.game&&(game.riftMode50||game.mode==='rift'||game.rift50));
+  function typeOf(h){return String(h?.type||h?.kind||'').toLowerCase();}
+  function isDuneHazard(h){const t=typeOf(h);return t.includes('dune')||t.includes('sandstorm')||t.includes('sandonly')||h?._conventionalWall504;}
+  function isCombatHazard(h){
+    if(!h||typeof h!=='object'||isDuneHazard(h))return false;
+    const t=typeOf(h);
+    return t==='poisoncloud'||t.includes('poison')||t.includes('acid')||t.includes('toxic')||t.includes('fire')||t.includes('flame')||t.includes('pool')||t.includes('field')||t.includes('zone')||t.includes('void')||t.includes('chrono')||t.includes('spark')||t.includes('laser')||t.includes('storm')||t.includes('arc');
+  }
+  function mark(h){
+    if(!h||typeof h!=='object')return '';
+    if(!h._riftHazard527){
+      try{Object.defineProperty(h,'_riftHazard527',{value:'hz527_'+(++hid),enumerable:false,writable:true});}
+      catch{h._riftHazard527='hz527_'+(++hid);}
+    }
+    return h._riftHazard527;
+  }
+  function snapshotHazards(){
+    if(!isRift()||!Array.isArray(game.hazards))return [];
+    return game.hazards.filter(isCombatHazard).map(h=>{mark(h);return h;});
+  }
+  function restoreHazards(saved){
+    if(!isRift()||!Array.isArray(saved)||!saved.length)return;
+    if(!Array.isArray(game.hazards))game.hazards=[];
+    game.hazards=game.hazards.filter(h=>h&&!isDuneHazard(h));
+    const ids=new Set(game.hazards.map(h=>mark(h)));
+    for(const h of saved){
+      if(!h||n(h.life,1)<=0||isDuneHazard(h))continue;
+      const id=mark(h);
+      if(!ids.has(id)){game.hazards.push(h);ids.add(id);}
+    }
+  }
+  function protect(fnName){
+    const prev=window[fnName]||globalThis[fnName];
+    if(typeof prev!=='function')return;
+    window[fnName]=function(){
+      if(!isRift()||!game.running)return prev.apply(this,arguments);
+      const saved=snapshotHazards();
+      const out=prev.apply(this,arguments);
+      restoreHazards(saved);
+      return out;
+    };
+    try{if(typeof globalThis[fnName]!=='undefined')globalThis[fnName]=window[fnName];}catch{}
+    try{if(typeof eval(fnName)!=='undefined')eval(fnName+'=window["'+fnName+'"]');}catch{}
+  }
+  // Esses eram os pontos onde patches antigos ainda podiam zerar hazards durante uma run.
+  ['updateEnemies','updateFX','drawGrid','drawHazards','render'].forEach(protect);
+
+  function drawPoisonPuddle527(x,y,r,col,life=1,maxLife=1,pulse=0){
+    if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(r))return;
+    const k=Math.max(.18,Math.min(1,n(life,1)/Math.max(.001,n(maxLife,life||1))));
+    const rr=r+Math.sin((game.time||0)*3+pulse)*4;
+    ctx.save();
+    ctx.globalCompositeOperation='lighter';
+    ctx.globalAlpha=.42*k;
+    const g=ctx.createRadialGradient(x,y,6,x,y,rr);
+    g.addColorStop(0,(col||'#b6ff7a')+'99');
+    g.addColorStop(.42,(col||'#b6ff7a')+'55');
+    g.addColorStop(1,(col||'#b6ff7a')+'00');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rr,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=.75*k;ctx.strokeStyle=col||'#b6ff7a';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(x,y,rr*.92,0,Math.PI*2);ctx.stroke();
+    ctx.globalAlpha=.35*k;ctx.fillStyle=col||'#b6ff7a';
+    for(let i=0;i<4;i++){const a=(game.time||0)*1.7+i*Math.PI/2+pulse;ctx.beginPath();ctx.arc(x+Math.cos(a)*rr*.34,y+Math.sin(a)*rr*.28,5+Math.sin(a*1.9)*2,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  }
+  const prevDraw527=window.drawHazards||globalThis.drawHazards;
+  if(typeof prevDraw527==='function'){
+    window.drawHazards=function(){
+      const saved=snapshotHazards();
+      const out=prevDraw527.apply(this,arguments);
+      if(isRift()){
+        restoreHazards(saved);
+        for(const h of game.hazards||[]){
+          const t=typeOf(h);
+          if(t==='poisoncloud'||t.includes('poison')||t.includes('acid')||t.includes('toxic')){
+            drawPoisonPuddle527(h.x,h.y,n(h.r,36),h.color||h.col||'#b6ff7a',h.life,h.maxLife||h.life||1,h.pulse||0);
+          }
+        }
+        for(const f of game.alchemyFields481||[])drawPoisonPuddle527(f.x,f.y,n(f.r,72),f.col||f.color||'#4ce0b3',f.life,2.5,f.p||0);
+        for(const f of game.awakFields480||[])drawPoisonPuddle527(f.x,f.y,n(f.r,78),f.col||f.color||'#4ce0b3',f.life,2.5,f.p||0);
+      }
+      return out;
+    };
+    try{if(typeof drawHazards!=='undefined')drawHazards=window.drawHazards;}catch{}
+  }
+
+  // Se alguma rota de código antigo processar Allin e parar a propagação do clique, o próprio unlockAll
+  // já foi ajustado no arquivo. Este reforço cobre Enter/campos antigos e refresca o card bloqueado.
+  function unlockRiftByAllin(){
+    let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{};}catch{m={};}
+    m.riftModeUnlocked525=true;m.riftModeUnlocked=true;m.allUnlocked=true;m.allInUnlocked=true;m.stats=m.stats||{};m.stats.maxWave=Math.max(Number(m.stats.maxWave||0),16);
+    try{localStorage.setItem(SAVE,JSON.stringify(m));}catch{}
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter')return;
+    const input=document.getElementById('codeInput461')||document.getElementById('code37')||document.getElementById('codeInput27')||document.getElementById('codeInput');
+    if((input?.value||'').trim().toLowerCase()==='allin')setTimeout(unlockRiftByAllin,0);
+  },true);
+  document.addEventListener('input',e=>{if((e.target?.value||'').trim().toLowerCase()==='allin')setTimeout(unlockRiftByAllin,0);},true);
+
+  console.log(PATCH);
+})();
+</script>
+
+
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.2.8 — POÇAS DO ALQUIMISTA COMO PADRÃO GLOBAL
+   - Usa no Modo Normal o mesmo visual químico/venenoso aplicado nas Fissuras
+   - Mantém o comportamento da 5.2.7 intacto no Modo das Fissuras
+   ──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoRift528AlchemistPuddleGlobal)return;
+  window.__chronoRift528AlchemistPuddleGlobal=true;
+  const PATCH='Chrono Shards 5.2.8 — poças do Alquimista viram padrão global';
+  const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const isRift=()=>!!(window.game&&(game.riftMode50||game.mode==='rift'||game.rift50));
+  function typeOf(h){return String(h?.type||h?.kind||'').toLowerCase();}
+  function isAlchemyHazard(h){
+    if(!h||typeof h!=='object')return false;
+    const t=typeOf(h);
+    return t==='poisoncloud'||t.includes('poison')||t.includes('acid')||t.includes('toxic');
+  }
+  function drawAlchemyPuddle528(x,y,r,col,life=1,maxLife=1,pulse=0){
+    if(typeof ctx==='undefined'||!ctx||typeof game==='undefined'||!game)return;
+    if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(r))return;
+    const time=n(game.time,0);
+    const k=Math.max(.18,Math.min(1,n(life,1)/Math.max(.001,n(maxLife,life||1))));
+    const base=col||'#b6ff7a';
+    const rr=r+Math.sin(time*3+pulse)*4;
+    ctx.save();
+    ctx.globalCompositeOperation='lighter';
+    ctx.globalAlpha=.42*k;
+    const g=ctx.createRadialGradient(x,y,6,x,y,rr);
+    g.addColorStop(0,base+'99');
+    g.addColorStop(.42,base+'55');
+    g.addColorStop(1,base+'00');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.arc(x,y,rr,0,Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha=.75*k;
+    ctx.strokeStyle=base;
+    ctx.lineWidth=2.2;
+    ctx.beginPath();
+    ctx.arc(x,y,rr*.92,0,Math.PI*2);
+    ctx.stroke();
+    ctx.globalAlpha=.35*k;
+    ctx.fillStyle=base;
+    for(let i=0;i<4;i++){
+      const a=time*1.7+i*Math.PI/2+pulse;
+      ctx.beginPath();
+      ctx.arc(x+Math.cos(a)*rr*.34,y+Math.sin(a)*rr*.28,5+Math.sin(a*1.9)*2,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawGlobalAlchemistPuddles(){
+    if(typeof game==='undefined'||!game)return;
+    // No Modo das Fissuras a 5.2.7 já renderiza esse mesmo efeito por cima do mapa galáctico.
+    // Aqui aplicamos o mesmo padrão ao Modo Normal, sem duplicar o brilho no Rift.
+    if(isRift())return;
+    for(const h of game.hazards||[]){
+      if(!isAlchemyHazard(h))continue;
+      drawAlchemyPuddle528(h.x,h.y,n(h.r,36),h.color||h.col||'#b6ff7a',h.life,h.maxLife||h.life||1,h.pulse||0);
+    }
+    for(const f of game.alchemyFields481||[]){
+      drawAlchemyPuddle528(f.x,f.y,n(f.r,72),f.col||f.color||'#4ce0b3',f.life,2.5,f.p||0);
+    }
+    for(const f of game.awakFields480||[]){
+      drawAlchemyPuddle528(f.x,f.y,n(f.r,78),f.col||f.color||'#4ce0b3',f.life,2.5,f.p||0);
+    }
+  }
+  const prevDraw=window.drawHazards||globalThis.drawHazards;
+  if(typeof prevDraw==='function'){
+    window.drawHazards=function(){
+      const out=prevDraw.apply(this,arguments);
+      drawGlobalAlchemistPuddles();
+      return out;
+    };
+    try{if(typeof globalThis.drawHazards!=='undefined')globalThis.drawHazards=window.drawHazards;}catch{}
+    try{if(typeof drawHazards!=='undefined')drawHazards=window.drawHazards;}catch{}
+  }
   console.log(PATCH);
 })();
 </script>
