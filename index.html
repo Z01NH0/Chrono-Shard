@@ -14503,7 +14503,14 @@ function killKey37(e){
       game.mapDecor={riftGalaxy504:true,theme:{accent:'#7ddcff'},obstacles:[],pads:[],lanes:[]};
     }
     if(Array.isArray(game.hazards)){
-      game.hazards=game.hazards.filter(h=>h&&h.riftOnly);
+      // 5.2.6: não limpar hazards de combate no Modo das Fissuras.
+      // O filtro antigo apagava poisonCloud/poças/áreas do Alquimista assim que nasciam.
+      game.hazards=game.hazards.filter(h=>{
+        if(!h) return false;
+        if(h.riftOnly) return true;
+        const t=String(h.type||h.kind||'').toLowerCase();
+        return !(t.includes('dune')||t.includes('sandstorm')||t.includes('sandonly'));
+      });
     }
   }
 
@@ -15273,5 +15280,232 @@ function killKey37(e){
 })();
 </script>
 
+
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.2.6 — ALQUIMISTA/EXTERMINADOR RIFT FIX
+   - Preserva poças/nuvens de veneno no Modo das Fissuras
+   - Faz veneno/frascos/ult do Alquimista causarem impacto real nas fissuras
+   - Limpa explosão/QTE do Exterminador se ficar presa visualmente
+   - Reforça uma passada universal para habilidades especiais no modo fissura
+   ──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoRift526AlchemistMoonFix) return;
+  window.__chronoRift526AlchemistMoonFix=true;
+  const PATCH='Chrono Shards 5.2.6 — Alquimista e Exterminador corrigidos no Modo das Fissuras';
+  const num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const isRift=()=>!!(window.game&&(game.riftMode50||game.mode==='rift'||game.rift50));
+  const colors={red:'#ff405f',blue:'#61dafb',black:'#a06bff',gold:'#ffd166'};
+  let uid=0;
+
+  function rifts(){
+    if(!isRift()||!game.rift50) return [];
+    const arr=Array.isArray(game.rift50.fissures)?game.rift50.fissures:[];
+    for(const f of arr) if(f&&!f._rid526) f._rid526='rf526_'+(++uid);
+    return arr;
+  }
+  function ring(x,y,col,r=50,w=2){try{ if(typeof addRing==='function') addRing(x,y,col,r,w); }catch{}}
+  function part(x,y,col,n=4,life=.35){try{ if(typeof addParticles==='function') addParticles(x,y,col,n,life); }catch{}}
+  function closeDeadRifts(){
+    if(!isRift()||!game.rift50) return;
+    const rf=game.rift50, arr=rf.fissures||[];
+    for(let i=arr.length-1;i>=0;i--){
+      const f=arr[i];
+      if(f&&num(f.hp,1)<=0){
+        rf.closed=num(rf.closed,0)+1;
+        rf.sparksRun=num(rf.sparksRun,0)+(f.type==='gold'?5:f.type==='black'?4:2);
+        game.gold=num(game.gold,0)+(f.type==='gold'?45:25);
+        const col=colors[f.type]||'#ffd166';
+        ring(f.x,f.y,col,150,7); part(f.x,f.y,col,38,1.1);
+        try{ if(typeof addFloatingText==='function') addFloatingText(f.x,f.y-20,'FISSURA SELADA','#ffd166',20); }catch{}
+        arr.splice(i,1);
+      }
+    }
+  }
+  function distSeg(px,py,x1,y1,x2,y2){
+    const vx=x2-x1,vy=y2-y1,wx=px-x1,wy=py-y1,c1=vx*wx+vy*wy;
+    if(c1<=0) return Math.hypot(px-x1,py-y1);
+    const c2=vx*vx+vy*vy||1;
+    if(c2<=c1) return Math.hypot(px-x2,py-y2);
+    const t=c1/c2;
+    return Math.hypot(px-(x1+t*vx),py-(y1+t*vy));
+  }
+  function hitCircle(x,y,r,dmg,col='#ffd166',src=null,repeat=.12){
+    if(!isRift()||!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(r)||!Number.isFinite(dmg)||dmg<=0) return false;
+    let any=false,now=num(game.time,0);
+    for(const f of rifts()){
+      if(!f||num(f.hp,0)<=0) continue;
+      if(Math.hypot(x-f.x,y-f.y)>r+num(f.r,26)) continue;
+      if(src){
+        src._riftHitCd526=src._riftHitCd526||{};
+        const until=src._riftHitCd526[f._rid526]||0;
+        if(now<until) continue;
+        src._riftHitCd526[f._rid526]=now+repeat;
+      }
+      f.hp-=dmg;
+      f._flash526=.18;
+      const c=colors[f.type]||col;
+      part(f.x+(Math.random()-.5)*18,f.y+(Math.random()-.5)*18,c,5,.45);
+      if(Math.random()<.22) ring(f.x,f.y,c,num(f.r,26)+18,2);
+      any=true;
+    }
+    if(any) closeDeadRifts();
+    return any;
+  }
+  function hitSegment(x1,y1,x2,y2,w,dmg,col='#ffd166',src=null,repeat=.12){
+    if(!isRift()||!Number.isFinite(x1)||!Number.isFinite(y1)||!Number.isFinite(x2)||!Number.isFinite(y2)||!Number.isFinite(dmg)||dmg<=0) return false;
+    let any=false,now=num(game.time,0);
+    for(const f of rifts()){
+      if(!f||num(f.hp,0)<=0) continue;
+      if(distSeg(f.x,f.y,x1,y1,x2,y2)>num(f.r,26)+num(w,16)) continue;
+      if(src){
+        src._riftHitCd526=src._riftHitCd526||{};
+        const until=src._riftHitCd526[f._rid526]||0;
+        if(now<until) continue;
+        src._riftHitCd526[f._rid526]=now+repeat;
+      }
+      f.hp-=dmg;
+      f._flash526=.18;
+      const c=colors[f.type]||col;
+      part(f.x,f.y,c,6,.45); ring(f.x,f.y,c,num(f.r,26)+20,2);
+      any=true;
+    }
+    if(any) closeDeadRifts();
+    return any;
+  }
+
+  // Reforço direto no update de hazards: veneno fica vivo e também acerta fissuras.
+  const prevHazards526=window.updateHazards||globalThis.updateHazards;
+  if(typeof prevHazards526==='function'){
+    window.updateHazards=function(dt){
+      const out=prevHazards526.apply(this,arguments);
+      if(isRift()&&game.running){
+        // Mantém apenas limpeza de hazards de Duna; preserva veneno/poças/fogo do jogador.
+        if(Array.isArray(game.hazards)){
+          game.hazards=game.hazards.filter(h=>{
+            if(!h) return false;
+            const t=String(h.type||h.kind||'').toLowerCase();
+            return !(t.includes('dune')||t.includes('sandstorm')||t.includes('sandonly'));
+          });
+        }
+        for(const h of game.hazards||[]){
+          const t=String(h.type||h.kind||'').toLowerCase();
+          if(t==='poisoncloud'||t.includes('poison')||t.includes('acid')||t.includes('toxic')){
+            hitCircle(h.x,h.y,num(h.r,36),8*num(dt,.016)*(game.upgrades?.damage||1),'#b6ff7a',h,.20);
+          }else if(t.includes('fire')||t.includes('flame')||t.includes('pool')||t.includes('field')||t.includes('zone')){
+            hitCircle(h.x,h.y,num(h.r,42),7*num(dt,.016)*(game.upgrades?.damage||1),h.color||'#ff8a35',h,.22);
+          }
+        }
+      }
+      return out;
+    };
+    try{ if(typeof updateHazards!=='undefined') updateHazards=window.updateHazards; }catch{}
+  }
+
+  // Garante que frascos do Alquimista que caem perto de fissuras tenham impacto inicial.
+  const prevFX526=window.updateFX||globalThis.updateFX;
+  if(typeof prevFX526==='function'){
+    window.updateFX=function(dt){
+      const out=prevFX526.apply(this,arguments);
+      try{ if(isRift()&&game.running) processSpecialRiftHits(dt); }catch(err){console.warn('rift 526 special hitbox',err)}
+      return out;
+    };
+    try{ if(typeof updateFX!=='undefined') updateFX=window.updateFX; }catch{}
+  }
+
+  function processCircleArray(arrName,dmg,r=50,repeat=.18,col='#ffd166',scaleByDt=false,dt=.016){
+    const arr=game[arrName]; if(!Array.isArray(arr)) return;
+    for(const o of arr){
+      if(!o||!Number.isFinite(o.x)||!Number.isFinite(o.y)) continue;
+      const rr=Math.max(num(o.r,0),num(o.radius,0),num(o.areaR,0),r);
+      let dd=num(o.damage,NaN); if(!Number.isFinite(dd)) dd=num(o.dmg,NaN); if(!Number.isFinite(dd)) dd=dmg;
+      if(scaleByDt) dd*=num(dt,.016);
+      hitCircle(o.x,o.y,rr,dd,o.color||o.col||col,o,repeat);
+    }
+  }
+  function processSegmentArray(arrName,dmg,w=18,repeat=.16,col='#fff'){
+    const arr=game[arrName]; if(!Array.isArray(arr)) return;
+    for(const o of arr){
+      if(!o) continue;
+      if(Number.isFinite(o.x1)&&Number.isFinite(o.y1)&&Number.isFinite(o.x2)&&Number.isFinite(o.y2)){
+        hitSegment(o.x1,o.y1,o.x2,o.y2,num(o.width,o.w||w),num(o.damage,o.dmg||dmg),o.color||o.col||col,o,repeat);
+      }else if(Number.isFinite(o.x)&&Number.isFinite(o.y)&&Number.isFinite(o.a)){
+        const len=num(o.length,o.len||120),ww=num(o.width,o.w||w),nx=-Math.sin(o.a),ny=Math.cos(o.a);
+        hitSegment(o.x+nx*len*.5,o.y+ny*len*.5,o.x-nx*len*.5,o.y-ny*len*.5,ww,num(o.damage,o.dmg||dmg),o.color||o.col||col,o,repeat);
+      }
+    }
+  }
+  function processSpecialRiftHits(dt){
+    if(!isRift()||!game.running) return;
+    // Alquimista: básico ácido, E/Q frascos, ultimate e poças químicas.
+    processCircleArray('alchemyBottles',18,42,.999,'#b6ff7a',false,dt);
+    processCircleArray('alchemyPotions485',18,44,.999,'#4ce0b3',false,dt);
+    processCircleArray('alchemyFields481',10,70,.23,'#4ce0b3',true,dt);
+    processCircleArray('awakFields480',12,80,.25,'#4ce0b3',true,dt);
+    processCircleArray('fireFields',8,70,.24,'#ff8a35',true,dt);
+    // Exterminador / outros cortes em arrays especiais.
+    processSegmentArray('moonCutsO',26,24,.16,'#eaf6ff');
+    processCircleArray('moonImpactsO',24,100,.16,'#eaf6ff',false,dt);
+    processSegmentArray('darkFissures',40,52,.20,'#ff1f3d');
+    processCircleArray('darkArrows',28,42,.20,'#ff1f3d',false,dt);
+    processCircleArray('roninParrySlashes',20,48,.18,'#ffe38c',false,dt);
+    processCircleArray('roninDashSlashes',24,55,.18,'#ffd166',false,dt);
+    processCircleArray('reaperSoulSlashes',26,58,.20,'#ff7b9c',false,dt);
+    processCircleArray('meteors',36,105,.22,'#c06cff',false,dt);
+    processCircleArray('awakFera480',42,105,.18,'#61dafb',false,dt);
+    processCircleArray('fera481',42,105,.18,'#61dafb',false,dt);
+  }
+
+  // Fail-safe: se o efeito de explosão/QTE do Exterminador ficar preso no Rift, ele expira fora do updatePlayer também.
+  function cleanupMoonStuckFX(dt){
+    if(!isRift()||!game) return;
+    const now=num(game.time,0);
+    if(Array.isArray(game.moonFxO)){
+      for(let i=game.moonFxO.length-1;i>=0;i--){
+        const f=game.moonFxO[i]; if(!f){game.moonFxO.splice(i,1);continue;}
+        if(f._last526!==now){
+          f._age526=num(f._age526,0)+num(dt,.016);
+          // Não depende só de life, porque alguns FX antigos entravam sem decair quando o fluxo pausava.
+          if(f.kind==='moonBoom'&&f._age526>1.25) f.life=0;
+          if(f._age526>3.2) f.life=0;
+          f._last526=now;
+        }
+        if(num(f.life,0)<=0) game.moonFxO.splice(i,1);
+      }
+    }
+    if(Array.isArray(game.moonImpactsO)){
+      for(let i=game.moonImpactsO.length-1;i>=0;i--){
+        const m=game.moonImpactsO[i]; if(!m){game.moonImpactsO.splice(i,1);continue;}
+        m._age526=num(m._age526,0)+num(dt,.016);
+        if(m._age526>2.2 || (m.done&&num(m.t,0)<-.7)) game.moonImpactsO.splice(i,1);
+      }
+    }
+  }
+  const prevRender526=window.render||globalThis.render;
+  if(typeof prevRender526==='function'){
+    window.render=function(){
+      if(isRift()) cleanupMoonStuckFX(1/60);
+      return prevRender526.apply(this,arguments);
+    };
+    try{ if(typeof render!=='undefined') render=window.render; }catch{}
+  }
+
+  // Pequena auditoria passiva para evitar arrays infinitos de efeitos em qualquer classe dentro do Rift.
+  const prevReset526=window.resetGame||globalThis.resetGame;
+  if(typeof prevReset526==='function'){
+    window.resetGame=function(classKey){
+      const out=prevReset526.apply(this,arguments);
+      if(game){
+        for(const k of ['moonFxO','moonImpactsO','alchemyBottles','alchemyPotions485']) if(Array.isArray(game[k])) game[k].length=0;
+      }
+      return out;
+    };
+    try{ if(typeof resetGame!=='undefined') resetGame=window.resetGame; }catch{}
+  }
+
+  console.log(PATCH);
+})();
+</script>
 </body>
 </html>
