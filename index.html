@@ -17,7 +17,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ra
 canvas#game{
   width:min(98vw,1320px);height:auto;aspect-ratio:1360/780;
   border-radius:16px;border:1px solid rgba(120,200,255,0.15);
-  background:transparent;
+  background:transpaArent;
   box-shadow:0 0 80px rgba(80,140,255,0.12),inset 0 0 40px rgba(0,0,0,0.6);
   position:relative;z-index:2;cursor:none
 }
@@ -7325,7 +7325,7 @@ requestAnimationFrame(loop);
     const m=meta();
     const shards=Array.from({length:34},()=>`<i style="left:${rand(2,96).toFixed(1)}%;top:${rand(4,92).toFixed(1)}%;--x:${rand(-70,70).toFixed(0)}px;--y:${rand(-55,55).toFixed(0)}px;--d:${rand(2.4,5.6).toFixed(2)}s;animation-delay:${rand(-4,0).toFixed(2)}s"></i>`).join('');
     overlayCard.innerHTML=`<div class="clean-start27"><div class="floating-shards27">${shards}</div><div class="clean-layout27"><div><div class="clean-logo27">CHRONO<br>SHARDS</div><p class="clean-sub27">Fragmentos temporais eclodiram e orbitam o cosmos. Compre personagens, colete relíquias e sobreviva a ondas cada vez mais absurdas.</p><div class="clean-tutorial27"><h3>TUTORIAL RÁPIDO</h3><p><b>WASD</b> move • <b>Mouse</b> mira • <b>Clique</b> atira • <b>Shift</b> dash • <b>E/Q/R</b> habilidades • <b>X</b> ultimate quando existir. Use paredes como cobertura.</p></div></div><div class="clean-side27"><div class="clean-stat27"><small>HIGH SCORE</small><b>${Number(m.highScore||0).toLocaleString()}</b></div><div class="clean-stat27"><small>RELÍQUIAS</small><b>${relics()}</b></div><div class="clean-stat27"><small>VERSÃO</small><b>3.1</b></div><div class="clean-actions27"><button class="main-btn" id="play27">JOGAR</button><button class="main-btn" id="relics27" style="background:linear-gradient(135deg,#ffd166,#ff9bd2)">RELÍQUIAS</button></div></div></div></div>`;
-    document.getElementById('play27').onclick=openClassMenu;document.getElementById('codes27').onclick=openCodesMenu27;document.getElementById('relics27').onclick=openRelicsMenu27;
+    const play27=document.getElementById('play27'); if(play27) play27.onclick=openClassMenu; const codes27=document.getElementById('codes27'); if(codes27) codes27.onclick=openCodesMenu27; const relics27=document.getElementById('relics27'); if(relics27) relics27.onclick=openRelicsMenu27;
   };
 
   function openCodesMenu27(){
@@ -9617,7 +9617,7 @@ function killKey37(e){
   function routeBestiary(){ if(window.__openBestiaryLatest) window.__openBestiaryLatest(); else if(window.openBestiaryI) window.openBestiaryI(); }
   const oldHubClick=HTMLElement.prototype.click;
   document.addEventListener('click',e=>{
-    const b=e.target.closest&&e.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');
+    const b=e.target.closest&&e.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG');
     if(b){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();routeBestiary();}
   },true);
   const mo=new MutationObserver(()=>{
@@ -9852,7 +9852,7 @@ function killKey37(e){
   function openBookDetailO(id){const e=byIdO(id);if(!e)return;stopBookAnimO();overlay.classList.remove('hidden');overlayCard.className='card bestiaryO';overlayCard.innerHTML=`<h1>${escO(e.name)}</h1><p class="bookIntroO">Registro desbloqueado do Bestiário Chrono.</p><div class="bookDetailO"><div class="bookModelO"><canvas id="bookCanvasO" width="280" height="280"></canvas><div style="margin-top:10px;color:#9bedff;font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.13em">MODELO 360°</div></div><div><div class="bookStatsO"><div class="bookStatO"><small>HP BASE</small><b>${escO(e.hp)}</b></div><div class="bookStatO"><small>VELOCIDADE</small><b>${escO(e.spd)}</b></div><div class="bookStatO"><small>DANO</small><b>${escO(e.dmg)}</b></div><div class="bookStatO"><small>ABATES</small><b>${killsO(e.id)}</b></div></div><div class="bookTextO"><h4>PADRÃO DE ATAQUE</h4>${escO(e.atk)}</div></div></div><div class="bookTextO"><h4>ORIGEM E COMPORTAMENTO</h4>${escO(e.lore)}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="bookBackO">← Voltar</button></div>`;document.getElementById('bookBackO').onclick=openBestiaryO;const canvas=document.getElementById('bookCanvasO'),cx=canvas.getContext('2d');let t=0;function loop(){t+=.025;drawModelO(cx,e,t);bookAnimO=requestAnimationFrame(loop)}loop();}
   function openBestiaryO(){stopBookAnimO();const groups=['Comuns','Elites','Bosses','Boss Secreto'];overlay.classList.remove('hidden');overlayCard.className='card bestiaryO';overlayCard.innerHTML=`<h1>BESTIÁRIO</h1><p class="bookIntroO">Catálogo organizado por força. Monstros comuns e elites liberam com 10 abates, bosses com 2 e o Emperador Perdido com 1.</p><div class="bookWrapO">${groups.map(g=>`<div class="bookSectionO"><h3>${g.toUpperCase()}</h3><div class="bookGridO">${enemyBookO.filter(e=>e.g===g).map(e=>{const k=killsO(e.id),need=e.g==='Bosses'?2:e.g==='Boss Secreto'?1:10,un=k>=need;return `<button class="bookCardO ${un?'':'locked'} ${e.secret?'bookSecretO':''}" data-book-o="${e.id}"><div class="bookEmojiO">${un?e.e:'?'}</div><strong>${un?escO(e.name):'Registro bloqueado'}</strong><span>${un?escO(e.g):'Derrote mais para revelar.'}</span>${un?`<span class="bookKillsO">${k} abates</span>`:`<div class="bookProgressO"><i style="width:${Math.min(100,k/need*100)}%"></i></div><span class="bookKillsO">${k}/${need}</span>`}</button>`}).join('')}</div></div>`).join('')}</div><div style="display:flex;justify-content:center;margin-top:18px"><button class="main-btn" id="bookHubBackO">← Voltar</button></div>`;document.getElementById('bookHubBackO').onclick=()=>{if(window.openHubMenu37)openHubMenu37();else openStartMenu?.()};overlayCard.querySelectorAll('[data-book-o]').forEach(b=>{const id=b.dataset.bookO,e=byIdO(id),k=killsO(id),need=e.g==='Bosses'?2:e.g==='Boss Secreto'?1:10;if(k>=need)b.onclick=()=>openBookDetailO(id);});}
   window.__openBestiaryLatest=openBestiaryO;window.openBestiary37=openBestiaryO;window.openBestiary38=openBestiaryO;window.openBestiaryG=openBestiaryO;window.openBestiaryI=openBestiaryO;
-  function routeBookO(ev){const b=ev.target.closest&&ev.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiaryO();}}
+  function routeBookO(ev){const b=ev.target.closest&&ev.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiaryO();}}
   /* Bestiário antigo O desativado: a versão 4.5.4 é a única rota ativa. */
 
   // ── Moon Slayer stable system ─────────────────────────────────
@@ -10629,7 +10629,7 @@ function killKey37(e){
 
   window.__openBestiaryLatest=openBestiary455;
   window.openBestiary37=openBestiary455;window.openBestiary38=openBestiary455;window.openBestiaryG=openBestiary455;window.openBestiaryI=openBestiary455;window.openBestiary452=openBestiary455;window.openBestiary455=openBestiary455;
-  window.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiary455();}},true);
+  window.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubBestiary37,#hubBestiary40,#hubBestiaryG');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiary455();}},true);
   const patchBestiaryButtons455=()=>{['hubBestiary37','hubBestiary40','hubBestiaryG'].forEach(id=>{const b=document.getElementById(id);if(b){b.onclick=(ev)=>{ev?.preventDefault?.();ev?.stopPropagation?.();openBestiary455();};b.dataset.openBestiary='455';}});};
   new MutationObserver(patchBestiaryButtons455).observe(document.body,{childList:true,subtree:true});
   setTimeout(patchBestiaryButtons455,0);
@@ -10704,7 +10704,7 @@ function killKey37(e){
   function setCard(){ensureStyle();ensureExtraStyle462();overlay.classList.remove('hidden');overlayCard.className='card dune461';}
   function rewardBurst(amount,label='RELÍQUIAS',color='#ffd166'){const div=document.createElement('div');div.className='rewardBurst461';div.style.background=`linear-gradient(135deg,${color},rgba(255,255,255,.96))`;div.textContent=(amount?`+${amount} `:'')+label;document.body.appendChild(div);setTimeout(()=>div.remove(),1200);}
 
-  function openStartMenu461(){game=null;mouse.down=false;setCard();const m=meta();overlayCard.innerHTML=`<div class="startStage461"><div class="startInner461"><div class="duneTop461"><div class="duneUpdate461">DUNE UPDATE</div><div class="duneTitle461">CHRONO<br>SHARDS</div></div><p class="duneSub461">As Dunas Chrono abriram novas interfaces, recompensas, registros e rotas de progressão. Escolha sua classe, colete relíquias, recupere ${CHRONO} Fragmentos Chrono e sobreviva aos ecos que acordaram sob a areia temporal.</p><div class="duneStats461" style="grid-template-columns:repeat(3,1fr)"><div class="duneStat461"><small>HIGH SCORE</small><b>${fmt(m.highScore)}</b></div><div class="duneStat461"><small>RELÍQUIAS</small><b>${fmt(m.relicShards)}</b></div><div class="duneStat461"><small>${CHRONO} FRAGMENTOS</small><b>${fmt(m.chronoFragments)}</b></div></div><div class="startButtonsMain462"><button class="duneBtn461" id="play461">JOGAR</button><button class="duneBtn461 blue" id="hub461">CONQUISTAS & MISSÕES</button><button class="duneBtn461 purple" id="cfg461">CONFIGURAÇÕES</button></div><div class="startTutorial462"><button class="duneBtn461 dark" id="tutorial461">TUTORIAL</button></div></div></div>`;document.getElementById('play461').onclick=openClassMenu461;document.getElementById('hub461').onclick=openHub461;document.getElementById('tutorial461').onclick=openTutorial461;document.getElementById('cfg461').onclick=openSettings461;}
+  function openStartMenu461(){game=null;mouse.down=false;setCard();const m=meta();overlayCard.innerHTML=`<div class="startStage461"><div class="startInner461"><div class="duneTop461"><div class="duneUpdate461">RIFT UPDATE</div><div class="duneTitle461">CHRONO<br>SHARDS</div></div><p class="duneSub461">As Fissuras Chrono abriram novas rotas, criaturas e poderes refletidos. Escolha sua classe, colete relíquias, recupere ${CHRONO} Fragmentos Chrono e sobreviva aos ecos que acordaram entre galáxias partidas.</p><div class="duneStats461" style="grid-template-columns:repeat(3,1fr)"><div class="duneStat461"><small>HIGH SCORE</small><b>${fmt(m.highScore)}</b></div><div class="duneStat461"><small>RELÍQUIAS</small><b>${fmt(m.relicShards)}</b></div><div class="duneStat461"><small>${CHRONO} FRAGMENTOS</small><b>${fmt(m.chronoFragments)}</b></div></div><div class="startButtonsMain462"><button class="duneBtn461" id="play461">JOGAR</button><button class="duneBtn461 blue" id="hub461">CONQUISTAS & MISSÕES</button><button class="duneBtn461 purple" id="cfg461">CONFIGURAÇÕES</button></div><div class="startTutorial462"><button class="duneBtn461 dark" id="tutorial461">TUTORIAL</button></div></div></div>`;document.getElementById('play461').onclick=openClassMenu461;document.getElementById('hub461').onclick=openHub461;document.getElementById('tutorial461').onclick=openTutorial461;document.getElementById('cfg461').onclick=openSettings461;}
     function openTutorial461(){setCard();overlayCard.innerHTML=`<h1 style="text-align:center">TUTORIAL</h1><p class="duneSub461">Guia completo do jogo separado por categoria. Entenda o básico do jogo!</p><div class="duneGrid461"><div class="dunePanel461"><span class="badge461" style="--co:#61dafb">MOVIMENTAÇÃO E COMANDOS</span><strong>Controle da arena</strong><span><b>WASD/Setas</b> movem o seu personagem. <b>Mouse</b> mira. <b>Clicar e segurar</b> faz você atirar. <b>Shift</b> você utliza o dash. <b>Espaço</b> ativa modo câmera lenta, mas consume foco. <b>E/Q/R</b> usam habilidades conforme a classe, mas as habilidades também consumem foco. Classes especiais podem ter <b>X</b> como ultimate. <b>FOCO:</b> O foco é uma barrinha roxa que fica embaixo de seu personagem, ela funciona como uma stamina, usada para utilização de habilidades e câmera lenta</span></div><div class="dunePanel461"><span class="badge461" style="--co:#ffd166">MOEDAS E RECOMPENSAS</span><strong>Relíquias, ouro e ${CHRONO} Fragmentos Chrono</strong><span><b>Ouro</b> é um drop de monstros/bosses, que é utilizado somente para upgrades em uma loja que aparece após a derrota do boss de 5 em 5 waves. <b>Relíquias</b> vêm de códigos, missões, bosses, monstros e recompensas do bestiário. Ela é a moeda principal do jogo, servindo para compra de personagens e buffs permanentes. <b>${CHRONO} Fragmentos Chrono</b> são raros: aparecem em bosses, bosses raros e eventos especiais. Atualmente esses fragmentos servem somente para liberar um personagem muito forte. <b>Chaves de Awakening</b> são drop de bosses, mais comuns do que os fragmento, essas chaves servem especialmente para liberar as missões de awakening de personagens no menu de missões.</span></div><div class="dunePanel461"><span class="badge461" style="--co:#c6a0ff">PROGRESSÃO</span><strong>Waves, bosses e níveis</strong><span>Seu objetivo aqui é sobreviver e ir cada vez mais adiante nas waves, com cada wave seguinte sendo mais dificil. A partir das waves avançadas surgem, bosses raros e recompensas maiores. <b>Nível:</b> Durante a partida, você irá ganhar XP, com esse XP acontecerá um upgrade de nível no meio da partida, podendo escolher entre 3 upgrades, mas se você morrer, vai começar tudo novamente. Existem poderes míticos incríveis!</span></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="tutBack461">← Início</button></div>`;document.getElementById('tutBack461').onclick=openStartMenu461;}
   function openSettings461(){setCard();const m=meta();overlayCard.innerHTML=`<h1 style="text-align:center">CONFIGURAÇÕES</h1><p class="duneSub461">Ajustes do jogo e área de códigos. Ative o modo leve se seu PC for uma batata.</p><div class="duneGrid461"><div class="dunePanel461 settingsLow462" id="lowBox461" style="border-color:${m.gfxLow?'#86ffb0':'rgba(255,255,255,.14)'}"><span class="badge461" style="--co:${m.gfxLow?'#86ffb0':'#ffd166'}">LOW GFX ${m.gfxLow?'ATIVO':'DESATIVADO'}</span><strong>Modo visual leve</strong><span>Simplifica projéteis, modelos e efeitos para deixar o jogo mais leve.</span><button class="lowSwitch462 ${m.gfxLow?'':'off'}" id="lowGfx461">${m.gfxLow?'Desativar Low GFX':'Ativar Low GFX'}</button></div><div class="dunePanel461 codeClean462"><span class="badge461" style="--co:#9f6cff">CÓDIGOS</span><strong>Resgate recompensas secretas</strong><span>Digite um código válido para receber uma recompensa. Cada código só pode ser usado uma vez.</span><div class="codeRow461"><input id="codeInput461" placeholder="Digite o código"><button class="duneBtn461" id="redeem461">Resgatar</button></div><div id="codeMsg461" style="margin-top:10px;color:#bcd6ff"></div></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="cfgBack461">← Início</button></div>`;document.getElementById('cfgBack461').onclick=openStartMenu461;document.getElementById('lowGfx461').onclick=()=>{const mm=meta();mm.gfxLow=!mm.gfxLow;save(mm);openSettings461();};document.getElementById('redeem461').onclick=()=>{const raw=(document.getElementById('codeInput461').value||'').trim().toLowerCase();const msg=document.getElementById('codeMsg461');const used=usedCodes();if(!raw){msg.textContent='Digite um código.';return;}if(used.includes(raw)){msg.style.color='#ffd166';msg.textContent='Esse código já foi usado.';return;}if(raw==='chronocode'){addRelics(100);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent='+100 relíquias recebidas!';rewardBurst(100,'RELÍQUIAS');return;}if(raw==='monsterhunter'){addRelics(250);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent='+250 relíquias recebidas!';rewardBurst(250,'RELÍQUIAS');return;}if(raw==='fragchrono'){addChrono(7);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent=`+7 ${CHRONO} Fragmentos Chrono!`;rewardBurst(7,`${CHRONO} FRAGMENTOS`,'#9be6ff');return;}msg.style.color='#ff8fa3';msg.textContent='Código inválido.';};}
     function openHub461(){setCard();const m=meta();overlayCard.innerHTML=`<h1 style="text-align:center">CONQUISTAS & MISSÕES</h1><p class="duneSub461">Área central da progressão fora da batalha, organizada apenas com loja, missões e bestiário.</p><div class="duneGrid461 hubThree462"><button class="dunePanel461" id="hubRelics461"><span class="badge461" style="--co:#ffd166">LOJA</span><strong>Relíquias</strong><span>Compre bônus permanentes e acompanhe suas moedas.</span><span class="small461">Disponível: ${m.relicShards} relíquias</span></button><button class="dunePanel461" id="hubMissions461"><span class="badge461" style="--co:#86ffb0">OBJETIVOS</span><strong>Missões</strong><span>Missões de várias dificuldades que te dão relíquias em troca. Além de missões de awakening, que dão ultimates para personagens específicos!</span></button><button class="dunePanel461" id="hubBestiary461"><span class="badge461" style="--co:#ff6b9d">ARQUIVO</span><strong>Bestiário</strong><span>Registros de tudo e todos os bixos que você mata, além de te dar recompensas ao completar os registros.</span></button></div><div class="duneActions461"><button class="duneBtn461 dark" id="hubBack461">← Início</button></div>`;document.getElementById('hubRelics461').onclick=openRelics461;document.getElementById('hubMissions461').onclick=openMissions461;document.getElementById('hubBestiary461').onclick=openBestiary461;document.getElementById('hubBack461').onclick=openStartMenu461;}
@@ -10970,7 +10970,7 @@ function killKey37(e){
   function openAwakening464(id){ensureStyle();const a=AWAK[id];if(!a)return;let m=readMeta();overlay.classList.remove('hidden');overlayCard.className='card awakDetail464';overlayCard.style.setProperty('--c',a.color);const done=completedAwak(m,id),active=m.awakenings463.active;const steps=a.missions.map((mi,i)=>{const stepDone=i<done,own=active&&active.id===id&&active.stage===i,other=active&&!own,canUnlock=!active&&i===done&&m.awakeningKeys>0&&!stepDone,visible=stepDone||own||(!active&&i===done);const ap=own?activeProgress(active,m):{cur:0,pct:0,done:false};const title=visible?mi[0]:'Etapa bloqueada';const desc=visible?mi[1]:(other?'Conclua a missão de Awakening atualmente ativa para liberar outra.':'Use uma chave de Awakening para revelar esta etapa.');return `<div class="awakStep464 ${stepDone?'done':''} ${own?'active':''} ${visible?'':'locked'}" style="--c:${a.color}"><div class="awakNum464">${stepDone?'✓':i+1}</div><div><strong>${esc(title)}</strong><span>${esc(desc)}</span><div class="progress461" style="--co:${a.color};margin-top:8px"><i style="width:${stepDone?100:ap.pct}%"></i></div><span>${stepDone?'Concluída':own?`${ap.cur}/${mi[3]}`:visible?`0/${mi[3]}`:'???'}</span>${other?'<span class="awakLockMsg464">Outra missão de Awakening está ativa.</span>':''}</div><div class="awakActions464">${canUnlock?`<button class="duneBtn461" data-unlockawak464="${i}">Usar 1 ${KEY_ICON}</button>`:''}${own&&ap.done?`<button class="duneBtn461" data-claimawak464="${i}">Concluir etapa</button>`:''}</div></div>`}).join('');const activeText=active?`Missão ativa: ${AWAK[active.id]?.name||'Awakening'} — etapa ${active.stage+1}`:'Nenhuma missão de Awakening ativa.';overlayCard.innerHTML=`<div class="awakHero464" style="--c:${a.color}"><div class="awakAvatar464">${a.emoji}</div><div><span class="badge461" style="--co:${a.color}">AWAKENING</span><h1>${esc(a.name)}</h1><p class="duneSub461" style="text-align:left;margin:8px 0 0!important">Desbloqueie a Ultimate do ${a.name}! A recompensa final será conectada futuramente; esta tela já deixa a progressão visual e a ordem das missões prontas.</p></div><div class="awakKeyBox464"><span class="small461">CHAVES</span><b>${KEY_ICON} ${m.awakeningKeys}</b><span class="small461">${esc(activeText)}</span></div></div><div class="awakTimeline464">${steps}</div><div class="duneActions461"><button class="duneBtn461 dark" id="awakBack464">← Missões</button></div>`;overlayCard.querySelectorAll('[data-unlockawak464]').forEach(b=>b.onclick=()=>{let mm=readMeta();const stage=Number(b.dataset.unlockawak464);if(mm.awakeningKeys<=0||mm.awakenings463.active||stage!==completedAwak(mm,id))return;mm.awakeningKeys--;mm.awakenings463.active={id,stage,baseline:metric(mm,a.missions[stage][2]),startedAt:Date.now()};saveMeta(mm);toast('MISSÃO DESBLOQUEADA',a.color);setTimeout(()=>openAwakening464(id),150);});overlayCard.querySelectorAll('[data-claimawak464]').forEach(b=>b.onclick=()=>{let mm=readMeta();const ac=mm.awakenings463.active;if(!ac||ac.id!==id)return;const ap=activeProgress(ac,mm);if(!ap.done)return;mm.awakenings463.completed[id]=Math.max(completedAwak(mm,id),ac.stage+1);mm.awakenings463.active=null;saveMeta(mm);toast('ETAPA CONCLUÍDA',a.color);setTimeout(()=>openAwakening464(id),300);});document.getElementById('awakBack464').onclick=()=>{(window.openMissions461||window.openDuneHub461)?.();};}
 
   window.openBestiary464=openBestiary464;window.__openBestiaryLatest=openBestiary464;window.openBestiary461=openBestiary464;window.openBestiary455=openBestiary464;window.openAwakening464=openAwakening464;
-  window.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary],[data-book461]');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();if(b.dataset.book461){const e=byBook(b.dataset.book461);if(e)return openBookDetail464(e.id);}openBestiary464();}},true);
+  window.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-book461]');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();if(b.dataset.book461){const e=byBook(b.dataset.book461);if(e)return openBookDetail464(e.id);}openBestiary464();}},true);
   window.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('[data-awak461]');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openAwakening464(b.dataset.awak461);}},true);
   const patchButtons=()=>{for(const id of ['hubBestiary461','hubBestiary37','hubBestiary40','hubBestiaryG']){const b=document.getElementById(id);if(b&&!b.dataset.patch464){b.dataset.patch464='1';b.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();openBestiary464();};}}};new MutationObserver(patchButtons).observe(document.body,{childList:true,subtree:true});setTimeout(patchButtons,0);
   console.log(PATCH+' carregado');
@@ -15898,7 +15898,7 @@ function killKey37(e){
   function openBookDetail529(id){const e=BOOK_NEW.find(x=>x.id===id);if(!e)return;overlay.classList.remove('hidden');overlayCard.className='card bestiary464';overlayCard.innerHTML=`<h1 style="text-align:center">${esc(e.name)}</h1><p class="duneSub461">Registro da Rift Update.</p><div class="bookDetail464"><div class="bookCanvasBox464"><div style="height:270px;display:grid;place-items:center;font-size:76px;color:${e.col};text-shadow:0 0 30px ${e.col}">${e.e}</div><div style="margin-top:10px;color:${e.col};font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.13em">REGISTRO TÁTICO</div></div><div><div class="statGrid464"><div class="stat464"><small>HP BASE</small><b>${esc(e.hp)}</b></div><div class="stat464"><small>VELOCIDADE</small><b>${esc(e.spd)}</b></div><div class="stat464"><small>DANO</small><b>${esc(e.dmg)}</b></div><div class="stat464"><small>APARECE</small><b>${esc(e.spawn)}</b></div><div class="stat464"><small>TIPO</small><b>${esc(e.g)}</b></div><div class="stat464"><small>ABATES</small><b>${killBook(e.id)}</b></div></div><div class="text464"><h4>PADRÃO DE ATAQUE</h4>${esc(e.atk)}</div></div></div><div class="text464"><h4>ORIGEM E COMPORTAMENTO</h4>${esc(e.lore)}</div><div class="duneActions461"><button class="duneBtn461 dark" id="bookBack529">← Bestiário</button></div>`;document.getElementById('bookBack529').onclick=()=>openBestiary529(e.mode==='rift'?'rift':'general');}
   function openBestiary529(tab='general'){addStyle();if(tab==='general'&&typeof prevBest==='function'){prevBest();setTimeout(()=>injectBookTickets('general'),0);return;}overlay.classList.remove('hidden');overlayCard.className='card bestiary464';const entries=BOOK_NEW.filter(e=>e.mode==='rift'||e.mode==='both');const groups=['Comuns','Elites','Bosses'];overlayCard.innerHTML=`<h1 style="text-align:center">BESTIÁRIO DAS FISSURAS</h1><p class="duneSub461">Catálogo separado para monstros exclusivos do Modo das Fissuras e ameaças compartilhadas importantes.</p>${groups.map(g=>`<section class="bookSection464"><h3>${g.toUpperCase()}</h3><div class="bookGrid464">${entries.filter(e=>e.g===g).map(bookCard).join('')}</div></section>`).join('')}<div class="duneActions461"><button class="duneBtn461 dark" id="bookBackRift529">← Voltar</button></div>`;injectBookTickets('rift');overlayCard.querySelectorAll('[data-newbook529]').forEach(b=>b.onclick=()=>{const e=BOOK_NEW.find(x=>x.id===b.dataset.newbook529);if(e)claimBook(e);});document.getElementById('bookBackRift529').onclick=()=>{(window.openDuneHub461||window.openStartMenu)?.();};}
   window.__openBestiaryLatest=()=>openBestiary529('general');window.openBestiary464=window.__openBestiaryLatest;window.openBestiary461=window.__openBestiaryLatest;
-  window.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiary529('general');}},true);
+  window.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiary529('general');}},true);
 
   console.log(PATCH+' carregado');
 })();
@@ -16046,14 +16046,48 @@ function killKey37(e){
   }
   const prevOpen530=window.openBestiary530;
   const prevLatest=window.__openBestiaryLatest||window.openBestiary464||window.openBestiary461;
+  function legacyElitesGrid531(){
+    if(!overlayCard)return null;
+    const sections=[...overlayCard.querySelectorAll('.bookSection464,.bookSectionP,.bookSectionO,.riftBookSection531,section,div')];
+    for(const sec of sections){
+      const h=(sec.querySelector?.('h3')?.textContent||'').trim().toUpperCase();
+      if(h==='ELITES')return sec.querySelector?.('.bookGrid464,.bookGridP,.bookGridO,.riftGrid531')||sec;
+    }
+    return null;
+  }
+  function clearLegacyRiftNewSections531(){
+    overlayCard?.querySelectorAll?.('.riftBookGeneral531,.newBook529,.newBook530,.bookTickets529,.bookTickets530').forEach(el=>el.remove());
+    // Remove qualquer seção antiga que tenha sobrado com título de registros novos/Elites da Rift Update.
+    overlayCard?.querySelectorAll?.('.bookSection464,.riftBookSection531,section,div').forEach(sec=>{
+      const h=(sec.querySelector?.('h3')?.textContent||'').trim().toUpperCase();
+      if(h==='NOVOS REGISTROS'||h==='ELITES DA RIFT UPDATE')sec.remove();
+    });
+  }
   function injectGeneralSection(){
     addStyle();cleanupOldTickets();attachSideNav('general');
-    if(!overlayCard||overlayCard.querySelector('.riftBookGeneral531'))return;
-    const sec=document.createElement('div');sec.className='riftBookGeneral531';
-    sec.innerHTML=renderSection('Elites da Rift Update',ENTRIES.filter(e=>e.tab==='general'));
-    const actions=overlayCard.querySelector('.duneActions461')||overlayCard.lastElementChild;
-    if(actions&&actions.parentNode===overlayCard)overlayCard.insertBefore(sec,actions);else overlayCard.appendChild(sec);
-    sec.querySelectorAll('[data-book531]').forEach(b=>b.onclick=()=>openBookDetail531(b.dataset.book531,'general'));
+    if(!overlayCard)return;
+    clearLegacyRiftNewSections531();
+    const entries=ENTRIES.filter(e=>e.tab==='general');
+    let grid=legacyElitesGrid531();
+    if(!grid){
+      const sec=document.createElement('section');
+      sec.className='bookSection464 riftElitesMerged531';
+      sec.innerHTML='<h3>ELITES</h3><div class="bookGrid464"></div>';
+      const actions=overlayCard.querySelector('.duneActions461')||overlayCard.lastElementChild;
+      if(actions&&actions.parentNode===overlayCard)overlayCard.insertBefore(sec,actions);else overlayCard.appendChild(sec);
+      grid=sec.querySelector('.bookGrid464');
+    }
+    for(const e of entries){
+      if(grid.querySelector(`[data-book531="${CSS.escape(e.id)}"]`))continue;
+      const wrap=document.createElement('div');
+      wrap.innerHTML=cardHTML(e);
+      const card=wrap.firstElementChild;
+      if(card){
+        card.classList.add('mergedElite531');
+        card.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();openBookDetail531(e.id,'general');};
+        grid.appendChild(card);
+      }
+    }
   }
   function openBestiary531(tab='general'){
     addStyle();
@@ -16061,6 +16095,7 @@ function killKey37(e){
       if(typeof prevOpen530==='function')prevOpen530('general');
       else if(typeof prevLatest==='function')prevLatest();
       setTimeout(injectGeneralSection,0);
+      setTimeout(injectGeneralSection,60);
       return;
     }
     overlay.classList.remove('hidden');overlayCard.className='card bestiary464';overlayCard.style.position='relative';
@@ -16076,8 +16111,8 @@ function killKey37(e){
     overlay.classList.remove('hidden');overlayCard.className='card bestiary464';overlayCard.innerHTML= ok ? `<h1 style="text-align:center">${esc(e.name)}</h1><p class="duneSub461">${esc(e.typeLabel)} • Registro da Rift Update</p><div class="bookDetail464"><div class="bookCanvasBox464">${modelHTML(e)}<div style="margin-top:12px;color:${e.col};font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.13em">MODELO TÁTICO ANIMADO</div></div><div><div class="statGrid464"><div class="stat464"><small>HP BASE</small><b>${esc(e.hp)}</b></div><div class="stat464"><small>VELOCIDADE</small><b>${esc(e.spd)}</b></div><div class="stat464"><small>DANO</small><b>${esc(e.dmg)}</b></div><div class="stat464"><small>APARECE</small><b>${esc(e.spawn)}</b></div><div class="stat464"><small>TIPO</small><b>${esc(e.typeLabel)}</b></div><div class="stat464"><small>ABATES</small><b>${k}</b></div></div><div class="text464"><h4>PADRÃO DE ATAQUE</h4>${esc(e.atk)}</div></div></div><div class="text464"><h4>ORIGEM E COMPORTAMENTO</h4>${esc(e.lore)}</div><div class="duneActions461"><button class="duneBtn461 dark" id="bookDetailBack531">← Bestiário</button></div>` : `<h1 style="text-align:center">REGISTRO BLOQUEADO</h1><p class="duneSub461">Derrote mais unidades para revelar este registro.</p>${renderSection('Progresso do Registro',[e])}<div class="duneActions461"><button class="duneBtn461 dark" id="bookDetailBack531">← Bestiário</button></div>`;
     attachSideNav(backTab||e.tab);document.getElementById('bookDetailBack531').onclick=()=>openBestiary531(backTab||e.tab);
   }
-  window.openBestiary531=openBestiary531;window.openBestiary530=openBestiary531;window.__openBestiaryLatest=()=>openBestiary531('general');window.openBestiary464=window.__openBestiaryLatest;window.openBestiary461=window.__openBestiaryLatest;
-  document.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiary531('general');}},true);
+  window.openBookDetail531=openBookDetail531;window.openBestiary531=openBestiary531;window.openBestiary530=openBestiary531;window.__openBestiaryLatest=()=>openBestiary531('general');window.openBestiary464=window.__openBestiaryLatest;window.openBestiary461=window.__openBestiaryLatest;
+  document.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG');if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openBestiary531('general');}},true);
   new MutationObserver(()=>{if(!overlayCard||overlay?.classList?.contains('hidden')){document.getElementById('bookSideNav531')?.remove();return;}const h=(overlayCard.querySelector('h1')?.textContent||'').toUpperCase();if(h.includes('BESTIÁRIO')){cleanupOldTickets();if(!document.getElementById('bookSideNav531'))attachSideNav(h.includes('FISSURAS')?'rift':'general');}}).observe(document.body,{childList:true,subtree:true});
 
   // ── Ricocheteador: pequenos amarelos mais fortes + dano orbitando ──
@@ -16163,161 +16198,427 @@ function killKey37(e){
 </script>
 
 <script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.3.7 — CORREÇÃO PROFUNDA EM CIMA DA 5.3.1
+   - Corrige erro real de boot: codes27 inexistente no menu 2.7
+   - Remove gatilho amplo [data-open-bestiary] dos listeners antigos
+   - Bestiário moderno sem abrir em qualquer UI
+   - Novos registros gerais dentro de Elites
+   - Galáxia no menu principal, Ricocheteador maior e mira fecha ao salvar
+   ──────────────────────────────────────────────────────────────── */
 (()=>{
-  if(window.__chronoRiftUpdate534Stable) return; window.__chronoRiftUpdate534Stable=true;
-  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
-  const $=(q,r=document)=>r.querySelector(q);
-  const $$=(q,r=document)=>Array.from(r.querySelectorAll(q));
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  function read534(){let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{};m.stats=m.stats||{};m.stats.typeKills=m.stats.typeKills||{};m.bestiaryKills=m.bestiaryKills||{};m.bestiaryClaimed461=m.bestiaryClaimed461||{};return m;}
-  function write534(m){try{localStorage.setItem(SAVE,JSON.stringify(m||{}));}catch{} if(window.game)game.meta=m;return m;}
-  function n534(v,d=0){v=Number(v);return Number.isFinite(v)?v:d;}
-  function addStyle534(){
-    if(document.getElementById('rift534Style')) return;
-    const st=document.createElement('style');st.id='rift534Style';st.textContent=`
-      .startStage461.riftGalaxy534{position:relative;overflow:hidden;background:radial-gradient(circle at 16% 12%,rgba(117,216,255,.22),transparent 22%),radial-gradient(circle at 80% 20%,rgba(159,108,255,.24),transparent 27%),radial-gradient(circle at 65% 85%,rgba(255,209,102,.13),transparent 22%),linear-gradient(145deg,#040613 0%,#12072b 42%,#061b38 74%,#03050d 100%)!important;box-shadow:inset 0 0 90px rgba(117,216,255,.10),inset 0 0 130px rgba(159,108,255,.13)!important}.startStage461.riftGalaxy534:before{content:'';position:absolute;inset:-45px;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.82) 0 1.2px,transparent 1.8px),radial-gradient(circle,rgba(117,216,255,.7) 0 1px,transparent 1.8px),radial-gradient(circle,rgba(255,209,102,.5) 0 1px,transparent 1.7px);background-size:70px 70px,112px 112px,155px 155px;background-position:0 0,30px 18px,75px 45px;opacity:.42;animation:riftStars534 12s linear infinite}.startStage461.riftGalaxy534:after{content:'';position:absolute;inset:-25%;pointer-events:none;background:conic-gradient(from 20deg,transparent,rgba(117,216,255,.12),transparent,rgba(159,108,255,.16),transparent,rgba(255,209,102,.10),transparent);filter:blur(10px);animation:riftNebula534 16s linear infinite;opacity:.72}.startStage461.riftGalaxy534 .startInner461{position:relative;z-index:2}.riftSigils534{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}.riftSigils534 i{position:absolute;width:54px;height:54px;border:2px solid rgba(117,216,255,.28);border-radius:50%;box-shadow:0 0 22px rgba(117,216,255,.16),inset 0 0 18px rgba(159,108,255,.13);animation:riftPulse534 3.8s ease-in-out infinite}.riftSigils534 i:before,.riftSigils534 i:after{content:'';position:absolute;left:50%;top:8px;bottom:8px;width:2px;background:rgba(255,209,102,.32);transform:translateX(-50%) rotate(45deg)}.riftSigils534 i:after{transform:translateX(-50%) rotate(-45deg);background:rgba(159,108,255,.30)}.riftSigils534 i:nth-child(1){left:9%;top:14%;animation-delay:.1s}.riftSigils534 i:nth-child(2){right:10%;top:18%;width:70px;height:70px;animation-delay:1s}.riftSigils534 i:nth-child(3){left:18%;bottom:15%;width:44px;height:44px;animation-delay:1.8s}.riftSigils534 i:nth-child(4){right:18%;bottom:11%;width:58px;height:58px;animation-delay:2.5s}@keyframes riftStars534{to{background-position:70px 70px,142px 130px,230px 200px}}@keyframes riftNebula534{to{transform:rotate(360deg)}}@keyframes riftPulse534{0%,100%{transform:scale(.92) rotate(0deg);opacity:.28}50%{transform:scale(1.08) rotate(16deg);opacity:.72}}
-      .heroModel461[data-hero='ricocheteador']{transform:scale(1.11)!important;transform-origin:center!important}.classCard461.rico529 .modelBox461{min-height:126px!important}.classCard461.rico529 .heroModel461[data-hero='ricocheteador'] i{top:14px!important;width:38px!important;height:62px!important}.classCard461.rico529 .heroModel461[data-hero='ricocheteador'] b{width:64px!important;height:9px!important}.bookSideNav531{position:fixed!important;right:calc(50vw - min(560px,42vw) - 92px)!important;top:145px!important;z-index:9999!important;display:grid!important;gap:10px!important;pointer-events:auto!important}.bookSideNav531 button{writing-mode:vertical-rl;transform:rotate(180deg);border-radius:16px 0 0 16px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(180deg,rgba(15,22,49,.94),rgba(42,23,83,.94));color:#dff3ff;padding:14px 9px;font:900 11px Orbitron,Arial,sans-serif;letter-spacing:.13em;cursor:pointer;box-shadow:0 0 22px rgba(117,216,255,.14)}.bookSideNav531 button.active{background:linear-gradient(180deg,#75d8ff,#9f6cff 72%,#ffd166);color:#040714}.riftBookGeneral531{display:contents!important}.riftBookGeneral531>.riftBookSection531{display:contents!important}.riftBookGeneral531 .riftBookSection531>h3{display:none!important}.bookTickets529,.bookTickets530{display:none!important}.riftBookCard531{min-height:255px}.riftBookCard531 .monsterStage531{height:110px!important}.riftBookCard531.ready{box-shadow:0 0 22px color-mix(in srgb,var(--c,#75d8ff) 35%,transparent)!important}
-      @media(max-width:900px){.bookSideNav531{right:8px!important;top:105px!important}.bookSideNav531 button{padding:10px 7px;font-size:9px}.startStage461.riftGalaxy534:before{opacity:.3}}
+  if(window.__chronoRift537From531DeepFix)return;
+  window.__chronoRift537From531DeepFix=true;
+  const RICO='ricocheteador';
+  const SAFE_ID='hubBestiaryRift537';
+  const NEW_GENERAL_IDS=new Set(['glassCrawler','manaParasite','stoneColossus','voidWeaver']);
+  function addStyle(){
+    if(document.getElementById('rift537Style'))return;
+    const st=document.createElement('style');st.id='rift537Style';st.textContent=`
+      .startStage461.riftGalaxy537{position:relative;overflow:hidden;background:
+        radial-gradient(circle at 18% 18%,rgba(117,216,255,.20),transparent 24%),
+        radial-gradient(circle at 82% 24%,rgba(159,108,255,.24),transparent 28%),
+        radial-gradient(circle at 50% 88%,rgba(255,209,102,.12),transparent 25%),
+        linear-gradient(145deg,#030712 0%,#090b27 42%,#180b36 74%,#050814 100%)!important;}
+      .startStage461.riftGalaxy537:before{content:'';position:absolute;inset:-20%;pointer-events:none;background:
+        radial-gradient(circle,#fff 0 1px,transparent 1.6px) 0 0/70px 70px,
+        radial-gradient(circle,#75d8ff 0 1px,transparent 1.8px) 32px 18px/104px 104px,
+        radial-gradient(circle,#ffd166 0 1px,transparent 1.7px) 12px 40px/128px 128px;opacity:.42;animation:riftStarDrift537 18s linear infinite;}
+      .startStage461.riftGalaxy537:after{content:'';position:absolute;inset:-22%;pointer-events:none;background:conic-gradient(from 70deg at 50% 50%,transparent,rgba(117,216,255,.11),transparent,rgba(159,108,255,.13),transparent,rgba(255,209,102,.08),transparent);filter:blur(18px);opacity:.75;animation:riftNebulaSpin537 22s linear infinite;}
+      .startStage461.riftGalaxy537 .startInner461{position:relative;z-index:2;box-shadow:0 0 44px rgba(117,216,255,.12),inset 0 0 36px rgba(159,108,255,.08)!important;border-color:rgba(117,216,255,.22)!important;}
+      .riftSymbols537{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}.riftSymbols537 i{position:absolute;width:46px;height:46px;border:1px solid rgba(117,216,255,.28);border-radius:16px;box-shadow:0 0 20px rgba(117,216,255,.10),inset 0 0 18px rgba(159,108,255,.10);animation:riftSymbolPulse537 4.5s ease-in-out infinite;transform:rotate(45deg)}.riftSymbols537 i:nth-child(1){left:8%;top:18%;animation-delay:-.5s}.riftSymbols537 i:nth-child(2){right:10%;top:14%;width:58px;height:58px;border-color:rgba(255,209,102,.30);animation-delay:-1.4s}.riftSymbols537 i:nth-child(3){left:15%;bottom:12%;width:62px;height:62px;animation-delay:-2.4s}.riftSymbols537 i:nth-child(4){right:18%;bottom:16%;animation-delay:-3.1s}.riftSymbols537 i:nth-child(5){left:50%;top:8%;width:38px;height:38px;border-color:rgba(159,108,255,.34);animation-delay:-3.8s}@keyframes riftStarDrift537{to{transform:translate3d(54px,34px,0)}}@keyframes riftNebulaSpin537{to{transform:rotate(360deg)}}@keyframes riftSymbolPulse537{0%,100%{opacity:.18;transform:rotate(45deg) scale(.88)}50%{opacity:.74;transform:rotate(225deg) scale(1.08)}}
+      .classCard461.rico529 .heroModel461[data-hero='ricocheteador'],.heroModel461[data-hero='ricocheteador']{transform:scale(1.12)!important;transform-origin:center!important;}
+      .bookTickets529,.bookTickets530{display:none!important;}
     `;document.head.appendChild(st);
   }
-  function patchGalaxyMenu534(){
-    addStyle534();
-    const stage=$('.startStage461'); if(!stage) return;
-    stage.classList.add('riftGalaxy534');
-    const upd=stage.querySelector('.duneUpdate461'); if(upd) upd.textContent='RIFT UPDATE';
-    const sub=stage.querySelector('.duneSub461');
-    if(sub && /Dunas Chrono|areia temporal|Dunas/i.test(sub.textContent||'')){
-      sub.textContent='As Fissuras Chrono rasgaram novas rotas de progressão, monstros, registros e ecos de poder. Escolha sua classe, colete relíquias, recupere Fragmentos Chrono e sobreviva ao colapso entre galáxias.';
-    }
-    if(!stage.querySelector('.riftSigils534')){
-      const sig=document.createElement('div');sig.className='riftSigils534';sig.innerHTML='<i></i><i></i><i></i><i></i>';stage.prepend(sig);
-    }
-  }
-  function currentTitle534(){return (($('h1',overlayCard||document)||{}).textContent||'').trim().toUpperCase();}
-  function isBestiaryScreen534(){const h=currentTitle534();return /BESTIÁRIO|BESTIARIO|REGISTRO/.test(h)||!!(overlayCard&&overlayCard.closest&&overlayCard.querySelector?.('[data-book531],.riftBookCard531,.bookGrid464,.bookGrid461,.bookGridO,.bookGridP'));}
-  function isRealBookButton534(el){ if(!el) return false; return !!el.closest?.('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,.bookSideNav531,[data-book531]'); }
-  function scrubWrongBestiaryAttrs534(root=document){
-    try{
-      $$('[data-open-bestiary]',root).forEach(el=>{ if(!isRealBookButton534(el)) el.removeAttribute('data-open-bestiary'); });
-      if(!isBestiaryScreen534()) $$('[data-book461],[data-book-o],[data-book-p]',root).forEach(el=>el.removeAttribute('data-book461'));
-      if(!isBestiaryScreen534()) $('#bookSideNav531')?.remove();
-    }catch{}
-  }
-  function bestiaryCardId534(card){return card?.getAttribute?.('data-book531')||card?.dataset?.book531||'';}
-  function moveNewElitesIntoEliteSection534(){
-    if(!overlayCard) return;
-    addStyle534();
-    // Remove old inside-card ticket remnants; external navigation is the only navigation now.
-    overlayCard.querySelectorAll('.bookTickets529,.bookTickets530,.newBook529,.newBook530').forEach(x=>x.remove());
-    const newWrap=overlayCard.querySelector('.riftBookGeneral531');
-    if(!newWrap) return;
-    const newCards=$$('[data-book531]',newWrap);
-    if(!newCards.length){ newWrap.remove(); return; }
-    let targetGrid=null;
-    const sections=$$('.bookSection464,.bookSection461,.bookSectionO,.bookSectionP,.riftBookSection531',overlayCard);
-    for(const sec of sections){
-      const h=(sec.querySelector('h3')?.textContent||'').trim().toUpperCase();
-      if(h==='ELITES'||h.includes('ELITES')){ targetGrid=sec.querySelector('.bookGrid464,.bookGrid461,.bookGridO,.bookGridP,.riftGrid531'); if(targetGrid) break; }
-    }
-    if(!targetGrid){
-      const actions=overlayCard.querySelector('.duneActions461')||overlayCard.lastElementChild;
-      const sec=document.createElement('section');sec.className='bookSection464 riftMergedElite534';sec.innerHTML='<h3>ELITES</h3><div class="bookGrid464"></div>';
-      if(actions&&actions.parentNode===overlayCard) overlayCard.insertBefore(sec,actions); else overlayCard.appendChild(sec);
-      targetGrid=sec.querySelector('.bookGrid464');
-    }
-    const existing=new Set($$('[data-book531]',targetGrid).map(bestiaryCardId534));
-    for(const card of newCards){
-      const id=bestiaryCardId534(card); if(existing.has(id)) continue;
-      card.classList.add('mergedElite534');
-      targetGrid.appendChild(card);
-      existing.add(id);
-    }
-    newWrap.remove();
-  }
-  function ensureExternalBookNav534(tab='general'){
-    addStyle534();
-    if(!isBestiaryScreen534()) { $('#bookSideNav531')?.remove(); return; }
-    let nav=$('#bookSideNav531');
-    if(!nav){ nav=document.createElement('div');nav.id='bookSideNav531';nav.className='bookSideNav531';(overlay||document.body).appendChild(nav); }
-    nav.innerHTML=`<button class="${tab==='general'?'active':''}" data-bnav534="general">GERAL</button><button class="${tab==='rift'?'active':''}" data-bnav534="rift">FISSURAS</button>`;
-    nav.querySelector('[data-bnav534="general"]').onclick=(e)=>{e.preventDefault();e.stopPropagation(); if(typeof window.openBestiary534==='function') window.openBestiary534('general'); else window.openBestiary531?.('general');};
-    nav.querySelector('[data-bnav534="rift"]').onclick=(e)=>{e.preventDefault();e.stopPropagation(); if(typeof window.openBestiary534==='function') window.openBestiary534('rift'); else window.openBestiary531?.('rift');};
-  }
-  const oldOpen531=window.openBestiary531;
-  const oldLatest=window.__openBestiaryLatest;
-  function finalizeBestiary534(tab='general'){
-    setTimeout(()=>{
-      scrubWrongBestiaryAttrs534();
-      if(!isBestiaryScreen534()) return;
-      const h=currentTitle534();
-      const realTab=tab==='rift'||h.includes('FISSURAS')?'rift':'general';
-      if(realTab==='general') moveNewElitesIntoEliteSection534();
-      ensureExternalBookNav534(realTab);
-      // Details must keep the external navigator, but not inject duplicate new sections.
-      overlayCard?.querySelectorAll?.('.bookTickets529,.bookTickets530,.newBook529,.newBook530').forEach(x=>x.remove());
-    },25);
-  }
-  window.openBestiary534=function(tab='general'){
-    if(typeof oldOpen531==='function') oldOpen531(tab);
-    else if(typeof oldLatest==='function') oldLatest();
-    finalizeBestiary534(tab);
-  };
-  window.openBestiary531=window.openBestiary534;
-  window.openBestiary530=window.openBestiary534;
-  window.__openBestiaryLatest=()=>window.openBestiary534('general');
-  window.openBestiary464=window.__openBestiaryLatest;
-  window.openBestiary461=window.__openBestiaryLatest;
-  // Prevent old bestiary attributes from turning every UI click into a bestiary click.
-  scrubWrongBestiaryAttrs534();
-  new MutationObserver((muts)=>{
-    patchGalaxyMenu534();
-    for(const mu of muts){ for(const node of mu.addedNodes||[]){ if(node.nodeType===1) scrubWrongBestiaryAttrs534(node); } }
-    scrubWrongBestiaryAttrs534();
-    if(isBestiaryScreen534()) finalizeBestiary534(currentTitle534().includes('FISSURAS')?'rift':'general');
-  }).observe(document.documentElement,{childList:true,subtree:true});
-  document.addEventListener('click',ev=>{
-    const book=ev.target.closest?.('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,.bookSideNav531 [data-bnav534]');
-    const rogue=ev.target.closest?.('[data-open-bestiary]');
-    if(rogue&&!isRealBookButton534(rogue)){rogue.removeAttribute('data-open-bestiary');return;}
-    if(book){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();window.openBestiary534(book.dataset?.bnav534||'general');}
-  },true);
-  // Crosshair save: save and close the configuration panel reliably.
-  function closeCrosshairConfig534(){
-    setTimeout(()=>{
-      const h=currentTitle534();
-      if(h.includes('CONFIGURE SUA MIRA')){
-        if(typeof window.openSettings529==='function') window.openSettings529();
-        else if(typeof window.openSettings461==='function') window.openSettings461();
-        else overlay?.classList?.add('hidden');
-      }
-    },20);
-  }
-  document.addEventListener('click',ev=>{ if(ev.target.closest?.('#saveCross530,#saveCross529')) closeCrosshairConfig534(); },true);
-  // Ricocheteador um pouco maior em batalha, mantendo o visual da 5.3.1.
-  const RICO534='ricocheteador', BLUE534='#75d8ff', PURPLE534='#9f6cff', YELLOW534='#ffd166';
-  const prevDrawPlayer534=window.drawPlayer||globalThis.drawPlayer;
-  if(typeof prevDrawPlayer534==='function'){
-    window.drawPlayer=function(){
-      if(!window.game||game.classKey!==RICO534) return prevDrawPlayer534.apply(this,arguments);
-      const p=game.player; if(!p) return prevDrawPlayer534.apply(this,arguments);
-      const a=(typeof angle==='function')?angle(p,mouse):Math.atan2((mouse?.y||p.y)-p.y,(mouse?.x||p.x)-p.x);
-      const S=1.13, r=p.r*S;
-      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);ctx.shadowBlur=16;ctx.shadowColor=BLUE534;
-      ctx.fillStyle='#0b1024';ctx.strokeStyle=BLUE534;ctx.lineWidth=3;
-      ctx.beginPath();ctx.moveTo(r*.98,0);ctx.lineTo(r*.28,-r*.84);ctx.lineTo(-r*.76,-r*.64);ctx.lineTo(-r*.90,r*.64);ctx.lineTo(r*.28,r*.84);ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.fillStyle=YELLOW534;ctx.beginPath();ctx.arc(r*.22,0,r*.18,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=PURPLE534;ctx.beginPath();ctx.arc(-r*.30,0,r*.17,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#dff8ff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(r*.02,-r*.58);ctx.lineTo(r*.82,-r*.73);ctx.moveTo(r*.02,r*.58);ctx.lineTo(r*.82,r*.73);ctx.stroke();
-      ctx.fillStyle=BLUE534;ctx.beginPath();ctx.arc(r*.98,-r*.73,4.1,0,Math.PI*2);ctx.arc(r*.98,r*.73,4.1,0,Math.PI*2);ctx.fill();
-      ctx.restore();try{if(typeof drawShieldSegmentsAround470==='function')drawShieldSegmentsAround470(p);}catch{}
-    };try{if(typeof drawPlayer!=='undefined')drawPlayer=window.drawPlayer;}catch{}
-  }
-  // First pass after boot.
-  setTimeout(()=>{addStyle534();patchGalaxyMenu534();scrubWrongBestiaryAttrs534();},0);
-  setTimeout(()=>{patchGalaxyMenu534();scrubWrongBestiaryAttrs534();},250);
-  console.log('Chrono Shards 5.3.4 — patch estável em cima da 5.3.1 carregado');
+  function decorateMenu(){try{addStyle();const stage=document.querySelector('.startStage461');if(!stage)return;stage.classList.add('riftGalaxy537');const tag=stage.querySelector('.duneUpdate461');if(tag)tag.textContent='RIFT UPDATE';if(!stage.querySelector('.riftSymbols537')){const box=document.createElement('div');box.className='riftSymbols537';box.innerHTML='<i></i><i></i><i></i><i></i><i></i>';stage.prepend(box);}}catch(e){console.warn('Rift 5.3.7 menu decor skipped',e)}}
+  function latestBestiary(tab='general'){try{if(typeof window.openBestiary531==='function')window.openBestiary531(tab);else if(typeof window.openBestiary530==='function')window.openBestiary530(tab);else if(typeof window.__openBestiaryLatest==='function')window.__openBestiaryLatest();setTimeout(()=>{moveNewToElites();cleanupBookNav();},0);}catch(e){console.error('Falha ao abrir Bestiário 5.3.7',e)}}
+  function sanitizeBookButtons(root=document){try{const ids=['hubBestiary461','hubBestiary37','hubBestiary40','hubBestiaryG'];for(const id of ids){const b=root.getElementById?root.getElementById(id):root.querySelector?.('#'+id);if(!b||b.dataset.best537==='1')continue;const c=b.cloneNode(true);c.id=SAFE_ID;c.dataset.best537='1';c.removeAttribute('data-open-bestiary');c.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();ev?.stopImmediatePropagation?.();latestBestiary('general')};b.replaceWith(c);}root.querySelectorAll?.('[data-open-bestiary]').forEach(el=>{if(!/^hubBestiary/.test(el.id||''))el.removeAttribute('data-open-bestiary')});}catch(e){console.warn('Rift 5.3.7 sanitize skipped',e)}}
+  function eliteGrid(){const card=window.overlayCard;if(!card)return null;const secs=[...card.querySelectorAll('section,.bookSection464,.bookSectionP,.bookSectionO,.riftBookSection531')];for(const sec of secs){const h=(sec.querySelector('h3')?.textContent||'').trim().toUpperCase();if(h==='ELITES')return sec.querySelector('.bookGrid464,.bookGridP,.bookGridO,.riftGrid531')||sec;}return null;}
+  function moveNewToElites(){try{const card=window.overlayCard;if(!card||window.overlay?.classList?.contains('hidden'))return;const h=(card.querySelector('h1')?.textContent||'').toUpperCase();if(!h.includes('BESTIÁRIO')||h.includes('FISSURAS'))return;const grid=eliteGrid();if(!grid)return;const wrap=card.querySelector('.riftBookGeneral531');if(!wrap)return;for(const b of [...wrap.querySelectorAll('[data-book531]')]){const id=b.dataset.book531;if(NEW_GENERAL_IDS.has(id)&&!grid.querySelector(`[data-book531="${CSS.escape(id)}"]`))grid.appendChild(b);}wrap.classList.add('merged537');card.querySelectorAll('[data-book531]').forEach(b=>{b.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();if(typeof window.openBookDetail531==='function')window.openBookDetail531(b.dataset.book531,'general');else if(typeof window.openBestiary531==='function')window.openBestiary531('general');};});}catch(e){console.warn('Rift 5.3.7 elite merge skipped',e)}}
+  function cleanupBookNav(){try{document.querySelectorAll('.bookTickets529,.bookTickets530').forEach(el=>el.remove());}catch{}}
+  document.addEventListener('click',ev=>{const b=ev.target?.closest?.('#'+SAFE_ID);if(b){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();latestBestiary('general')}},true);
+  document.addEventListener('click',ev=>{const b=ev.target?.closest?.('#saveCross530,#saveCross529');if(!b)return;setTimeout(()=>{try{const title=(overlayCard?.querySelector('h1')?.textContent||'').toUpperCase();if(title.includes('CONFIGURE SUA MIRA')){if(typeof window.openSettings529==='function')window.openSettings529();else if(typeof window.openSettings461==='function')window.openSettings461();else window.openStartMenu?.();}}catch(e){console.warn('Rift 5.3.7 crosshair close skipped',e)}},40)},true);
+  const old461=window.openStartMenu461;if(typeof old461==='function'&&!old461.__rift537){window.openStartMenu461=function(){const r=old461.apply(this,arguments);setTimeout(()=>{decorateMenu();sanitizeBookButtons();},0);return r};window.openStartMenu461.__rift537=true;try{openStartMenu461=window.openStartMenu461}catch{}}
+  const oldStart=window.openStartMenu;if(typeof oldStart==='function'&&!oldStart.__rift537){window.openStartMenu=function(){const r=oldStart.apply(this,arguments);setTimeout(()=>{decorateMenu();sanitizeBookButtons();},0);return r};window.openStartMenu.__rift537=true;try{openStartMenu=window.openStartMenu}catch{}}
+  const oldHub=window.openHub461;if(typeof oldHub==='function'&&!oldHub.__rift537){window.openHub461=function(){const r=oldHub.apply(this,arguments);setTimeout(()=>sanitizeBookButtons(),0);return r};window.openHub461.__rift537=true;try{openHub461=window.openHub461}catch{}}
+  setTimeout(()=>{decorateMenu();sanitizeBookButtons();cleanupBookNav();},0);
+  console.log('Chrono Shards 5.3.7 — correção profunda em cima da 5.3.1 carregada');
 })();
 </script>
 
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.3.8 — BESTIÁRIO CONSOLIDADO
+   - Remove a seção separada dos elites novos
+   - Move novos monstros gerais para a seção Elites existente
+   - Bloqueia a aba antiga de novos registros em detalhes/qualquer UI
+   ──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoRift538BestiaryConsolidated)return;
+  window.__chronoRift538BestiaryConsolidated=true;
+  const NEW_GENERAL_IDS=new Set(['glassCrawler','manaParasite','stoneColossus','voidWeaver']);
+  function isBookOpen(){return !!window.overlayCard&&!window.overlay?.classList?.contains('hidden')&&((overlayCard.querySelector('h1')?.textContent||'').toUpperCase().includes('BESTIÁRIO')||overlayCard.className?.includes('bestiary'));}
+  function cleanupSeparated(){
+    try{
+      document.querySelectorAll('.bookTickets529,.bookTickets530').forEach(el=>el.remove());
+      if(!window.overlayCard)return;
+      overlayCard.querySelectorAll('.newBook529,.newBook530,.riftBookGeneral531').forEach(el=>el.remove());
+      overlayCard.querySelectorAll('.bookSection464,.riftBookSection531,section,div').forEach(sec=>{
+        const h=(sec.querySelector?.('h3')?.textContent||'').trim().toUpperCase();
+        if(h==='NOVOS REGISTROS'||h==='ELITES DA RIFT UPDATE')sec.remove();
+      });
+    }catch(e){console.warn('5.3.8 cleanup bestiário ignorado',e)}
+  }
+  function findElitesGrid(){
+    const card=window.overlayCard;if(!card)return null;
+    for(const sec of [...card.querySelectorAll('.bookSection464,.bookSectionP,.bookSectionO,.riftBookSection531,section,div')]){
+      const h=(sec.querySelector?.('h3')?.textContent||'').trim().toUpperCase();
+      if(h==='ELITES')return sec.querySelector?.('.bookGrid464,.bookGridP,.bookGridO,.riftGrid531')||sec;
+    }
+    return null;
+  }
+  function normalizeBook(){
+    if(!isBookOpen())return cleanupSeparated();
+    cleanupSeparated();
+    const grid=findElitesGrid();
+    if(grid){
+      grid.querySelectorAll('[data-book531]').forEach(b=>{
+        if(NEW_GENERAL_IDS.has(b.dataset.book531)){
+          b.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();if(typeof window.openBookDetail531==='function')window.openBookDetail531(b.dataset.book531,'general');};
+        }
+      });
+    }
+  }
+  const oldOpen=window.openBestiary531;
+  if(typeof oldOpen==='function'&&!oldOpen.__rift538){
+    window.openBestiary531=function(tab='general'){
+      const r=oldOpen.apply(this,arguments);
+      setTimeout(normalizeBook,0);setTimeout(normalizeBook,80);
+      return r;
+    };
+    window.openBestiary531.__rift538=true;
+    window.openBestiary530=window.openBestiary531;
+    window.__openBestiaryLatest=()=>window.openBestiary531('general');
+    window.openBestiary464=window.__openBestiaryLatest;
+    window.openBestiary461=window.__openBestiaryLatest;
+  }
+  const mo=new MutationObserver(()=>normalizeBook());
+  mo.observe(document.body,{childList:true,subtree:true});
+  setTimeout(normalizeBook,0);
+  console.log('Chrono Shards 5.3.8 — bestiário consolidado e conflito antigo removido');
+})();
+</script>
+
+
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.3.9 — BESTIÁRIO: ROTAS E TICKETS LIMPOS
+   - Todo botão do bestiário abre/volta pela versão 5.3.1 consolidada
+   - Tickets laterais somem ao sair do bestiário
+   - Botões antigos não deixam a UI cair na versão velha
+   ──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoRift539BestiaryRoutesClean)return;
+  window.__chronoRift539BestiaryRoutesClean=true;
+  const NEW_IDS=new Set(['glassCrawler','manaParasite','stoneColossus','voidWeaver','chronoMosquito','ruinCharger','towerEater','riftHerald','coreDevourer']);
+  const GENERAL_NEW_IDS=new Set(['glassCrawler','manaParasite','stoneColossus','voidWeaver']);
+  const RIFT_NEW_IDS=new Set(['chronoMosquito','ruinCharger','towerEater','riftHerald','coreDevourer']);
+  const baseOpen531=window.openBestiary531;
+  const baseDetail531=window.openBookDetail531;
+  let opening539=false;
+  function addStyle539(){
+    if(document.getElementById('rift539BestiaryStyle'))return;
+    const st=document.createElement('style');
+    st.id='rift539BestiaryStyle';
+    st.textContent=`.bookTickets529,.bookTickets530{display:none!important}.bookSideNav531[data-live="0"]{display:none!important}`;
+    document.head.appendChild(st);
+  }
+  function card(){return window.overlayCard||document.getElementById('overlayCard')||document.querySelector('.card')}
+  function titleText(){try{return (card()?.querySelector('h1')?.textContent||'').trim().toUpperCase()}catch{return ''}}
+  function isBestiaryScreen(){
+    const c=card(); if(!c||window.overlay?.classList?.contains('hidden'))return false;
+    const cls=String(c.className||'').toLowerCase();
+    return cls.includes('bestiary') || titleText().includes('BESTIÁRIO') || !!c.querySelector('[data-book531],[data-book530],[data-newbook529],[data-book-o],[data-book-p],[data-book464]');
+  }
+  function activeTab(){
+    const nav=document.getElementById('bookSideNav531');
+    const active=nav?.querySelector('button.active')?.dataset?.bnav531;
+    if(active)return active;
+    const t=titleText();
+    return t.includes('FISSURAS')?'rift':'general';
+  }
+  function removeSideNav(){
+    try{document.getElementById('bookSideNav531')?.remove();}catch{}
+    try{document.querySelectorAll('.bookTickets529,.bookTickets530').forEach(el=>el.remove());}catch{}
+  }
+  function cleanIfOutsideBook(){
+    if(!isBestiaryScreen())removeSideNav();
+    else bindBookControls();
+  }
+  function openLatest(tab='general'){
+    addStyle539();
+    if(opening539)return;
+    opening539=true;
+    try{
+      if(typeof baseOpen531==='function')baseOpen531(tab);
+      else if(typeof window.__openBestiaryLatest==='function')window.__openBestiaryLatest();
+    }catch(e){console.error('Falha ao abrir Bestiário 5.3.9',e)}
+    finally{opening539=false;}
+    scheduleNormalize(tab);
+  }
+  function detailLatest(id,tab){
+    addStyle539();
+    if(typeof baseDetail531==='function'&&NEW_IDS.has(id)){
+      try{baseDetail531(id,tab||activeTab());}catch(e){console.error('Falha ao abrir detalhe novo do Bestiário 5.3.9',e);openLatest(tab||activeTab());}
+      scheduleNormalize(tab||activeTab());
+      return true;
+    }
+    return false;
+  }
+  function findElitesGrid(){
+    const c=card(); if(!c)return null;
+    const sections=[...c.querySelectorAll('.bookSection464,.bookSectionP,.bookSectionO,.riftBookSection531,section,div')];
+    for(const sec of sections){
+      const h=(sec.querySelector?.('h3')?.textContent||'').trim().toUpperCase();
+      if(h==='ELITES')return sec.querySelector?.('.bookGrid464,.bookGridP,.bookGridO,.riftGrid531')||sec;
+    }
+    return null;
+  }
+  function normalizeBestiary(tab=activeTab()){
+    addStyle539();
+    if(!isBestiaryScreen()){removeSideNav();return;}
+    try{document.querySelectorAll('.bookTickets529,.bookTickets530').forEach(el=>el.remove());}catch{}
+    const c=card(); if(!c)return;
+    // remove seções duplicadas antigas dos registros novos, deixando só os cards que foram movidos para Elites
+    c.querySelectorAll('.newBook529,.newBook530,.riftBookGeneral531').forEach(el=>{
+      const keep=[];
+      el.querySelectorAll?.('[data-book531]').forEach(b=>keep.push(b));
+      const grid=findElitesGrid();
+      if(grid){
+        for(const b of keep){
+          const id=b.dataset.book531;
+          if(GENERAL_NEW_IDS.has(id)&&!grid.querySelector(`[data-book531="${CSS.escape(id)}"]`))grid.appendChild(b);
+        }
+      }
+      el.remove();
+    });
+    c.querySelectorAll('.bookSection464,.riftBookSection531,section,div').forEach(sec=>{
+      const h=(sec.querySelector?.('h3')?.textContent||'').trim().toUpperCase();
+      if(h==='NOVOS REGISTROS'||h==='ELITES DA RIFT UPDATE')sec.remove();
+    });
+    // garante que os cards novos chamem o detalhe novo, não o detalhe antigo
+    c.querySelectorAll('[data-book531]').forEach(b=>{
+      const id=b.dataset.book531;
+      b.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();detailLatest(id,GENERAL_NEW_IDS.has(id)?'general':(RIFT_NEW_IDS.has(id)?'rift':activeTab()));};
+    });
+    // se algum card antigo dos novos registros sobrou com data antigo, converte para detalhe 531
+    c.querySelectorAll('[data-book530],[data-newbook529]').forEach(b=>{
+      const id=b.dataset.book530||b.dataset.newbook529;
+      if(NEW_IDS.has(id)){
+        b.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();detailLatest(id,GENERAL_NEW_IDS.has(id)?'general':'rift');};
+      }
+    });
+    bindBookControls();
+  }
+  function scheduleNormalize(tab){[0,40,120,260].forEach(ms=>setTimeout(()=>normalizeBestiary(tab),ms));}
+  function bindBookControls(){
+    const nav=document.getElementById('bookSideNav531');
+    if(nav){
+      nav.dataset.live=isBestiaryScreen()?'1':'0';
+      nav.querySelectorAll('[data-bnav531]').forEach(btn=>{
+        btn.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();openLatest(btn.dataset.bnav531||'general');};
+      });
+    }
+    const c=card(); if(!c)return;
+    // Botões de voltar de detalhe: sempre voltam pela versão atualizada.
+    c.querySelectorAll('#bookDetailBack531,#bookDetailBack530,#bookBackO,#bookBackP,#bookBack464').forEach(btn=>{
+      btn.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();openLatest(activeTab());};
+    });
+    // Botões de voltar do bestiário para hub/menu: removem tickets laterais.
+    c.querySelectorAll('#bookHubBackO,#bookHubBackP,#bookBack531,#bookBack530,#bookHubBack464').forEach(btn=>{
+      if((btn.id||'').includes('Detail'))return;
+      btn.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();removeSideNav();try{(window.openDuneHub461||window.openHub461||window.openHubMenu37||window.openStartMenu)?.();}catch(e){console.warn('Voltar do Bestiário 5.3.9 ignorado',e);}};
+    });
+  }
+  // Todas as rotas públicas antigas passam a cair no bestiário consolidado.
+  window.openBestiary531=openLatest;
+  window.openBestiary530=openLatest;
+  window.openBestiary529=openLatest;
+  window.openBestiary464=openLatest;
+  window.openBestiary461=openLatest;
+  window.openBestiary455=openLatest;
+  window.openBestiary452=openLatest;
+  window.openBestiaryO=openLatest;
+  window.openBestiaryP=openLatest;
+  window.openBestiaryI=openLatest;
+  window.openBestiaryG=openLatest;
+  window.openBestiary37=openLatest;
+  window.openBestiary38=openLatest;
+  window.__openBestiaryLatest=()=>openLatest('general');
+  window.openBookDetail531=baseDetail531||window.openBookDetail531;
+  document.addEventListener('click',ev=>{
+    const t=ev.target;
+    const bestBtn=t?.closest?.('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');
+    if(bestBtn){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openLatest('general');return;}
+    if(!isBestiaryScreen())return;
+    const side=t?.closest?.('#bookSideNav531 [data-bnav531]');
+    if(side){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openLatest(side.dataset.bnav531||'general');return;}
+    const legacyNew=t?.closest?.('[data-book531],[data-book530],[data-newbook529]');
+    if(legacyNew){
+      const id=legacyNew.dataset.book531||legacyNew.dataset.book530||legacyNew.dataset.newbook529;
+      if(NEW_IDS.has(id)){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();detailLatest(id,GENERAL_NEW_IDS.has(id)?'general':'rift');return;}
+    }
+    const back=t?.closest?.('button');
+    if(back){
+      const id=back.id||'';
+      const text=(back.textContent||'').trim().toUpperCase();
+      if(id.includes('bookDetailBack')||id==='bookBackO'||id==='bookBackP'||id==='bookBack464'){
+        ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openLatest(activeTab());return;
+      }
+      if(id.includes('bookHubBack')||id==='bookBack531'||id==='bookBack530'||(text.includes('VOLTAR')&&titleText().includes('BESTIÁRIO'))){
+        ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();removeSideNav();try{(window.openDuneHub461||window.openHub461||window.openHubMenu37||window.openStartMenu)?.();}catch{}return;
+      }
+    }
+  },true);
+  const mo=new MutationObserver(()=>cleanIfOutsideBook());
+  mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  setInterval(cleanIfOutsideBook,650);
+  setTimeout(()=>{addStyle539();cleanIfOutsideBook();},0);
+  console.log('Chrono Shards 5.3.9 — rotas do Bestiário e tickets laterais corrigidos');
+})();
+</script>
+
+
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.4.0 — BESTIÁRIO: HUB + VOLTAR CORRIGIDOS
+   - O botão do Bestiário em Conquistas/Missões não usa mais IDs antigos
+     que listeners velhos capturavam antes da rota nova.
+   - O Voltar da aba Geral volta para Conquistas/Missões, não recarrega o livro.
+   - Tickets laterais desaparecem ao sair do Bestiário.
+   ──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoRift540BestiaryHubReturnFix)return;
+  window.__chronoRift540BestiaryHubReturnFix=true;
+  const SAFE_BEST_ID='hubBestiarySafe540';
+  const SAFE_BACK_ID='bookHubBackSafe540';
+  const SAFE_RIFT_BACK_ID='bookRiftBackSafe540';
+  function qs(sel,root=document){try{return root.querySelector(sel)}catch{return null}}
+  function qsa(sel,root=document){try{return [...root.querySelectorAll(sel)]}catch{return []}}
+  function overlayVisible(){return !!window.overlay && !window.overlay.classList.contains('hidden')}
+  function card(){return window.overlayCard||document.getElementById('overlayCard')||qs('.card')}
+  function h1(){return (card()?.querySelector('h1')?.textContent||'').trim().toUpperCase()}
+  function isBook(){const c=card();if(!c||!overlayVisible())return false;const cls=String(c.className||'').toLowerCase();return cls.includes('bestiary')||h1().includes('BESTIÁRIO')||!!qs('[data-book461],[data-book464],[data-book531],[data-book530],[data-newbook529],[data-book-o],[data-book-p]',c)}
+  function removeTickets(){qsa('#bookSideNav531,.bookTickets529,.bookTickets530').forEach(el=>el.remove())}
+  function openHub(){
+    removeTickets();
+    try{
+      const fn=window.openDuneHub461||window.openHub461||window.openHub40||window.openHubMenu37;
+      if(typeof fn==='function')fn();
+      else if(typeof window.openStartMenu==='function')window.openStartMenu();
+    }catch(e){console.error('Falha ao voltar para Conquistas/Missões 5.4.0',e)}
+    setTimeout(sanitizeHub,0);setTimeout(sanitizeHub,80);
+  }
+  function openLatestBook(tab='general'){
+    try{
+      if(typeof window.openBestiary531==='function')window.openBestiary531(tab);
+      else if(typeof window.__openBestiaryLatest==='function')window.__openBestiaryLatest();
+      else if(typeof window.openBestiary464==='function')window.openBestiary464();
+    }catch(e){console.error('Falha ao abrir Bestiário 5.4.0',e)}
+    setTimeout(()=>{sanitizeBook();},0);setTimeout(()=>{sanitizeBook();},90);setTimeout(()=>{sanitizeBook();},240);
+  }
+  function sanitizeHub(root=document){
+    // Substitui todos os botões antigos do Bestiário por um botão com ID neutro.
+    // Isso impede que listeners antigos tipo #hubBestiary461/#hubBestiary40 abram a versão velha antes da nova.
+    const oldButtons=qsa('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]',root)
+      .filter(b=>b && b.id!==SAFE_BEST_ID && !b.closest('#bookSideNav531'));
+    oldButtons.forEach(old=>{
+      const clone=old.cloneNode(true);
+      clone.id=SAFE_BEST_ID;
+      clone.dataset.bestSafe540='1';
+      clone.removeAttribute('data-open-bestiary');
+      clone.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();ev?.stopImmediatePropagation?.();openLatestBook('general')};
+      old.replaceWith(clone);
+    });
+    qsa('#'+SAFE_BEST_ID,root).forEach(btn=>{
+      btn.removeAttribute('data-open-bestiary');
+      btn.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();ev?.stopImmediatePropagation?.();openLatestBook('general')};
+    });
+  }
+  function isDetailScreen(){
+    const t=h1();
+    if(!isBook())return false;
+    if(t==='BESTIÁRIO'||t==='BESTIÁRIO DAS FISSURAS')return false;
+    if(t.includes('REGISTRO BLOQUEADO'))return true;
+    return !!qs('#bookDetailBack531,#bookDetailBack530,#bookBackO,#bookBackP',card());
+  }
+  function sanitizeBook(){
+    const c=card();
+    if(!isBook()){removeTickets();return sanitizeHub();}
+    // Botões antigos de tickets internos nunca ficam vivos.
+    qsa('.bookTickets529,.bookTickets530',document).forEach(el=>el.remove());
+    // Voltar da LISTA geral. Em versões antigas o ID bookBack464 era confundido como detalhe.
+    const generalBack=qs('#bookBack464,#bookBack461,#bookHubBackO,#bookHubBackP,#bookHubBack464',c);
+    if(generalBack && !isDetailScreen()){
+      generalBack.id=SAFE_BACK_ID;
+      generalBack.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();ev?.stopImmediatePropagation?.();openHub()};
+    }
+    // Voltar da lista de fissuras.
+    const riftBack=qs('#bookBack531,#bookBack530,#bookBackRift529',c);
+    if(riftBack && !isDetailScreen()){
+      riftBack.id=SAFE_RIFT_BACK_ID;
+      riftBack.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();ev?.stopImmediatePropagation?.();openHub()};
+    }
+    // Voltar de detalhe continua voltando para a aba correta do bestiário novo.
+    qsa('#bookDetailBack531,#bookDetailBack530',c).forEach(btn=>{
+      btn.onclick=ev=>{ev?.preventDefault?.();ev?.stopPropagation?.();ev?.stopImmediatePropagation?.();
+        const nav=qs('#bookSideNav531 button.active');
+        const tab=nav?.dataset?.bnav531||(h1().includes('FISSURA')?'rift':'general');
+        openLatestBook(tab);
+      };
+    });
+  }
+  // Wrappers: qualquer hub aberto passa por sanitização imediatamente.
+  ['openDuneHub461','openHub461','openHub40','openHubMenu37'].forEach(name=>{
+    const old=window[name];
+    if(typeof old==='function'&&!old.__rift540){
+      const wrapped=function(){const r=old.apply(this,arguments);sanitizeHub();setTimeout(sanitizeHub,0);setTimeout(sanitizeHub,90);return r};
+      wrapped.__rift540=true;
+      window[name]=wrapped;
+      try{ if(name==='openHubMenu37') openHubMenu37=wrapped; }catch{}
+      try{ if(name==='openHub40') openHub40=wrapped; }catch{}
+      try{ if(name==='openHub461') openHub461=wrapped; }catch{}
+    }
+  });
+  // Wrappers do bestiário: depois de abrir, ajusta Voltar/tickets.
+  ['openBestiary531','openBestiary530','openBestiary529','openBestiary464','openBestiary461','openBestiaryO','openBestiaryP'].forEach(name=>{
+    const old=window[name];
+    if(typeof old==='function'&&!old.__rift540Book){
+      const wrapped=function(){const r=old.apply(this,arguments);setTimeout(sanitizeBook,0);setTimeout(sanitizeBook,100);return r};
+      wrapped.__rift540Book=true;
+      window[name]=wrapped;
+    }
+  });
+  document.addEventListener('click',ev=>{
+    const t=ev.target;
+    const safe=t?.closest?.('#'+SAFE_BEST_ID);
+    if(safe){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openLatestBook('general');return;}
+    // Se, por algum motivo, um botão antigo escapar da sanitização, ainda captura antes do usuário perceber.
+    const old=t?.closest?.('#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');
+    if(old){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();sanitizeHub();openLatestBook('general');return;}
+    const back=t?.closest?.('#'+SAFE_BACK_ID+',#'+SAFE_RIFT_BACK_ID);
+    if(back){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();openHub();return;}
+  },true);
+  const mo=new MutationObserver(()=>{sanitizeHub();sanitizeBook();});
+  mo.observe(document.body,{childList:true,subtree:true});
+  setTimeout(()=>{sanitizeHub();sanitizeBook();},0);
+  setInterval(()=>{ if(isBook())sanitizeBook(); else removeTickets(); sanitizeHub(); },900);
+  console.log('Chrono Shards 5.4.0 — Bestiário do hub e Voltar corrigidos');
+})();
+</script>
 </body>
 </html>
