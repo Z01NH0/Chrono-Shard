@@ -17330,5 +17330,453 @@ function killKey37(e){
 })();
 </script>
 
+
+<script>
+/* ── Chrono Shards 5.4.9 — Power-ups finais + catálogo clássico restaurado ── */
+(function(){
+  if(window.__chronoRift548PowerupsFinal) return;
+  window.__chronoRift548PowerupsFinal = true;
+
+  const PATCH='Chrono Shards 5.4.9 — Power-ups finais com catálogo clássico';
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const UNLOCK_KEY=SAVE+'_power_catalog_unlocks_544';
+  const $=(q,r=document)=>r.querySelector(q);
+  const $$=(q,r=document)=>Array.from(r.querySelectorAll(q));
+  const N=v=>Number(v||0);
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const norm=s=>String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||'power';
+  const COLOR={COMUM:'#75d8ff',RARO:'#86ffb0','ÉPICO':'#c6a0ff','LENDÁRIO':'#ffd166','MÍTICO':'#ff5c9f'};
+  const TAGS={
+    precisao:['PRECISÃO','#75d8ff','Críticos, perfuração, ricochetes e dano técnico.'],
+    velocidade:['VELOCIDADE','#7fffd4','Movimento e cadência de ataque.'],
+    dash:['DASH','#ffe08c','Distância, recarga e impacto do dash.'],
+    foco:['FOCO','#b58cff','Foco máximo, regeneração e recarga de habilidades.'],
+    escudo:['DEFESA','#86ffb0','HP, armadura, escudo e sobrevivência.'],
+    explosao:['EXPLOSÃO','#ffb347','Área, impacto e munições instáveis.'],
+    veneno:['VENENO','#9dff6e','Químicos, poças e dano contínuo.'],
+    construcao:['CONSTRUÇÃO','#9bedff','Drones, torretas e suporte automático.'],
+    vampirismo:['VAMPIRISMO','#ff799e','Cura e sustain durante a run.'],
+    economia:['ECONOMIA','#ffd166','Ouro e relíquias durante a partida.'],
+    tesouro:['TESOURO','#ffde7a','Drops raros de bosses, chaves e Fragmentos Chrono.'],
+    geral:['GERAL','#dfe8ff','Bônus neutros sem categoria específica.']
+  };
+  const tagColor=t=>(TAGS[t]&&TAGS[t][1])||'#dfe8ff';
+
+  function readMeta(){
+    let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{m={}};
+    m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected);
+    m.relicShards=N(m.relicShards);m.chronoFragments=N(m.chronoFragments);m.awakeningKeys=N(m.awakeningKeys);
+    return m;
+  }
+  function writeMeta(m){try{localStorage.setItem(SAVE,JSON.stringify(m||{})); if(game)game.meta=m;}catch{}}
+  function readUnlocks(){try{return JSON.parse(localStorage.getItem(UNLOCK_KEY)||'{}')||{}}catch{return {}}}
+  function writeUnlocks(m){try{localStorage.setItem(UNLOCK_KEY,JSON.stringify(m||{}))}catch{}}
+  function allinActive(){const m=readMeta();return !!(m.allUnlocked||m.allInUnlocked);}
+  function unlockPowerById(id){const u=readUnlocks();u[id]=true;writeUnlocks(u);}
+  function unlockPower(p){if(!p)return;unlockPowerById(p.id||norm(p.name));}
+  function unlockAllFinalPowers(){const u=readUnlocks();FINAL_POWERUPS.forEach(p=>u[p.id]=true);writeUnlocks(u);}
+
+  function ensurePowerState(){
+    if(!game) return;
+    game.upgrades=game.upgrades||{};
+    game.upgrades.uniquePicks37=game.upgrades.uniquePicks37||{};
+    game.upgrades.powerPicks548=game.upgrades.powerPicks548||{};
+    game.upgrades.synergy529=game.upgrades.synergy529||{tags:{},active:{}};
+    game.upgrades.synergy529.tags=game.upgrades.synergy529.tags||{};
+    game.upgrades.synergy529.active=game.upgrades.synergy529.active||{};
+    game.upgrades.goldDropBonus548=N(game.upgrades.goldDropBonus548);
+    game.upgrades.relicDropBonus548=N(game.upgrades.relicDropBonus548);
+    game.upgrades.bossRelicBonus548=N(game.upgrades.bossRelicBonus548);
+    game.upgrades.rareBossDropBonus548=N(game.upgrades.rareBossDropBonus548);
+    game.upgrades.skillHaste548=N(game.upgrades.skillHaste548);
+    game.upgrades.dashHaste548=N(game.upgrades.dashHaste548);
+    game.upgrades.dashDistanceBonus548=N(game.upgrades.dashDistanceBonus548);
+    game.upgrades.dashDamageBonus548=N(game.upgrades.dashDamageBonus548);
+  }
+
+  function growHpPct(pct){if(!game?.player)return;const p=game.player,old=p.maxHp; p.maxHp*=1+pct; p.hp=clamp(p.hp+(p.maxHp-old),0,p.maxHp);}
+  function growFocusPct(pct){if(!game?.player)return;const p=game.player,old=p.maxFocus; p.maxFocus*=1+pct; p.focus=clamp(p.focus+(p.maxFocus-old),0,p.maxFocus);}
+  function addDronePower(){
+    ensurePowerState(); if(!game?.player)return;
+    game.drones=game.drones||[];
+    const relicDrone=game.upgrades.droneUnlocked?1:0;
+    const current=Math.max(game.drones.length,relicDrone);
+    if(current>=4) return;
+    const idx=game.drones.length;
+    game.drones.push({angle:(Math.PI*2/4)*idx,dist:58,fireCd:0,x:game.player.x,y:game.player.y});
+    game.upgrades.droneAllied548=Math.min(4,Math.max(N(game.upgrades.droneAllied548)+1,current+1));
+    try{addFloatingText(game.player.x,game.player.y-28,`DRONE ${Math.min(4,current+1)}/4`,'#9bedff',15)}catch{}
+  }
+  function droneShow(){
+    if(!game)return true;
+    const relicDrone=game.upgrades?.droneUnlocked?1:0;
+    return Math.max((game.drones||[]).length,relicDrone,N(game.upgrades?.droneAllied548))<4;
+  }
+
+  const FINAL_POWERUPS=[
+    // COMUNS
+    {id:'dano_10',rarity:'COMUM',tag:'precisao',weight:42,name:'Dano +10%',desc:'Aumenta todo dano causado em 10%.',apply:()=>game.upgrades.damage+=.10},
+    {id:'cadencia_14',rarity:'COMUM',tag:'velocidade',weight:37,name:'Cadência +14%',desc:'Atira mais rápido. No Arqueiro também ajuda a carregar o tiro máximo.',apply:()=>{game.upgrades.fireRate+=.14;game.upgrades.archerChargeHaste548=N(game.upgrades.archerChargeHaste548)+.14}},
+    {id:'velocidade_10',rarity:'COMUM',tag:'velocidade',weight:34,name:'Velocidade +10%',desc:'Melhora movimentação.',apply:()=>game.upgrades.speed+=.10},
+    {id:'foco_18',rarity:'COMUM',tag:'foco',weight:30,name:'Foco máximo +18',desc:'Mais espaço para habilidades.',apply:()=>{game.player.maxFocus+=18;game.player.focus+=18}},
+    {id:'passos_leves',rarity:'COMUM',tag:'dash',weight:24,name:'Passos Leves',desc:'Aumenta velocidade e melhora levemente o dash.',apply:()=>{game.upgrades.speed+=.07;game.upgrades.dashHaste548+=.05;game.upgrades.dashRegen=(game.upgrades.dashRegen||1)+.10}},
+    {id:'foco_condensado',rarity:'COMUM',tag:'foco',weight:24,name:'Foco Condensado',desc:'Foco regenera melhor e habilidades ficam mais consistentes.',apply:()=>{game.upgrades.focusRegen=(game.upgrades.focusRegen||1)+.18;game.upgrades.skillHaste548+=.02}},
+    {id:'casca_temporal',rarity:'COMUM',tag:'escudo',weight:22,name:'Casca Temporal',desc:'Ao tomar dano, ganha redução de dano por 2 segundos.',apply:()=>game.upgrades.temporalShell529=(game.upgrades.temporalShell529||0)+.14},
+    {id:'fragmento_magnetico',rarity:'COMUM',tag:'geral',weight:22,name:'Fragmento Magnético',desc:'Aumenta alcance de coleta de XP, ouro, relíquias e faíscas.',apply:()=>game.upgrades.magnet=(game.upgrades.magnet||0)+55},
+    {id:'foco_5pct',rarity:'COMUM',tag:'foco',weight:25,name:'Foco máximo +5%',desc:'Aumenta o foco máximo em 5%.',apply:()=>growFocusPct(.05)},
+    {id:'hp_2pct',rarity:'COMUM',tag:'escudo',weight:25,name:'HP máximo +2%',desc:'Aumenta o HP máximo em 2%.',apply:()=>growHpPct(.02)},
+
+    // RAROS
+    {id:'perfuracao_1',rarity:'RARO',tag:'precisao',weight:20,name:'Perfuração +1',desc:'Projéteis atravessam mais um inimigo.',apply:()=>game.upgrades.pierce+=1},
+    {id:'critico_8',rarity:'RARO',tag:'precisao',weight:18,name:'Crítico +8%',desc:'Mais chance de dano crítico.',apply:()=>game.upgrades.critChance+=.08},
+    {id:'tiro_fantasma',rarity:'RARO',tag:'precisao',weight:16,name:'Tiro Fantasma',desc:'A cada alguns disparos, o próximo tiro atravessa paredes. Não afeta Bombardeiro nem Exterminador.',apply:()=>game.upgrades.wallGhost529=(game.upgrades.wallGhost529||0)+1},
+    {id:'cacador_elite',rarity:'RARO',tag:'precisao',weight:15,name:'Caçador de Elite',desc:'Causa mais dano contra elites, bosses e fissuras.',apply:()=>game.upgrades.eliteHunter529=(game.upgrades.eliteHunter529||0)+1},
+    {id:'boost_distancia',rarity:'RARO',tag:'dash',weight:17,name:'Boost de Distância',desc:'Aumenta em 5% a distância do dash.',apply:()=>game.upgrades.dashDistanceBonus548+=.05},
+    {id:'hp_5pct',rarity:'RARO',tag:'escudo',weight:17,name:'HP máximo +5%',desc:'Aumenta o HP máximo em 5%.',apply:()=>growHpPct(.05)},
+    {id:'passos_espinhosos',rarity:'RARO',tag:'dash',weight:15,name:'Passos Espinhosos',desc:'Aumenta o dano que o dash causa em 8%.',apply:()=>game.upgrades.dashDamageBonus548+=.08},
+    {id:'investimentos',rarity:'RARO',tag:'economia',weight:15,name:'Investimentos',desc:'Monstros dropam +5% de ouro.',apply:()=>game.upgrades.goldDropBonus548+=.05},
+    {id:'cacador_tesouros',rarity:'RARO',tag:'tesouro',weight:13,name:'Caçador de Tesouros',desc:'Aumenta drops raros de bosses em 0.5%.',apply:()=>game.upgrades.rareBossDropBonus548+=.005},
+    {id:'apressado',rarity:'RARO',tag:'foco',weight:14,name:'Apressado',desc:'Habilidades carregam 4% mais rápido.',apply:()=>game.upgrades.skillHaste548+=.04},
+
+    // ÉPICOS
+    {id:'balas_explosivas',rarity:'ÉPICO',tag:'explosao',weight:10,name:'Balas Explosivas',desc:'Impactos causam explosões em área.',apply:()=>{game.upgrades.explosiveBullets=true;game.upgrades.unstableAmmo529=(game.upgrades.unstableAmmo529||0)+1}},
+    {id:'multishot_1',rarity:'ÉPICO',tag:'precisao',weight:9,name:'Multishot +1',desc:'Adiciona um projétil extra por disparo.',apply:()=>game.upgrades.multishot+=1},
+    {id:'armadura_10',rarity:'ÉPICO',tag:'escudo',weight:8,name:'Armadura +10%',desc:'Reduz dano recebido.',apply:()=>game.upgrades.armor+=.10},
+    {id:'acid_mastery',rarity:'ÉPICO',tag:'veneno',weight:7,name:'Acid Mastery',desc:'Venenos ficam 35% mais fortes.',apply:()=>game.upgrades.acidMastery=(game.upgrades.acidMastery||0)+.35},
+    {id:'nucleo_reativo',rarity:'ÉPICO',tag:'escudo',weight:7,name:'Núcleo Reativo',desc:'Único: quando o escudo quebra por completo, explode em volta. Cooldown de 5s.',unique:true,show:()=>!game.upgrades.uniquePicks37.reactiveCore529,apply:()=>{game.upgrades.reactiveCore529=true;game.upgrades.uniquePicks37.reactiveCore529=true}},
+    {id:'sangue_cronal',rarity:'ÉPICO',tag:'vampirismo',weight:7,name:'Sangue Cronal',desc:'Kills têm chance de acelerar regeneração de escudo e recuperar um pouco de HP.',apply:()=>game.upgrades.chronoBlood529=(game.upgrades.chronoBlood529||0)+1},
+    {id:'lifesteal_05',rarity:'ÉPICO',tag:'vampirismo',weight:7,name:'Lifesteal +0.5%',desc:'Cura uma pequena parte do dano causado.',show:()=>N(game.upgrades.lifesteal)<.035,apply:()=>game.upgrades.lifesteal=Math.min(.035,N(game.upgrades.lifesteal)+.005)},
+    {id:'drone_aliado',rarity:'ÉPICO',tag:'construcao',weight:8,name:'Drone Aliado',desc:'Adiciona um drone aliado automático. Máximo de 4 drones, contando o drone da relíquia.',show:()=>droneShow(),apply:()=>addDronePower()},
+    {id:'forca_descomunal',rarity:'ÉPICO',tag:'escudo',weight:7,name:'Força Descomunal',desc:'Aumenta o dano em 15% e HP em 10%.',apply:()=>{game.upgrades.damage+=.15;growHpPct(.10)}},
+    {id:'precisao_cirurgica',rarity:'ÉPICO',tag:'precisao',weight:7,name:'Precisão Cirúrgica',desc:'Aumenta sua chance crítica e dano geral, mas reduz o foco máximo em 10%.',apply:()=>{game.upgrades.critChance+=.05;game.upgrades.damage+=.06;game.player.maxFocus=Math.max(50,game.player.maxFocus*.9);game.player.focus=Math.min(game.player.focus,game.player.maxFocus)}},
+    {id:'cacador_mestre_tesouros',rarity:'ÉPICO',tag:'tesouro',weight:6,name:'Caçador Mestre de Tesouros',desc:'Aumenta drops raros de bosses em 1.5%.',apply:()=>game.upgrades.rareBossDropBonus548+=.015},
+    {id:'investidor_nato',rarity:'ÉPICO',tag:'economia',weight:6,name:'Investidor Nato',desc:'Monstros dropam +10% de ouro.',apply:()=>game.upgrades.goldDropBonus548+=.10},
+    {id:'sem_tempo_conversas',rarity:'ÉPICO',tag:'foco',weight:6,name:'Sem Tempo pra Conversas',desc:'Habilidades e dash carregam 8% mais rápido.',apply:()=>{game.upgrades.skillHaste548+=.08;game.upgrades.dashHaste548+=.08}},
+
+    // LENDÁRIOS
+    {id:'rei_financas',rarity:'LENDÁRIO',tag:'economia',weight:2.2,name:'Rei das Finanças',desc:'Monstros dropam +20% de ouro e +5% de relíquias.',apply:()=>{game.upgrades.goldDropBonus548+=.20;game.upgrades.relicDropBonus548+=.05}},
+    {id:'mini_torreta_permanente',rarity:'LENDÁRIO',tag:'construcao',weight:2.0,name:'Mini-Torreta Permanente',desc:'Adiciona uma mini-torreta permanente à arena. Pode aparecer até 4 vezes.',show:()=>N(game.upgrades.permaTurrets37)<4,apply:()=>{game.upgrades.permaTurrets37=N(game.upgrades.permaTurrets37)+1; if(typeof spawnMiniTurret==='function') spawnMiniTurret(game.player.x+(Math.random()*160-80),game.player.y+(Math.random()*140-70));}},
+    {id:'bencao_chronos',rarity:'LENDÁRIO',tag:'escudo',weight:1.7,name:'Benção dos Chronos',desc:'Chance de ao invés de tomar dano, recuperar 5% de HP.',apply:()=>{game.upgrades.blessStacks37=N(game.upgrades.blessStacks37)+1;game.upgrades.chronosBlessingChance=N(game.upgrades.chronosBlessingChance)+.05}},
+    {id:'drop_vampirico',rarity:'LENDÁRIO',tag:'vampirismo',weight:1.6,name:'Drop Vampírico',desc:'Chance de inimigos deixarem kits médicos no chão ao morrerem.',show:()=>!game.upgrades.uniquePicks37.dropVampiric,apply:()=>{game.upgrades.dropVampiric=true;game.upgrades.uniquePicks37.dropVampiric=true}},
+    {id:'cadaver_flamejante',rarity:'LENDÁRIO',tag:'explosao',weight:1.45,name:'Cadáver Flamejante',desc:'Chance de queimar o chão com o corpo de seus inimigos.',show:()=>!game.upgrades.uniquePicks37.corpseFlame&&!game.upgrades.uniquePicks37.corpseIce,apply:()=>{game.upgrades.corpseFlame=true;game.upgrades.uniquePicks37.corpseFlame=true;game.upgrades.uniquePicks37.corpseIce=true}},
+    {id:'cadaver_congelante',rarity:'LENDÁRIO',tag:'escudo',weight:1.45,name:'Cadáver Congelante',desc:'Chance de congelar o chão com o corpo de seus inimigos.',show:()=>!game.upgrades.uniquePicks37.corpseIce&&!game.upgrades.uniquePicks37.corpseFlame,apply:()=>{game.upgrades.corpseIce=true;game.upgrades.uniquePicks37.corpseIce=true;game.upgrades.uniquePicks37.corpseFlame=true}},
+    {id:'orbita_desaceleradora',rarity:'LENDÁRIO',tag:'foco',weight:1.3,name:'Órbita Desaceleradora',desc:'Cria uma órbita que aparece e desaparece, desacelerando tiros inimigos próximos.',show:()=>!game.upgrades.uniquePicks37.orbitSlowAura,apply:()=>{game.upgrades.orbitSlowAura=true;game.upgrades.uniquePicks37.orbitSlowAura=true;game.orbitAuraState37=game.orbitAuraState37||{active:false,timer:3}}},
+    {id:'rei_piratas',rarity:'LENDÁRIO',tag:'tesouro',weight:1.25,name:'Rei dos Piratas',desc:'Aumenta drops raros de bosses em 5% e bosses dropam +10% de relíquias.',apply:()=>{game.upgrades.rareBossDropBonus548+=.05;game.upgrades.bossRelicBonus548+=.10}},
+    {id:'sai_pra_la',rarity:'LENDÁRIO',tag:'dash',weight:1.25,name:'Sai Pra Lá!',desc:'O dash vai dar um empurrão nos inimigos deixando eles paralisados por um tempo.',show:()=>!game.upgrades.uniquePicks37.saiPraLa548,apply:()=>{game.upgrades.saiPraLa548=true;game.upgrades.uniquePicks37.saiPraLa548=true}},
+
+    // MÍTICOS
+    {id:'necromante_elementar',rarity:'MÍTICO',tag:'foco',weight:.01,name:'Necromante Elementar',desc:'Chance de transformar inimigos em aliados elementais. +35% dano, +50% foco, +25% HP, -35% cadência.',show:()=>!game.upgrades.uniquePicks37.elementalNecro,apply:()=>{game.upgrades.elementalNecro=true;game.upgrades.uniquePicks37.elementalNecro=true;game.upgrades.damage+=.35;game.player.maxFocus*=1.5;game.player.focus=game.player.maxFocus;game.player.maxHp*=1.25;game.player.hp=game.player.maxHp;game.upgrades.fireRate=Math.max(.35,(game.upgrades.fireRate||1)*.65)}},
+    {id:'unidade_suprema',rarity:'MÍTICO',tag:'precisao',weight:.01,name:'Unidade Suprema',desc:'+50% velocidade, +100% cadência, +5 projéteis, +100% HP máximo e +25% dano.',show:()=>!game.upgrades.uniquePicks37.supremeUnit,apply:()=>{game.upgrades.speed+=.5;game.upgrades.fireRate+=1;game.upgrades.multishot+=5;game.player.maxHp*=2;game.player.hp=game.player.maxHp;game.upgrades.damage+=.25;game.upgrades.uniquePicks37.supremeUnit=true}}
+  ];
+
+  window.CHRONO_FINAL_POWERUPS_548=FINAL_POWERUPS;
+
+  function addTag548(tag){
+    ensurePowerState();
+    const s=game.upgrades.synergy529;
+    s.tags[tag]=N(s.tags[tag])+1;
+    if(s.tags[tag]>=3 && !s.active[tag]){
+      s.active[tag]=true;
+      activateSynergy548(tag);
+    }
+  }
+  function activateSynergy548(tag){
+    const [label,color]=TAGS[tag]||[String(tag).toUpperCase(),'#fff'];
+    if(tag==='precisao'){game.upgrades.precisionSynergy529=true;game.upgrades.critChance+=.04;game.upgrades.damage+=.04;}
+    if(tag==='velocidade'){game.upgrades.speed+=.06;game.upgrades.fireRate+=.06;game.upgrades.archerChargeHaste548=N(game.upgrades.archerChargeHaste548)+.06;}
+    if(tag==='dash'){game.upgrades.dashHaste548+=.08;game.upgrades.dashDamageBonus548+=.05;}
+    if(tag==='foco'){game.upgrades.focusRegen=(game.upgrades.focusRegen||1)+.18;game.upgrades.skillHaste548+=.04;}
+    if(tag==='escudo'){game.upgrades.armor+=.06;game.upgrades.guardianSynergy529=true;}
+    if(tag==='explosao'){game.upgrades.explosionSynergy529=true;game.upgrades.unstableAmmo529=N(game.upgrades.unstableAmmo529)+1;}
+    if(tag==='veneno'){game.upgrades.acidMastery=(game.upgrades.acidMastery||0)+.40;}
+    if(tag==='construcao'){game.upgrades.buildSynergy529=true;game.upgrades.turretDamage548=N(game.upgrades.turretDamage548)+.10;}
+    if(tag==='vampirismo'){game.upgrades.chronoBlood529=N(game.upgrades.chronoBlood529)+1;game.upgrades.lifesteal=Math.min(.035,N(game.upgrades.lifesteal)+.003);}
+    if(tag==='economia'){game.upgrades.goldDropBonus548+=.05;game.upgrades.relicDropBonus548+=.02;}
+    if(tag==='tesouro'){game.upgrades.rareBossDropBonus548+=.005;}
+    if(tag==='geral'){game.upgrades.damage+=.03;game.upgrades.focusRegen=(game.upgrades.focusRegen||1)+.05;}
+    try{addFloatingText(game.player.x,game.player.y-48,'SINERGIA: '+label,color,18);addRing(game.player.x,game.player.y,color,125,5)}catch{}
+  }
+
+  function weightedPick(pool){
+    const total=pool.reduce((s,u)=>s+N(u.weight||1),0)||1;
+    let r=Math.random()*total;
+    for(let i=0;i<pool.length;i++){r-=N(pool[i].weight||1);if(r<=0)return pool.splice(i,1)[0];}
+    return pool.pop();
+  }
+  function validPool(){
+    ensurePowerState();
+    return FINAL_POWERUPS.filter(p=>!p.show || p.show()).filter(Boolean);
+  }
+
+  window.openUpgradeMenu=function(){
+    if(!game)return;
+    ensurePowerState();
+    game.running=false;
+    overlay.classList.remove('hidden');
+    const pool=validPool(), choices=[];
+    const used=new Set();
+    while(choices.length<3 && pool.length){
+      const p=weightedPick(pool);
+      if(!p || used.has(p.id))continue;
+      used.add(p.id); choices.push(p);
+    }
+    const sy=game.upgrades.synergy529||{tags:{}};
+    overlayCard.innerHTML=`<h1>LEVEL UP ${game.level}</h1>
+      <p>Escolha uma melhoria. As tags ativam sinergias quando chegam em <b>3/3</b>.</p>
+      <div class="upgrade-grid">${choices.map((u,i)=>{
+        const col=COLOR[u.rarity]||'#fff', tc=tagColor(u.tag), count=Math.min(3,N(sy.tags?.[u.tag]));
+        return `<button class="upgrade-btn clean-up27" data-up548="${i}" style="--rarity:${col};border-color:${col}55">
+          <span class="rarity-label27" style="color:${col}">${esc(u.rarity)}</span>
+          <strong>${esc(u.name)}</strong>
+          <span>${esc(u.desc)}</span>
+          <em class="synergyChip529" style="--tag:${tc}">${esc((TAGS[u.tag]?.[0]||u.tag||'GERAL'))} ${count}/3</em>
+        </button>`;
+      }).join('')}</div>`;
+    overlayCard.querySelectorAll('[data-up548]').forEach(b=>{
+      b.onclick=()=>{
+        const u=choices[Number(b.dataset.up548)];
+        if(!u)return;
+        ensurePowerState();
+        try{u.apply?.();}catch(e){console.warn('Power-up falhou',u.name,e)}
+        game.upgrades.powerPicks548[u.id]=N(game.upgrades.powerPicks548[u.id])+1;
+        unlockPower(u);
+        addTag548(u.tag||'geral');
+        game.upgrades.lifesteal=Math.min(.035,N(game.upgrades.lifesteal));
+        overlay.classList.add('hidden');
+        game.running=true;
+        try{updateHUD?.();addFloatingText(game.player.x,game.player.y-34,u.name,COLOR[u.rarity]||'#fff',16)}catch{}
+      };
+    });
+  };
+  try{if(typeof openUpgradeMenu!=='undefined')openUpgradeMenu=window.openUpgradeMenu;}catch{}
+
+  // Efeitos sistêmicos dos novos power-ups.
+  const prevSpawnGold=window.spawnGold||spawnGold;
+  window.spawnGold=function(x,y,amount=5){
+    const bonus=game?.upgrades?.goldDropBonus548||0;
+    return prevSpawnGold.call(this,x,y,Math.max(1,Math.floor(Number(amount||0)*(1+bonus))));
+  };
+  try{if(typeof spawnGold!=='undefined')spawnGold=window.spawnGold;}catch{}
+
+  const prevSpawnRelic=window.spawnRelicShard||spawnRelicShard;
+  window.spawnRelicShard=function(x,y,amount=1){
+    let amt=Number(amount||1);
+    if(game){
+      const bonus=N(game.upgrades?.relicDropBonus548)+(game.__bossRelicContext548?N(game.upgrades?.bossRelicBonus548):0);
+      const raw=amt*bonus+N(game.__relicFrac548);
+      const extra=Math.floor(raw);
+      game.__relicFrac548=raw-extra;
+      if(Math.random()<game.__relicFrac548){amt+=1;game.__relicFrac548=0;}
+      amt+=extra;
+    }
+    return prevSpawnRelic.call(this,x,y,Math.max(1,amt));
+  };
+  try{if(typeof spawnRelicShard!=='undefined')spawnRelicShard=window.spawnRelicShard;}catch{}
+
+  const prevEnemyDeath548=window.enemyDeath||enemyDeath;
+  window.enemyDeath=function(index,e){
+    const wasBoss=!!(e&&(e.type==='boss'||e.bossType));
+    const x=e?.x||0,y=e?.y||0;
+    if(game)game.__bossRelicContext548=wasBoss;
+    const r=prevEnemyDeath548.apply(this,arguments);
+    if(game)game.__bossRelicContext548=false;
+    try{
+      if(wasBoss&&game){
+        const chance=N(game.upgrades?.rareBossDropBonus548);
+        if(chance>0){
+          const m=readMeta();
+          let msg='';
+          if(Math.random()<chance){m.awakeningKeys=N(m.awakeningKeys)+1;msg='CHAVE RARA';}
+          if(Math.random()<chance){m.chronoFragments=N(m.chronoFragments)+1;m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected)+1;msg=msg?msg+' + FRAGMENTO':'FRAGMENTO CHRONO';}
+          if(msg){writeMeta(m);try{addFloatingText(x,y-46,msg,'#ffde7a',15)}catch{}}
+        }
+      }
+    }catch(err){console.warn('Drops raros 5.4.8 falharam',err)}
+    return r;
+  };
+  try{if(typeof enemyDeath!=='undefined')enemyDeath=window.enemyDeath;}catch{}
+
+  const prevStartDash548=window.startDash||startDash;
+  window.startDash=function(){
+    const before=game?.player?.dashCharge;
+    const r=prevStartDash548.apply(this,arguments);
+    try{
+      if(game?.player && before>=100 && game.player.dashTime>0 && N(game.upgrades?.dashDistanceBonus548)>0){
+        game.player.dashTime*=1+N(game.upgrades.dashDistanceBonus548);
+      }
+    }catch{}
+    return r;
+  };
+  try{if(typeof startDash!=='undefined')startDash=window.startDash;}catch{}
+
+  const prevUpdatePlayer548=window.updatePlayer||updatePlayer;
+  window.updatePlayer=function(dt){
+    const r=prevUpdatePlayer548.apply(this,arguments);
+    try{
+      if(game?.player){
+        const skillH=N(game.upgrades?.skillHaste548);
+        if(skillH&&Array.isArray(game.skillCds))for(let i=0;i<game.skillCds.length;i++)game.skillCds[i]=Math.max(0,N(game.skillCds[i])-dt*skillH);
+        const dashH=N(game.upgrades?.dashHaste548);
+        if(dashH&&game.player.dashCharge<100)game.player.dashCharge=clamp(game.player.dashCharge+60*dt*dashH,0,100);
+        if(game.classKey==='archer'&&game.archerCharging&&N(game.upgrades?.archerChargeHaste548)>0){
+          game.archerCharge=Math.min(1.05,N(game.archerCharge)+dt*N(game.upgrades.archerChargeHaste548));
+        }
+      }
+    }catch{}
+    return r;
+  };
+  try{if(typeof updatePlayer!=='undefined')updatePlayer=window.updatePlayer;}catch{}
+
+  const prevUpdateEnemies548=window.updateEnemies||updateEnemies;
+  window.updateEnemies=function(dt){
+    let saved=null;
+    try{
+      if(game?.enemies?.length){
+        saved=[];
+        for(const e of game.enemies){
+          if(N(e.stun548)>0){e.stun548=Math.max(0,N(e.stun548)-dt);saved.push([e,e.speed]);e.speed=0;}
+        }
+      }
+    }catch{}
+    const r=prevUpdateEnemies548.apply(this,arguments);
+    try{if(saved)for(const [e,sp] of saved)e.speed=sp;}catch{}
+    try{
+      const p=game?.player;
+      if(p&&p.dashTime>0&&(N(game.upgrades?.dashDamageBonus548)>0||game.upgrades?.saiPraLa548)){
+        game.__dashHitCd548=game.__dashHitCd548||new WeakMap();
+        for(let i=(game.enemies||[]).length-1;i>=0;i--){
+          const e=game.enemies[i]; if(!e)continue;
+          const d=Math.hypot((p.x||0)-(e.x||0),(p.y||0)-(e.y||0));
+          if(d<(p.r||14)+(e.r||12)+8){
+            const last=game.__dashHitCd548.get(e)||0;
+            if((game.time||0)-last<.18)continue;
+            game.__dashHitCd548.set(e,game.time||0);
+            if(N(game.upgrades.dashDamageBonus548)>0)e.hp-=90*N(game.upgrades.dashDamageBonus548);
+            if(game.upgrades.saiPraLa548){
+              const a=Math.atan2((e.y||0)-(p.y||0),(e.x||0)-(p.x||0));
+              e.x+=Math.cos(a)*32; e.y+=Math.sin(a)*32; e.stun548=Math.max(N(e.stun548),.55);
+              try{addRing(e.x,e.y,'#ffe08c',34,3)}catch{}
+            }
+            if(e.hp<=0)enemyDeath(i,e);
+          }
+        }
+      }
+    }catch{}
+    return r;
+  };
+  try{if(typeof updateEnemies!=='undefined')updateEnemies=window.updateEnemies;}catch{}
+
+  // Catálogo final e guia de sinergias.
+  function addStyle(){
+    if($('#power548Style'))return;
+    const st=document.createElement('style');st.id='power548Style';st.textContent=`
+      .powerPanel548{width:min(94vw,1040px);max-height:88vh;overflow:auto;text-align:left}
+      .powerHead548{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+      .powerHead548 h1{margin:0;font-size:34px}.powerHead548 p{margin:6px 0 0;color:#b7c8ef}
+      .powerTabs548{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.powerTabs548 button{padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--co);color:var(--co);font:900 11px Orbitron,sans-serif;letter-spacing:.08em}.powerTabs548 button.active{background:color-mix(in srgb,var(--co) 24%,rgba(0,0,0,.35));box-shadow:0 0 20px color-mix(in srgb,var(--co) 22%,transparent)}
+      .powerGrid548{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}.powerCard548{position:relative;min-height:148px;border-radius:20px;padding:14px;border:1px solid color-mix(in srgb,var(--co) 45%,rgba(255,255,255,.10));background:radial-gradient(circle at 15% 0%,color-mix(in srgb,var(--co) 16%,transparent),transparent 42%),linear-gradient(145deg,rgba(8,11,27,.96),rgba(3,4,12,.98));box-shadow:0 0 26px color-mix(in srgb,var(--co) 12%,transparent);overflow:hidden}
+      .powerCard548.locked strong,.powerCard548.locked p,.powerCard548.locked .tag548{filter:blur(2.4px);opacity:.42}.powerCard548 .lock548{position:absolute;right:12px;top:10px;font-size:22px;opacity:.8}.powerCard548 b{display:inline-block;color:var(--co);font:900 10px Orbitron,sans-serif;letter-spacing:.1em;margin-bottom:7px}.powerCard548 strong{display:block;color:#fff;font:900 16px Rajdhani,sans-serif;margin-bottom:5px}.powerCard548 p{margin:0;color:#c7d8f7;font-size:13px;line-height:1.28}.tag548{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:5px 8px;border-radius:999px;border:1px solid var(--tag);color:var(--tag);font:900 10px Orbitron,sans-serif;letter-spacing:.07em;background:color-mix(in srgb,var(--tag) 12%,transparent)}
+      .powerTickets544,.powerTickets548{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:100;display:grid;gap:10px}.powerTicket544,.powerTicket548{writing-mode:vertical-rl;transform:rotate(180deg);border-radius:16px 0 0 16px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(180deg,rgba(117,216,255,.22),rgba(159,108,255,.22));color:#fff;padding:14px 9px;font:900 11px Orbitron,sans-serif;letter-spacing:.12em;cursor:pointer;box-shadow:0 0 24px rgba(117,216,255,.14)}.powerTicket544.active,.powerTicket548.active{border-color:#ffd166;background:linear-gradient(180deg,rgba(255,209,102,.32),rgba(117,216,255,.2));box-shadow:0 0 28px rgba(255,209,102,.24)}
+      .synIntro548{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0}.synIntro548 div{border-radius:18px;border:1px solid var(--co);background:color-mix(in srgb,var(--co) 10%,rgba(0,0,0,.4));padding:12px}.synIntro548 b{color:var(--co);font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.1em}
+      .synGrid548{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:12px}.synCard548{border-radius:20px;border:1px solid color-mix(in srgb,var(--co) 48%,rgba(255,255,255,.12));background:radial-gradient(circle at 15% 0%,color-mix(in srgb,var(--co) 18%,transparent),transparent 36%),linear-gradient(155deg,rgba(9,11,27,.96),rgba(3,5,14,.98));padding:14px}.synViz548{height:68px;border-radius:18px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;gap:8px;margin:9px 0}.synDot548{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--co);box-shadow:0 0 18px var(--co);color:#06101d;font-weight:900}.synCard548 h3{margin:0;color:#fff;font:900 17px Orbitron,sans-serif}.synCard548 p{margin:6px 0;color:#cbd9f6;line-height:1.34}
+      @media(max-width:820px){.powerTickets544,.powerTickets548{right:6px}.powerTicket544,.powerTicket548{padding:10px 6px}.powerGrid548{grid-template-columns:1fr}.powerHead548 h1{font-size:27px}}
+    `;document.head.appendChild(st);
+  }
+  
+  function ensureOldCatalogStyle549(){
+    if(document.getElementById('stylePower549OldCatalog'))return;
+    const st=document.createElement('style');st.id='stylePower549OldCatalog';st.textContent=`
+      .powerPage544{max-width:1100px;margin:0 auto;position:relative;background:radial-gradient(circle at 50% 0%,rgba(117,216,255,.11),transparent 36%),linear-gradient(155deg,rgba(8,11,28,.98),rgba(3,5,13,.98))!important;border-color:rgba(117,216,255,.18)!important;box-shadow:0 0 70px rgba(117,216,255,.10),0 22px 80px rgba(0,0,0,.55)!important}
+      .powerTop544{text-align:center;margin-bottom:12px}.powerTop544 h1{font-family:Orbitron,sans-serif;font-weight:900;letter-spacing:.08em;background:linear-gradient(135deg,#75d8ff,#b58cff,#ffd166);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.powerTabs544{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0 16px}.powerTabs544 button{border:1px solid var(--co);background:color-mix(in srgb,var(--co) 13%,rgba(0,0,0,.34));color:#fff;border-radius:999px;padding:9px 13px;font:900 11px Orbitron,sans-serif;letter-spacing:.12em;cursor:pointer}.powerTabs544 button.active{box-shadow:0 0 24px color-mix(in srgb,var(--co) 42%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--co) 42%,#11152f),rgba(8,10,23,.92))}
+      .powerGrid544{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.powerCard544{position:relative;min-height:164px;border-radius:20px;border:1px solid color-mix(in srgb,var(--co) 38%,rgba(255,255,255,.12));background:radial-gradient(circle at 18% 15%,color-mix(in srgb,var(--co) 18%,transparent),transparent 32%),linear-gradient(160deg,rgba(8,11,28,.94),rgba(3,5,13,.97));padding:14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 0 24px color-mix(in srgb,var(--co) 15%,transparent);overflow:hidden}.powerCard544.locked{filter:saturate(.45);opacity:.76}.powerIcon544{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:color-mix(in srgb,var(--co) 20%,rgba(0,0,0,.45));border:1px solid color-mix(in srgb,var(--co) 50%,rgba(255,255,255,.12));box-shadow:0 0 20px color-mix(in srgb,var(--co) 22%,transparent);margin-bottom:10px}.powerCard544 strong{display:block;color:#fff;font:900 16px Rajdhani,Arial;margin-bottom:5px}.powerCard544 p{font-size:13px;line-height:1.32;color:#c9d8f8;margin:0}.powerTag544{display:inline-flex;gap:6px;align-items:center;margin-top:10px;padding:5px 8px;border-radius:999px;border:1px solid var(--tag);color:var(--tag);background:color-mix(in srgb,var(--tag) 12%,transparent);font:900 10px Orbitron,sans-serif;letter-spacing:.08em}.powerLock544{position:absolute;right:12px;top:12px;font-size:22px;opacity:.72}.powerUnknown544{filter:blur(2.2px)}
+      .synGuide544{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:15px}.synCard544{border-radius:22px;border:1px solid color-mix(in srgb,var(--co) 48%,rgba(255,255,255,.12));background:radial-gradient(circle at 15% 0%,color-mix(in srgb,var(--co) 20%,transparent),transparent 38%),linear-gradient(155deg,rgba(9,11,27,.96),rgba(3,5,14,.98));padding:15px;box-shadow:0 0 26px color-mix(in srgb,var(--co) 18%,transparent)}.synViz544{height:70px;border-radius:18px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 0}.synDot544{width:36px;height:36px;border-radius:50%;background:var(--co);box-shadow:0 0 20px var(--co);display:grid;place-items:center;color:#07101a;font-weight:900}.synArrow544{color:#fff;font-weight:900;opacity:.85}.synCard544 h3{margin:0;color:#fff;font:900 18px Orbitron,sans-serif}.synCard544 p{margin:6px 0;color:#cbd9f6;line-height:1.34}.tagExplain544{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:16px 0}.tagExplain544 div{border-radius:16px;border:1px solid var(--co);background:color-mix(in srgb,var(--co) 11%,rgba(0,0,0,.32));padding:10px}.tagExplain544 b{color:var(--co);font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.1em}
+      @media(max-width:820px){.powerGrid544{grid-template-columns:1fr}.synGuide544{grid-template-columns:1fr}.powerPage544{width:94vw!important}}
+    `;document.head.appendChild(st);
+  }
+
+function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548')?.remove()}catch{}}
+  function ensureTickets(tab){
+    removeTickets();
+    const box=document.createElement('div');box.id='powerTickets548';box.className='powerTickets548';
+    box.innerHTML=`<button class="powerTicket548 ${tab==='powers'?'active':''}" id="ticketPowers548">Power-Ups</button><button class="powerTicket548 ${tab==='syn'?'active':''}" id="ticketSyn548">Sinergias</button>`;
+    document.body.appendChild(box);
+    $('#ticketPowers548').onclick=()=>openPowerCatalog548('COMUM');
+    $('#ticketSyn548').onclick=()=>openSynergyGuide548();
+  }
+  function openHub(){
+    removeTickets();
+    try{const fn=window.openDuneHub461||window.openHub461||window.openHub40||window.openHubMenu37;if(typeof fn==='function')return fn();}catch{}
+    overlay.classList.add('hidden');
+  }
+
+  
+  function openPowerCatalog548(rarity='COMUM'){
+    addStyle();ensureOldCatalogStyle549();ensureTickets('powers');overlay.classList.remove('hidden');
+    const unlocks=readUnlocks(), revealed=allinActive();
+    const rarities=[['COMUM',COLOR.COMUM,'Comuns'],['RARO',COLOR.RARO,'Raros'],['ÉPICO',COLOR['ÉPICO'],'Épicos'],['LENDÁRIO',COLOR['LENDÁRIO'],'Lendários'],['MÍTICO',COLOR['MÍTICO'],'Míticos']];
+    if(!rarities.some(x=>x[0]===rarity))rarity='COMUM';
+    const list=FINAL_POWERUPS.filter(p=>p.rarity===rarity);
+    const iconFor=p=>({precisao:'🎯',velocidade:'💨',dash:'⚡',foco:'🔮',escudo:'🛡️',explosao:'💥',veneno:'☣️',construcao:'🛠️',vampirismo:'🩸',economia:'💰',tesouro:'💎',geral:'✦'}[p.tag]||'✦');
+    const tabs=rarities.map(([r,c,l])=>`<button class="${r===rarity?'active':''}" style="--co:${c}" data-rarity548="${esc(r)}">${esc(l)}</button>`).join('');
+    const cards=list.map(p=>{
+      const ok=revealed||unlocks[p.id]||unlocks[norm(p.name)];
+      const tag=TAGS[p.tag]||TAGS.geral;
+      const name=ok?p.name:'???';
+      const desc=ok?p.desc:'Pegue este power-up uma vez durante a gameplay para revelar suas informações.';
+      return `<div class="powerCard544 ${ok?'':'locked'}" style="--co:${COLOR[p.rarity]};--tag:${tag[1]}"><span class="powerLock544">${ok?'✓':'🔒'}</span><div class="powerIcon544 ${ok?'':'powerUnknown544'}">${ok?iconFor(p):'?'}</div><strong>${esc(name)}</strong><p>${esc(desc)}</p><span class="powerTag544">${esc(tag[0])}</span></div>`;
+    }).join('')||'<p>Nenhum power-up nessa raridade.</p>';
+    overlayCard.className='card dune461 powerPage544';
+    overlayCard.innerHTML=`<div class="powerTop544"><span class="badge461" style="--co:${COLOR[rarity]}">CATÁLOGO</span><h1>POWER-UPS</h1><p class="duneSub461">Gerencie e veja todos os power-ups do jogo. Os bloqueados aparecem como mistério até você pegar cada um pelo menos uma vez na gameplay.</p></div><div class="powerTabs544">${tabs}</div><div class="powerGrid544">${cards}</div><div class="duneActions461"><button class="duneBtn461 dark" id="powerBack544">← Conquistas & Missões</button></div>`;
+    overlayCard.querySelectorAll('[data-rarity548]').forEach(b=>b.onclick=()=>openPowerCatalog548(b.dataset.rarity548));
+    $('#powerBack544')?.addEventListener('click',e=>{e.preventDefault();openHub();},{once:true});
+  }
+
+
+  
+  function openSynergyGuide548(){
+    addStyle();ensureOldCatalogStyle549();ensureTickets('syn');overlay.classList.remove('hidden');
+    overlayCard.className='card dune461 powerPage544';
+    const tagEntries=Object.entries(TAGS).filter(([k])=>k!=='geral');
+    const iconForTag=t=>({precisao:'🎯',velocidade:'💨',dash:'⚡',foco:'🔮',escudo:'🛡️',explosao:'💥',veneno:'☣️',construcao:'🛠️',vampirismo:'🩸',economia:'💰',tesouro:'💎'}[t]||'✦');
+    const buffFor={
+      precisao:'Críticos, dano técnico, perfuração e tiros mais confiáveis.',
+      velocidade:'Mais ritmo de jogo: velocidade, cadência e carga do Arqueiro mais rápida.',
+      dash:'Dash mais longo, mais frequente e com mais impacto.',
+      foco:'Habilidades carregam melhor e o foco sustenta mais ações.',
+      escudo:'Mais resistência, HP e efeitos defensivos.',
+      explosao:'Impactos em área ficam mais fortes e úteis contra hordas.',
+      veneno:'Poças, químicos e dano contínuo ficam mais perigosos.',
+      construcao:'Drones, torretas e suportes automáticos ficam mais relevantes.',
+      vampirismo:'Mais cura e sustain durante a run.',
+      economia:'Mais ouro e relíquias para escalar a partida.',
+      tesouro:'Mais chance de drops raros de bosses, chaves de Awakening e Fragmentos Chrono.'
+    };
+    const tags=tagEntries.map(([k,v])=>`<div style="--co:${v[1]}"><b>${esc(v[0])}</b><p>${esc(v[2])}</p></div>`).join('');
+    const cards=tagEntries.map(([k,v])=>`<div class="synCard544" style="--co:${v[1]}"><h3>${esc(v[0])}</h3><p><b>Junte 3 power-ups com essa tag.</b></p><div class="synViz544"><span class="synDot544">${iconForTag(k)}</span><span class="synArrow544">+</span><span class="synDot544">${iconForTag(k)}</span><span class="synArrow544">+</span><span class="synDot544">${iconForTag(k)}</span><span class="synArrow544">→</span><span class="synDot544">★</span></div><p>${esc(buffFor[k]||'Ativa um bônus especial durante a run.')}</p><span class="powerTag544" style="--tag:${v[1]}">Tag: ${esc(v[0])}</span></div>`).join('');
+    overlayCard.innerHTML=`<div class="powerTop544"><span class="badge461" style="--co:#ffd166">GUIA</span><h1>SINERGIAS</h1><p class="duneSub461">Cada power-up possui uma tag. Ao juntar <b>3 power-ups da mesma tag</b>, uma sinergia ativa aparece na esquerda da tela durante a run.</p></div><div class="tagExplain544">${tags}</div><div class="synGuide544">${cards}</div><div class="duneActions461"><button class="duneBtn461 dark" id="synBack544">← Conquistas & Missões</button></div>`;
+    $('#synBack544')?.addEventListener('click',e=>{e.preventDefault();openHub();},{once:true});
+  }
+
+  window.openPowerCatalog544=openPowerCatalog548;
+  window.openPowerCatalog548=openPowerCatalog548;
+  window.openSynergyGuide544=openSynergyGuide548;
+  window.openSynergyGuide548=openSynergyGuide548;
+
+  // Mantém o botão do hub apontando para o catálogo final.
+  document.addEventListener('click',e=>{
+    const p=e.target?.closest?.('#hubPowerUps544,[data-open-powerups],.powerHub544');
+    if(p){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openPowerCatalog548('COMUM');}
+    const back=e.target?.closest?.('#powerBack544,#synBack544');
+    if(back){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openHub();}
+  },true);
+
+  // Se Allin já estiver ativo, revela tudo quando o catálogo for usado.
+  if(allinActive()) unlockAllFinalPowers();
+
+  console.log(PATCH+' carregado');
+})();
+</script>
+
 </body>
 </html>
