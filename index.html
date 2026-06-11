@@ -17,7 +17,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ra
 canvas#game{
   width:min(98vw,1320px);height:auto;aspect-ratio:1360/780;
   border-radius:16px;border:1px solid rgba(120,200,255,0.15);
-  background:transpaArent;
+  background:transparent;
   box-shadow:0 0 80px rgba(80,140,255,0.12),inset 0 0 40px rgba(0,0,0,0.6);
   position:relative;z-index:2;cursor:none
 }
@@ -8591,10 +8591,10 @@ requestAnimationFrame(loop);
     engineer:'O Artífice desmonta relíquias como quem conversa com elas. Para ele, cada torreta é uma pequena promessa mecânica: ninguém luta sozinho enquanto ainda houver sucata brilhando no chão.',
     mage:'O Void Mage estudou o vazio até o vazio começar a responder. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.',
     ronin:'O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.',
-    alchemist:'O Alquimista nunca confiou em armas limpas. Desde sempre suas garrafas carregam o fardo de ser quem ele se tornou. Mas com um sorriso no rosto e uma caipira na medida, ele acredita que toda salvação precisa de um pouco de diversão.',
+    alchemist:'O Alquimista é um cara legal. Ele já teve várias tavernas aonde teve aventuras incríveis lutando contra montros gigantescos e absurdamente fortes. É o que ele fala quando fica meio bêbado, mas ele é um mestre na química, faz cada absurdo que as vezes nem ele sabe como fez aquilo. Seu objetivo aqui é resgatar sua esposa, depois que o Chrono explodiu no espaço tempo, ela sumiu e ele não sabe aonde ela está. As vezes ele diz que seu último desejo antes de morrer é conversar com ela, e tomar uma caipira juntos.',
     reaper:'Dizem que a lua e o sol foram nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.',
-    colonel:'O Coronel fala pouco sobre família e menos ainda sobre medo. Ainda assim, quando certos soldados avançam demais, seu bombardeio chega com precisão quase imparável, como se ele queria que alguém estivesse olhando para ele.',
-    chronoHero:'O Chrono-Hero é uma lenda construída em cristal, fogo e gelo. Criado para suportar colapsos temporais, ele luta como se cada suspiro fosse a última chance de costurar o mundo de volta.',
+    colonel:'O Coronel é um veterano de guerra bruto e forte como um tank, ele fala pouco sobre família e menos ainda sobre medo. Ainda assim, em meio a guerras e destruição, quando tudo em sua volta está perdido, ele é quase imparável, uma máquina de matar sanguinária, as vezes, parece que ele quer ser um exemplo para alguém, um exemplo de como sobreviver, um exemplo de pai pra filho.',
+    chronoHero:'Um herói construido a partir de pequenos fragmentos de Chrono puro e muita feitiçaria bizonha. Ele nasceu alguns anos após a ruptura do Chrono, e sempre teve uma grande curiosidade de saber o que é o mar, árvores, pássaros, toda a natureza, mas ele nasceu para ser uma máquina de guerra, um monstro que os maiorais controlam para buscar reconstruir o Chrono. Hoje, ele está em um grupo de mercenários ao lado do Ricocheteador, e o objetivo deles é trazer a ordem do universo novamente.',
     shadowChild:'O Demônio que assombra os Chronos, a alma que ecoa nas profundezas. Ele é o eco deixado por uma fissura proibida, uma forma viva de raiva antiga tentando decidir se o caos merece um herdeiro ou uma sentença.'
   };
 
@@ -9821,9 +9821,9 @@ function killKey37(e){
     {id:'splitter',g:'Elites',e:'🧬',name:'Splitter',hp:55,spd:85,dmg:'Contato moderado',atk:'Divide-se em unidades menores ao morrer.',lore:'Splitters aprenderam a sobreviver perdendo partes de si. Matar o corpo principal apenas libera as cópias que cresciam presas dentro dele.'},
     {id:'vomiter',g:'Elites',e:'☣️',name:'Vomiter',hp:140,spd:62,dmg:'Veneno',atk:'Cospe toxina e gera criaturas menores ao morrer.',lore:'Nas dunas antigas, Chrono e podridão se misturaram sob a areia. O Vomiter é uma cisterna viva desse veneno, lento e pesado, mas capaz de transformar o chão em ameaça.'},
     {id:'pukeling',g:'Elites',e:'🧪',name:'Pukeling',hp:18,spd:165,dmg:'5 + veneno',atk:'Corre em bando depois de surgir de um Vomiter.',lore:'Pukelings são larvas de veneno vivo. Vivem pouco, mas atacam com urgência, como se soubessem que só existem para espalhar a infestação.'},
-    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',atk:'Rajadas rápidas, invocações e pressão constante.',lore:'O Archon Core é um núcleo de guerra acelerado por Chrono. Ele governa pela cadência: ataca, convoca e força o jogador a lutar no ritmo dele.'},
-    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',atk:'Pisões, lasers e controle de área.',lore:'Existe há eras. Nasceu para ser um bastião de contenção, mas a energia que deveria selar rupturas o transformou num colosso consciente.'},
-    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',atk:'Fendas, projéteis, summons e suporte.',lore:'A Oracle Bloom floresceu onde natureza e Chrono se fundiram de modo irreversível. Ela prevê padrões e poda a arena como se cada monstro fosse parte de um jardim cruel.'},
+    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',atk:'Rajadas rápidas, invocações e pressão constante.',lore:'O Archon Core é um núcleo de um antigo portador da chave do Chrono, muitos o chamavam de "O Rei". Ninguém sabe o que aconteceu com O Rei, os registros somente mostram que mesmo sem um corpo, esse núcleo tem sede de sangue e esta sendo corrompido por alguma coisa, talvez isso indique o que pode ter acontecido com O Rei.'},
+    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',atk:'Pisões, lasers e controle de área.',lore:'Um dos raros monstros ancestrais da categoria Titã. Ele foi adormecido por milhares de anos, mas devido ao caos que nossa realidade se encontra agora, ele acordou, e acordou com fome. Mantenha máxima distância desse monstro, ele é extremamente perigoso.'},
+    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',atk:'Fendas, projéteis, summons e suporte.',lore:'A Oracle Bloom floresceu onde natureza e Chrono se fundiram de modo irreversível. Por conta disso, muitos a chamam de "A Salvadora", ou de "Purificadora de Pecados", mas oque realmente acontece aqui, é que ela esta sendo manipulada por algo, seu comportamento não é o mesmo desde sua ultima aparição antes da explosão. Ela carrega milhares de pequenos monstros e máquinas de Chrono dentro de si, talvez isso seja um método de ataque. Ela busca por vingança, mas não se sabe para quem.'},
     {id:'lostEmperor',g:'Boss Secreto',e:'🕳️',name:'Emperador Perdido',hp:7800,spd:70,dmg:'Catastrófico',atk:'Teleporta, distorce, bombardeia e domina a arena.',lore:'O Emperador Perdido foi um tirano que sucumbiu aos poderes do Chrono. Tentou controlar a fissura para subjugar povos inteiros, dobrar guerras antes que começassem e transformar a realidade em território conquistado. Ele falhou. Agora vive preso na fissura dimensional, dia após dia, esperando uma brecha para assumir o controle do mundo novamente. Mais do que um trono, ele busca vingança contra Lord Chrono, o único nome que ainda atravessa sua mente quebrada como uma ordem impossível de apagar.',secret:true}
   ];
   const byIdO=id=>enemyBookO.find(x=>x.id===id);
@@ -9939,9 +9939,9 @@ function killKey37(e){
     {id:'splitter',g:'Elites',e:'🧬',name:'Splitter',hp:55,spd:85,dmg:'Contato moderado',col:'#ff8cf0',atk:'Divide-se em unidades menores ao morrer.',lore:'Splitters aprenderam a sobreviver perdendo partes de si. Matar o corpo principal apenas libera as cópias que cresciam presas dentro dele.'},
     {id:'vomiter',g:'Elites',e:'☣️',name:'Vomiter',hp:140,spd:62,dmg:'Veneno',col:'#a6ff5d',atk:'Cospe toxina e gera criaturas menores ao morrer.',lore:'Nas dunas antigas, Chrono e podridão se misturaram sob a areia. O Vomiter é uma cisterna viva desse veneno, lento e pesado, mas capaz de transformar o chão em ameaça.'},
     {id:'pukeling',g:'Elites',e:'🧪',name:'Pukeling',hp:18,spd:165,dmg:'5 + veneno',col:'#b6ff7a',atk:'Corre em bando após surgir de um Vomiter.',lore:'Pukelings são larvas de veneno vivo. Vivem pouco, mas atacam com urgência, como se soubessem que só existem para espalhar a infestação.'},
-    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',col:'#ff2e63',atk:'Rajadas rápidas, explosões e invocação de lacaios.',lore:'O Archon Core é um núcleo de guerra acelerado por Chrono. Ele governa pela cadência: ataca, convoca e força o jogador a lutar no ritmo dele.'},
-    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',col:'#7b61ff',atk:'Pisões, lasers e pressão de área com enorme resistência.',lore:'Existe há eras. Nasceu para ser um bastião de contenção, mas a energia que deveria selar rupturas o transformou num colosso consciente.'},
-    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',col:'#b6ff7a',atk:'Fendas, rajadas, invocações e controle total da arena.',lore:'A Oracle Bloom floresceu onde natureza e Chrono se fundiram de modo irreversível. Ela prevê padrões e poda a arena como se cada monstro fosse parte de um jardim cruel.'},
+    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',col:'#ff2e63',atk:'Rajadas rápidas, explosões e invocação de lacaios.',lore:'O Archon Core é um núcleo de um antigo portador da chave do Chrono, muitos o chamavam de "O Rei". Ninguém sabe o que aconteceu com O Rei, os registros somente mostram que mesmo sem um corpo, esse núcleo tem sede de sangue e esta sendo corrompido por alguma coisa, talvez isso indique o que pode ter acontecido com O Rei.'},
+    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',col:'#7b61ff',atk:'Pisões, lasers e pressão de área com enorme resistência.',lore:'Um dos raros monstros ancestrais da categoria Titã. Ele foi adormecido por milhares de anos, mas devido ao caos que nossa realidade se encontra agora, ele acordou, e acordou com fome. Mantenha máxima distância desse monstro, ele é extremamente perigoso.'},
+    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',col:'#b6ff7a',atk:'Fendas, rajadas, invocações e controle total da arena.',lore:'A Oracle Bloom floresceu onde natureza e Chrono se fundiram de modo irreversível. Por conta disso, muitos a chamam de "A Salvadora", ou de "Purificadora de Pecados", mas oque realmente acontece aqui, é que ela esta sendo manipulada por algo, seu comportamento não é o mesmo desde sua ultima aparição antes da explosão. Ela carrega milhares de pequenos monstros e máquinas de Chrono dentro de si, talvez isso seja um método de ataque. Ela busca por vingança, mas não se sabe para quem.'},
     {id:'lostEmperor',g:'Boss Secreto',e:'☠️',name:'Emperador Perdido',hp:7800,spd:70,dmg:'Catastrófico',col:'#ff345e',secret:true,atk:'Teleporta, enche a arena de projéteis, distorce o vazio e pune qualquer hesitação.',lore:'O Emperador Perdido foi um tirano que sucumbiu aos poderes do Chrono. Tentou controlar a fissura para subjugar povos inteiros, dobrar guerras antes que começassem e transformar a realidade em território conquistado. Ele falhou. Agora vive preso na fissura dimensional, dia após dia, esperando uma brecha para assumir o controle do mundo novamente. Mais do que um trono, ele busca vingança contra Lord Chrono, o único nome que ainda atravessa sua mente quebrada como uma ordem impossível de apagar.'}
   ];
   const byIdP=id=>enemyBookP.find(e=>e.id===id);
@@ -10034,13 +10034,13 @@ function killKey37(e){
   const LORE37Q={
     assault:'Ele aprendeu com seu pai que coragem não é ausência de medo, é avançar mesmo quando a voz no rádio treme. Carrega técnicas de guerra antigas no corpo, mas nunca admite de quem herdou esse jeito de proteger todo mundo primeiro.',
     sniper:'Dizem que ele conta segundos melhor do que respira. Em cada disparo há paciência, distância e uma pergunta silenciosa: quantas linhas do tempo podem ser salvas por uma única bala?',
-    engineer:'O Artífice enxerga máquinas dentro de sucata e transforma ruínas Chrono em companheiros de combate. Para ele, toda arena é uma oficina sob ataque.',
+    engineer:'Ele é o grande construtor de monumentos e defesas impenetráveis, antes do caos, ele foi um homem de trabalho duro e boa reputação na galaxia inteira. Hoje, ele luta para sobreviver com os restos de sucata que tem para fazer companheiros, mas ele é tão habilidoso, que nem parece que suas torretas são feitas de coisas achadas por ai.',
     mage:'O Void Mage estudou o vazio até o vazio começar a olhar pra ele de volta. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.',
     ronin:'O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.',
-    alchemist:'O Alquimista nunca confiou em armas limpas. Desde sempre suas garrafas carregam o fardo de ser quem ele se tornou. Mas com um sorriso no rosto e uma caipira na medida, ele acredita que toda salvação precisa de um pouco de diversão.',
+    alchemist:'O Alquimista é um cara legal. Ele já teve várias tavernas aonde teve aventuras incríveis lutando contra montros gigantescos e absurdamente fortes. É o que ele fala quando fica meio bêbado, mas ele é um mestre na química, faz cada absurdo que as vezes nem ele sabe como fez aquilo. Seu objetivo aqui é resgatar sua esposa, depois que o Chrono explodiu no espaço tempo, ela sumiu e ele não sabe aonde ela está. As vezes ele diz que seu último desejo antes de morrer é conversar com ela, e tomar uma caipira juntos.',
     reaper:'Dizem que a lua e o sol foram nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.',
-    colonel:'O Coronel fala pouco sobre família e menos ainda sobre medo. Ainda assim, quando certos soldados avançam demais, seu bombardeio chega com precisão quase imparável, como se ele queria que alguém estivesse olhando para ele.',
-    chronoHero:'O Chrono-Hero é uma lenda construída em cristal, fogo e gelo. Criado para suportar colapsos temporais, ele luta como se cada suspiro fosse a última chance de costurar o mundo de volta.',
+    colonel:'O Coronel é um veterano de guerra bruto e forte como um tank, ele fala pouco sobre família e menos ainda sobre medo. Ainda assim, em meio a guerras e destruição, quando tudo em sua volta está perdido, ele é quase imparável, uma máquina de matar sanguinária, as vezes, parece que ele quer ser um exemplo para alguém, um exemplo de como sobreviver, um exemplo de pai pra filho.',
+    chronoHero:'Um herói construido a partir de pequenos fragmentos de Chrono puro e muita feitiçaria bizonha. Ele nasceu alguns anos após a ruptura do Chrono, e sempre teve uma grande curiosidade de saber o que é o mar, árvores, pássaros, toda a natureza, mas ele nasceu para ser uma máquina de guerra, um monstro que os maiorais controlam para buscar reconstruir o Chrono. Hoje, ele está em um grupo de mercenários ao lado do Ricocheteador, e o objetivo deles é trazer a ordem do universo novamente.',
     moonSlayer:'Nascido nas sombras, mas criado na luz. O Exterminador de Luas é um samurai experiente e muito inteligente. Já ensinou diversos espadachins, até mesmo aqueles que tinham um temperamento difícil de lidar. Com sua lâmina feita de titânio puro, e uma precisão divina, ele corta tudo como se fosse papel. Dizem que olhar nos olhos dele é a mesma coisa que encarar a escuridão, mas ele é gente boa.',
     shadowChild:'O Demônio. As trevas fundidas em um único ser. Esse é o espectro de filho das trevas, um ser construido da escuridão e moldado pela perdição. Seu maior desejo e destruir todos os Chronos que ele encontra, pois aquele quem o trouxe ao mundo, foi levado a loucura por eles.'
   };
@@ -10155,10 +10155,10 @@ function killKey37(e){
     sniper:'Dizem que ele conta segundos melhor do que respira. Em cada disparo há paciência, distância e uma pergunta silenciosa: quantas linhas do tempo podem ser salvas por uma única bala?',
     mage:'O Void Mage estudou o vazio até o vazio começar a responder. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.',
     ronin:'O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.',
-    alchemist:'O Alquimista nunca confiou em armas limpas. Desde sempre suas garrafas carregam o fardo de ser quem ele se tornou. Mas com um sorriso no rosto e uma caipira na medida, ele acredita que toda salvação precisa de um pouco de diversão.',
+    alchemist:'O Alquimista é um cara legal. Ele já teve várias tavernas aonde teve aventuras incríveis lutando contra montros gigantescos e absurdamente fortes. É o que ele fala quando fica meio bêbado, mas ele é um mestre na química, faz cada absurdo que as vezes nem ele sabe como fez aquilo. Seu objetivo aqui é resgatar sua esposa, depois que o Chrono explodiu no espaço tempo, ela sumiu e ele não sabe aonde ela está. As vezes ele diz que seu último desejo antes de morrer é conversar com ela, e tomar uma caipira juntos.',
     reaper:'Nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.',
-    colonel:'O Coronel fala pouco sobre família e menos ainda sobre medo. Ainda assim, quando certos soldados avançam demais, seu bombardeio chega com precisão quase imparável, como se ele queria que alguém estivesse olhando para ele.',
-    chronoHero:'O Chrono-Hero é uma lenda construída em cristal, fogo e gelo. Criado para suportar colapsos temporais, ele luta como se cada suspiro fosse a última chance de costurar o mundo de volta.',
+    colonel:'O Coronel é um veterano de guerra bruto e forte como um tank, ele fala pouco sobre família e menos ainda sobre medo. Ainda assim, em meio a guerras e destruição, quando tudo em sua volta está perdido, ele é quase imparável, uma máquina de matar sanguinária, as vezes, parece que ele quer ser um exemplo para alguém, um exemplo de como sobreviver, um exemplo de pai pra filho.',
+    chronoHero:'Um herói construido a partir de pequenos fragmentos de Chrono puro e muita feitiçaria bizonha. Ele nasceu alguns anos após a ruptura do Chrono, e sempre teve uma grande curiosidade de saber o que é o mar, árvores, pássaros, toda a natureza, mas ele nasceu para ser uma máquina de guerra, um monstro que os maiorais controlam para buscar reconstruir o Chrono. Hoje, ele está em um grupo de mercenários ao lado do Ricocheteador, e o objetivo deles é trazer a ordem do universo novamente.',
     moonSlayer:'Nascido nas sombras, mas criado na luz. O Exterminador de Luas é um samurai experiente e muito inteligente. Já ensinou diversos espadachins, até mesmo aqueles que tinham um temperamento difícil de lidar. Com sua lâmina feita de titânio puro, e uma precisão divina, ele corta tudo como se fosse papel. Dizem que olhar nos olhos dele é a mesma coisa que encarar a escuridão, mas ele é gente boa.',
     engineer:'O Artífice transforma sucata Chrono em máquinas vivas, torretas e drones que caçam por ele.',
     shadowChild:'Uma presença que só aparece depois que a fissura mais sombria é vencida. Seu corpo parece uma casca preta pulsando com memórias vermelhas do caos.'
@@ -10556,11 +10556,11 @@ function killKey37(e){
     {id:'pukeling',g:'Elites',e:'🧪',name:'Pukeling',hp:18,spd:165,dmg:'5 + veneno',col:'#b6ff7a',atk:'Corre em bando após surgir de um Vomiter.',lore:'Pukelings são larvas de veneno vivo. Vivem pouco, mas atacam com urgência, como se soubessem que só existem para espalhar a infestação.'},
     {id:'dreadbus',g:'Elites',e:'▰',name:'Carcaça-Crisálida',hp:820,spd:42,dmg:'Ninho lateral',col:PALETTE455.dreadbus.main,spawn:'Wave 17+',atk:'Avança devagar como uma carapaça viva, libera crias pelas laterais a cada 0.5s e dispara cápsulas orgânicas que racham em projéteis menores.',lore:'Uma crisálida de guerra criada para carregar larvas temporais dentro de placas blindadas. Depois do colapso, deixou de ser máquina e virou ninho: cada abertura lateral respira, cospe crias e protege o núcleo como se fosse uma fortaleza viva.'},
     {id:'nullHerald',g:'Elites',e:'◈',name:'Arauto do Zero',hp:640,spd:112,dmg:'Zonas nulas',col:PALETTE455.nullHerald.main,spawn:'Wave 19+',atk:'Cria campos que drenam foco, protege monstros próximos com escudo e dispara rajadas geométricas.',lore:'Antes de uma linha do tempo morrer, um Arauto aparece para anunciar o silêncio. Ele não grita; ele apaga o som das habilidades ao redor.'},
-    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',col:'#ff2e63',atk:'Rajadas rápidas, explosões e invocação de lacaios.',lore:'O Archon Core é um núcleo de guerra acelerado por Chrono. Ele governa pela cadência: ataca, convoca e força o jogador a lutar no ritmo dele.'},
-    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',col:'#7b61ff',atk:'Pisões, lasers e pressão de área com enorme resistência.',lore:'Existe há eras. Nasceu para ser um bastião de contenção, mas a energia que deveria selar rupturas o transformou num colosso consciente.'},
-    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',col:'#b6ff7a',atk:'Fendas, rajadas, invocações e controle total da arena.',lore:'A Oracle Bloom floresceu onde natureza e Chrono se fundiram de modo irreversível. Ela prevê padrões e poda a arena como se cada monstro fosse parte de um jardim cruel.'},
-    {id:'eclipseInquisitor',g:'Bosses',e:'✚',name:'Inquisidor do Eclipse',hp:6000,spd:88,dmg:'Selo rubro',col:PALETTE455.eclipseInquisitor.main,spawn:'25% em boss waves de 5',atk:'Cria o Julgamento Rubro: uma área enorme que se preenche. Se o jogador estiver dentro no fim, recebe um raio vermelho que causa pouco dano e sela dash, skills e ultimate por 15s.',lore:'Um juiz construído por Chronos hereges para punir qualquer guerreiro que manipulasse tempo demais. Seu martelo não mata primeiro: ele condena o corpo a obedecer.'},
-    {id:'glacialBeast',g:'Bosses',e:'❄️',name:'Besta Gélida de Chrono',hp:7500,spd:96,dmg:'Gelo ancestral',col:PALETTE455.glacialBeast.main,spawn:'25% em boss waves de 10',atk:'Investe com rajadas congelantes, cria prisões de gelo e espalha tempestades que reduzem movimento e castigam posicionamento ruim.',lore:'A Besta Gélida não nasceu do frio comum. Ela foi formada quando a primeira explosão Chrono congelou uma parte inteira do tempo, prendendo dor, neve e instinto no mesmo corpo. Dizem que ela ainda reconhece o cheiro dos sobreviventes daquele dia; quando encontra o Arqueiro do Chrono, não caça apenas um inimigo, caça uma memória que deveria ter morrido soterrada no gelo.'},
+    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',col:'#ff2e63',atk:'Rajadas rápidas, explosões e invocação de lacaios.',lore:'O Archon Core é um núcleo de um antigo portador da chave do Chrono, muitos o chamavam de "O Rei". Ninguém sabe o que aconteceu com O Rei, os registros somente mostram que mesmo sem um corpo, esse núcleo tem sede de sangue e esta sendo corrompido por alguma coisa, talvez isso indique o que pode ter acontecido com O Rei.'},
+    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',col:'#7b61ff',atk:'Pisões, lasers e pressão de área com enorme resistência.',lore:'Um dos raros monstros ancestrais da categoria Titã. Ele foi adormecido por milhares de anos, mas devido ao caos que nossa realidade se encontra agora, ele acordou, e acordou com fome. Mantenha máxima distância desse monstro, ele é extremamente perigoso.'},
+    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',col:'#b6ff7a',atk:'Fendas, rajadas, invocações e controle total da arena.',lore:'A Oracle Bloom floresceu onde natureza e Chrono se fundiram de modo irreversível. Por conta disso, muitos a chamam de "A Salvadora", ou de "Purificadora de Pecados", mas oque realmente acontece aqui, é que ela esta sendo manipulada por algo, seu comportamento não é o mesmo desde sua ultima aparição antes da explosão. Ela carrega milhares de pequenos monstros e máquinas de Chrono dentro de si, talvez isso seja um método de ataque. Ela busca por vingança, mas não se sabe para quem.'},
+    {id:'eclipseInquisitor',g:'Bosses',e:'✚',name:'Inquisidor do Eclipse',hp:6000,spd:88,dmg:'Selo rubro',col:PALETTE455.eclipseInquisitor.main,spawn:'25% em boss waves de 5',atk:'Cria o Julgamento Rubro: uma área enorme que se preenche. Se o jogador estiver dentro no fim, recebe um raio vermelho que causa pouco dano e sela dash, skills e ultimate por 15s.',lore:'Um juiz construído por Lúnaticos de Chrono hereges para punir qualquer guerreiro que manipulasse tempo demais. Ao passar do tempo ele criou sua própria consciência, seus próprios pensamentos e palavras, mas com isso vem também o seu próprio senso de justiça e julgamento. Muitos morreram em suas mãos pela sua mentalidade corroída. Quando ele te julgar, saiba somente uma coisa, não fique parado.'},
+    {id:'glacialBeast',g:'Bosses',e:'❄️',name:'Besta Gélida de Chrono',hp:7500,spd:96,dmg:'Gelo ancestral',col:PALETTE455.glacialBeast.main,spawn:'25% em boss waves de 10',atk:'Investe com rajadas congelantes, cria prisões de gelo e espalha tempestades que reduzem movimento e castigam posicionamento ruim.',lore:'Um imenso monstro da categoria Ghuormn. Ela foi formada quando a primeira explosão Chrono congelou uma parte inteira do tempo, prendendo dor, neve e instinto no mesmo corpo. Mas ao nascer, foi atacada por um exército de vários homens, muitos morreram, e poucos sobreviveram, e a besta, saiu de lá somente porque estava de barriga cheia. Dizem que ela ainda reconhece o cheiro dos sobreviventes daquele dia, e os caça dia após dia, na tentativa de terminar uma vingança gélida aonde ela mesma começou.'},
     {id:'lostEmperor',g:'???',e:'☠️',name:'Emperador Perdido',hp:7800,spd:70,dmg:'Catastrófico',col:'#ff345e',secret:true,atk:'Teleporta, enche a arena de projéteis, distorce o vazio e pune qualquer hesitação.',lore:'O Emperador Perdido foi um tirano que sucumbiu aos poderes do Chrono. Tentou controlar a fissura para subjugar povos inteiros, dobrar guerras antes que começassem e transformar a realidade em território conquistado. Ele falhou. Agora vive preso na fissura dimensional, dia após dia, esperando uma brecha para assumir o controle do mundo novamente. Mais do que um trono, ele busca vingança contra Lord Chrono, o único nome que ainda atravessa sua mente quebrada como uma ordem impossível de apagar.'}
   ];
   const byId455=id=>BOOK455.find(e=>e.id===id);
@@ -10660,13 +10660,13 @@ function killKey37(e){
   const LORE={
     assault:'Ele aprendeu com seu pai que coragem não é ausência de medo, é avançar mesmo quando a voz no rádio treme. Carrega técnicas de guerra antigas no corpo, mas nunca admite de quem herdou esse jeito de proteger todo mundo primeiro.',
     sniper:'Dizem que ele conta segundos melhor do que respira. Em cada disparo há paciência, distância e uma pergunta silenciosa: quantas linhas do tempo podem ser salvas por uma única bala?',
-    engineer:'O Artífice enxerga máquinas dentro de sucata e transforma ruínas Chrono em companheiros de combate. Para ele, toda arena é uma oficina sob ataque.',
+    engineer:'Ele é o grande construtor de monumentos e defesas impenetráveis, antes do caos, ele foi um homem de trabalho duro e boa reputação na galaxia inteira. Hoje, ele luta para sobreviver com os restos de sucata que tem para fazer companheiros, mas ele é tão habilidoso, que nem parece que suas torretas são feitas de coisas achadas por ai.',
     mage:'O Void Mage estudou o vazio até o vazio começar a olhar pra ele de volta. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.',
     ronin:'O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.',
-    alchemist:'O Alquimista nunca confiou em armas limpas. Desde sempre suas garrafas carregam o fardo de ser quem ele se tornou. Mas com um sorriso no rosto e uma caipira na medida, ele acredita que toda salvação precisa de um pouco de diversão.',
+    alchemist:'O Alquimista é um cara legal. Ele já teve várias tavernas aonde teve aventuras incríveis lutando contra montros gigantescos e absurdamente fortes. É o que ele fala quando fica meio bêbado, mas ele é um mestre na química, faz cada absurdo que as vezes nem ele sabe como fez aquilo. Seu objetivo aqui é resgatar sua esposa, depois que o Chrono explodiu no espaço tempo, ela sumiu e ele não sabe aonde ela está. As vezes ele diz que seu último desejo antes de morrer é conversar com ela, e tomar uma caipira juntos.',
     reaper:'Dizem que a lua e o sol foram nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.',
-    colonel:'O Coronel fala pouco sobre família e menos ainda sobre medo. Ainda assim, quando certos soldados avançam demais, seu bombardeio chega com precisão quase imparável, como se ele queria que alguém estivesse olhando para ele.',
-    chronoHero:'O Chrono-Hero é uma lenda construída em cristal, fogo e gelo. Criado para suportar colapsos temporais, ele luta como se cada suspiro fosse a última chance de costurar o mundo de volta.',
+    colonel:'O Coronel é um veterano de guerra bruto e forte como um tank, ele fala pouco sobre família e menos ainda sobre medo. Ainda assim, em meio a guerras e destruição, quando tudo em sua volta está perdido, ele é quase imparável, uma máquina de matar sanguinária, as vezes, parece que ele quer ser um exemplo para alguém, um exemplo de como sobreviver, um exemplo de pai pra filho.',
+    chronoHero:'Um herói construido a partir de pequenos fragmentos de Chrono puro e muita feitiçaria bizonha. Ele nasceu alguns anos após a ruptura do Chrono, e sempre teve uma grande curiosidade de saber o que é o mar, árvores, pássaros, toda a natureza, mas ele nasceu para ser uma máquina de guerra, um monstro que os maiorais controlam para buscar reconstruir o Chrono. Hoje, ele está em um grupo de mercenários ao lado do Ricocheteador, e o objetivo deles é trazer a ordem do universo novamente.',
     moonSlayer:'Nascido nas sombras, mas criado na luz. O Exterminador de Luas é um samurai experiente e muito inteligente. Já ensinou diversos espadachins, até mesmo aqueles que tinham um temperamento difícil de lidar. Com sua lâmina feita de titânio puro, e uma precisão divina, ele corta tudo como se fosse papel. Dizem que olhar nos olhos dele é a mesma coisa que encarar a escuridão, mas ele é gente boa.',
     shadowChild:'O Demônio. As trevas fundidas em um único ser. Esse é o espectro de filho das trevas, um ser construido da escuridão e moldado pela perdição. Seu maior desejo e destruir todos os Chronos que ele encontra, pois aquele quem o trouxe ao mundo, foi levado a loucura por eles.'
   };
@@ -10751,10 +10751,10 @@ function killKey37(e){
     {id:'elite',g:'Elites',e:'★',name:'Elite Instável',hp:'Variável',spd:'Variável',dmg:'Alto',col:'#ffd166',spawn:'Qualquer wave',atk:'Versão fortalecida de monstros comuns.',lore:'Quando um Chrono toca uma criatura por tempo demais, ela aprende a resistir.'},
     {id:'dreadbus',g:'Elites',e:'▰',name:'Carcaça-Crisálida',hp:'210+',spd:'Lenta',dmg:'Alto',col:'#c46b35',spawn:'Wave 17+',atk:'Libera crias laterais e projéteis que se partem.',lore:'Uma crisálida de guerra criada para carregar larvas temporais dentro de placas blindadas. Depois do colapso, deixou de ser máquina e virou ninho: cada abertura lateral respira, cospe crias e protege o núcleo como se fosse uma fortaleza viva.'},
     {id:'nullHerald',g:'Elites',e:'◇',name:'Arauto do Zero',hp:'190+',spd:'Média',dmg:'Foco',col:'#4ce0b3',spawn:'Wave 19+',atk:'Cria zonas nulas e drena foco.',lore:'Antes de uma linha do tempo morrer, um Arauto aparece para anunciar o silêncio. Ele não grita; ele apaga o som das habilidades ao redor.'},
-    {id:'archon',g:'Bosses',e:'👁️',name:'Archon',hp:'3500+',spd:'Média',dmg:'Projéteis',col:'#ff2e63',spawn:'Boss wave 5+',atk:'Dispara padrões e invoca minions.',lore:'O Archon Core é um núcleo de guerra acelerado por Chrono. Ele governa pela cadência: ataca, convoca e força o jogador a lutar no ritmo dele.'},
-    {id:'titan',g:'Bosses',e:'🜃',name:'Titan',hp:'4700+',spd:'Baixa',dmg:'Alto',col:'#7b61ff',spawn:'Boss wave 10+',atk:'Slam, laser e rajadas radiais.',lore:'Existe há eras. Nasceu para ser um bastião de contenção, mas a energia que deveria selar rupturas o transformou num colosso consciente.'},
-    {id:'eclipseInquisitor',g:'Bosses',e:'✚',name:'Inquisidor do Eclipse',hp:'6000',spd:'Média',dmg:'Selo',col:'#ff2e63',spawn:'25% em boss wave 5+',atk:'Selo vermelho que desativa habilidades e rajadas densas.',lore:'Um juiz construído por Chronos hereges para punir qualquer guerreiro que manipulasse tempo demais. Seu martelo não mata primeiro: ele condena o corpo a obedecer.'},
-    {id:'glacialBeast',g:'Bosses',e:'❄',name:'Besta Gélida de Chrono',hp:'7500',spd:'Caçadora',dmg:'Gelo',col:'#8fcfff',spawn:'25% em boss wave 10+',atk:'Avança no jogador, cria zonas de gelo e dispara estilhaços.',lore:'A Besta Gélida não nasceu do frio comum. Ela foi formada quando a primeira explosão Chrono congelou uma parte inteira do tempo, prendendo dor, neve e instinto no mesmo corpo. Dizem que ela ainda reconhece o cheiro dos sobreviventes daquele dia; quando encontra o Arqueiro do Chrono, não caça apenas um inimigo, caça uma memória que deveria ter morrido soterrada no gelo.'},
+    {id:'archon',g:'Bosses',e:'👁️',name:'Archon',hp:'3500+',spd:'Média',dmg:'Projéteis',col:'#ff2e63',spawn:'Boss wave 5+',atk:'Dispara padrões e invoca minions.',lore:'O Archon Core é um núcleo de um antigo portador da chave do Chrono, muitos o chamavam de "O Rei". Ninguém sabe o que aconteceu com O Rei, os registros somente mostram que mesmo sem um corpo, esse núcleo tem sede de sangue e esta sendo corrompido por alguma coisa, talvez isso indique o que pode ter acontecido com O Rei.'},
+    {id:'titan',g:'Bosses',e:'🜃',name:'Titan',hp:'4700+',spd:'Baixa',dmg:'Alto',col:'#7b61ff',spawn:'Boss wave 10+',atk:'Slam, laser e rajadas radiais.',lore:'Um dos raros monstros ancestrais da categoria Titã. Ele foi adormecido por milhares de anos, mas devido ao caos que nossa realidade se encontra agora, ele acordou, e acordou com fome. Mantenha máxima distância desse monstro, ele é extremamente perigoso.'},
+    {id:'eclipseInquisitor',g:'Bosses',e:'✚',name:'Inquisidor do Eclipse',hp:'6000',spd:'Média',dmg:'Selo',col:'#ff2e63',spawn:'25% em boss wave 5+',atk:'Selo vermelho que desativa habilidades e rajadas densas.',lore:'Um juiz construído por Lúnaticos de Chrono hereges para punir qualquer guerreiro que manipulasse tempo demais. Ao passar do tempo ele criou sua própria consciência, seus próprios pensamentos e palavras, mas com isso vem também o seu próprio senso de justiça e julgamento. Muitos morreram em suas mãos pela sua mentalidade corroída. Quando ele te julgar, saiba somente uma coisa, não fique parado.'},
+    {id:'glacialBeast',g:'Bosses',e:'❄',name:'Besta Gélida de Chrono',hp:'7500',spd:'Caçadora',dmg:'Gelo',col:'#8fcfff',spawn:'25% em boss wave 10+',atk:'Avança no jogador, cria zonas de gelo e dispara estilhaços.',lore:'Um imenso monstro da categoria Ghuormn. Ela foi formada quando a primeira explosão Chrono congelou uma parte inteira do tempo, prendendo dor, neve e instinto no mesmo corpo. Mas ao nascer, foi atacada por um exército de vários homens, muitos morreram, e poucos sobreviveram, e a besta, saiu de lá somente porque estava de barriga cheia. Dizem que ela ainda reconhece o cheiro dos sobreviventes daquele dia, e os caça dia após dia, na tentativa de terminar uma vingança gélida aonde ela mesma começou.'},
     {id:'lostEmperor',g:'???',e:'☠️',name:'Emperador Perdido',hp:'7800',spd:'70',dmg:'Catastrófico',col:'#ff345e',spawn:'Fissura secreta',atk:'Teleporta e entope a arena de projéteis.',lore:'O Emperador Perdido foi um tirano que sucumbiu aos poderes do Chrono. Tentou controlar a fissura para subjugar povos inteiros, dobrar guerras antes que começassem e transformar a realidade em território conquistado. Ele falhou. Agora vive preso na fissura dimensional, dia após dia, esperando uma brecha para assumir o controle do mundo novamente. Mais do que um trono, ele busca vingança contra Lord Chrono, o único nome que ainda atravessa sua mente quebrada como uma ordem impossível de apagar.',secret:true}
   ];
   function killCount(id,m=meta()){return Number((m.bestiaryKills||{})[id]||(m.stats?.typeKills||{})[id]||0);}
@@ -10901,11 +10901,11 @@ function killKey37(e){
     {id:'pukeling',g:'Elites',e:'🧪',name:'Pukeling',hp:18,spd:165,dmg:'5 + veneno',col:'#b6ff7a',atk:'Corre em bando após surgir de um Vomiter.',lore:'Pukelings são larvas de veneno vivo. Vivem pouco, mas atacam com urgência, como se soubessem que só existem para espalhar a infestação.'},
     {id:'dreadbus',g:'Elites',e:'▰',name:'Carcaça-Crisálida',hp:820,spd:42,dmg:'Ninho lateral',col:'#9b4d22',spawn:'Wave 17+',atk:'Avança devagar como uma carapaça viva, libera crias pelas laterais a cada 0.5s e dispara cápsulas orgânicas que racham em projéteis menores.',lore:'Uma crisálida de guerra criada para carregar larvas temporais dentro de placas blindadas. Depois do colapso, deixou de ser máquina e virou ninho: cada abertura lateral respira, cospe crias e protege o núcleo como se fosse uma fortaleza viva.'},
     {id:'nullHerald',g:'Elites',e:'◈',name:'Arauto do Zero',hp:640,spd:112,dmg:'Zonas nulas',col:'#4ce0b3',spawn:'Wave 19+',atk:'Cria campos que drenam foco, protege monstros próximos com escudo e dispara rajadas geométricas.',lore:'Antes de uma linha do tempo morrer, um Arauto aparece para anunciar o silêncio. Ele não grita; ele apaga o som das habilidades ao redor.'},
-    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',col:'#ff2e63',atk:'Rajadas rápidas, explosões e invocação de lacaios.',lore:'O Archon Core é um núcleo de guerra acelerado por Chrono. Ele governa pela cadência: ataca, convoca e força o jogador a lutar no ritmo dele.'},
-    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',col:'#7b61ff',atk:'Pisões, lasers e pressão de área com enorme resistência.',lore:'Existe há eras. Nasceu para ser um bastião de contenção, mas a energia que deveria selar rupturas o transformou num colosso consciente.'},
-    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',col:'#b6ff7a',atk:'Fendas, rajadas, invocações e controle total da arena.',lore:'A Oracle Bloom floresceu onde natureza e Chrono se fundiram de modo irreversível. Ela prevê padrões e poda a arena como se cada monstro fosse parte de um jardim cruel.'},
+    {id:'archon',g:'Bosses',e:'👑',name:'Archon Core',hp:4100,spd:58,dmg:'Alto',col:'#ff2e63',atk:'Rajadas rápidas, explosões e invocação de lacaios.',lore:'O Archon Core é um núcleo de um antigo portador da chave do Chrono, muitos o chamavam de "O Rei". Ninguém sabe o que aconteceu com O Rei, os registros somente mostram que mesmo sem um corpo, esse núcleo tem sede de sangue e esta sendo corrompido por alguma coisa, talvez isso indique o que pode ter acontecido com O Rei.'},
+    {id:'titan',g:'Bosses',e:'🗿',name:'Titan Bastion',hp:5200,spd:34,dmg:'Muito alto',col:'#7b61ff',atk:'Pisões, lasers e pressão de área com enorme resistência.',lore:'Um dos raros monstros ancestrais da categoria Titã. Ele foi adormecido por milhares de anos, mas devido ao caos que nossa realidade se encontra agora, ele acordou, e acordou com fome. Mantenha máxima distância desse monstro, ele é extremamente perigoso.'},
+    {id:'oracle',g:'Bosses',e:'🌿',name:'Oracle Bloom',hp:5200,spd:38,dmg:'Muito alto',col:'#b6ff7a',atk:'Fendas, rajadas, invocações e controle total da arena.',lore:'A Oracle Bloom floresceu onde natureza e Chrono se fundiram de modo irreversível. Por conta disso, muitos a chamam de "A Salvadora", ou de "Purificadora de Pecados", mas oque realmente acontece aqui, é que ela esta sendo manipulada por algo, seu comportamento não é o mesmo desde sua ultima aparição antes da explosão. Ela carrega milhares de pequenos monstros e máquinas de Chrono dentro de si, talvez isso seja um método de ataque. Ela busca por vingança, mas não se sabe para quem.'},
     {id:'eclipseInquisitor',g:'Bosses',e:'✚',name:'Inquisidor do Eclipse',hp:6000,spd:88,dmg:'Selo rubro',col:'#ff2e63',spawn:'25% em boss waves de 5',atk:'Cria o Julgamento Rubro: uma área enorme que se preenche. Se o jogador estiver dentro no fim, recebe um raio vermelho que causa pouco dano e sela dash, skills e ultimate por 15s.',lore:'Um juiz construído por Chronos hereges para punir qualquer guerreiro que manipulasse tempo demais. Seu martelo não mata primeiro: ele condena o corpo a obedecer.'},
-    {id:'glacialBeast',g:'Bosses',e:'❄️',name:'Besta Gélida de Chrono',hp:7500,spd:96,dmg:'Gelo ancestral',col:'#8fcfff',spawn:'25% em boss waves de 10',atk:'Investe com rajadas congelantes, cria prisões de gelo e espalha tempestades que reduzem movimento e castigam posicionamento ruim.',lore:'A Besta Gélida não nasceu do frio comum. Ela foi formada quando a primeira explosão Chrono congelou uma parte inteira do tempo, prendendo dor, neve e instinto no mesmo corpo. Dizem que ela ainda reconhece o cheiro dos sobreviventes daquele dia; quando encontra o Arqueiro do Chrono, não caça apenas um inimigo, caça uma memória que deveria ter morrido soterrada no gelo.'},
+    {id:'glacialBeast',g:'Bosses',e:'❄️',name:'Besta Gélida de Chrono',hp:7500,spd:96,dmg:'Gelo ancestral',col:'#8fcfff',spawn:'25% em boss waves de 10',atk:'Investe com rajadas congelantes, cria prisões de gelo e espalha tempestades que reduzem movimento e castigam posicionamento ruim.',lore:'Um imenso monstro da categoria Ghuormn. Ela foi formada quando a primeira explosão Chrono congelou uma parte inteira do tempo, prendendo dor, neve e instinto no mesmo corpo. Mas ao nascer, foi atacada por um exército de vários homens, muitos morreram, e poucos sobreviveram, e a besta, saiu de lá somente porque estava de barriga cheia. Dizem que ela ainda reconhece o cheiro dos sobreviventes daquele dia, e os caça dia após dia, na tentativa de terminar uma vingança gélida aonde ela mesma começou.'},
     {id:'lostEmperor',g:'???',e:'☠️',name:'Emperador Perdido',hp:7800,spd:70,dmg:'Catastrófico',col:'#ff345e',secret:true,atk:'Teleporta, enche a arena de projéteis, distorce o vazio e pune qualquer hesitação.',lore:'O Emperador Perdido foi um tirano que sucumbiu aos poderes do Chrono. Tentou controlar a fissura para subjugar povos inteiros, dobrar guerras antes que começassem e transformar a realidade em território conquistado. Ele falhou. Agora vive preso na fissura dimensional, dia após dia, esperando uma brecha para assumir o controle do mundo novamente. Mais do que um trono, ele busca vingança contra Lord Chrono, o único nome que ainda atravessa sua mente quebrada como uma ordem impossível de apagar.'}
   ];
   const byBook=id=>BOOK.find(e=>e.id===id);
@@ -11290,13 +11290,13 @@ function killKey37(e){
     sniper:'Dizem que ele conta segundos melhor do que respira. Em cada disparo há paciência, distância e uma pergunta silenciosa: quantas linhas do tempo podem ser salvas por uma única bala?',
     mage:'O Void Mage estudou o vazio até o vazio começar a olhar pra ele de volta. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.',
     ronin:'O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.',
-    alchemist:'O Alquimista nunca confiou em armas limpas. Desde sempre suas garrafas carregam o fardo de ser quem ele se tornou. Mas com um sorriso no rosto e uma caipira na medida, ele acredita que toda salvação precisa de um pouco de diversão.',
+    alchemist:'O Alquimista é um cara legal. Ele já teve várias tavernas aonde teve aventuras incríveis lutando contra montros gigantescos e absurdamente fortes. É o que ele fala quando fica meio bêbado, mas ele é um mestre na química, faz cada absurdo que as vezes nem ele sabe como fez aquilo. Seu objetivo aqui é resgatar sua esposa, depois que o Chrono explodiu no espaço tempo, ela sumiu e ele não sabe aonde ela está. As vezes ele diz que seu último desejo antes de morrer é conversar com ela, e tomar uma caipira juntos.',
     reaper:'Dizem que a lua e o sol foram nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.',
-    colonel:'O Coronel fala pouco sobre família e menos ainda sobre medo. Ainda assim, quando certos soldados avançam demais, seu bombardeio chega com precisão quase imparável, como se ele queria que alguém estivesse olhando para ele.',
+    colonel:'O Coronel é um veterano de guerra bruto e forte como um tank, ele fala pouco sobre família e menos ainda sobre medo. Ainda assim, em meio a guerras e destruição, quando tudo em sua volta está perdido, ele é quase imparável, uma máquina de matar sanguinária, as vezes, parece que ele quer ser um exemplo para alguém, um exemplo de como sobreviver, um exemplo de pai pra filho.',
     archer:'O Arqueiro do Chrono sobreviveu à primeira grande explosão temporal, muitos anos atrás. Enquanto todos ao redor foram apagados, congelados ou distorcidos, ele acordou sozinho entre fragmentos parados no ar, ouvindo apenas o próprio arco rangendo contra o silêncio. Desde então, virou um lobo solitário: não corre atrás da presa, recua, observa e deixa o tempo fazer a mira por ele.',
-    bomber:'O Bombardeiro aprendeu cedo que nem toda batalha se vence mirando no inimigo. Às vezes, basta destruir o caminho que ele pretende usar. Carrega explosivos improvisados, cálculos tortos e uma confiança preocupante no próprio instinto; onde outros veem terreno, ele vê pontos de impacto, rotas de fuga e o lugar exato onde tudo deveria explodir.',
-    engineer:'O Artífice enxerga máquinas dentro de sucata e transforma ruínas Chrono em companheiros de combate. Para ele, toda arena é uma oficina sob ataque.',
-    chronoHero:'O Chrono-Hero é uma lenda construída em cristal, fogo e gelo. Criado para suportar colapsos temporais, ele luta como se cada suspiro fosse a última chance de costurar o mundo de volta.',
+    bomber:'O Bombardeiro nem sempre foi assim, desse jeito meio "explosivo" dele. Antes de enlouquecer, ele era um senhor renomado, de grande inteligência e sabedoria, ele resolvia muitas perguntas como ninguém nunca soube. Mas algo aconteceu e ele virou outra pessoa, ninguém sabe ao certo o que houve, o que causou essa mudança de personalidade, talvez ele tenha 2 pessoas dentro di, eu não sei dizer, a única coisa que eu sei, é que ele explode tudo como ninguém, e ainda ri na cara do perigo.',
+    engineer:'Ele é o grande construtor de monumentos e defesas impenetráveis, antes do caos, ele foi um homem de trabalho duro e boa reputação na galaxia inteira. Hoje, ele luta para sobreviver com os restos de sucata que tem para fazer companheiros, mas ele é tão habilidoso, que nem parece que suas torretas são feitas de coisas achadas por ai.',
+    chronoHero:'Um herói construido a partir de pequenos fragmentos de Chrono puro e muita feitiçaria bizonha. Ele nasceu alguns anos após a ruptura do Chrono, e sempre teve uma grande curiosidade de saber o que é o mar, árvores, pássaros, toda a natureza, mas ele nasceu para ser uma máquina de guerra, um monstro que os maiorais controlam para buscar reconstruir o Chrono. Hoje, ele está em um grupo de mercenários ao lado do Ricocheteador, e o objetivo deles é trazer a ordem do universo novamente.',
     moonSlayer:'Nascido nas sombras, mas criado na luz. O Exterminador de Luas é um samurai experiente e muito inteligente. Já ensinou diversos espadachins, até mesmo aqueles que tinham um temperamento difícil de lidar. Com sua lâmina feita de titânio puro, e uma precisão divina, ele corta tudo como se fosse papel. Dizem que olhar nos olhos dele é a mesma coisa que encarar a escuridão, mas ele é gente boa.',
     shadowChild:'O Demônio. As trevas fundidas em um único ser. Esse é o espectro de filho das trevas, um ser construido da escuridão e moldado pela perdição. Seu maior desejo e destruir todos os Chronos que ele encontra, pois aquele quem o trouxe ao mundo, foi levado a loucura por eles.'
   };
@@ -15740,11 +15740,11 @@ function killKey37(e){
 
   // ── Base data: personagem, arma e especiais ─────────────────────
   CLASSES[RICO]={name:'Ricocheteador ◉',color:RICO_BLUE,hp:105,shield:3,focus:120,speed:288,weapon:'ricoMarble',skills:['ricoMagnet','ricoPursuer','ricoPoolShot'],desc:'Especialista de precisão que transforma paredes em armas. Quanto mais a arena quica, mais perigoso ele fica.',tag:'PRECISÃO',tagColor:RICO_YELLOW};
-  WEAPONS.ricoMarble={name:'Bola de Impacto',cooldown:1.5,bulletSpeed:585,damage:44,spread:0,projectiles:1,life:1.65};
+  WEAPONS.ricoMarble={name:'Bola de Impacto',cooldown:1.2,bulletSpeed:585,damage:44,spread:0,projectiles:1,life:1.65};
   Object.assign(SKILL_DEFS,{
-    ricoPursuer:{name:'Perseguidor Quicante',emoji:'🟣',focusCost:42,cooldown:8,desc:'Q: dispara uma esfera maior que ricocheteia entre inimigos. Cada colisão solta 2 balas menores.'},
-    ricoMagnet:{name:'Ricochete Magnético',emoji:'🧲',focusCost:55,cooldown:15,desc:'E: finca um prego magnético. As balas giram no campo, puxam inimigos em ondas e explodem em ricochetes acelerados.'},
-    ricoPoolShot:{name:'Mesa de Sinuca',emoji:'🎱',focusCost:60,cooldown:18,desc:'R: executa uma jogada perfeita. Inimigos marcados viram alvos de ricochete, transferindo marcas e soltando mini-esferas.'}
+    ricoPursuer:{name:'Perseguidor Quicante',emoji:'🟣',focusCost:42,cooldown:8,desc:'Dispara uma esfera maior que persegue e ricocheteia entre inimigos. Cada colisão solta 2 balas menores.'},
+    ricoMagnet:{name:'Ricochete Magnético',emoji:'🧲',focusCost:55,cooldown:15,desc:'Finca um prego magnético. As balas giram no campo, puxam inimigos em ondas e explodem em ricochetes acelerados.'},
+    ricoPoolShot:{name:'Castelo Inflável',emoji:'🪞',focusCost:60,cooldown:20,desc:'Cria um espelho refletor no chão, cada tiro que o jogador acertar no espelho, vai refletir em 3 raios prismáticos além de fazer o tiro ricochetear.'}
   });
 
   // ── Estilo Rift Update + mira/config UI ──────────────────────────
@@ -15777,7 +15777,7 @@ function killKey37(e){
   // ── Seleção: injeta Ricocheteador no grupo Precisão ─────────────
   function ricoModel(){return `<div class="modelBox461"><div class="heroModel461" data-hero="ricocheteador" style="--c:${RICO_BLUE}"><i></i><b></b><em></em></div></div>`}
   function ricoCard(){const un=hasRico(),aff=read().relicShards>=RICO_COST;return `<div class="classCard461 rico529 ${un?'':'locked'}" data-card-rico529="${RICO}" style="--c:${RICO_BLUE}"><button class="classInfo461" data-info-rico529="${RICO}">i</button>${un?'':`<div class="classLock461">🔒</div>`}${ricoModel()}<span class="badge461" style="--co:${RICO_YELLOW}">PRECISÃO</span><strong>${CLASSES[RICO].name}</strong><span>${CLASSES[RICO].desc}</span><span class="small461">HP ${CLASSES[RICO].hp} • Escudo ${CLASSES[RICO].shield} hits • Foco ${CLASSES[RICO].focus}</span>${un?`<button class="pick461" data-pick-rico529="${RICO}">Selecionar</button>`:`<button class="buy461" data-buy-rico529="${RICO}" ${aff?'':'disabled'}>Comprar — ${RICO_COST} 🜂 Relíquias</button>`}</div>`;}
-  function openRicoInfo(){overlay.classList.remove('hidden');overlayCard.className='card dune461';overlayCard.innerHTML=`<h1 style="text-align:center">${CLASSES[RICO].name}</h1><p class="duneSub461">Personagem de precisão sem ultimate. Ele vence usando paredes, marcações e física absurda.</p><div class="infoLayout461"><div class="infoModel461">${ricoModel()}<span class="badge461" style="--co:${RICO_YELLOW}">PRECISÃO</span></div><div><div class="statsGrid461"><div class="duneStat461"><small>HP</small><b>${CLASSES[RICO].hp}</b></div><div class="duneStat461"><small>ESCUDO</small><b>${CLASSES[RICO].shield} hits</b></div><div class="duneStat461"><small>FOCO</small><b>${CLASSES[RICO].focus}</b></div><div class="duneStat461"><small>VELOCIDADE</small><b>${CLASSES[RICO].speed}</b></div></div><h3 class="section461">HABILIDADES</h3><div class="skillRow461"><b>PASSIVA — 🎯 Mira Saltadora</b><br><span>A cada 5 segundos, marca 4 inimigos aleatórios com um símbolo de mira. Habilidades priorizam esses alvos.</span></div><div class="skillRow461"><b>ATAQUE — ◉ Bola de Impacto</b><br><span>Atira uma bola de gude pesada a cada 1.5s. Ela ricocheteia em paredes, ganha alcance no primeiro quique e solta 4 bolinhas menores a cada ricochete.</span></div><div class="skillRow461"><b>Q — 🟣 Perseguidor Quicante</b><br><span>${SKILL_DEFS.ricoPursuer.desc}</span></div><div class="skillRow461"><b>E — 🧲 Ricochete Magnético</b><br><span>${SKILL_DEFS.ricoMagnet.desc}</span></div><div class="skillRow461"><b>R — 🎱 Mesa de Sinuca</b><br><span>Dispara uma esfera de jogada perfeita que usa inimigos marcados como caçapas temporais, transfere marcas e multiplica mini-esferas.</span></div><h3 class="section461">LORE</h3><div class="dunePanel461"><span>O Ricocheteador aprendeu que uma linha reta é só falta de imaginação. Ele carrega esferas Chrono comprimidas e trata paredes como parte da arma. Onde outros veem obstáculo, ele vê ângulo, impacto e uma segunda chance de acertar.</span></div></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="ricoInfoBack529">← Seleção</button></div>`;document.getElementById('ricoInfoBack529').onclick=()=>window.openClassMenu?.();}
+  function openRicoInfo(){overlay.classList.remove('hidden');overlayCard.className='card dune461';overlayCard.innerHTML=`<h1 style="text-align:center">${CLASSES[RICO].name}</h1><p class="duneSub461">Personagem de precisão sem ultimate. Ele vence usando paredes, marcações e física absurda.</p><div class="infoLayout461"><div class="infoModel461">${ricoModel()}<span class="badge461" style="--co:${RICO_YELLOW}">PRECISÃO</span></div><div><div class="statsGrid461"><div class="duneStat461"><small>HP</small><b>${CLASSES[RICO].hp}</b></div><div class="duneStat461"><small>ESCUDO</small><b>${CLASSES[RICO].shield} hits</b></div><div class="duneStat461"><small>FOCO</small><b>${CLASSES[RICO].focus}</b></div><div class="duneStat461"><small>VELOCIDADE</small><b>${CLASSES[RICO].speed}</b></div></div><h3 class="section461">HABILIDADES</h3><div class="skillRow461"><b>PASSIVA — 🎯 Mira Saltadora</b><br><span>A cada 5 segundos, marca 4 inimigos aleatórios com um símbolo de mira. Habilidades priorizam esses alvos.</span></div><div class="skillRow461"><b>ATAQUE — ◉ Bola de Impacto</b><br><span>Atira uma bola de gude pesada a cada 1.2s. Ela ricocheteia em paredes, muros e inimigos, ganha alcance no primeiro quique e solta bolinhas menores ao ricochetear.</span></div><div class="skillRow461"><b>Q — 🟣 Perseguidor Quicante</b><br><span>${SKILL_DEFS.ricoPursuer.desc}</span></div><div class="skillRow461"><b>E — 🧲 Ricochete Magnético</b><br><span>${SKILL_DEFS.ricoMagnet.desc}</span></div><div class="skillRow461"><b>R — 🪞Refletor Prismático</b><br><span>Cria um espelho refletor no chão, cada tiro que o jogador acertar no espelho, vai refletir em 3 raios prismáticos além de fazer o tiro ricochetear.</span></div><h3 class="section461">LORE</h3><div class="dunePanel461"><span>O Ricocheteador vem de uma equipe de mercenários que ele mesmo fundou a vários anos atrás. Desde sua infância, ele fabrica suas balas únicas e treina seus disparos, ele dizia que tinha que estar preparado para quando o apocalipse chegar. Muitos o chamavam de louco, que uma catástrofe nunca iria acontecer em nossa realidade, mas esses foram calados com o tempo. Ultimamente, o ricocheteador vaga com sua equipe em busca de sobreviver, e quem sabe, restaurar a ordem do Chrono.</span></div></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="ricoInfoBack529">← Seleção</button></div>`;document.getElementById('ricoInfoBack529').onclick=()=>window.openClassMenu?.();}
   function patchClassMenu(){addStyle();if(!overlayCard?.querySelector)return;const groups=[...overlayCard.querySelectorAll('.classGroup461')];const precision=groups.find(g=>/PRECISÃO/i.test(g.textContent||''));if(!precision||precision.dataset.rico529)return;precision.dataset.rico529='1';const grid=precision.querySelector('.classGrid461');if(!grid)return;const coming=grid.querySelector('.comingCard462');if(coming)coming.remove();grid.insertAdjacentHTML('beforeend',ricoCard());const badge=precision.querySelector('.classGroupHead461 .badge461');if(badge)badge.textContent=`${grid.children.length} slot(s)`;grid.querySelectorAll('[data-info-rico529]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openRicoInfo();});grid.querySelectorAll('[data-pick-rico529]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();resetGame(RICO);overlay.classList.add('hidden');});grid.querySelectorAll('[data-card-rico529]').forEach(card=>card.onclick=e=>{if(e.target.closest('button'))return;if(hasRico()){resetGame(RICO);overlay.classList.add('hidden');}});grid.querySelectorAll('[data-buy-rico529]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();if(!spendRelics(RICO_COST))return;saveUnlocks(unlocks().concat(RICO));window.openClassMenu?.();});}
   const oldOpenClass=window.openClassMenu; if(typeof oldOpenClass==='function'){window.openClassMenu=function(){const r=oldOpenClass.apply(this,arguments);setTimeout(patchClassMenu,0);return r;}; try{openClassMenu=window.openClassMenu;}catch{}}
   if(typeof window.openClassMenu461==='function'){const old=window.openClassMenu461;window.openClassMenu461=function(){const r=old.apply(this,arguments);setTimeout(patchClassMenu,0);return r;};}
@@ -15807,7 +15807,7 @@ function killKey37(e){
   function updateRicoBullets(dt){if(!game)return;ensureRico();updateRicoMarks(dt);for(let ni=game.ricoNails529.length-1;ni>=0;ni--){const nail=game.ricoNails529[ni];nail.life-=dt;nail.pulse+=dt*5;nail.wave-=dt;if(nail.wave<=0){nail.wave=2;for(const e of game.enemies||[]){const rr=nail.r+55;if(d2(nail,e)<rr){const a=angleTo(e,nail);e.x+=Math.cos(a)*Math.min(80,d2(e,nail)*.35);e.y+=Math.sin(a)*Math.min(80,d2(e,nail)*.35);e.hitFlash=.12;}}ring(nail.x,nail.y,RICO_PURPLE,nail.r+58,3);}if(nail.life<=0){releaseFromNail(nail);game.ricoNails529.splice(ni,1);continue;}}
     for(let i=game.ricoBullets529.length-1;i>=0;i--){const b=game.ricoBullets529[i];b.age+=dt;if(b.orbit){const nail=b.orbit;if(!game.ricoNails529.includes(nail)){b.orbit=null;continue;}b.life=Math.max(b.life,.35);b.orbA=(b.orbA||rnd(0,Math.PI*2))+dt*(4.5+rnd(-.2,.2));b.orbR=b.orbR||rnd(30,nail.r*.88);b.x=nail.x+Math.cos(b.orbA)*b.orbR;b.y=nail.y+Math.sin(b.orbA*1.17)*b.orbR;continue;}b.life-=dt;if(b.life<=0){game.ricoBullets529.splice(i,1);continue;}
       for(const nail of game.ricoNails529){if(d2(b,nail)<nail.r&&nail.cap<28){b.orbit=nail;b.orbA=rnd(0,Math.PI*2);b.orbR=rnd(28,nail.r*.92);b.life=Math.max(b.life,.35);nail.cap++;break;}}if(b.orbit)continue;
-      if(b.pursuer>0){const t=targetMarkedOrNearest(b,680);if(t){const a=angleTo(b,t),sp=Math.hypot(b.vx,b.vy)||520;b.vx+=(Math.cos(a)*sp-b.vx)*dt*3.2;b.vy+=(Math.sin(a)*sp-b.vy)*dt*3.2;}}
+      if(b.pursuer>0&&!b.q541&&!b.noCurve542){const t=targetMarkedOrNearest(b,680);if(t){const a=angleTo(b,t),sp=Math.hypot(b.vx,b.vy)||520;b.vx+=(Math.cos(a)*sp-b.vx)*dt*3.2;b.vy+=(Math.sin(a)*sp-b.vy)*dt*3.2;}}
       const px=b.x,py=b.y;b.x+=b.vx*dt;b.y+=b.vy*dt;if(bounceRicoMap529(b,px,py)||bounceRico(b)){if(b.bounces>b.maxBounces){game.ricoBullets529.splice(i,1);}continue;}if(b.bounces>b.maxBounces){game.ricoBullets529.splice(i,1);continue;}
       if(hitFissure(b.x,b.y,b.r+4,b.damage*.75,b.color)){if(!b.pursuer&&!b.pool){game.ricoBullets529.splice(i,1);continue;}}
       let hit=null;for(const e of game.enemies||[]){if(b.hitIds.has(e))continue;if(d2(b,e)<b.r+(e.r||0)){hit=e;break;}}if(hit){b.hitIds.add(hit);ricoDamage(hit,b.damage,b);parts(b.x,b.y,hit.color||b.color,7,.45);if(hit.ricoMarked529){ring(hit.x,hit.y,RICO_YELLOW,(hit.r||12)+30,2);if(b.pool){const near=targetMarkedOrNearest(hit,420,hit);if(near)near.ricoMarked529=5;}}if(b.pursuer||b.pool){splitRico({...b,small:false},b.pool?3:2);b.pursuer--;const t=targetMarkedOrNearest(b,800,hit);if(t&&b.pursuer>0){const a=angleTo(b,t),sp=Math.hypot(b.vx,b.vy)||620;b.vx=Math.cos(a)*sp;b.vy=Math.sin(a)*sp;continue;}}if(ricoBounceEnemy529(b,hit))continue;game.ricoBullets529.splice(i,1);continue;}}
@@ -15861,7 +15861,7 @@ function killKey37(e){
   function borderSpawn(){const side=Math.floor(rnd(0,4));if(side===0)return{x:rnd(20,W-20),y:-45};if(side===1)return{x:W+45,y:rnd(20,H-20)};if(side===2)return{x:rnd(20,W-20),y:H+45};return{x:-45,y:rnd(20,H-20)};}
   function pushEnemy(type,opts={}){const p=borderSpawn(),wave=n(game.wave,1),base={x:p.x,y:p.y,vx:0,vy:0,wobble:rnd(0,6.28),hitFlash:0,shotTimer:rnd(1,2),shieldHp:0,marked:false,frozenTime:0};const defs={glassCrawler:{r:9,speed:185+wave*2,hp:32+wave*2,value:12,color:'#bff7ff',elite:false},chronoMosquito:{r:7,speed:230+wave*2,hp:22+wave,value:10,color:'#75d8ff',elite:false,fly:true},ruinCharger:{r:15,speed:115+wave*2,hp:70+wave*4,value:22,color:'#d5a36b',elite:false,chargeCd:1.2},manaParasite:{r:10,speed:150+wave*2,hp:36+wave*2,value:16,color:'#9f6cff',elite:false},towerEater:{r:22,speed:78+wave,hp:230+wave*7,value:42,color:'#ff9966',elite:true},riftHerald:{r:20,speed:92+wave,hp:190+wave*6,value:44,color:'#9f6cff',elite:true},stoneColossus:{r:31,speed:48+wave*.8,hp:360+wave*11,value:55,color:'#b9a37a',elite:true,shock:3.2},voidWeaver:{r:18,speed:110+wave,hp:180+wave*6,value:45,color:'#4d3f9e',elite:true,web:2}};const d=Object.assign({},defs[type]||defs.glassCrawler,opts);game.enemies.push(Object.assign(base,d,{type,maxHp:d.hp}));}
   const oldSpawnEnemy=window.spawnEnemy||spawnEnemy; window.spawnEnemy=function(){if(game?.waveBoss&&isRift()&&game.wave===20&&!game.bossActive){spawnCoreDevourer529();game.enemiesSpawnedThisWave++;return;}if(game&&!game.waveBoss){const w=n(game.wave,1),rift=isRift(),roll=Math.random();if(rift&&w>=8&&roll<.08){pushEnemy('chronoMosquito');game.enemiesSpawnedThisWave++;return;}if(rift&&w>=10&&roll<.15){pushEnemy('ruinCharger');game.enemiesSpawnedThisWave++;return;}if(rift&&w>=12&&roll<.20){pushEnemy('towerEater');game.enemiesSpawnedThisWave++;return;}if(rift&&w>=14&&roll<.25){pushEnemy('riftHerald');game.enemiesSpawnedThisWave++;return;}if(w>=16&&roll<.34){pushEnemy('glassCrawler');game.enemiesSpawnedThisWave++;return;}if(w>=14&&roll<.42){pushEnemy('manaParasite');game.enemiesSpawnedThisWave++;return;}if(w>=20&&roll<.48){pushEnemy('stoneColossus');game.enemiesSpawnedThisWave++;return;}if(!rift&&w>=21&&roll<.55){pushEnemy('voidWeaver');game.enemiesSpawnedThisWave++;return;}}return oldSpawnEnemy.apply(this,arguments);}; if(typeof spawnEnemy!=='undefined')spawnEnemy=window.spawnEnemy;
-  function spawnCoreDevourer529(){game.bossActive=true;const p=borderSpawn(),hp=(7600+n(game.wave)*80)*.75;game.enemies.push({bossType:'coreDevourer',name:'Devorador de Núcleos',x:p.x,y:p.y,vx:0,vy:0,r:64,speed:58,hp,maxHp:hp,type:'boss',value:800,color:'#9f6cff',elite:false,wobble:0,hitFlash:0,phase:1,shotTimer:1.6,bite:.6,summon:4.5,shieldHp:0,marked:false,frozenTime:0,auraAngle:0});ring(W/2,H/2,'#9f6cff',180,8);addText(W/2,H/2-80,'DEVORADOR DE NÚCLEOS','#d8b8ff',24);}
+  function spawnCoreDevourer529(){game.bossActive=true;const p=borderSpawn(),hp=(7600+n(game.wave)*80)*.75;game.enemies.push({bossType:'coreDevourer',name:'Devoradora de Núcleos',x:p.x,y:p.y,vx:0,vy:0,r:64,speed:58,hp,maxHp:hp,type:'boss',value:800,color:'#9f6cff',elite:false,wobble:0,hitFlash:0,phase:1,shotTimer:1.6,bite:.6,summon:4.5,shieldHp:0,marked:false,frozenTime:0,auraAngle:0});ring(W/2,H/2,'#9f6cff',180,8);addText(W/2,H/2-80,'DEVORADORA DE NÚCLEOS','#d8b8ff',24);}
   const oldEnemies=window.updateEnemies||updateEnemies; window.updateEnemies=function(dt){const r=oldEnemies.apply(this,arguments);if(game){updateCustomEnemies529(dt);}return r;}; if(typeof updateEnemies!=='undefined')updateEnemies=window.updateEnemies;
   function targetForRift(e){const rf=game.rift50;if(!rf)return game.player;let best=rf.core,bd=d2(e,best);for(const s of rf.structures||[]){if(s.hp>0){const d=d2(e,s);if(d<bd){bd=d;best=s;}}}return best;}
   function damageStructureLike(s,dmg){if(!s)return;if(s.hp!==undefined){s.hp-=dmg;s.hit=.18;}else if(game.rift50?.core&&s===game.rift50.core){try{if(typeof damageCore50==='function')damageCore50(dmg);else s.hp-=dmg;}catch{s.hp-=dmg;}}}
@@ -15886,7 +15886,7 @@ function killKey37(e){
     {id:'ruinCharger',mode:'rift',g:'Comuns',e:'▶',name:'Carregador da Ruína',hp:'70+',spd:'Carga',dmg:'Construções',col:'#d5a36b',spawn:'Fissuras • Wave 10+',atk:'Carrega em linha reta contra muros, torretas ou núcleo.',lore:'Criado para derrubar portas que ainda não existem. Ao ver uma defesa, só entende uma resposta: atravessar.'},
     {id:'towerEater',mode:'rift',g:'Elites',e:'▣',name:'Engolidor de Torres',hp:'230+',spd:'Baixa',dmg:'Corrompe torres',col:'#ff9966',spawn:'Fissuras • Wave 12+',atk:'Prioriza torretas e as deixa temporariamente sem atirar.',lore:'Ele mastiga mecanismos como quem mastiga ossos. O metal range antes de lembrar que era defesa.'},
     {id:'riftHerald',mode:'rift',g:'Elites',e:'◇',name:'Arauto das Fendas',hp:'190+',spd:'Média',dmg:'Buffa fissuras',col:'#9f6cff',spawn:'Fissuras • Wave 14+',atk:'Fortalece fissuras próximas e acelera seus spawns.',lore:'Quando o Arauto chega, a fissura para de sangrar e começa a respirar.'},
-    {id:'coreDevourer',mode:'rift',g:'Bosses',e:'☄',name:'Devorador de Núcleos',hp:'7600+',spd:'Baixa',dmg:'Núcleo e torres',col:'#9f6cff',spawn:'Fissuras • Wave 20',atk:'Marcha até o núcleo, morde estruturas e invoca crias.',lore:'Ele não quer vencer a batalha. Quer apagar o lugar que permite que a batalha exista.'}
+    {id:'coreDevourer',mode:'rift',g:'Bosses',e:'☄',name:'Devoradora de Núcleos',hp:'7600+',spd:'Baixa',dmg:'Núcleo e torres',col:'#9f6cff',spawn:'Fissuras • Wave 20',atk:'Marcha até o núcleo, morde estruturas e invoca crias.',lore:'Uma máquina sedenta por destruição e caos, seu único objetivo de criação foi para destruir os núcleos de fissuras e causar a instabilidade do Núcleo Supremo do Chrono para explodir os universos inteiros, não sabemos se ela foi a principal causadora disso tudo, somente sabemos que esse plano de destruição em massa deu certo.'}
   ];
   const prevBest=window.__openBestiaryLatest||window.openBestiary464||window.openBestiary461;
   function needBook(e){return e.g==='Bosses'?2:e.g==='Elites'?6:10;}
@@ -15945,7 +15945,7 @@ function killKey37(e){
     {id:'ruinCharger',mode:'rift',g:'Comuns',e:'▶',name:'Carregador da Ruína',hp:'70+',spd:'Carga',dmg:'Construções',col:'#d5a36b',spawn:'Fissuras • Wave 10+',atk:'Carrega em linha reta contra muros, torretas ou núcleo.',lore:'Criado para derrubar portas que ainda não existem. Ao ver uma defesa, só entende uma resposta: atravessar.'},
     {id:'towerEater',mode:'rift',g:'Elites',e:'▣',name:'Engolidor de Torres',hp:'230+',spd:'Baixa',dmg:'Corrompe torres',col:'#ff9966',spawn:'Fissuras • Wave 12+',atk:'Prioriza torretas e as deixa temporariamente sem atirar.',lore:'Ele mastiga mecanismos como quem mastiga ossos. O metal range antes de lembrar que era defesa.'},
     {id:'riftHerald',mode:'rift',g:'Elites',e:'◇',name:'Arauto das Fendas',hp:'190+',spd:'Média',dmg:'Buffa fissuras',col:'#9f6cff',spawn:'Fissuras • Wave 14+',atk:'Fortalece fissuras próximas e acelera seus spawns.',lore:'Quando o Arauto chega, a fissura para de sangrar e começa a respirar.'},
-    {id:'coreDevourer',mode:'rift',g:'Bosses',e:'☄',name:'Devorador de Núcleos',hp:'7600+',spd:'Baixa',dmg:'Núcleo e torres',col:'#9f6cff',spawn:'Fissuras • Wave 20',atk:'Marcha até o núcleo, morde estruturas e invoca crias.',lore:'Ele não quer vencer a batalha. Quer apagar o lugar que permite que a batalha exista.'}
+    {id:'coreDevourer',mode:'rift',g:'Bosses',e:'☄',name:'Devoradora de Núcleos',hp:'7600+',spd:'Baixa',dmg:'Núcleo e torres',col:'#9f6cff',spawn:'Fissuras • Wave 20',atk:'Marcha até o núcleo, morde estruturas e invoca crias.',lore:'Uma máquina sedenta por destruição e caos, seu único objetivo de criação foi para destruir os núcleos de fissuras e causar a instabilidade do Núcleo Supremo do Chrono para explodir os universos inteiros, não sabemos se ela foi a principal causadora disso tudo, somente sabemos que esse plano de destruição em massa deu certo.'}
   ];
   const oldGeneralBestiary=window.openBestiary455||window.openBestiaryO||window.openBestiary464;
   function need(e){return e.g==='Bosses'?2:e.g==='Elites'?6:10;}function kills(id){const m=read();return n(m.bestiaryKills[id]||m.stats?.typeKills?.[id]);}function claimed(id){return !!read().bestiaryClaimed461?.[id];}
@@ -16029,7 +16029,7 @@ function killKey37(e){
     {id:'ruinCharger',tab:'rift',kind:'monster',typeLabel:'Elite de Fissura',cls:'charger',name:'Carregador da Ruína',hp:'70+',spd:'Carga',dmg:'Construções',col:'#d5a36b',spawn:'Fissuras • Wave 10+',atk:'Carrega em linha reta contra muros, torretas ou núcleo.',lore:'Criado para derrubar portas que ainda não existem. Ao ver uma defesa, só entende uma resposta: atravessar.'},
     {id:'towerEater',tab:'rift',kind:'monster',typeLabel:'Elite de Fissura',cls:'eater',name:'Engolidor de Torres',hp:'230+',spd:'Baixa',dmg:'Corrompe torres',col:'#ff9966',spawn:'Fissuras • Wave 12+',atk:'Prioriza torretas e as deixa temporariamente sem atirar.',lore:'Ele mastiga mecanismos como quem mastiga ossos. O metal range antes de lembrar que era defesa.'},
     {id:'riftHerald',tab:'rift',kind:'monster',typeLabel:'Elite de Fissura',cls:'herald',name:'Arauto das Fendas',hp:'190+',spd:'Média',dmg:'Buffa fissuras',col:'#9f6cff',spawn:'Fissuras • Wave 14+',atk:'Fortalece fissuras próximas e acelera seus spawns.',lore:'Quando o Arauto chega, a fissura para de sangrar e começa a respirar.'},
-    {id:'coreDevourer',tab:'rift',kind:'boss',typeLabel:'Boss de Fissura',cls:'devourer',name:'Devorador de Núcleos',hp:'7600+',spd:'Baixa',dmg:'Núcleo e torres',col:'#c6a0ff',spawn:'Fissuras • Wave 20',atk:'Marcha até o núcleo, morde estruturas e invoca crias.',lore:'Ele não quer vencer a batalha. Quer apagar o lugar que permite que a batalha exista.'}
+    {id:'coreDevourer',tab:'rift',kind:'boss',typeLabel:'Boss de Fissura',cls:'devourer',name:'Devoradora de Núcleos',hp:'7600+',spd:'Baixa',dmg:'Núcleo e torres',col:'#c6a0ff',spawn:'Fissuras • Wave 20',atk:'Marcha até o núcleo, morde estruturas e invoca crias.',lore:'Uma máquina sedenta por destruição e caos, seu único objetivo de criação foi para destruir os núcleos de fissuras e causar a instabilidade do Núcleo Supremo do Chrono para explodir os universos inteiros, não sabemos se ela foi a principal causadora disso tudo, somente sabemos que esse plano de destruição em massa deu certo.'}
   ];
   function modelHTML(e){return `<div class="monsterStage531" style="--c:${e.col}"><div class="monsterModel531 ${e.cls}" style="--c:${e.col}"><i></i><b></b><em></em><u></u><span></span></div></div>`;}
   function cardHTML(e){const k=kills(e.id),req=required(e),ok=claimed(e.id),ready=k>=req&&!ok,shown=ok||ready;return `<button class="riftBookCard531 ${shown?'':'locked'} ${ready?'ready':''}" data-book531="${e.id}" style="--c:${e.col}">${modelHTML(e)}<strong>${shown?esc(e.name):'Registro bloqueado'}</strong><span>${shown?esc(e.typeLabel+' • '+e.spawn):esc(e.typeLabel+' • ???')}</span><div class="need531">${e.kind==='boss'?'Derrote o boss para revelar':`Necessário: ${req} abates`}</div><div class="riftProg531"><i style="width:${Math.min(100,k/req*100)}%"></i></div><span>${k}/${req}</span></button>`;}
@@ -16620,5 +16620,715 @@ function killKey37(e){
   console.log('Chrono Shards 5.4.0 — Bestiário do hub e Voltar corrigidos');
 })();
 </script>
+<script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.4.1 — RICOCHETEADOR REWORK + MISSÕES/ALLIN CHECK
+   - R: Castelo Inflável, muros vermelhos de ricochete
+   - Q/E ajustados, tiro básico 1.2s e mini-balas mais fortes
+   - Cadência acelera carga do Arqueiro
+   - Allin completa Awakening/fragmentos e normaliza missões
+   ──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoRift541RicochetRework)return;
+  window.__chronoRift541RicochetRework=true;
+  const RICO='ricocheteador';
+  const RED='#ff3b4f', RED2='#ff8a66', GOLD='#ffd166', BLUE='#75d8ff', PURPLE='#9f6cff';
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const UNLOCK_KEY=SAVE+'_class_unlocks_v3';
+  const CODE_KEYS=[SAVE+'_redeemed_codes_v1'];
+  const ULT_KEYS=['assault','sniper','reaper','alchemist','engineer','colonel','archer'];
+  const ALL_CLASSES=['engineer','mage','ronin','alchemist','reaper','colonel','bomber','archer','chronoHero','shadowChild','moonSlayer',RICO];
+  const N=v=>Number.isFinite(Number(v))?Number(v):0;
+  const rnd=(a,b)=>typeof rand==='function'?rand(a,b):a+Math.random()*(b-a);
+  const clamp541=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const d541=(a,b)=>Math.hypot((a.x||0)-(b.x||0),(a.y||0)-(b.y||0));
+  const ang541=(a,b)=>Math.atan2((b.y||0)-(a.y||0),(b.x||0)-(a.x||0));
+  const text541=(x,y,t,c=GOLD,s=14)=>{try{addFloatingText(x,y,t,c,s)}catch{}};
+  const ring541=(x,y,c=GOLD,r=60,w=3)=>{try{addRing(x,y,c,r,w)}catch{}};
+  const parts541=(x,y,c=GOLD,n=8,f=.5)=>{try{addParticles(x,y,c,n,f)}catch{}};
+  function readMeta541(){let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{}return repairMeta541(m,false)}
+  function writeMeta541(m){m=repairMeta541(m,false);try{localStorage.setItem(SAVE,JSON.stringify(m));if(typeof game!=='undefined'&&game)game.meta=m;}catch{}return m;}
+  function repairMeta541(m,save=true){
+    m=m||{};m.stats=m.stats||{};m.stats.typeKills=m.stats.typeKills||{};m.stats.classKills=m.stats.classKills||{};m.stats.classBossKills=m.stats.classBossKills||{};m.stats.classSkillUses=m.stats.classSkillUses||{};
+    ['totalKills','bossKills','eliteKills','skillsUsed','runsStarted','chronoFragmentsCollected','maxWave'].forEach(k=>m.stats[k]=N(m.stats[k]));
+    m.missions37=m.missions37||{slots:[],extreme:{}};m.missions37.extreme=m.missions37.extreme||{};
+    m.missions39=m.missions39||{slots:[],extreme:{}};m.missions39.extreme=m.missions39.extreme||{};
+    m.missionCooldowns463=m.missionCooldowns463||{};m.claimedMissions461=m.claimedMissions461||{};
+    m.awakeningKeys=N(m.awakeningKeys);m.awakenings463=m.awakenings463||{};m.awakenings463.completed=m.awakenings463.completed||{};m.awakeningUltimates=m.awakeningUltimates||{};m.awakeningClaims461=m.awakeningClaims461||{};
+    m.bestiaryKills=m.bestiaryKills||{};m.bestiaryClaimed461=m.bestiaryClaimed461||{};m.unlockedRelics=Array.isArray(m.unlockedRelics)?m.unlockedRelics:[];
+    m.chronoFragments=N(m.chronoFragments);m.relicShards=N(m.relicShards);
+    if(save)writeMeta541(m);return m;
+  }
+  function unlocks541(){try{const a=JSON.parse(localStorage.getItem(UNLOCK_KEY)||'[]');return Array.isArray(a)?a:[]}catch{return []}}
+  function saveUnlocks541(a){try{localStorage.setItem(UNLOCK_KEY,JSON.stringify(Array.from(new Set((a||[]).filter(Boolean)))))}catch{}}
+  function fullAllin541(show=true){
+    const m=readMeta541();
+    m.relicShards=Math.max(m.relicShards,9999);m.chronoFragments=Math.max(m.chronoFragments,999);m.stats.chronoFragmentsCollected=Math.max(N(m.stats.chronoFragmentsCollected),999);
+    m.missions39.extreme.forceComplete=true;m.missions39.extreme.claimed=true;m.missions37.extreme.forceComplete=true;m.missions37.extreme.claimed=true;
+    m.unlockedMoonSlayer=true;m.moonMissionClaimed=true;m.riftModeUnlocked525=true;m.riftModeUnlocked=true;m.allUnlocked=true;m.allInUnlocked=true;m.stats.maxWave=Math.max(N(m.stats.maxWave),20);
+    m.awakeningKeys=Math.max(N(m.awakeningKeys),99);m.awakenings463.active=null;
+    for(const k of ULT_KEYS){m.awakenings463.completed[k]=5;m.awakeningUltimates[k]=true;m.awakeningClaims461[k]=true;}
+    const book=['chaser','strafer','tank','bomber','swarmer','sentinel','vomiter','riftTick','glassMantis','phaseLurker','leaper','medic','medicDrone','sniperDrone','splitter','pukeling','elite','dreadbus','nullHerald','archon','titan','oracle','oracleBloom','eclipseInquisitor','glacialBeast','lostEmperor','glassCrawler','chronoMosquito','ruinCharger','manaParasite','towerEater','riftHerald','stoneColossus','voidWeaver','coreDevourer'];
+    for(const id of book){m.bestiaryKills[id]=Math.max(N(m.bestiaryKills[id]),999);m.bestiaryClaimed461[id]=true;}
+    try{if(Array.isArray(RELICS))m.unlockedRelics=Array.from(new Set(RELICS.map(r=>r.id).filter(Boolean)));}catch{}
+    writeMeta541(m);saveUnlocks541(Array.from(new Set(unlocks541().concat(ALL_CLASSES))));
+    try{localStorage.setItem(SAVE+'_secret_rift_v1',JSON.stringify({lostEmperorDefeated:true}))}catch{}
+    if(show&&typeof game!=='undefined'&&game?.player){text541(game.player.x,game.player.y-50,'ALLIN: TUDO LIBERADO',GOLD,18);ring541(game.player.x,game.player.y,GOLD,120,5)}
+    return m;
+  }
+  // Allin precisa funcionar mesmo se algum listener antigo parar o clique.
+  ['input','change','keyup'].forEach(type=>document.addEventListener(type,e=>{const v=(e.target?.value||'').trim().toLowerCase();if(v==='allin')setTimeout(()=>fullAllin541(false),0);},true));
+  window.addEventListener('click',()=>{const inp=document.getElementById('codeInput529')||document.getElementById('codeInput461')||document.getElementById('code37')||document.getElementById('codeInput27')||document.getElementById('codeInput');if((inp?.value||'').trim().toLowerCase()==='allin')setTimeout(()=>fullAllin541(true),20);},true);
+
+  function addStyle541(){if(document.getElementById('rico541Style'))return;const st=document.createElement('style');st.id='rico541Style';st.textContent=`
+    .synergyHud541{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:80;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;pointer-events:none;max-width:min(920px,94vw)}
+    .synergyHud541 span{font-family:Orbitron,sans-serif;font-size:10px;letter-spacing:.12em;padding:7px 10px;border-radius:999px;border:1px solid var(--co,#ffd166);color:#fff;background:linear-gradient(135deg,rgba(10,13,31,.82),rgba(35,18,61,.65));box-shadow:0 0 18px color-mix(in srgb,var(--co,#ffd166) 35%,transparent)}
+    .synergyBoard541{margin:10px auto 14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.synergyBoard541 span{font-size:11px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.26);border-radius:999px;padding:6px 10px}.synergyBoard541 b{color:#ffd166}
+  `;document.head.appendChild(st);}
+  addStyle541();
+
+  // Dados do Ricocheteador — mantém a key interna, mas rebatiza o R.
+  try{
+    if(WEAPONS?.ricoMarble){WEAPONS.ricoMarble.cooldown=1.2;WEAPONS.ricoMarble.damage=Math.max(N(WEAPONS.ricoMarble.damage),44);}
+    if(SKILL_DEFS?.ricoPoolShot){SKILL_DEFS.ricoPoolShot.name='Castelo Inflável';SKILL_DEFS.ricoPoolShot.emoji='🪞';SKILL_DEFS.ricoPoolShot.cooldown=20;SKILL_DEFS.ricoPoolShot.desc='Cria um espelho refletor no chão, cada tiro que o jogador acertar no espelho, vai refletir em 3 raios prismáticos além de fazer o tiro ricochetear.';}
+    if(SKILL_DEFS?.ricoPursuer)SKILL_DEFS.ricoPursuer.desc='Dispara uma esfera maior que mira um alvo e vai em sua direção. Ao bater em inimigos ou paredes, ricocheteia, tenta outro alvo em linha reta, acelera e cria uma pequena onda magnética.';
+    if(SKILL_DEFS?.ricoMagnet)SKILL_DEFS.ricoMagnet.desc='Finca um prego magnético no chão com campo gravitacional que puxa os inimigos de tempos em tempos. Balas orbitam causando dano e são lançadas com força quando o prego acaba.';
+  }catch{}
+
+  function isRico541(){return typeof game!=='undefined'&&game&&game.classKey===RICO&&game.player;}
+  function ensureRico541(){if(!game)return;game.ricoBullets529=game.ricoBullets529||[];game.ricoNails529=game.ricoNails529||[];game.ricoWalls541=game.ricoWalls541||[];game.ricoPrev541=game.ricoPrev541||new WeakMap();game.ricoShotSeq541=N(game.ricoShotSeq541);}
+  function target541(from,range=900,exclude=null){let best=null,bd=range;for(const e of game.enemies||[]){if(!e||e===exclude||e.hp<=0)continue;const bonus=e.ricoMarked529?-260:0;const d=d541(from,e)+bonus;if(d<bd){bd=d;best=e;}}return best;}
+  function damageEnemy541(e,dmg){if(!e||!game)return false;dmg*=game.upgrades?.eliteHunter529&&(e.elite||e.type==='boss'||e.bossType)?1.18:1; if(e.ricoMarked529)dmg*=1.12;if(e.shieldHp>0){e.shieldHp-=dmg;if(e.shieldHp<0){e.hp+=e.shieldHp;e.shieldHp=0;}}else e.hp-=dmg;e.hitFlash=.14;const i=game.enemies.indexOf(e);if(i>=0&&e.hp<=0){try{enemyDeath(i,e)}catch{}return true;}return false;}
+  function damageFissure541(x,y,r,dmg){if(!game?.rift50?.fissures)return false;let any=false;for(const f of game.rift50.fissures){if(f&&f.hp>0&&Math.hypot(x-f.x,y-f.y)<r+(f.r||26)){f.hp-=dmg*(game.upgrades?.eliteHunter529?1.18:1);f._flash508=.18;any=true;}}return any;}
+  function spawnMini541(b,count=4,mul=0.52,extra={}){if(!game)return;ensureRico541();const base=Math.atan2(b.vy||0,b.vx||1);for(let i=0;i<count;i++){const a=base+rnd(-1.75,1.75)+(i-(count-1)/2)*.18,sp=(extra.speed||470)+rnd(-60,120);game.ricoBullets529.push({x:b.x,y:b.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:3.6,life:extra.life||1.08,damage:(b.damage||42)*mul,bounces:0,maxBounces:extra.maxBounces??3,split:false,small:true,firstBoost:false,color:extra.color||GOLD,pursuer:0,pool:false,hitIds:new Set(),orbit:null,age:0,_smallBuff541:true});}}
+  function healRico541(){const p=game?.player;if(!p)return;const h=(p.maxHp||100)*.02;p.hp=clamp541((p.hp||0)+h,0,p.maxHp||p.hp||100);text541(p.x,p.y-30,'+2% HP',RED2,12);}
+  function wallRect541(w){const vertical=w.rot==='v';return {x:w.x,y:w.y,w:vertical?30:112,h:vertical?112:30};}
+  function insideRect541(b,r){return b.x+b.r>r.x-r.w/2&&b.x-b.r<r.x+r.w/2&&b.y+b.r>r.y-r.h/2&&b.y-b.r<r.y+r.h/2;}
+  function hitRedWall541(b,prev){
+    for(const w of game.ricoWalls541||[]){
+      if(w.life<=0)continue;
+      const r=wallRect541(w);
+      const hit=insideRect541(b,r)||(prev&&Math.min(prev.x,b.x)<=r.x+r.w/2+b.r&&Math.max(prev.x,b.x)>=r.x-r.w/2-b.r&&Math.min(prev.y,b.y)<=r.y+r.h/2+b.r&&Math.max(prev.y,b.y)>=r.y-r.h/2-b.r);
+      if(hit){
+        const vertical=w.rot==='v';
+        if(vertical)b.vx=(prev&&prev.x<r.x?-1:1)*Math.abs(b.vx||1);
+        else b.vy=(prev&&prev.y<r.y?-1:1)*Math.abs(b.vy||1);
+        const sp=Math.hypot(b.vx,b.vy)||520;
+        const normalMain=!b.small&&!b.pursuer&&!b.pool;
+        if(normalMain){
+          b.vx=b.vx/sp*sp*1.5;
+          b.vy=b.vy/sp*sp*1.5;
+          b.life=Math.max(b.life||0,1.25)+.75;
+          b.maxBounces=(b.maxBounces||0)+2;
+          b.damage=(b.damage||42)*1.15;
+          b.color=RED2;
+          if(!b._redWallHitLock541){
+            b._redWallHitLock541=.14;
+            healRico541();
+            spawnMini541(b,3,.48,{color:GOLD,life:1.15,maxBounces:3,speed:520});
+          }
+          ring541(b.x,b.y,RED,55,4);
+          parts541(b.x,b.y,RED2,14,.7);
+        }else{
+          // Balas pequenas, Q e outras esferas especiais só ricocheteiam no muro vermelho.
+          // Elas não recebem velocidade, alcance, dano extra, cura ou bolinhas extras.
+          b.life=Math.max(b.life||0,.35);
+          ring541(b.x,b.y,b.color||GOLD,32,2);
+          parts541(b.x,b.y,b.color||GOLD,5,.28);
+        }
+        b.bounces=(b.bounces||0)+1;
+        return true;
+      }
+    }
+    return false;
+  }
+  function placeRicoWalls541(){ensureRico541();game.ricoWalls541.length=0;const margin=105;for(let i=0;i<4;i++){let x=rnd(margin,W-margin),y=rnd(margin,H-margin);if(game?.rift50?.nucleus&&d541({x,y},game.rift50.nucleus)<150){x+=rnd(-180,180);y+=rnd(-120,120);}game.ricoWalls541.push({x:clamp541(x,70,W-70),y:clamp541(y,70,H-70),rot:Math.random()<.5?'h':'v',life:8,max:8,pulse:rnd(0,6.28)});}text541(game.player.x,game.player.y-40,'CASTELO INFLÁVEL',RED2,18);ring541(game.player.x,game.player.y,RED,110,5);}
+  function pullWave541(x,y,r=120,force=72){ring541(x,y,PURPLE,r,3);for(const e of game.enemies||[]){if(!e||e.hp<=0)continue;const d=d541({x,y},e);if(d<r+(e.r||0)){const a=ang541(e,{x,y});const p=(1-d/(r+(e.r||0)))*force;e.x+=Math.cos(a)*p;e.y+=Math.sin(a)*p;e.hitFlash=.08;}}}
+
+  const oldUseSkill541=window.useSkill||useSkill;
+  window.useSkill=function(idx){
+    if(!isRico541())return oldUseSkill541.apply(this,arguments);
+    ensureRico541();const p=game.player;
+    if(idx===2){const sk=SKILL_DEFS.ricoPoolShot;if(game.skillCds[idx]>0||p.focus<sk.focusCost||!game.running)return;p.focus-=sk.focusCost;game.skillCds[idx]=20;placeRicoWalls541();try{updateHUD()}catch{}return;}
+    const beforeB=(game.ricoBullets529||[]).length,beforeN=(game.ricoNails529||[]).length;
+    const out=oldUseSkill541.apply(this,arguments);
+    if(idx===0){for(const nail of (game.ricoNails529||[]).slice(beforeN)){nail.r=Math.max(nail.r||0,245);nail.life=Math.max(nail.life||0,7.4);nail.max=Math.max(nail.max||0,7.4);nail.wave541=.45;nail.strong541=true;nail.cap=0;}}
+    if(idx===1){for(const b of (game.ricoBullets529||[]).slice(beforeB)){if(b.pursuer){b.q541=true;b.noCurve542=true;b.maxBounces=Math.max(b.maxBounces||0,9);b.life=Math.max(b.life||0,4.2);}}}
+    return out;
+  };try{if(typeof useSkill!=='undefined')useSkill=window.useSkill;}catch{}
+
+  const oldShoot541=window.shoot||shoot;
+  window.shoot=function(){
+    if(!isRico541())return oldShoot541.apply(this,arguments);
+    ensureRico541();const p=game.player;if(!game.running||p.fireCd>0)return;const a=ang541(p,mouse),fr=Math.max(.2,game.upgrades?.fireRate||1);const total=1+Math.max(0,Math.floor(game.upgrades?.multishot||0));
+    for(let i=0;i<total;i++){const off=total===1?0:(i/(total-1)-.5)*.12;game.ricoBullets529.push({x:p.x+Math.cos(a+off)*22,y:p.y+Math.sin(a+off)*22,vx:Math.cos(a+off)*610,vy:Math.sin(a+off)*610,r:6.8,life:1.82,damage:45*(game.upgrades?.damage||1),bounces:0,maxBounces:5,split:true,small:false,firstBoost:false,color:BLUE,pursuer:0,pool:false,hitIds:new Set(),orbit:null,age:0,main541:true});}
+    p.fireCd=1.2/fr;parts541(p.x+Math.cos(a)*18,p.y+Math.sin(a)*18,BLUE,8,.42);
+  };try{if(typeof shoot!=='undefined')shoot=window.shoot;}catch{}
+
+  const oldUpdateFX541=window.updateFX||updateFX;
+  window.updateFX=function(dt){
+    if(game){ensureRico541();const mp=game.ricoPrev541;for(const b of game.ricoBullets529||[])mp.set(b,{x:b.x,y:b.y,bounces:N(b.bounces),hits:b.hitIds?.size||0,sp:Math.hypot(b.vx||0,b.vy||0)});}
+    const out=oldUpdateFX541.apply(this,arguments);
+    if(game){postRico541(dt);updateArcherChargeFireRate541(dt);updateSynergyHud541();}
+    return out;
+  };try{if(typeof updateFX!=='undefined')updateFX=window.updateFX;}catch{}
+
+  function postRico541(dt){ensureRico541();
+    for(let i=(game.ricoWalls541||[]).length-1;i>=0;i--){const w=game.ricoWalls541[i];w.life-=dt;w.pulse+=dt*6;if(w.life<=0)game.ricoWalls541.splice(i,1);}
+    for(const nail of game.ricoNails529||[]){if(nail.strong541){nail.wave541-=dt;if(nail.wave541<=0){nail.wave541=1.18;pullWave541(nail.x,nail.y,(nail.r||245)+112,150);}}}
+    for(const b of game.ricoBullets529||[]){
+      if(b.small&&!b._smallBuff541){b.damage*=1.35;b._smallBuff541=true;b.r=Math.max(b.r||3.2,3.6);}
+      const prev=game.ricoPrev541.get(b);
+      if(b._redWallHitLock541)b._redWallHitLock541=Math.max(0,b._redWallHitLock541-dt);
+      if(prev)hitRedWall541(b,prev);
+      if(prev&&b.hitIds&&b.hitIds.size>prev.hits&&!b.small&&!b.pursuer&&!b.pool){spawnMini541(b,4,.46,{color:GOLD,life:1.05,maxBounces:3,speed:500});}
+      if(prev&&b.q541&&N(b.bounces)>prev.bounces){const sp=Math.max(480,Math.hypot(b.vx||0,b.vy||0))*1.3;const t=target541(b,850);const a=t?ang541(b,t):Math.atan2(b.vy||0,b.vx||1);b.vx=Math.cos(a)*sp;b.vy=Math.sin(a)*sp;b.life=Math.max(b.life||0,1.05);pullWave541(b.x,b.y,112,82);}
+      if(b.orbit){b.life=Math.max(b.life||0,.5);orbitDamage541(b,dt);}
+    }
+    // Legado: se algum texto de info antigo abrir, corrige em tempo real.
+    const html=document.body?.innerHTML||'';if(html.includes('Mesa de Sinuca'))setTimeout(()=>{document.querySelectorAll('.skillRow461').forEach(el=>{if(/Mesa de Sinuca/.test(el.textContent||'')){el.innerHTML='<b>R — 🪞Refletor Prismático</b><br><span>Cria um espelho refletor no chão, cada tiro que o jogador acertar no espelho, vai refletir em 3 raios prismáticos além de fazer o tiro ricochetear.</span>';}});},0);
+  }
+  function orbitDamage541(b,dt){
+    b._orbitHits541=b._orbitHits541||new WeakMap();
+    for(const e of game.enemies||[]){if(!e||e.hp<=0)continue;if(d541(b,e)<(b.r||4)+(e.r||0)+3){const last=b._orbitHits541.get(e)||0;if((game.time||0)-last>.16){b._orbitHits541.set(e,game.time||0);damageEnemy541(e,(b.damage||28)*.42);parts541(b.x,b.y,b.color||GOLD,4,.25);}}}
+    damageFissure541(b.x,b.y,(b.r||4)+5,(b.damage||28)*.32*dt*6);
+  }
+  function updateArcherChargeFireRate541(dt){if(!game||game.classKey!=='archer'||!game.archerCharging)return;const fr=Math.max(1,N(game.upgrades?.fireRate)||1);if(fr>1)game.archerCharge=Math.min(1.05,(game.archerCharge||0)+dt*(fr-1)*.85);}
+
+  const oldDrawBullets541=window.drawBullets||drawBullets;
+  window.drawBullets=function(){const r=oldDrawBullets541.apply(this,arguments);drawRicoWalls541();return r;};try{if(typeof drawBullets!=='undefined')drawBullets=window.drawBullets;}catch{}
+  function drawRicoWalls541(){if(!game?.ricoWalls541?.length)return;ctx.save();for(const w of game.ricoWalls541){const k=clamp541(w.life/w.max,0,1),rr=wallRect541(w);ctx.save();ctx.translate(w.x,w.y);ctx.rotate(w.rot==='v'?Math.PI/2:0);ctx.globalAlpha=.95*k;ctx.shadowBlur=24;ctx.shadowColor=RED;const g=ctx.createLinearGradient(-56,0,56,0);g.addColorStop(0,'rgba(80,8,18,.92)');g.addColorStop(.5,'rgba(255,70,82,.96)');g.addColorStop(1,'rgba(80,8,18,.92)');ctx.fillStyle=g;ctx.strokeStyle=GOLD;ctx.lineWidth=2.4;roundRect541(ctx,-56,-15,112,30,10);ctx.fill();ctx.stroke();ctx.globalAlpha=.55*k;ctx.strokeStyle=RED2;ctx.lineWidth=1.4;for(let i=-38;i<=38;i+=19){ctx.beginPath();ctx.moveTo(i,-12);ctx.lineTo(i+11,12);ctx.stroke();}ctx.restore();}ctx.restore();}
+  function roundRect541(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();}
+
+  // Sinergias mais legíveis e com identidade na interface.
+  const TAG_INFO={precisao:['TIRO PERFEITO',GOLD],velocidade:['RITMO FANTASMA',BLUE],foco:['MENTE ACELERADA',PURPLE],escudo:['GUARDIÃO CRONAL','#86ffb0'],explosao:['REAÇÃO EM CADEIA','#ff9966'],veneno:['PRAGA ALQUÍMICA','#b6ff7a'],construcao:['ENGENHARIA DE GUERRA','#9bedff']};
+  function updateSynergyHud541(){const old=document.getElementById('synergyHud541');if(!game||!game.running){old?.remove();return;}const active=Object.keys(game.upgrades?.synergy529?.active||{}).filter(k=>game.upgrades.synergy529.active[k]);if(!active.length){old?.remove();return;}const box=old||document.createElement('div');box.id='synergyHud541';box.className='synergyHud541';box.innerHTML=active.slice(0,7).map(k=>{const inf=TAG_INFO[k]||[k,'#ffd166'];return `<span style="--co:${inf[1]}">${inf[0]}</span>`}).join('');if(!old)document.body.appendChild(box);}
+  const oldOpenUp541=window.openUpgradeMenu||openUpgradeMenu;
+  window.openUpgradeMenu=function(){const r=oldOpenUp541.apply(this,arguments);setTimeout(()=>{try{const title=overlayCard?.querySelector('h1');if(!title||!String(title.textContent||'').includes('LEVEL UP'))return;const sy=game?.upgrades?.synergy529||{tags:{},active:{}};const tags=Object.keys(TAG_INFO).filter(k=>N(sy.tags?.[k])>0||sy.active?.[k]);const board=document.createElement('div');board.className='synergyBoard541';board.innerHTML=(tags.length?tags:['precisao','escudo','foco']).slice(0,7).map(k=>{const [name,col]=TAG_INFO[k];const ct=Math.min(3,N(sy.tags?.[k]));return `<span style="border-color:${col}55"><b style="color:${col}">${name}</b> ${sy.active?.[k]?'ATIVA':ct+'/3'}</span>`}).join('');title.insertAdjacentElement('afterend',board);overlayCard.querySelectorAll('.synergyChip529').forEach(ch=>{const txt=(ch.textContent||'').toLowerCase();if(/2\/3/.test(txt)){ch.textContent+=' → ATIVA';ch.style.boxShadow='0 0 18px rgba(255,209,102,.35)';}});}catch{}},0);return r;};try{if(typeof openUpgradeMenu!=='undefined')openUpgradeMenu=window.openUpgradeMenu;}catch{}
+
+  // Sanity leve: sempre que uma run existe, meta/missões ficam normalizadas.
+  const oldReset541=window.resetGame||resetGame;window.resetGame=function(k){const r=oldReset541.apply(this,arguments);try{repairMeta541(readMeta541(),true);if(k===RICO&&WEAPONS?.ricoMarble)WEAPONS.ricoMarble.cooldown=1.2;}catch{}return r;};try{if(typeof resetGame!=='undefined')resetGame=window.resetGame;}catch{}
+
+  console.log('Chrono Shards 5.4.1 — Ricocheteador rework, sinergias e Allin/missões revisados');
+})();
+</script>
+
+
+<script>
+/* CHRONO SHARDS 5.4.2 — Ajuste fino do Ricocheteador
+   - Castelo Inflável: buffs só para tiros normais, nunca para bolinhas pequenas
+   - Perseguidor Quicante: sem curva; mira/segue reto até bater e ricochetear
+*/
+(()=>{
+  if(window.__chronoRift542RicoFineTune)return;
+  window.__chronoRift542RicoFineTune=true;
+  try{
+    if(window.SKILL_DEFS&&SKILL_DEFS.ricoPursuer){
+      SKILL_DEFS.ricoPursuer.desc='Q: dispara uma esfera maior que mira um alvo e segue em linha reta. Ao bater em inimigos ou paredes, ricocheteia, tenta outro alvo em linha reta, acelera e cria uma pequena onda magnética.';
+    }
+    if(window.SKILL_DEFS&&SKILL_DEFS.ricoPoolShot){
+      SKILL_DEFS.ricoPoolShot.desc='R: cria 4 muros vermelhos temporários. Somente tiros normais que ricocheteiam neles recebem velocidade, alcance, dano extra, bolinhas extras e cura de 2% HP.';
+    }
+  }catch{}
+  console.log('Chrono Shards 5.4.2 — Ricocheteador: R só buffa tiro normal e Q segue reto');
+})();
+</script>
+
+
+<script>
+/* CHRONO SHARDS 5.4.3 — Ricocheteador R: Ponto de Rebate
+   - Substitui Castelo Inflável por um refletor único e controlado
+   - Somente tiros normais principais ativam o refletor
+   - Ao rebater, emite 3 raios grandes em cone, estilo laser no espelho
+*/
+(()=>{
+  if(window.__chronoRift543RebatePoint)return;
+  window.__chronoRift543RebatePoint=true;
+  const RICO='ricocheteador';
+  const CYAN='#75d8ff', GOLD='#ffd166', PURPLE='#9f6cff', RED='#ff3b4f';
+  const N=v=>Number.isFinite(Number(v))?Number(v):0;
+  const rnd=(a,b)=>typeof rand==='function'?rand(a,b):a+Math.random()*(b-a);
+  const dist=(a,b)=>Math.hypot((a.x||0)-(b.x||0),(a.y||0)-(b.y||0));
+  const angle=(a,b)=>Math.atan2((b.y||0)-(a.y||0),(b.x||0)-(a.x||0));
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const text=(x,y,t,c=GOLD,s=14)=>{try{addFloatingText(x,y,t,c,s)}catch{}};
+  const ring=(x,y,c=GOLD,r=60,w=3)=>{try{addRing(x,y,c,r,w)}catch{}};
+  const parts=(x,y,c=GOLD,n=8,f=.5)=>{try{addParticles(x,y,c,n,f)}catch{}};
+
+  function isRico(){return typeof game!=='undefined'&&game&&game.classKey===RICO&&game.player;}
+  function ensure(){if(!game)return;game.ricoBullets529=game.ricoBullets529||[];game.ricoReflectors543=game.ricoReflectors543||[];game.ricoLaserVfx543=game.ricoLaserVfx543||[];}
+  function setSkillData(){try{
+    if(window.SKILL_DEFS&&SKILL_DEFS.ricoPoolShot){
+      SKILL_DEFS.ricoPoolShot.name='Ponto de Rebate';
+      SKILL_DEFS.ricoPoolShot.emoji='🔷';
+      SKILL_DEFS.ricoPoolShot.cooldown=16;
+      SKILL_DEFS.ricoPoolShot.focusCost=Math.min(N(SKILL_DEFS.ricoPoolShot.focusCost)||55,55);
+      SKILL_DEFS.ricoPoolShot.desc='R: instala um refletor por 8s. Tiros normais que ricocheteiam nele são redirecionados e disparam 3 raios grandes em cone, como um laser refletido por espelho.';
+    }
+  }catch{}}
+  setSkillData();
+
+  function safeDamageEnemy(e,dmg){
+    if(!e||!game||e.hp<=0)return false;
+    try{
+      if(typeof ricoDamage==='function')return ricoDamage(e,dmg);
+    }catch{}
+    if(e.shieldHp>0){e.shieldHp-=dmg;if(e.shieldHp<0){e.hp+=e.shieldHp;e.shieldHp=0;}}
+    else e.hp-=dmg;
+    e.hitFlash=.16;
+    if(e.hp<=0){const i=game.enemies.indexOf(e);if(i>=0){try{enemyDeath(i,e)}catch{game.enemies.splice(i,1)}}return true;}
+    return false;
+  }
+  function lineDist(px,py,ax,ay,bx,by){
+    const vx=bx-ax,vy=by-ay,wx=px-ax,wy=py-ay,l2=vx*vx+vy*vy||1;
+    const t=clamp((wx*vx+wy*vy)/l2,0,1);const x=ax+vx*t,y=ay+vy*t;
+    return Math.hypot(px-x,py-y);
+  }
+  function damageBeam(x,y,a,len,width,dmg){
+    const ex=x+Math.cos(a)*len,ey=y+Math.sin(a)*len;
+    for(const e of (game.enemies||[]).slice()){
+      if(!e||e.hp<=0)continue;
+      if(lineDist(e.x,e.y,x,y,ex,ey)<width+(e.r||12)){
+        safeDamageEnemy(e,dmg*(e.ricoMarked529?1.14:1));
+        e.hitFlash=.22;
+      }
+    }
+    if(game.rift50&&Array.isArray(game.rift50.fissures)){
+      for(const f of game.rift50.fissures){
+        if(!f||f.hp<=0)continue;
+        if(lineDist(f.x,f.y,x,y,ex,ey)<width+(f.r||24)){f.hp-=dmg*.8;f._flash508=.18;}
+      }
+    }
+  }
+  function nearestTargetAngle(from,base){
+    let best=null,bd=760;
+    for(const e of game.enemies||[]){
+      if(!e||e.hp<=0)continue;
+      const d=dist(from,e)+(e.ricoMarked529?-170:0);
+      if(d<bd){bd=d;best=e;}
+    }
+    return best?angle(from,best):base;
+  }
+  function fireMirrorCone(ref,b){
+    const inA=Math.atan2(b.vy||0,b.vx||1);
+    const base=nearestTargetAngle(ref,inA);
+    const len=430,width=18,dmg=(b.damage||44)*.82;
+    const angles=[base-.24,base,base+.24];
+    for(const a of angles){
+      damageBeam(ref.x,ref.y,a,len,width,dmg);
+      game.ricoLaserVfx543.push({x:ref.x,y:ref.y,a,len,width,life:.18,max:.18,color:a===base?GOLD:CYAN});
+    }
+    ring(ref.x,ref.y,GOLD,92,4);
+    parts(ref.x,ref.y,GOLD,24,.75);
+  }
+  function reflectBullet(ref,b){
+    const now=game.time||performance.now()/1000;
+    if(b._rebateLock543&&now-b._rebateLock543<.22)return;
+    b._rebateLock543=now;
+    ref.pulse=.18;
+    ref.cool=.18;
+
+    // Só tiros normais principais ativam todo o efeito; bolinhas pequenas/Q/E só ignoram o refletor.
+    if(b.small||b.pursuer||b.pool||!b.main541)return;
+
+    const base=nearestTargetAngle(ref,Math.atan2(b.vy||0,b.vx||1));
+    const sp=Math.max(560,Math.hypot(b.vx||0,b.vy||0))*1.12;
+    b.vx=Math.cos(base)*sp;
+    b.vy=Math.sin(base)*sp;
+    b.x=ref.x+Math.cos(base)*(ref.r+18);
+    b.y=ref.y+Math.sin(base)*(ref.r+18);
+    b.life=Math.max(b.life||0,1.15);
+    b.bounces=(b.bounces||0)+1;
+    b.color=GOLD;
+    fireMirrorCone(ref,b);
+  }
+  function placeReflector(){
+    ensure();
+    const p=game.player;
+    const x=clamp(mouse?.x??p.x,p.r||50,(typeof W!=='undefined'?W:innerWidth)-(p.r||50));
+    const y=clamp(mouse?.y??p.y,p.r||50,(typeof H!=='undefined'?H:innerHeight)-(p.r||50));
+    game.ricoReflectors543.length=0;
+    game.ricoReflectors543.push({x,y,r:36,life:8,max:8,spin:0,pulse:0,cool:0});
+    text(x,y-46,'PONTO DE REBATE',GOLD,18);
+    ring(x,y,CYAN,110,5);
+    parts(x,y,CYAN,28,.8);
+  }
+
+  const oldUse=window.useSkill||useSkill;
+  window.useSkill=function(idx){
+    if(isRico()&&idx===2){
+      setSkillData();ensure();
+      const p=game.player,sk=SKILL_DEFS.ricoPoolShot||{};
+      const cost=N(sk.focusCost)||55,cd=N(sk.cooldown)||16;
+      if(!game.running||game.skillCds?.[idx]>0||p.focus<cost)return;
+      p.focus-=cost;game.skillCds[idx]=cd;placeReflector();
+      try{updateHUD()}catch{}
+      return;
+    }
+    return oldUse.apply(this,arguments);
+  };
+  try{if(typeof useSkill!=='undefined')useSkill=window.useSkill;}catch{}
+
+  const oldFX=window.updateFX||updateFX;
+  window.updateFX=function(dt){
+    const r=oldFX.apply(this,arguments);
+    try{updateReflectors(dt||0);}catch(err){console.warn('Rico reflector update falhou',err)}
+    return r;
+  };
+  try{if(typeof updateFX!=='undefined')updateFX=window.updateFX;}catch{}
+
+  function updateReflectors(dt){
+    if(!game)return;ensure();
+    for(let i=game.ricoReflectors543.length-1;i>=0;i--){
+      const ref=game.ricoReflectors543[i];
+      ref.life-=dt;ref.spin+=dt*2.8;ref.pulse=Math.max(0,(ref.pulse||0)-dt);ref.cool=Math.max(0,(ref.cool||0)-dt);
+      if(ref.life<=0){ring(ref.x,ref.y,GOLD,88,4);parts(ref.x,ref.y,GOLD,18,.55);game.ricoReflectors543.splice(i,1);continue;}
+      for(const b of game.ricoBullets529||[]){
+        if(!b||b.orbit)continue;
+        if(dist(b,ref)<(b.r||5)+(ref.r||36))reflectBullet(ref,b);
+      }
+    }
+    for(let i=game.ricoLaserVfx543.length-1;i>=0;i--){const v=game.ricoLaserVfx543[i];v.life-=dt;if(v.life<=0)game.ricoLaserVfx543.splice(i,1);}
+
+    // Corrige textos de info antigos que ainda falavam do Castelo Inflável.
+    if(document.body&&(document.body.innerHTML||'').includes('Castelo Inflável')){
+      setTimeout(()=>{document.querySelectorAll('.skillRow461').forEach(el=>{if(/Castelo Inflável|Mesa de Sinuca/.test(el.textContent||'')){el.innerHTML='<b>R — 🔷 Ponto de Rebate</b><br><span>Instala um refletor por 8s. Tiros normais que ricocheteiam nele são redirecionados e disparam 3 raios grandes em cone, como laser refletido por espelho.</span>';}});},0);
+    }
+  }
+
+  const oldDraw=window.drawBullets||drawBullets;
+  window.drawBullets=function(){
+    const r=oldDraw.apply(this,arguments);
+    try{drawReflectors();}catch{}
+    return r;
+  };
+  try{if(typeof drawBullets!=='undefined')drawBullets=window.drawBullets;}catch{}
+
+  function drawReflectors(){
+    if(!game)return;ensure();
+    if(!ctx)return;
+    ctx.save();
+    for(const v of game.ricoLaserVfx543||[]){
+      const k=clamp(v.life/v.max,0,1);
+      const ex=v.x+Math.cos(v.a)*v.len,ey=v.y+Math.sin(v.a)*v.len;
+      ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.78*k;ctx.lineCap='round';
+      ctx.shadowBlur=22;ctx.shadowColor=v.color||GOLD;ctx.strokeStyle=v.color||GOLD;ctx.lineWidth=v.width||18;
+      ctx.beginPath();ctx.moveTo(v.x,v.y);ctx.lineTo(ex,ey);ctx.stroke();
+      ctx.globalAlpha=.95*k;ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(3,(v.width||18)*.24);ctx.beginPath();ctx.moveTo(v.x,v.y);ctx.lineTo(ex,ey);ctx.stroke();ctx.restore();
+    }
+    for(const ref of game.ricoReflectors543||[]){
+      const k=clamp(ref.life/ref.max,0,1),pulse=1+(ref.pulse||0)*.55;
+      ctx.save();ctx.translate(ref.x,ref.y);ctx.rotate(ref.spin||0);ctx.globalAlpha=.96*k;
+      ctx.shadowBlur=24;ctx.shadowColor=CYAN;
+      const g=ctx.createLinearGradient(-26,-26,26,26);g.addColorStop(0,'#07101e');g.addColorStop(.36,'#75d8ff');g.addColorStop(.64,'#ffffff');g.addColorStop(1,'#ffd166');
+      ctx.fillStyle=g;ctx.strokeStyle=GOLD;ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(0,-34*pulse);ctx.lineTo(29*pulse,0);ctx.lineTo(0,34*pulse);ctx.lineTo(-29*pulse,0);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.globalAlpha=.34*k;ctx.strokeStyle=CYAN;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,48+Math.sin((game.time||0)*6)*4,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // Limpa legado do Castelo Inflável ao iniciar nova run com o Ricocheteador.
+  const oldReset=window.resetGame||resetGame;
+  window.resetGame=function(k){const res=oldReset.apply(this,arguments);try{setSkillData();if(game){game.ricoReflectors543=[];game.ricoLaserVfx543=[];game.ricoWalls541=[];}}catch{}return res;};
+  try{if(typeof resetGame!=='undefined')resetGame=window.resetGame;}catch{}
+  setTimeout(setSkillData,0);
+  console.log('Chrono Shards 5.4.3 — Ricocheteador: R virou Ponto de Rebate com 3 raios em cone');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoRift544PowerCatalog)return;
+  window.__chronoRift544PowerCatalog=true;
+
+  const PATCH='Chrono Shards 5.4.4 — catálogo de Power-Ups e sinergias organizado';
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_shards_save');
+  const UNLOCK_KEY=SAVE+'_power_catalog_unlocks_544';
+  const $=(q,r=document)=>r.querySelector(q);
+  const $$=(q,r=document)=>Array.from(r.querySelectorAll(q));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function readUnlocks(){try{return JSON.parse(localStorage.getItem(UNLOCK_KEY)||'{}')||{}}catch{return {}}}
+  function writeUnlocks(m){try{localStorage.setItem(UNLOCK_KEY,JSON.stringify(m||{}))}catch{}}
+  function normName(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||'power';}
+  function unlockPower(name){if(!name)return;const m=readUnlocks();m[normName(name)]=true;writeUnlocks(m)}
+  function unlockAllPowers(){const m=readUnlocks();for(const p of POWER_CATALOG)m[p.id]=true;writeUnlocks(m)}
+
+  const RARITY=[
+    ['COMUM','#75d8ff','Comuns'],
+    ['RARO','#86ffb0','Raros'],
+    ['ÉPICO','#c6a0ff','Épicos'],
+    ['LENDÁRIO','#ffd166','Lendários'],
+    ['MÍTICO','#ff5c9f','Míticos']
+  ];
+  const TAGS={
+    precisao:['PRECISÃO','#75d8ff','Tiros, mira, críticos e ricochetes.'],
+    escudo:['ESCUDO','#86ffb0','Defesa, quebra de escudo e sobrevivência.'],
+    foco:['FOCO','#b58cff','Habilidades, energia e cooldown.'],
+    explosao:['EXPLOSÃO','#ffb347','Área, splash e impacto.'],
+    veneno:['VENENO','#9dff6e','Poças, dano contínuo e químicos.'],
+    construcao:['CONSTRUÇÃO','#ffd166','Torretas, muros e defesa da base.'],
+    velocidade:['VELOCIDADE','#7fffd4','Movimento, dash e ritmo.'],
+    vampirismo:['VAMPIRISMO','#ff799e','Cura, sangue e sustain.'],
+    geral:['GERAL','#dfe8ff','Bônus gerais sem sinergia específica.']
+  };
+  const POWER_CATALOG=[
+    {rarity:'COMUM',name:'Dano +22%',tag:'precisao',desc:'Aumenta o dano global dos ataques e habilidades.'},
+    {rarity:'COMUM',name:'Dano +25%',tag:'precisao',desc:'Versão antiga/alternativa de aumento de dano global.'},
+    {rarity:'COMUM',name:'Cadência +20%',tag:'velocidade',desc:'Aumenta a velocidade de ataque. No Arqueiro também acelera a carga máxima.'},
+    {rarity:'COMUM',name:'Cadência +22%',tag:'velocidade',desc:'Mais disparos por segundo para armas normais.'},
+    {rarity:'COMUM',name:'Velocidade +15%',tag:'velocidade',desc:'Movimento melhor para kite e reposicionamento.'},
+    {rarity:'COMUM',name:'Velocidade +16%',tag:'velocidade',desc:'Aumenta a velocidade do jogador.'},
+    {rarity:'COMUM',name:'HP máximo +22',tag:'escudo',desc:'Aumenta o HP máximo e cura a mesma quantidade.'},
+    {rarity:'COMUM',name:'HP máximo +20',tag:'escudo',desc:'Mais margem de erro durante a run.'},
+    {rarity:'COMUM',name:'Foco máximo +26',tag:'foco',desc:'Aumenta o foco máximo para habilidades e câmera lenta.'},
+    {rarity:'COMUM',name:'Foco máximo +24',tag:'foco',desc:'Mais foco disponível durante a partida.'},
+    {rarity:'COMUM',name:'Passos Leves',tag:'velocidade',desc:'Melhora velocidade e deixa o dash mais confortável.'},
+    {rarity:'COMUM',name:'Fragmento Magnético',tag:'geral',desc:'Aumenta o alcance de coleta de XP, ouro, relíquias e faíscas.'},
+    {rarity:'COMUM',name:'Foco Condensado',tag:'foco',desc:'Ajuda habilidades a carregarem com mais consistência.'},
+    {rarity:'COMUM',name:'Casca Temporal',tag:'escudo',desc:'Ao tomar dano, reduz dano recebido por 2 segundos.'},
+
+    {rarity:'RARO',name:'Perfuração +1',tag:'precisao',desc:'Projéteis atravessam mais um alvo, mas ainda respeitam coberturas.'},
+    {rarity:'RARO',name:'Crítico +10%',tag:'precisao',desc:'Aumenta chance de causar dano crítico.'},
+    {rarity:'RARO',name:'Drone Aliado',tag:'construcao',desc:'Adiciona um drone automático de ataque.'},
+    {rarity:'RARO',name:'Magnetismo +45',tag:'geral',desc:'Puxa loot de mais longe.'},
+    {rarity:'RARO',name:'Servo do Dash +20%',tag:'velocidade',desc:'Dash recarrega mais rápido.'},
+    {rarity:'RARO',name:'Tiro Fantasma',tag:'precisao',desc:'Alguns disparos atravessam paredes para a maioria dos personagens.'},
+    {rarity:'RARO',name:'Caçador de Elite',tag:'precisao',desc:'Aumenta dano contra elites, fissuras e ameaças especiais.'},
+
+    {rarity:'ÉPICO',name:'Balas Explosivas',tag:'explosao',desc:'Impactos causam dano em área. Versão aprimorada também afeta fissuras com dano reduzido.'},
+    {rarity:'ÉPICO',name:'Munição Instável',tag:'explosao',desc:'Projéteis têm chance de explodir com impacto visual mais limpo.'},
+    {rarity:'ÉPICO',name:'Maestria com Químicos',tag:'veneno',desc:'Venenos e ácidos ficam mais fortes.'},
+    {rarity:'ÉPICO',name:'Acid Mastery',tag:'veneno',desc:'Versão antiga da maestria química.'},
+    {rarity:'ÉPICO',name:'Armadura +12%',tag:'escudo',desc:'Reduz dano recebido.'},
+    {rarity:'ÉPICO',name:'Armadura +10%',tag:'escudo',desc:'Aumenta resistência geral.'},
+    {rarity:'ÉPICO',name:'Lifesteal +2.5%',tag:'vampirismo',desc:'Cura por dano causado, respeitando o limite da run.'},
+    {rarity:'ÉPICO',name:'Lifesteal +5%',tag:'vampirismo',desc:'Versão antiga de roubo de vida.'},
+    {rarity:'ÉPICO',name:'Núcleo Reativo',tag:'escudo',desc:'Quando o escudo quebra por completo, cria uma explosão com cooldown.'},
+    {rarity:'ÉPICO',name:'Sangue Cronal',tag:'vampirismo',desc:'Kills podem curar ou acelerar recuperação de escudo.'},
+    {rarity:'ÉPICO',name:'Multishot +1',tag:'precisao',desc:'Adiciona um projétil extra por disparo. Agora é uma escolha épica.'},
+    {rarity:'ÉPICO',name:'Tiro Fantasma de Parede',tag:'precisao',desc:'Permite atravessar parede em disparos específicos, sem afetar Bombardeiro/Exterminador.'},
+
+    {rarity:'LENDÁRIO',name:'Mini-Torreta Permanente',tag:'construcao',desc:'Instala uma mini-torreta fixa menor e mais fraca.'},
+    {rarity:'LENDÁRIO',name:'Torretas de Campo',tag:'construcao',desc:'Ganha uma torreta grátis imediatamente.'},
+    {rarity:'LENDÁRIO',name:'Contrato de Caça',tag:'geral',desc:'Inimigos têm chance de dropar ouro bônus.'},
+    {rarity:'LENDÁRIO',name:'Drone de Reparos',tag:'construcao',desc:'Ajuda sistemas de construção e suporte quando disponível.'},
+
+    {rarity:'MÍTICO',name:'Unidade Suprema',tag:'precisao',desc:'Bônus extremo de velocidade, cadência, projéteis, HP e dano.'},
+    {rarity:'MÍTICO',name:'Necromante Elementar',tag:'foco',desc:'Transforma inimigos em aliados elementais e altera atributos em troca de cadência.'}
+  ].map(p=>({...p,id:normName(p.name)}));
+  const SYNERGIES=[
+    {tag:'precisao',name:'Tiro Perfeito',need:'3 tags de Precisão',buff:'Acertos precisos e ricochetes ficam mais perigosos; ótimo para Sniper, Arqueiro e Ricocheteador.',example:'Dano + Cadência + Multishot'},
+    {tag:'escudo',name:'Guardião Cronal',need:'3 tags de Escudo',buff:'Ao quebrar ou recuperar escudo, você ganha janelas de defesa e impacto.',example:'Armadura + Casca Temporal + Núcleo Reativo'},
+    {tag:'foco',name:'Mente Acelerada',need:'3 tags de Foco',buff:'Habilidades ficam mais constantes e o jogador depende menos de espera longa.',example:'Foco máximo + Regen Foco + Foco Condensado'},
+    {tag:'explosao',name:'Reação em Cadeia',need:'3 tags de Explosão',buff:'Explosões podem gerar impactos menores e atingem melhor grupos/fissuras.',example:'Balas Explosivas + Munição Instável + Cannon'},
+    {tag:'veneno',name:'Praga Alquímica',need:'3 tags de Veneno',buff:'Venenos se espalham para inimigos próximos quando uma vítima morre.',example:'Maestria Química + Ácido + Poças'},
+    {tag:'construcao',name:'Engenharia de Guerra',need:'3 tags de Construção',buff:'Drones, torretas e defesas ganham presença melhor, especialmente nas Fissuras.',example:'Mini-Torreta + Drone + Construção'},
+    {tag:'velocidade',name:'Ritmo Impossível',need:'3 tags de Velocidade',buff:'Movimento, dash e cadência ficam mais fluidos para runs agressivas.',example:'Passos Leves + Cadência + Servo do Dash'},
+    {tag:'vampirismo',name:'Sangue Desperto',need:'3 tags de Vampirismo',buff:'Curas pequenas e recuperação de escudo ficam mais frequentes, mas ainda limitadas.',example:'Lifesteal + Sangue Cronal + Cura ao Matar'}
+  ];
+  const colorOf=r=>(RARITY.find(x=>x[0]===r)||RARITY[0])[1];
+  const labelOf=r=>(RARITY.find(x=>x[0]===r)||RARITY[0])[2];
+
+  function addStyle(){
+    if($('#stylePower544'))return;
+    const st=document.createElement('style');st.id='stylePower544';st.textContent=`
+      #synergyHud529{display:none!important;opacity:0!important;pointer-events:none!important}
+      .synergyHud541{position:fixed!important;left:16px!important;bottom:118px!important;transform:none!important;z-index:80!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:7px!important;max-width:260px!important;pointer-events:none!important;justify-content:flex-start!important}
+      .synergyHud541 span{display:block!important;min-width:150px;text-align:left;border-radius:14px!important;padding:8px 11px!important;background:linear-gradient(135deg,rgba(8,10,24,.88),rgba(30,15,56,.78))!important;box-shadow:0 0 18px color-mix(in srgb,var(--co,#ffd166) 30%,transparent)!important;border-color:color-mix(in srgb,var(--co,#ffd166) 55%,rgba(255,255,255,.14))!important}
+      .powerHub544{position:relative;overflow:hidden}.powerHub544:before{content:'';position:absolute;inset:-30%;background:radial-gradient(circle at 20% 30%,rgba(255,209,102,.18),transparent 28%),radial-gradient(circle at 80% 0%,rgba(117,216,255,.16),transparent 28%);pointer-events:none}.powerHub544>*{position:relative;z-index:1}
+      .powerPage544{max-width:1100px;margin:0 auto;position:relative}.powerTop544{text-align:center;margin-bottom:12px}.powerTabs544{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0 16px}.powerTabs544 button{border:1px solid var(--co);background:color-mix(in srgb,var(--co) 13%,rgba(0,0,0,.34));color:#fff;border-radius:999px;padding:9px 13px;font:900 11px Orbitron,sans-serif;letter-spacing:.12em;cursor:pointer}.powerTabs544 button.active{box-shadow:0 0 24px color-mix(in srgb,var(--co) 42%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--co) 42%,#11152f),rgba(8,10,23,.92))}
+      .powerGrid544{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.powerCard544{position:relative;min-height:164px;border-radius:20px;border:1px solid color-mix(in srgb,var(--co) 38%,rgba(255,255,255,.12));background:radial-gradient(circle at 18% 15%,color-mix(in srgb,var(--co) 18%,transparent),transparent 32%),linear-gradient(160deg,rgba(8,11,28,.94),rgba(3,5,13,.97));padding:14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 0 24px color-mix(in srgb,var(--co) 15%,transparent);overflow:hidden}.powerCard544.locked{filter:saturate(.45);opacity:.76}.powerIcon544{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:color-mix(in srgb,var(--co) 20%,rgba(0,0,0,.45));border:1px solid color-mix(in srgb,var(--co) 50%,rgba(255,255,255,.12));box-shadow:0 0 20px color-mix(in srgb,var(--co) 22%,transparent);margin-bottom:10px}.powerCard544 strong{display:block;color:#fff;font:900 16px Rajdhani,Arial;margin-bottom:5px}.powerCard544 p{font-size:13px;line-height:1.32;color:#c9d8f8;margin:0}.powerTag544{display:inline-flex;gap:6px;align-items:center;margin-top:10px;padding:5px 8px;border-radius:999px;border:1px solid var(--tag);color:var(--tag);background:color-mix(in srgb,var(--tag) 12%,transparent);font:900 10px Orbitron,sans-serif;letter-spacing:.08em}.powerLock544{position:absolute;right:12px;top:12px;font-size:22px;opacity:.72}.powerUnknown544{filter:blur(2.2px)}
+      .powerTickets544{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:100;display:grid;gap:10px}.powerTicket544{writing-mode:vertical-rl;transform:rotate(180deg);border-radius:16px 0 0 16px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(180deg,rgba(117,216,255,.22),rgba(159,108,255,.22));color:#fff;padding:14px 9px;font:900 11px Orbitron,sans-serif;letter-spacing:.12em;cursor:pointer;box-shadow:0 0 24px rgba(117,216,255,.14)}.powerTicket544.active{border-color:#ffd166;background:linear-gradient(180deg,rgba(255,209,102,.32),rgba(117,216,255,.2));box-shadow:0 0 28px rgba(255,209,102,.24)}
+      .synGuide544{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:15px}.synCard544{border-radius:22px;border:1px solid color-mix(in srgb,var(--co) 48%,rgba(255,255,255,.12));background:radial-gradient(circle at 15% 0%,color-mix(in srgb,var(--co) 20%,transparent),transparent 38%),linear-gradient(155deg,rgba(9,11,27,.96),rgba(3,5,14,.98));padding:15px;box-shadow:0 0 26px color-mix(in srgb,var(--co) 18%,transparent)}.synViz544{height:70px;border-radius:18px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 0}.synDot544{width:36px;height:36px;border-radius:50%;background:var(--co);box-shadow:0 0 20px var(--co);display:grid;place-items:center;color:#07101a;font-weight:900}.synArrow544{color:#fff;font-weight:900;opacity:.85}.synCard544 h3{margin:0;color:#fff;font:900 18px Orbitron,sans-serif}.synCard544 p{margin:6px 0;color:#cbd9f6;line-height:1.34}.tagExplain544{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:16px 0}.tagExplain544 div{border-radius:16px;border:1px solid var(--co);background:color-mix(in srgb,var(--co) 11%,rgba(0,0,0,.32));padding:10px}.tagExplain544 b{color:var(--co);font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.1em}
+      @media(max-width:820px){.powerTickets544{right:6px}.powerTicket544{padding:10px 6px}.synergyHud541{bottom:92px!important;left:8px!important}.synergyHud541 span{min-width:120px;font-size:9px!important}.powerGrid544{grid-template-columns:1fr}.synGuide544{grid-template-columns:1fr}}
+    `;document.head.appendChild(st);
+  }
+  function removePowerTickets(){const t=$('#powerTickets544'); if(t)t.remove();}
+  function ensurePowerTickets(tab){removePowerTickets();const box=document.createElement('div');box.id='powerTickets544';box.className='powerTickets544';box.innerHTML=`<button class="powerTicket544 ${tab==='powerups'?'active':''}" data-powtab544="powerups">Power-Ups</button><button class="powerTicket544 ${tab==='synergies'?'active':''}" data-powtab544="synergies">Sinergias</button>`;document.body.appendChild(box);box.querySelectorAll('[data-powtab544]').forEach(b=>b.onclick=()=>{if(b.dataset.powtab544==='synergies')openSynergyGuide544();else openPowerCatalog544();});}
+  function returnMissionsHub(){removePowerTickets();try{const fn=window.openDuneHub461||window.openHub461||window.openHub40||window.openHubMenu37;if(typeof fn==='function')return fn();}catch(e){console.warn('Power catalog back to hub failed',e)}try{if(typeof window.openMissions461==='function')return window.openMissions461();if(typeof window.openMissions==='function')return window.openMissions();}catch(e){console.warn('Power catalog fallback failed',e)}try{overlay.classList.add('hidden')}catch{}}
+  function iconFor(p){const map={precisao:'🎯',escudo:'🛡️',foco:'🔮',explosao:'💥',veneno:'☣️',construcao:'🛠️',velocidade:'💨',vampirismo:'🩸',geral:'✦'};return map[p.tag]||'✦'}
+
+  function openPowerCatalog544(rarity='COMUM'){
+    addStyle();removePowerTickets();ensurePowerTickets('powerups');
+    try{overlay.classList.remove('hidden');overlayCard.className='card dune461 powerPage544';}catch{}
+    const unlocked=readUnlocks();
+    if(!RARITY.some(x=>x[0]===rarity))rarity='COMUM';
+    const list=POWER_CATALOG.filter(p=>p.rarity===rarity);
+    const tabs=RARITY.map(([r,c,l])=>`<button class="${r===rarity?'active':''}" style="--co:${c}" data-rarity544="${esc(r)}">${esc(l)}</button>`).join('');
+    const cards=list.map(p=>{const ok=!!unlocked[p.id];const tag=TAGS[p.tag]||TAGS.geral;const name=ok?p.name:'???';const desc=ok?p.desc:'Pegue este power-up uma vez durante a gameplay para revelar suas informações.';return `<div class="powerCard544 ${ok?'':'locked'}" style="--co:${colorOf(p.rarity)};--tag:${tag[1]}"><span class="powerLock544">${ok?'✓':'🔒'}</span><div class="powerIcon544 ${ok?'':'powerUnknown544'}">${ok?iconFor(p):'?'}</div><strong>${esc(name)}</strong><p>${esc(desc)}</p><span class="powerTag544">${esc(tag[0])}</span></div>`}).join('')||'<p>Nenhum power-up nessa raridade.</p>';
+    overlayCard.innerHTML=`<div class="powerTop544"><span class="badge461" style="--co:${colorOf(rarity)}">CATÁLOGO</span><h1>POWER-UPS</h1><p class="duneSub461">Gerencie e veja todos os power-ups do jogo. Os bloqueados aparecem como mistério até você pegar cada um pelo menos uma vez na gameplay.</p></div><div class="powerTabs544">${tabs}</div><div class="powerGrid544">${cards}</div><div class="duneActions461"><button class="duneBtn461 dark" id="powerBack544">← Conquistas & Missões</button></div>`;
+    $('#powerBack544')?.addEventListener('click',returnMissionsHub);
+    $$('[data-rarity544]',overlayCard).forEach(b=>b.onclick=()=>openPowerCatalog544(b.dataset.rarity544));
+  }
+  function openSynergyGuide544(){
+    addStyle();removePowerTickets();ensurePowerTickets('synergies');
+    try{overlay.classList.remove('hidden');overlayCard.className='card dune461 powerPage544';}catch{}
+    const tags=Object.entries(TAGS).filter(([k])=>k!=='geral').map(([k,v])=>`<div style="--co:${v[1]}"><b>${esc(v[0])}</b><p>${esc(v[2])}</p></div>`).join('');
+    const cards=SYNERGIES.map(s=>{const t=TAGS[s.tag]||TAGS.geral;return `<div class="synCard544" style="--co:${t[1]}"><h3>${esc(s.name)}</h3><p><b>${esc(s.need)}</b></p><div class="synViz544"><span class="synDot544">${iconFor({tag:s.tag})}</span><span class="synArrow544">+</span><span class="synDot544">${iconFor({tag:s.tag})}</span><span class="synArrow544">+</span><span class="synDot544">${iconFor({tag:s.tag})}</span><span class="synArrow544">→</span><span class="synDot544">★</span></div><p>${esc(s.buff)}</p><span class="powerTag544" style="--tag:${t[1]}">Exemplo: ${esc(s.example)}</span></div>`}).join('');
+    overlayCard.innerHTML=`<div class="powerTop544"><span class="badge461" style="--co:#ffd166">GUIA</span><h1>SINERGIAS</h1><p class="duneSub461">Cada power-up possui uma tag. Ao juntar <b>3 power-ups da mesma tag</b>, uma sinergia ativa aparece na esquerda da tela durante a run.</p></div><div class="tagExplain544">${tags}</div><div class="synGuide544">${cards}</div><div class="duneActions461"><button class="duneBtn461 dark" id="synBack544">← Conquistas & Missões</button></div>`;
+    $('#synBack544')?.addEventListener('click',returnMissionsHub);
+  }
+  window.openPowerCatalog544=openPowerCatalog544;window.openSynergyGuide544=openSynergyGuide544;
+
+  function addHubButton(){
+    addStyle();
+    try{
+      const h=overlayCard?.querySelector?.('h1');
+      if(!h||!/CONQUISTAS|MISSÕES/i.test(h.textContent||''))return;
+      if($('#hubPowerUps544',overlayCard))return;
+      const grid=overlayCard.querySelector('.menu-grid37,.duneGrid461,.duneGrid37')||overlayCard.querySelector('div');
+      if(!grid)return;
+      const btn=document.createElement('button');btn.className='dunePanel461 powerHub544';btn.id='hubPowerUps544';btn.innerHTML='<span class="badge461" style="--co:#75d8ff">ARSENAL</span><strong>Power-Ups</strong><span>Gerencie e veja todos os power-ups do jogo e pense em combos incríveis.</span>';
+      const best=overlayCard.querySelector('#hubBestiarySafe540,#hubBestiaryRift537,#hubBestiary461,#hubBestiary40,#hubBestiary37,#hubBestiaryG');
+      if(best&&best.parentElement===grid)best.insertAdjacentElement('afterend',btn);else grid.appendChild(btn);
+      btn.onclick=e=>{e?.preventDefault?.();e?.stopPropagation?.();openPowerCatalog544('COMUM')};
+    }catch(e){console.warn('Power hub button skipped',e)}
+  }
+
+  // Desbloqueia registros quando o jogador escolhe um power-up em level up.
+  document.addEventListener('click',e=>{
+    const btn=e.target?.closest?.('.upgrade-btn,[data-up529],[data-up27],[data-up37],[data-up40]');
+    if(!btn)return;
+    const name=btn.querySelector('strong')?.textContent||btn.dataset.powerName||'';
+    if(name)unlockPower(name);
+  },true);
+  // Allin revela o catálogo também.
+  ['input','change','keyup'].forEach(type=>document.addEventListener(type,e=>{if((e.target?.value||'').trim().toLowerCase()==='allin')setTimeout(unlockAllPowers,0);},true));
+
+  // Remove a UI antiga de sinergia e mantém a nova em coluna vertical à esquerda.
+  const prevFX=window.updateFX||updateFX;
+  window.updateFX=function(dt){const r=prevFX.apply(this,arguments);try{$('#synergyHud529')?.remove();const hud=$('#synergyHud541');if(hud){hud.style.left='16px';hud.style.right='auto';hud.style.bottom='118px';hud.style.transform='none';hud.style.flexDirection='column';hud.style.alignItems='flex-start';}}catch{}return r;};
+  try{if(typeof updateFX!=='undefined')updateFX=window.updateFX;}catch{}
+
+  // Observa telas do hub para inserir o botão e limpa tickets quando sai do catálogo.
+  const mo=new MutationObserver(()=>{try{addHubButton();const title=overlayCard?.querySelector?.('h1')?.textContent||'';if(!/POWER-UPS|SINERGIAS/i.test(title))removePowerTickets();$('#synergyHud529')?.remove();}catch{}});
+  try{mo.observe(document.body,{childList:true,subtree:true});}catch{}
+  setTimeout(addHubButton,80);setTimeout(addHubButton,350);
+
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoRift546PowerHubCrashFix)return;
+  window.__chronoRift546PowerHubCrashFix=true;
+
+  const $=(q,r=document)=>r.querySelector(q);
+  const cleanPowerTickets=()=>{try{document.getElementById('powerTickets544')?.remove()}catch{}};
+
+  function isHub(){
+    try{
+      const h=window.overlayCard?.querySelector?.('h1');
+      return !!(h && /CONQUISTAS|MISSÕES/i.test(h.textContent||''));
+    }catch{return false}
+  }
+  function openHubSafe(){
+    cleanPowerTickets();
+    try{
+      const fn=window.openDuneHub461||window.openHub461||window.openHub40||window.openHubMenu37;
+      if(typeof fn==='function')return fn();
+    }catch(e){console.warn('Power-Ups voltar hub 5.4.6 falhou',e)}
+    try{if(typeof window.openMissions461==='function')return window.openMissions461()}catch{}
+    try{window.overlay?.classList?.add('hidden')}catch{}
+  }
+
+  function styleHubPowerButtonSafe(){
+    try{
+      if(!isHub())return;
+      const card=window.overlayCard;
+      const grid=card?.querySelector?.('.duneGrid461.hubThree462,.duneGrid461,.missionGrid461');
+      const best=card?.querySelector?.('#hubBestiarySafe540,#hubBestiaryRift537,#hubBestiary461,#hubBestiary40,#hubBestiary37,#hubBestiaryG');
+      if(!grid && !best?.parentElement)return;
+      let btn=document.getElementById('hubPowerUps544');
+      if(!btn){
+        btn=document.createElement('button');
+        btn.id='hubPowerUps544';
+      }
+      const wantedClass='dunePanel461 powerHub544';
+      const wantedHTML='<span class="badge461" style="--co:#75d8ff">ARSENAL</span><strong>Power-Ups</strong><span>Gerencie e veja todos os power-ups do jogo e pense em combos incríveis.</span>';
+      if(btn.className!==wantedClass)btn.className=wantedClass;
+      if(btn.innerHTML!==wantedHTML)btn.innerHTML=wantedHTML;
+      btn.onclick=function(ev){
+        ev?.preventDefault?.();ev?.stopPropagation?.();ev?.stopImmediatePropagation?.();
+        try{window.openPowerCatalog544?.('COMUM')}catch(e){console.error('Falha ao abrir Power-Ups 5.4.6',e)}
+      };
+      // Coloca ao lado direito do Bestiário sem reescrever o botão a cada mutation.
+      if(best?.parentElement){
+        if(best.nextElementSibling!==btn)best.insertAdjacentElement('afterend',btn);
+      }else if(grid && btn.parentElement!==grid){
+        grid.appendChild(btn);
+      }
+    }catch(e){console.warn('Power-Ups hub style 5.4.6 ignorado',e)}
+  }
+
+  function fixCatalogBackSafe(){
+    try{
+      const title=window.overlayCard?.querySelector?.('h1')?.textContent||'';
+      const inPower=/POWER-UPS|SINERGIAS/i.test(title);
+      const back1=document.getElementById('powerBack544');
+      const back2=document.getElementById('synBack544');
+      [back1,back2].filter(Boolean).forEach(b=>{
+        if(b.dataset.powerBack546==='1')return;
+        b.dataset.powerBack546='1';
+        b.onclick=function(ev){ev?.preventDefault?.();ev?.stopPropagation?.();ev?.stopImmediatePropagation?.();openHubSafe()};
+      });
+      if(!inPower)cleanPowerTickets();
+    }catch(e){console.warn('Power-Ups back/ticket 5.4.6 ignorado',e)}
+  }
+
+  // Reembrulha rotas de catálogo sem criar loop visual.
+  const oldPower=window.openPowerCatalog544;
+  if(typeof oldPower==='function' && !oldPower.__power546){
+    const wrapped=function(){const r=oldPower.apply(this,arguments);setTimeout(fixCatalogBackSafe,0);setTimeout(fixCatalogBackSafe,60);return r};
+    wrapped.__power546=true; window.openPowerCatalog544=wrapped;
+  }
+  const oldSyn=window.openSynergyGuide544;
+  if(typeof oldSyn==='function' && !oldSyn.__power546){
+    const wrapped=function(){const r=oldSyn.apply(this,arguments);setTimeout(fixCatalogBackSafe,0);setTimeout(fixCatalogBackSafe,60);return r};
+    wrapped.__power546=true; window.openSynergyGuide544=wrapped;
+  }
+
+  ['openDuneHub461','openHub461','openHub40','openHubMenu37'].forEach(name=>{
+    const old=window[name];
+    if(typeof old==='function' && !old.__power546){
+      const wrapped=function(){
+        cleanPowerTickets();
+        const r=old.apply(this,arguments);
+        setTimeout(styleHubPowerButtonSafe,0);
+        setTimeout(styleHubPowerButtonSafe,80);
+        return r;
+      };
+      wrapped.__power546=true;
+      window[name]=wrapped;
+      try{ if(name==='openDuneHub461') openDuneHub461=wrapped; }catch{}
+      try{ if(name==='openHub461') openHub461=wrapped; }catch{}
+      try{ if(name==='openHub40') openHub40=wrapped; }catch{}
+      try{ if(name==='openHubMenu37') openHubMenu37=wrapped; }catch{}
+    }
+  });
+
+  document.addEventListener('click',e=>{
+    const b=e.target?.closest?.('#powerBack544,#synBack544');
+    if(b){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openHubSafe();}
+  },true);
+
+  let scheduled=false;
+  const schedule=()=>{
+    if(scheduled)return;
+    scheduled=true;
+    requestAnimationFrame(()=>{scheduled=false;styleHubPowerButtonSafe();fixCatalogBackSafe();});
+  };
+  try{new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true})}catch{}
+  setTimeout(styleHubPowerButtonSafe,80);
+  setTimeout(fixCatalogBackSafe,120);
+  console.log('Chrono Shards 5.4.6 — Power-Ups hub sem loop/travamento');
+})();
+</script>
+
 </body>
 </html>
