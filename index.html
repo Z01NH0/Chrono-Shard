@@ -17778,5 +17778,103 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 })();
 </script>
 
+
+
+<script>
+(()=>{
+  if(window.__chronoPowerCatalogTicketCleanup550)return;
+  window.__chronoPowerCatalogTicketCleanup550=true;
+
+  function qsa(sel,root=document){try{return Array.from(root.querySelectorAll(sel));}catch{return []}}
+  function removePowerTickets550(){
+    qsa('#powerTickets544,#powerTickets548,.powerTickets544,.powerTickets548,[data-power-ticket-root]').forEach(el=>{
+      try{el.remove();}catch{}
+    });
+  }
+  function isPowerCatalogVisible550(){
+    try{
+      const overlay=document.getElementById('overlay');
+      const card=document.getElementById('overlayCard');
+      if(!overlay||!card||overlay.classList.contains('hidden'))return false;
+      if(card.classList.contains('powerPage544'))return true;
+      if(card.querySelector('#powerBack544,#synBack544,.powerGrid544,.synGuide544,.powerTabs544'))return true;
+      const h=(card.textContent||'').slice(0,260).toUpperCase();
+      return (h.includes('POWER-UPS')||h.includes('SINERGIAS')) && !!card.querySelector('.powerCard544,.synCard544,[data-rarity548]');
+    }catch{return false}
+  }
+  function syncPowerTickets550(){
+    if(!isPowerCatalogVisible550()) removePowerTickets550();
+  }
+  function delayedSync550(){setTimeout(syncPowerTickets550,0);setTimeout(syncPowerTickets550,60);}
+
+  // Marca os tickets atuais/futuros para limpeza segura.
+  function markTickets550(){
+    qsa('#powerTickets544,#powerTickets548,.powerTickets544,.powerTickets548').forEach(el=>{
+      try{el.setAttribute('data-power-ticket-root','1')}catch{}
+    });
+  }
+  setInterval(()=>{markTickets550();syncPowerTickets550();},700);
+
+  // Toda troca de tela valida se os tickets ainda pertencem à tela de Power-Ups/Sinergias.
+  try{
+    const overlay=document.getElementById('overlay');
+    const card=document.getElementById('overlayCard');
+    const obs=new MutationObserver(()=>{markTickets550();delayedSync550();});
+    if(overlay)obs.observe(overlay,{attributes:true,attributeFilter:['class','style']});
+    if(card)obs.observe(card,{childList:true,subtree:false,attributes:true,attributeFilter:['class','style']});
+    obs.observe(document.body,{childList:true,subtree:false});
+  }catch{}
+
+  // Se qualquer botão de saída for usado, remove imediatamente e confere de novo após a rota renderizar.
+  document.addEventListener('click',e=>{
+    const t=e.target;
+    if(!t||!t.closest)return;
+    const leaving=t.closest('#powerBack544,#synBack544,#bookBack530,#bookBack464,#hubBack461,#backToMenu,#mainBackBtn,.back-btn,.duneBtn461.dark,.main-btn');
+    const changingAway=t.closest('#hubBestiary461,#hubMissions461,#hubPowerUps544,[data-open-bestiary],#settingsBtn,#codesBtn,#playBtn,#tutorialBtn');
+    const insidePower=t.closest('#powerTickets544,#powerTickets548,.powerTickets544,.powerTickets548,.powerPage544');
+    if((leaving||changingAway) && !insidePower){removePowerTickets550();delayedSync550();}
+    else delayedSync550();
+  },true);
+
+  // Wrappers seguros: não mudam fluxo, só limpam tickets antes/depois de telas que não são o catálogo.
+  ['openStartMenu','openDuneHub461','openHub461','openHub40','openHubMenu37','openBestiary530','openBestiary','openSettingsMenu','openCodesMenu','openCharacterSelect'].forEach(name=>{
+    try{
+      const fn=window[name];
+      if(typeof fn==='function'&&!fn.__powerTicketClean550){
+        const wrapped=function(){
+          removePowerTickets550();
+          const r=fn.apply(this,arguments);
+          delayedSync550();
+          return r;
+        };
+        wrapped.__powerTicketClean550=true;
+        window[name]=wrapped;
+        try{eval(name+'=window[name]')}catch{}
+      }
+    }catch{}
+  });
+
+  // Mantém os wrappers de abertura do catálogo criando tickets normalmente, mas remove ao sair.
+  ['openPowerCatalog544','openPowerCatalog548','openSynergyGuide544','openSynergyGuide548'].forEach(name=>{
+    try{
+      const fn=window[name];
+      if(typeof fn==='function'&&!fn.__powerTicketKeep550){
+        const wrapped=function(){
+          const r=fn.apply(this,arguments);
+          setTimeout(()=>{markTickets550();syncPowerTickets550();},0);
+          return r;
+        };
+        wrapped.__powerTicketKeep550=true;
+        window[name]=wrapped;
+        try{eval(name+'=window[name]')}catch{}
+      }
+    }catch{}
+  });
+
+  window.removePowerCatalogTickets550=removePowerTickets550;
+  delayedSync550();
+  console.log('Chrono Shards 5.5.0 — tickets do Catálogo de Power-Ups limpam ao sair');
+})();
+</script>
 </body>
 </html>
