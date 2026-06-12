@@ -170,6 +170,56 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
 .muted{opacity:0.65;font-size:12px;margin-top:8px}
 .tipline{margin-top:14px;font-size:11px;opacity:0.65}
 </style>
+
+<style id="mastery552PolishStyle">
+  .masteryPreview552{
+    margin-top:10px;padding:10px 12px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(255,209,102,.12),rgba(117,216,255,.07));
+    border:1px solid rgba(255,209,102,.20);
+    box-shadow:inset 0 0 22px rgba(255,255,255,.035);
+    display:grid;gap:3px;text-align:left
+  }
+  .masteryPreview552 b{
+    font-family:Orbitron,sans-serif;font-size:10px;letter-spacing:.14em;color:#ffd166
+  }
+  .masteryPreview552 span{font-size:13px;color:#eaf5ff;line-height:1.35}
+  .masteryPreview552 small{font-size:11px;color:#a9bbdf}
+  .masterySeg551{display:grid;place-items:center;isolation:isolate}
+  .masterySegNum552{
+    font-style:normal;font-family:Orbitron,sans-serif;font-size:10px;
+    color:rgba(255,255,255,.72);pointer-events:none
+  }
+  .masterySeg551.on .masterySegNum552{color:#07101c}
+  .masterySeg551.gold .masterySegNum552{color:#1a1000}
+  .masterySegTip552{
+    position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(5px) scale(.96);
+    min-width:205px;max-width:260px;padding:10px 12px;border-radius:14px;
+    background:linear-gradient(150deg,rgba(8,10,22,.98),rgba(20,12,4,.98));
+    border:1px solid rgba(255,209,102,.34);
+    box-shadow:0 18px 34px rgba(0,0,0,.48),0 0 24px rgba(255,209,102,.12);
+    opacity:0;visibility:hidden;pointer-events:none;z-index:60;text-align:left;
+    transition:opacity .14s ease,transform .14s ease,visibility .14s ease
+  }
+  .masterySegTip552:after{
+    content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%) rotate(45deg);
+    width:10px;height:10px;background:rgba(15,11,14,.98);
+    border-right:1px solid rgba(255,209,102,.26);border-bottom:1px solid rgba(255,209,102,.26)
+  }
+  .masterySeg551:hover .masterySegTip552,.masterySeg551:focus-within .masterySegTip552{
+    opacity:1;visibility:visible;transform:translateX(-50%) translateY(0) scale(1)
+  }
+  .masterySegTip552 b{display:block;font-family:Orbitron,sans-serif;color:#ffd166;font-size:10px;letter-spacing:.12em;margin-bottom:5px}
+  .masterySegTip552 em{display:block;font-style:normal;color:#edf6ff;font-size:12px;line-height:1.35}
+  .masteryBar551{overflow:visible}
+  .masterySegs551{position:relative}
+  .infoOnly551 .statsGrid461{margin:0 0 14px}
+  .infoOnly551 .dunePanel461 span{line-height:1.65}
+  @media(max-width:760px){
+    .masterySegTip552{display:none}
+    .masteryPreview552{font-size:12px}
+  }
+</style>
+
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
@@ -16823,10 +16873,10 @@ function killKey37(e){
   if(window.__chronoRift542RicoFineTune)return;
   window.__chronoRift542RicoFineTune=true;
   try{
-    if(window.SKILL_DEFS&&SKILL_DEFS.ricoPursuer){
+    if((typeof SKILL_DEFS!=='undefined'?SKILL_DEFS:window.SKILL_DEFS)&&SKILL_DEFS.ricoPursuer){
       SKILL_DEFS.ricoPursuer.desc='Q: dispara uma esfera maior que mira um alvo e segue em linha reta. Ao bater em inimigos ou paredes, ricocheteia, tenta outro alvo em linha reta, acelera e cria uma pequena onda magnética.';
     }
-    if(window.SKILL_DEFS&&SKILL_DEFS.ricoPoolShot){
+    if((typeof SKILL_DEFS!=='undefined'?SKILL_DEFS:window.SKILL_DEFS)&&SKILL_DEFS.ricoPoolShot){
       SKILL_DEFS.ricoPoolShot.desc='R: cria 4 muros vermelhos temporários. Somente tiros normais que ricocheteiam neles recebem velocidade, alcance, dano extra, bolinhas extras e cura de 2% HP.';
     }
   }catch{}
@@ -16858,7 +16908,7 @@ function killKey37(e){
   function isRico(){return typeof game!=='undefined'&&game&&game.classKey===RICO&&game.player;}
   function ensure(){if(!game)return;game.ricoBullets529=game.ricoBullets529||[];game.ricoReflectors543=game.ricoReflectors543||[];game.ricoLaserVfx543=game.ricoLaserVfx543||[];}
   function setSkillData(){try{
-    if(window.SKILL_DEFS&&SKILL_DEFS.ricoPoolShot){
+    if((typeof SKILL_DEFS!=='undefined'?SKILL_DEFS:window.SKILL_DEFS)&&SKILL_DEFS.ricoPoolShot){
       SKILL_DEFS.ricoPoolShot.name='Ponto de Rebate';
       SKILL_DEFS.ricoPoolShot.emoji='🔷';
       SKILL_DEFS.ricoPoolShot.cooldown=16;
@@ -17874,6 +17924,129 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   window.removePowerCatalogTickets550=removePowerTickets550;
   delayedSync550();
   console.log('Chrono Shards 5.5.0 — tickets do Catálogo de Power-Ups limpam ao sair');
+})();
+</script>
+
+<script>
+(()=>{
+  if(window.__chronoCharacterMastery551)return; window.__chronoCharacterMastery551=true;
+  const PATCH='Chrono Shards 5.5.1 — Maestria de Personagens e Estatísticas';
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const UNLOCK_KEY=SAVE+'_class_unlocks_v3';
+  const FREE=new Set(['assault','sniper']);
+  const CHRONO='⧖';
+  const RELIC='🜂';
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const num=v=>Number(v||0);
+  function meta(){let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{m={}};m.relicShards=num(m.relicShards);m.chronoFragments=num(m.chronoFragments);m.characterMastery551=m.characterMastery551||{};return m;}
+  function save(m){localStorage.setItem(SAVE,JSON.stringify(m));try{if(window.game)game.meta=m;}catch{}return m;}
+  function unlocks(){try{const a=JSON.parse(localStorage.getItem(UNLOCK_KEY)||'[]');return Array.isArray(a)?a:[]}catch{return []}}
+  function owned(k){const m=meta();if(FREE.has(k))return true;if(k==='moonSlayer')return !!m.unlockedMoonSlayer;if(k==='shadowChild')return unlocks().includes(k)||!!m.unlockedShadowChild||!!m.shadowChildUnlocked;if(k==='ricocheteador'||k==='archer'||k==='bomber'||k==='colonel'||k==='engineer'||k==='mage'||k==='ronin'||k==='alchemist'||k==='reaper'||k==='chronoHero')return unlocks().includes(k);return unlocks().includes(k);}
+  function color(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]||{};return c.tagColor||c.color||'#75d8ff';}
+  function nameOf(k){return (typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]?.name||k;}
+  function weaponName(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]||{};return (typeof WEAPONS!=='undefined'?WEAPONS:window.WEAPONS)?.[c.weapon]?.name||c.weapon||'-';}
+  function getData(k){const m=meta();const d=m.characterMastery551[k]||{};return {hp:num(d.hp),damage:num(d.damage),shield:num(d.shield),special:num(d.special)};}
+  function setData(k,d){const m=meta();m.characterMastery551=m.characterMastery551||{};m.characterMastery551[k]={hp:num(d.hp),damage:num(d.damage),shield:num(d.shield),special:num(d.special)};save(m);return m.characterMastery551[k];}
+  const HP_COSTS=[8,12,18,26,38], DMG_COSTS=[6,8,11,15,20,27,35,44,55,70], SHIELD_COSTS=[18,32,50,75], SPEC_COSTS=[12,18,28,42];
+  function shieldMax(k){const base=num((typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]?.shield);if(k==='sniper'||base<=2)return 4;if(['assault','mage','reaper','alchemist','archer','ricocheteador','bomber','ronin'].includes(k))return 3;return 2;}
+  function maxes(k){return {hp:5,damage:10,shield:shieldMax(k),special:4};}
+  function totalSlots(k){const mx=maxes(k);return mx.hp+mx.damage+mx.shield+mx.special;}
+  function boughtSlots(k){const d=getData(k);return d.hp+d.damage+d.shield+d.special;}
+  function level(k){const bought=boughtSlots(k), total=totalSlots(k);return bought>=total?10:Math.max(1,1+Math.floor((bought/Math.max(1,total))*9));}
+  function hpPct(k){const hp=num((typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]?.hp);if(hp<=95)return .05;if(hp<=115)return .04;if(hp<=135)return .03;return .02;}
+  function dmgPct(k){if(['sniper'].includes(k))return .03;if(['ricocheteador','alchemist','bomber','colonel','archer'].includes(k))return .018;if(['assault','ronin','reaper','moonSlayer','shadowChild'].includes(k))return .022;return .02;}
+  function nextCost(attr,k){const d=getData(k),mx=maxes(k);const cur=d[attr]||0;if(cur>=mx[attr])return null;const next=cur+1;if(next===mx[attr])return {kind:'chrono',amount:1,label:`1 ${CHRONO}`};const arr=attr==='hp'?HP_COSTS:attr==='damage'?DMG_COSTS:attr==='shield'?SHIELD_COSTS:SPEC_COSTS;return {kind:'relic',amount:arr[cur]||arr[arr.length-1]||10,label:`${arr[cur]||10} ${RELIC}`};}
+  const SPECIAL={
+    assault:['Q: Pisão/onda de choque causa mais impacto.','E: escudo fica mais confiável e recarrega melhor.','R: granadas/explosões ganham alcance de impacto.','Rajadas ficam mais estáveis em combate.'],
+    sniper:['Modo de perfuração fica mais eficiente.','Tiros de precisão ganham mais força contra alvos importantes.','Controle temporal dura um pouco melhor.','Acertos críticos e tiros calculados ficam mais consistentes.'],
+    engineer:['Torretas e máquinas ganham mais resistência.','Torretas causam mais dano.','Mísseis e disparos tecnológicos recarregam melhor.','Drones e reparos ficam mais eficientes.'],
+    mage:['Explosões/vazio causam mais dano.','Teleporte e efeitos residuais ficam mais fortes.','Controle de campo dura um pouco mais.','Loop/energia temporal fica mais estável.'],
+    ronin:['Parry causa mais dano ao refletir pressão.','Execução fica mais mortal.','Cortes Chrono ganham alcance.','Projéteis refletidos ficam mais rápidos.'],
+    alchemist:['Veneno causa mais dano.','Poças duram mais tempo.','Frascos têm área maior.','Misturas especiais ficam mais fortes.'],
+    reaper:['Curas de almas/foices ficam melhores.','Golpes têm mais alcance.','Investidas sombrias causam mais dano.','Espíritos vingativos duram mais.'],
+    colonel:['Bombas aéreas causam mais dano.','Rajadas ficam mais precisas.','Metranca dura um pouco mais.','Aviões especiais causam mais impacto.'],
+    archer:['Flechas carregam mais rápido.','Flecha Meteórica causa mais dano.','Recuo deixa área mais forte.','Caçada Não-Primitiva acumula melhor.'],
+    bomber:['Bombas ganham raio maior.','Minas duram mais tempo.','Morteiro dispara melhor.','Explosões empurram mais.'],
+    ricocheteador:['Ricochetes causam mais dano.','Perseguidor Quicante fica mais veloz após quicar.','Ricochete Magnético puxa com mais força.','Ponto de Rebate gera raios mais fortes.'],
+    chronoHero:['Labareda causa mais dano.','Gelo/tempo cobre área maior.','Buraco negro puxa melhor.','Ultimate prismática carrega mais estável.'],
+    moonSlayer:['QTE causa mais dano.','Dash lunar recarrega melhor.','Cortes lunares têm mais alcance.','Ultimate lunar carrega melhor.'],
+    shadowChild:['Clones duram mais.','Espada sombria causa mais dano.','Flechas/raios sombrios ficam mais fortes.','Forma abissal dura melhor.']
+  };
+  function specName(k){return ({assault:'Treinamento de Combate',sniper:'Precisão Letal',engineer:'Engenharia Bélica',mage:'Domínio do Vazio',ronin:'Caminho da Lâmina',alchemist:'Toxicologia Avançada',reaper:'Colheita de Almas',colonel:'Comando Aéreo',archer:'Carga Temporal',bomber:'Demolição Pesada',ricocheteador:'Geometria Mortal',chronoHero:'Núcleo Prismático',moonSlayer:'Caçada Lunar',shadowChild:'Sombra Ancestral'}[k]||'Especialização');}
+  function specDesc(k,i){return (SPECIAL[k]||['Especialidade aprimorada.','Especialidade aprimorada.','Especialidade aprimorada.','Especialidade aprimorada.'])[i]||'Especialidade aprimorada.';}
+  function ensureStyle(){if(document.getElementById('mastery551Style'))return;const st=document.createElement('style');st.id='mastery551Style';st.textContent=`
+    .classStats551{position:absolute;left:13px;top:13px;width:34px;height:34px;border-radius:50%;background:rgba(255,209,102,.12);border:1px solid rgba(255,209,102,.34);color:#ffe08c;z-index:7;font-family:Orbitron,sans-serif;display:grid;place-items:center}.classStats551:hover{box-shadow:0 0 20px rgba(255,209,102,.35)}.classCard461.masteryMaxCard551{border-color:rgba(255,209,102,.85)!important;box-shadow:0 0 35px rgba(255,209,102,.30),inset 0 0 35px rgba(255,209,102,.08)!important;background:radial-gradient(circle at 50% 0%,rgba(255,209,102,.24),transparent 38%),linear-gradient(160deg,rgba(16,12,5,.98),rgba(5,6,12,.96))!important}.masteryLayout551{display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start}.masterySide551{border-radius:24px;padding:20px;background:linear-gradient(160deg,rgba(255,209,102,.10),rgba(0,0,0,.18));border:1px solid rgba(255,209,102,.22);display:grid;place-items:center;text-align:center}.masteryLvl551{font-family:Orbitron,sans-serif;font-size:26px;color:#ffe08c;text-shadow:0 0 18px rgba(255,209,102,.35)}.masteryMax551 .masterySide551{background:radial-gradient(circle at 50% 0%,rgba(255,209,102,.32),transparent 46%),linear-gradient(155deg,#120d05,#05060d);border-color:rgba(255,209,102,.72);box-shadow:0 0 34px rgba(255,209,102,.22)}.masteryStats551{display:grid;grid-template-columns:repeat(2,minmax(130px,1fr));gap:10px;margin-top:14px;width:100%}.masteryStat551{padding:12px;border-radius:16px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.10)}.masteryStat551 small{display:block;color:#deb45e;font:900 10px Orbitron,sans-serif;letter-spacing:.13em}.masteryStat551 b{display:block;color:#fff;font-size:20px;margin-top:4px}.masteryBars551{display:grid;gap:13px}.masteryBar551{border-radius:20px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(155deg,rgba(255,255,255,.06),rgba(255,255,255,.02));padding:13px}.masteryBarHead551{display:flex;justify-content:space-between;gap:12px;align-items:center}.masteryBarHead551 strong{font-family:Orbitron,sans-serif;color:#fff}.masteryBarHead551 span{font-size:12px;color:#b9c8ee}.masteryRow551{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-top:10px}.masterySegs551{display:flex;gap:5px;flex-wrap:wrap}.masterySeg551{width:25px;height:25px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.055);box-shadow:inset 0 0 12px rgba(0,0,0,.28);position:relative}.masterySeg551.on{background:linear-gradient(135deg,var(--c,#75d8ff),#fff);box-shadow:0 0 14px color-mix(in srgb,var(--c,#75d8ff) 45%,transparent)}.masterySeg551.next{outline:2px solid rgba(255,255,255,.65)}.masterySeg551.gold{border-color:rgba(255,209,102,.78);background:linear-gradient(135deg,#3b2604,#ffd166 55%,#fff2b8)}.masterySeg551.gold:not(.on){background:linear-gradient(135deg,rgba(255,209,102,.12),rgba(255,255,255,.035))}.masteryBuy551{min-width:92px;padding:9px 12px;border-radius:999px;font:900 11px Orbitron,sans-serif;background:linear-gradient(135deg,#ffd166,#fff2b8);color:#120b02}.masteryBuy551:disabled{opacity:.45;filter:grayscale(.7);cursor:not-allowed}.masteryLocked551{display:grid;place-items:center;min-height:120px;border-radius:22px;background:rgba(0,0,0,.26);border:1px dashed rgba(255,255,255,.22);color:#cbd7f8;text-align:center}.infoOnly551{max-width:950px;margin:0 auto}.infoOnly551 .infoModel461{min-height:160px}.masteryNote551{font-size:12px;color:#b9c8ee;line-height:1.45;margin-top:8px}.masteryTooltip551{font-size:11px;color:#ffe08c;margin-top:7px}.masteryActions551{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}@media(max-width:760px){.masteryLayout551{grid-template-columns:1fr}.masteryRow551{grid-template-columns:1fr}.masteryBuy551{width:100%}}`;
+    document.head.appendChild(st);
+  }
+  function statButtonHTML(k){return `<button class="classStats551" data-stats551="${esc(k)}" title="Estatísticas / Maestria">▥</button>`;}
+  function detectCardKey(card){return card?.dataset?.card461||card?.dataset?.cardRico529||card?.dataset?.cardArcher470||card?.querySelector('[data-pick461]')?.dataset?.pick461||card?.querySelector('[data-pick-rico529]')?.dataset?.pickRico529||card?.querySelector('[data-pick-archer470]')?.dataset?.pickArcher470||card?.querySelector('[data-info461]')?.dataset?.info461||card?.querySelector('[data-info-rico529]')?.dataset?.infoRico529||card?.querySelector('[data-info-archer470]')?.dataset?.infoArcher470;}
+  function skillRows(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]||{}, keys=c.skills||[], labels=['E','Q','R'];let rows='';if(k==='ricocheteador')rows+=`<div class="skillRow461"><b>PASSIVA — 🎯 Mira Saltadora</b><br><span>A cada 5 segundos, marca inimigos aleatórios. O kit prioriza esses alvos.</span></div><div class="skillRow461"><b>ATAQUE — ◉ Bola de Impacto</b><br><span>Bala de gude pesada que ricocheteia em paredes, muros e inimigos.</span></div>`;if(k==='archer')rows+=`<div class="skillRow461"><b>ATAQUE — 🏹 Flecha Carregada</b><br><span>Segure para carregar uma flecha Chrono. A cadência acelera a carga máxima.</span></div>`;rows+=keys.map((sk,i)=>{const s=(typeof SKILL_DEFS!=='undefined'?SKILL_DEFS:window.SKILL_DEFS)?.[sk]||{};return `<div class="skillRow461"><b>${labels[i]||'?'} — ${esc(s.emoji||'✦')} ${esc(s.name||sk)}</b><br><span>${esc(s.desc||'Especial de combate.')}</span></div>`}).join('');if(k==='chronoHero')rows+=`<div class="skillRow461"><b>X — 💎 Ultimate Prismática</b><br><span>Feixe prismático massivo carregado com o tempo.</span></div>`;if(k==='moonSlayer')rows+=`<div class="skillRow461"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>Cortes multidimensionais lunares que rasgam a arena.</span></div>`;if(k==='shadowChild')rows+=`<div class="skillRow461"><b>X — 🩸 Forma Abissal</b><br><span>Estado sombrio temporário com poder extremo.</span></div>`;return rows||'<div class="skillRow461"><b>HABILIDADES</b><br><span>Sem dados de habilidades.</span></div>';}
+  const LORE551={
+  "assault": "Ele aprendeu com seu pai que coragem não é ausência de medo, é avançar mesmo quando a voz no rádio treme. Carrega técnicas de guerra antigas no corpo, mas nunca admite de quem herdou esse jeito de proteger todo mundo primeiro.",
+  "sniper": "Dizem que ele conta segundos melhor do que respira. Em cada disparo há paciência, distância e uma pergunta silenciosa: quantas linhas do tempo podem ser salvas por uma única bala?",
+  "mage": "O Void Mage estudou o vazio até o vazio começar a olhar pra ele de volta. Seu corpo ainda está aqui, mas seus passos parecem atravessar portas que ninguém mais consegue ver. Ele não está aqui pelo bem de todos, ele apenas quer matar a curiosidade.",
+  "ronin": "O Ronin guarda uma lâmina serena e um passado partido. Há outro guerreiro no campo que conhece o mesmo silêncio antes do golpe, mas os dois escolheram respostas diferentes para a mesma cicatriz.",
+  "alchemist": "O Alquimista é um cara legal. Ele já teve várias tavernas aonde teve aventuras incríveis lutando contra montros gigantescos e absurdamente fortes. É o que ele fala quando fica meio bêbado, mas ele é um mestre na química, faz cada absurdo que as vezes nem ele sabe como fez aquilo. Seu objetivo aqui é resgatar sua esposa, depois que o Chrono explodiu no espaço tempo, ela sumiu e ele não sabe aonde ela está. As vezes ele diz que seu último desejo antes de morrer é conversar com ela, e tomar uma caipira juntos.",
+  "reaper": "Dizem que a lua e o sol foram nascidos no mesmo berço, mas divididos pelas sombras. Reaper busca pelo sangue de suas vítimas, mesmo sem lembrar de quem realmente é. Sua lâmina vermelha não busca honra; busca encerrar dívidas que o tempo fingiu esquecer.",
+  "colonel": "O Coronel é um veterano de guerra bruto e forte como um tank, ele fala pouco sobre família e menos ainda sobre medo. Ainda assim, em meio a guerras e destruição, quando tudo em sua volta está perdido, ele é quase imparável, uma máquina de matar sanguinária, as vezes, parece que ele quer ser um exemplo para alguém, um exemplo de como sobreviver, um exemplo de pai pra filho.",
+  "archer": "O Arqueiro do Chrono sobreviveu à primeira grande explosão temporal, muitos anos atrás. Enquanto todos ao redor foram apagados, congelados ou distorcidos, ele acordou sozinho entre fragmentos parados no ar, ouvindo apenas o próprio arco rangendo contra o silêncio. Desde então, virou um lobo solitário: não corre atrás da presa, recua, observa e deixa o tempo fazer a mira por ele.",
+  "bomber": "O Bombardeiro nem sempre foi assim, desse jeito meio \"explosivo\" dele. Antes de enlouquecer, ele era um senhor renomado, de grande inteligência e sabedoria, ele resolvia muitas perguntas como ninguém nunca soube. Mas algo aconteceu e ele virou outra pessoa, ninguém sabe ao certo o que houve, o que causou essa mudança de personalidade, talvez ele tenha 2 pessoas dentro di, eu não sei dizer, a única coisa que eu sei, é que ele explode tudo como ninguém, e ainda ri na cara do perigo.",
+  "engineer": "Ele é o grande construtor de monumentos e defesas impenetráveis, antes do caos, ele foi um homem de trabalho duro e boa reputação na galaxia inteira. Hoje, ele luta para sobreviver com os restos de sucata que tem para fazer companheiros, mas ele é tão habilidoso, que nem parece que suas torretas são feitas de coisas achadas por ai.",
+  "chronoHero": "Um herói construido a partir de pequenos fragmentos de Chrono puro e muita feitiçaria bizonha. Ele nasceu alguns anos após a ruptura do Chrono, e sempre teve uma grande curiosidade de saber o que é o mar, árvores, pássaros, toda a natureza, mas ele nasceu para ser uma máquina de guerra, um monstro que os maiorais controlam para buscar reconstruir o Chrono. Hoje, ele está em um grupo de mercenários ao lado do Ricocheteador, e o objetivo deles é trazer a ordem do universo novamente.",
+  "moonSlayer": "Nascido nas sombras, mas criado na luz. O Exterminador de Luas é um samurai experiente e muito inteligente. Já ensinou diversos espadachins, até mesmo aqueles que tinham um temperamento difícil de lidar. Com sua lâmina feita de titânio puro, e uma precisão divina, ele corta tudo como se fosse papel. Dizem que olhar nos olhos dele é a mesma coisa que encarar a escuridão, mas ele é gente boa.",
+  "shadowChild": "O Demônio. As trevas fundidas em um único ser. Esse é o espectro de filho das trevas, um ser construido da escuridão e moldado pela perdição. Seu maior desejo e destruir todos os Chronos que ele encontra, pois aquele quem o trouxe ao mundo, foi levado a loucura por eles.",
+  "ricocheteador": "O Ricocheteador vem de uma equipe de mercenários que ele mesmo fundou a vários anos atrás. Desde sua infância, ele fabrica suas balas únicas e treina seus disparos, ele dizia que tinha que estar preparado para quando o apocalipse chegar. Muitos o chamavam de louco, que uma catástrofe nunca iria acontecer em nossa realidade, mas esses foram calados com o tempo. Ultimamente, o ricocheteador vaga com sua equipe em busca de sobreviver, e quem sabe, restaurar a ordem do Chrono."
+};
+  function openInfoOnly(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k];if(!c)return;ensureStyle();overlay.classList.remove('hidden');overlayCard.className='card dune461';const co=color(k);const lore=LORE551[k]||c.desc||'Um combatente perdido entre fragmentos de tempo.';overlayCard.innerHTML=`<div class="infoOnly551"><h1 style="text-align:center">${esc(c.name)}</h1><p class="duneSub461">Informações completas do personagem restauradas da versão antiga: atributos, habilidades, ataques especiais e lore ficam juntos aqui.</p><div class="infoLayout461"><div class="infoModel461"><div class="modelBox461"><div class="heroModel461" data-hero="${esc(k)}" style="--c:${co}"><i></i><b></b><em></em></div></div><span class="badge461" style="--co:${co}">${esc(c.tag||'CLASSE')}</span></div><div><div class="statsGrid461"><div class="duneStat461"><small>HP</small><b>${num(c.hp)}</b></div><div class="duneStat461"><small>ESCUDO</small><b>${num(c.shield)}</b></div><div class="duneStat461"><small>FOCO</small><b>${num(c.focus)}</b></div><div class="duneStat461"><small>VELOCIDADE</small><b>${num(c.speed)}</b></div></div><h3 class="section461" style="color:${co}">HABILIDADES</h3>${skillRows(k)}<h3 class="section461" style="color:${co}">LORE</h3><div class="dunePanel461"><span>${esc(lore)}</span></div></div></div><div class="masteryActions551"><button class="duneBtn461 dark" id="infoBack551">← Seleção</button><button class="duneBtn461 blue" id="goStats551" data-stats551="${esc(k)}">Estatísticas / Maestria</button></div></div>`;document.getElementById('infoBack551').onclick=()=>window.openClassMenu?.();document.getElementById('goStats551').onclick=()=>openStats(k);}
+  function compText(attr,k,i){if(attr==='hp')return `HP máximo +${Math.round(hpPct(k)*1000)/10}%`;if(attr==='damage')return `Dano base do personagem +${Math.round(dmgPct(k)*1000)/10}%`;if(attr==='shield')return '+1 segmento extra de escudo';return specDesc(k,i);}
+  function barHTML(k,attr,title,sub){const d=getData(k), mx=maxes(k), cur=d[attr]||0, co=color(k), cost=nextCost(attr,k), lock=!owned(k);const done=cur>=mx[attr];const nextText=lock?'Compre este personagem para liberar esta trilha de maestria.':done?'Todos os compartimentos deste atributo já foram comprados.':compText(attr,k,cur);const previewLabel=lock?'BLOQUEADO':done?'ATRIBUTO COMPLETO':'PRÓXIMO UPGRADE';const previewCost=lock?'':done?'Máximo alcançado':`Custo: ${cost?cost.label:'MAX'}`;let segs='';for(let i=0;i<mx[attr];i++){const on=i<cur,next=i===cur,gold=i===mx[attr]-1,txt=compText(attr,k,i);segs+=`<span class="masterySeg551 ${on?'on':''} ${next?'next':''} ${gold?'gold':''}" style="--c:${co}" aria-label="${esc(txt)}"><i class="masterySegNum552">${i+1}</i><span class="masterySegTip552"><b>${gold?'Upgrade final':'Compartimento '+(i+1)}</b><em>${esc(txt)}</em></span></span>`;}return `<div class="masteryBar551"><div class="masteryBarHead551"><div><strong>${esc(title)}</strong><span>${esc(sub)}</span></div><span>${cur}/${mx[attr]}</span></div><div class="masteryRow551"><div><div class="masterySegs551">${segs}</div><div class="masteryPreview552"><b>${previewLabel}</b><span>${esc(nextText)}</span>${previewCost?`<small>${esc(previewCost)}</small>`:''}</div></div><button class="masteryBuy551" data-buy-mastery551="${esc(attr)}" ${lock||!cost?'disabled':''}>${lock?'🔒':cost?cost.label:'MAX'}</button></div></div>`;}
+  function effectiveHp(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]||{}, d=getData(k);return Math.round(num(c.hp)*(1+hpPct(k)*d.hp));}
+  function effectiveDmg(k){const d=getData(k);return `+${Math.round(dmgPct(k)*d.damage*1000)/10}%`;}
+  function openStats(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k];if(!c)return;ensureStyle();overlay.classList.remove('hidden');overlayCard.className='card dune461';const co=color(k), isOwned=owned(k), d=getData(k), lvl=level(k), max=lvl>=10;const bars=`${barHTML(k,'hp','HP','Sobrevivência permanente do personagem.')}${barHTML(k,'damage','Dano','Aumenta o dano base, balanceado por personagem.')}${barHTML(k,'shield','Escudo','Cada compartimento dá +1 segmento de escudo.')}${barHTML(k,'special',specName(k),'Aprimoramentos únicos do kit do personagem.')}`;overlayCard.innerHTML=`<div class="${max?'masteryMax551':''}"><h1 style="text-align:center">${esc(c.name)}</h1><p class="duneSub461">Estatísticas e Maestria individual. Todo personagem começa no nível 1 e chega ao nível 10 ao comprar todos os compartimentos.</p><div class="masteryLayout551"><aside class="masterySide551"><div class="modelBox461"><div class="heroModel461" data-hero="${esc(k)}" style="--c:${co}"><i></i><b></b><em></em></div></div><span class="badge461" style="--co:${max?'#ffd166':co}">${max?'MAESTRIA MÁXIMA':'MAESTRIA'}</span><div class="masteryLvl551">LVL ${lvl}/10</div>${isOwned?`<div class="masteryStats551"><div class="masteryStat551"><small>HP</small><b>${effectiveHp(k)}</b></div><div class="masteryStat551"><small>ESCUDO</small><b>${num(c.shield)} + ${d.shield}</b></div><div class="masteryStat551"><small>DANO</small><b>${effectiveDmg(k)}</b></div><div class="masteryStat551"><small>ARMA</small><b style="font-size:14px">${esc(weaponName(k))}</b></div></div>`:`<div class="masteryLocked551"><div><b>🔒 APRIMORAMENTOS BLOQUEADOS</b><br><span>Compre este personagem para revelar status e liberar a Maestria.</span></div></div>`}<div class="masteryNote551">Cada compartimento mostra o upgrade real que será aplicado. O custo aparece no botão de compra; o dourado marca apenas o upgrade final da trilha.</div></aside><section class="masteryBars551">${bars}</section></div><div class="masteryActions551"><button class="duneBtn461 dark" id="statsBack551">← Seleção</button><button class="duneBtn461 blue" id="statsInfo551">Informações</button></div></div>`;document.getElementById('statsBack551').onclick=()=>window.openClassMenu?.();document.getElementById('statsInfo551').onclick=()=>openInfoOnly(k);overlayCard.querySelectorAll('[data-buy-mastery551]').forEach(btn=>btn.onclick=e=>{e.preventDefault();e.stopPropagation();buy(k,btn.dataset.buyMastery551);});}
+  function buy(k,attr){if(!owned(k))return;const d=getData(k), mx=maxes(k), cur=d[attr]||0;if(cur>=mx[attr])return;const cost=nextCost(attr,k);if(!cost)return;const m=meta();if(cost.kind==='chrono'){if(num(m.chronoFragments)<cost.amount)return; m.chronoFragments=num(m.chronoFragments)-cost.amount;}else{if(num(m.relicShards)<cost.amount)return; m.relicShards=num(m.relicShards)-cost.amount;}d[attr]=cur+1;setData(k,d);if(typeof addFloatingText==='function'&&window.game?.player)addFloatingText(game.player.x,game.player.y-30,'MAESTRIA +1','#ffd166',15);openStats(k);}
+  function patchCards(){ensureStyle();if(!overlayCard?.querySelector)return;const cards=[...overlayCard.querySelectorAll('.classCard461')];if(!cards.length)return;for(const card of cards){const k=detectCardKey(card);if(!k||!(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k])continue;if(!card.querySelector('[data-stats551]'))card.insertAdjacentHTML('afterbegin',statButtonHTML(k));card.classList.toggle('masteryMaxCard551',level(k)>=10&&owned(k));const stat=card.querySelector('[data-stats551]');if(stat&&!stat._m551){stat._m551=true;stat.onclick=e=>{e.preventDefault();e.stopPropagation();openStats(k);};}const info=card.querySelector('[data-info461],[data-info-rico529],[data-info-archer470]');if(info&&!info._m551){info._m551=true;info.onclick=e=>{e.preventDefault();e.stopPropagation();openInfoOnly(k);};}}
+  }
+  function cleanInfoStatsOld(){try{if(!overlayCard?.querySelector)return;const title=(overlayCard.textContent||'').slice(0,160);if(/Informações completas restauradas|Informações completas do novo caçador|Personagem de precisão sem ultimate/.test(title)){/* telas antigas só são substituídas quando vierem da seleção */}}catch{}}
+  const obs=new MutationObserver(()=>{clearTimeout(window.__m551Timer);window.__m551Timer=setTimeout(()=>{try{patchCards();cleanInfoStatsOld();}catch(e){console.warn('Maestria 5.5.1 patch UI falhou',e)}},30);});
+  try{obs.observe(overlayCard,{childList:true,subtree:true});}catch{}
+  const oldOpen=window.openClassMenu;
+  if(typeof oldOpen==='function')window.openClassMenu=function(){const r=oldOpen.apply(this,arguments);setTimeout(patchCards,60);setTimeout(patchCards,220);return r;};
+  // Aplica bônus de maestria quando uma run começa, sem alterar os valores base em CLASSES.
+  const oldReset=window.resetGame||globalThis.resetGame;
+  if(typeof oldReset==='function'){
+    window.resetGame=function(classKey){const res=oldReset.apply(this,arguments);try{applyMastery(classKey||game?.classKey);}catch(e){console.warn('Maestria 5.5.1 apply falhou',e)}return res;};
+    try{if(typeof resetGame!=='undefined')resetGame=window.resetGame;}catch{}
+  }
+  function applyMastery(k){if(!game?.player||!k)return;const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]||{}, d=getData(k), p=game.player;game.characterMastery551={key:k,...d,level:level(k)};const hpBonus=hpPct(k)*d.hp;if(hpBonus>0){const add=Math.round(num(c.hp||p.maxHp)*hpBonus);p.maxHp+=add;p.hp+=add;}const dmgBonus=dmgPct(k)*d.damage;if(dmgBonus>0){game.upgrades=game.upgrades||{};game.upgrades.damage=(game.upgrades.damage||1)*(1+dmgBonus);}if(d.shield>0){p.maxShieldHits=num(p.maxShieldHits||p.maxShield||0)+d.shield;p.shieldHits=num(p.shieldHits||p.shield||0)+d.shield;p.maxShield=p.maxShieldHits;p.shield=p.shieldHits;}if(d.special>0){game.upgrades=game.upgrades||{};game.upgrades.masterySkillDmg551=1+d.special*.025;game.upgrades.masterySpecial551=d.special;if(k==='alchemist')game.upgrades.acidMastery=(game.upgrades.acidMastery||0)+d.special*.08;if(k==='archer')game.archerChargeRateBonus551=d.special*.08;if(k==='ricocheteador')game.ricoMastery551=d.special;if(k==='engineer')game.upgrades.turretMastery551=d.special;if(k==='bomber')game.upgrades.bombMastery551=d.special;if(k==='colonel')game.upgrades.colonelMastery551=d.special;}try{updateHUD?.();}catch{}}
+  const oldUse=window.useSkill||globalThis.useSkill;
+  if(typeof oldUse==='function'){
+    window.useSkill=function(idx){const sp=num(game?.characterMastery551?.special||0), shouldBoost=sp>0&&game?.upgrades;const old=game?.upgrades?.damage||1;const beforeCd=Array.isArray(game?.skillCds)?num(game.skillCds[idx]):0;let result;if(shouldBoost){game.upgrades.damage=old*num(game.upgrades.masterySkillDmg551||1);try{result=oldUse.apply(this,arguments);}finally{game.upgrades.damage=old;}}else result=oldUse.apply(this,arguments);try{if(sp>idx&&Array.isArray(game.skillCds)&&num(game.skillCds[idx])>beforeCd){const cut=Math.min(.18,.04*sp);game.skillCds[idx]=Math.max(.15,game.skillCds[idx]*(1-cut));}}catch{}return result;};
+    try{if(typeof useSkill!=='undefined')useSkill=window.useSkill;}catch{}
+  }
+  const oldUpdateHazards=window.updateHazards||globalThis.updateHazards;
+  if(typeof oldUpdateHazards==='function'){
+    window.updateHazards=function(dt){if(game?.classKey==='alchemist'&&game.characterMastery551?.special>0){const sp=game.characterMastery551.special;for(const h of game.hazards||[]){const t=String(h.type||'').toLowerCase();if((t.includes('poison')||t.includes('acid')||t.includes('toxic'))&&!h._mastery551){h._mastery551=true;if(typeof h.life==='number')h.life+=sp*.35;if(typeof h.r==='number')h.r*=1+sp*.055;}}for(const f of game.alchemyFields481||[]){if(!f._mastery551){f._mastery551=true;if(typeof f.life==='number')f.life+=sp*.25;if(typeof f.r==='number')f.r*=1+sp*.04;}}}return oldUpdateHazards.apply(this,arguments);};
+    try{if(typeof updateHazards!=='undefined')updateHazards=window.updateHazards;}catch{}
+  }
+  const oldUpdatePlayer=window.updatePlayer||globalThis.updatePlayer;
+  if(typeof oldUpdatePlayer==='function'){
+    window.updatePlayer=function(dt){const before=game?.archerCharge;const r=oldUpdatePlayer.apply(this,arguments);try{if(game?.classKey==='archer'&&game.archerCharging&&game.archerChargeRateBonus551&&typeof game.archerCharge==='number'){game.archerCharge=Math.min(1.05,game.archerCharge+dt*game.archerChargeRateBonus551);}}catch{}return r;};
+    try{if(typeof updatePlayer!=='undefined')updatePlayer=window.updatePlayer;}catch{}
+  }
+  window.openCharacterStats551=openStats;
+  window.openCharacterInfo551=openInfoOnly;
+  setTimeout(patchCards,400);
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__chronoCharacterMastery551b)return; window.__chronoCharacterMastery551b=true;
+  function safePatch(){try{document.querySelectorAll('.classCard461').forEach(card=>{const k=card.dataset.card461||card.dataset.cardRico529||card.dataset.cardArcher470;if(k&&!card.querySelector('[data-stats551]')&&window.openCharacterStats551){card.insertAdjacentHTML('afterbegin',`<button class="classStats551" data-stats551="${String(k).replace(/[&<>\"']/g,'')}" title="Estatísticas / Maestria">▥</button>`);const b=card.querySelector('[data-stats551]');b.onclick=e=>{e.preventDefault();e.stopPropagation();window.openCharacterStats551(k);};}})}catch(e){}}
+  if(typeof window.openClassMenu461==='function'){const old=window.openClassMenu461;window.openClassMenu461=function(){const r=old.apply(this,arguments);setTimeout(safePatch,80);setTimeout(safePatch,260);return r;};}
+  setTimeout(safePatch,600);
 })();
 </script>
 </body>
