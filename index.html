@@ -403,7 +403,7 @@ const RELICS = [
   {id:'focus_prism',name:'Prisma de foco',desc:'+30 foco máximo.',cost:9,apply:g=>{g.player.maxFocus+=30;g.player.focus+=30}},
   {id:'armor_lattice',name:'Malha de Armadura',desc:'+10% armadura.',cost:10,apply:g=>g.upgrades.armor+=0.1},
   {id:'drone_seed',name:'Ajuda do Artífice',desc:'Começa com drone.',cost:14,apply:g=>g.upgrades.droneUnlocked=true},
-  {id:'vampiric_core',name:'Núcleo Vampírico',desc:'Kills curam 6 HP.',cost:12,apply:g=>g.upgrades.killHeal=6},
+  {id:'vampiric_core',name:'Núcleo Vampírico',desc:'Kills curam 1% do HP máximo.',cost:12,apply:g=>{g.upgrades.killHealPct=0.01;g.upgrades.killHeal=0}},
   {id:'crit_matrix',name:'Matrix Crítica',desc:'+15% chance crítico.',cost:11,apply:g=>g.upgrades.critChance+=0.15},
   {id:'shield_cell',name:'Célula de Escudo',desc:'+25 escudo máx.',cost:10,apply:g=>{g.player.maxShield+=25;g.player.shield+=25}},
   {id:'combo_amp',name:'Amplificador de Escudo',desc:'Combo máximo +2 nível bônus.',cost:13,apply:g=>g.upgrades.comboBonus+=2}
@@ -3717,7 +3717,7 @@ render = function(){
   const HERO_PATCH_VERSION='Chrono-Hero Update 1.3';
   const CLASS_UNLOCK_KEY=SAVE_KEY+'_class_unlocks_v3';
   const FREE_CLASSES=['assault','sniper'];
-  const CLASS_COSTS={engineer:10,mage:15,ronin:20,alchemist:20,reaper:30,chronoHero:100};
+  const CLASS_COSTS={engineer:20,mage:25,ronin:30,alchemist:30,reaper:40,chronoHero:110};
   const CLASS_ORDER=['assault','sniper','engineer','mage','ronin','alchemist','reaper','chronoHero'];
 
   Object.assign(CLASSES,{
@@ -4769,7 +4769,7 @@ render = function(){
   const CLASS_UNLOCK_KEY=SAVE_KEY+'_class_unlocks_v3';
   const REDEEM_KEY=SAVE_KEY+'_redeemed_codes_v1';
   const FREE_CLASSES=['assault','sniper'];
-  const CLASS_COSTS={engineer:10,mage:15,ronin:20,alchemist:20,reaper:30,chronoHero:100};
+  const CLASS_COSTS={engineer:20,mage:25,ronin:30,alchemist:30,reaper:40,chronoHero:110};
   const CLASS_ORDER=['assault','sniper','engineer','mage','ronin','alchemist','reaper','chronoHero'];
   const CODE_REWARDS={ChronoCode:100,MonsterHunter:250};
   const RARITY_META={
@@ -6988,7 +6988,7 @@ requestAnimationFrame(loop);
   const CLASS_UNLOCK_KEY_23 = SAVE_KEY+'_class_unlocks_v3';
   const SECRET_UNLOCK_KEY_23 = SAVE_KEY+'_secret_rift_v1';
   const FREE_CLASSES_23 = ['assault','sniper'];
-  const CLASS_COSTS_23 = {engineer:10,mage:15,ronin:20,alchemist:20,reaper:30,chronoHero:100,shadowChild:150};
+  const CLASS_COSTS_23 = {engineer:20,mage:25,ronin:30,alchemist:30,reaper:40,chronoHero:110,shadowChild:160};
   const CLASS_ORDER_23 = ['assault','sniper','engineer','mage','ronin','alchemist','reaper','chronoHero','shadowChild'];
   const CLASS_LORE_23 = {
     assault:'Um soldado de frente que aprendeu a sobreviver entre linhas temporais quebradas. Não é o mais raro, mas é quem segura a primeira queda do céu.',
@@ -8688,7 +8688,7 @@ requestAnimationFrame(loop);
   const DIFF_LABEL_37={easy:'Fácil',medium:'Média',hard:'Difícil',extreme:'Extrema'};
   const DIFF_COLOR_37={easy:'#6fffb0',medium:'#ffd166',hard:'#ff8a66',extreme:'#ff4d73'};
   const MISSION_CD_37={easy:60000,medium:180000,hard:360000};
-  const CLASS_COSTS_37={engineer:20,mage:25,ronin:30,alchemist:30,reaper:40,colonel:65,chronoHero:100,shadowChild:160,moonSlayer:7};
+  const CLASS_COSTS_37={engineer:30,mage:35,ronin:40,alchemist:40,reaper:50,colonel:75,chronoHero:110,shadowChild:170,moonSlayer:17};
   const CLASS_ORDER_37=['assault','sniper','engineer','mage','ronin','alchemist','reaper','colonel','chronoHero','moonSlayer','shadowChild'];
   const FREE_CLASSES_37=['assault','sniper'];
   const CLASS_LORE_37={
@@ -10699,7 +10699,7 @@ function killKey37(e){
   const CODES_KEY=SAVE+'_redeemed_codes_v1';
   const CHRONO='⧖';
   const FREE_CLASSES=['assault','sniper'];
-  const CLASS_COSTS={engineer:20,mage:25,ronin:30,alchemist:30,reaper:40,colonel:65,chronoHero:100,shadowChild:160,moonSlayer:7};
+  const CLASS_COSTS={engineer:30,mage:35,ronin:40,alchemist:40,reaper:50,colonel:75,chronoHero:110,shadowChild:170,moonSlayer:17};
   const CLASS_GROUPS=[
     {id:'front',name:'LINHA DE FRENTE',desc:'Pressão, resistência e combate direto.',keys:['assault','ronin','reaper'],color:'#ff6b9d'},
     {id:'precision',name:'PRECISÃO',desc:'Posicionamento, mira e dano calculado.',keys:['sniper'],color:'#ffd166'},
@@ -11417,7 +11417,7 @@ function killKey37(e){
   function classModel481(k,c){const co=(c?.tagColor||c?.color||'#61dafb');const ico={assault:'🔫',sniper:'🎯',reaper:'⚔️',alchemist:'⚗️',engineer:'🛠️',colonel:'🪖',archer:'🏹',bomber:'💣',mage:'🌀',ronin:'刀',chronoHero:'💎',moonSlayer:'🌙',shadowChild:'🩸'}[k]||'✦';return `<div class="infoModel481" style="--co:${co}"><div class="modelCore481" data-ico="${esc(ico)}" style="--co:${co}"></div></div>`;}
   function skillRows481(k){const labels=['E','Q','R'];let rows=(CLASSES[k]?.skills||[]).map((sk,i)=>{const s=SKILL_DEFS[sk]||{};return `<div class="skillRow461"><b>${labels[i]||'?'} — ${esc(s.emoji||'✦')} ${esc(s.name||sk)}</b><br><span>${esc(s.desc||'Especial de combate.')}</span></div>`}).join('');if(ULT481[k]){const on=ultUnlocked(k),u=ULT481[k];rows+=`<div class="skillRow461 ${on?'':'ultLockRow481'}"><b>X — ${on?`${u.emoji} ${esc(u.name)}`:'???'}</b><br><span>${on?esc(u.desc):'???'}</span></div>`;}else if(k==='chronoHero')rows+=`<div class="skillRow461"><b>X — 💎 Rajada prismática x1.000</b><br><span>Um dos únicos com ultimate. Essa habilidade suprema faz tudo parar ao ser ativada e dá uma rajada imensa de energia aonde estiver mirando.</span></div>`;else if(k==='moonSlayer')rows+=`<div class="skillRow461"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>O Exterminador tira sua espada da bainha e faz cortes multidimensionais azuis, quebrando a linha temporal em pedaços.</span></div>`;else if(k==='shadowChild')rows+=`<div class="skillRow461"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>`;return rows;}
   function openInfo481(k){const c=CLASSES[k];if(!c)return;ensureStyle481();overlay.classList.remove('hidden');overlayCard.className='card dune461';const co=c.tagColor||c.color||'#61dafb';const lore=LORE481[k]||c.desc||'Um combatente perdido entre fragmentos de tempo.';overlayCard.innerHTML=`<h1 style="text-align:center">${esc(c.name)}</h1><p class="duneSub461">Informações completas restauradas na seleção de personagens.</p><div class="infoLayout461"><div>${classModel481(k,c)}<span class="badge461" style="--co:${co}">${esc(c.tag||'CLASSE')}</span></div><div><div class="statsGrid461"><div class="duneStat461"><small>HP</small><b>${c.hp}</b></div><div class="duneStat461"><small>ESCUDO</small><b>${c.shield}</b></div><div class="duneStat461"><small>FOCO</small><b>${c.focus}</b></div><div class="duneStat461"><small>VELOCIDADE</small><b>${c.speed}</b></div></div><h3 class="section461" style="color:${co}">HABILIDADES</h3>${skillRows481(k)}<h3 class="section461" style="color:${co}">LORE</h3><div class="dunePanel461"><span>${esc(lore)}</span></div></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="infoBack481">← Seleção</button></div>`;document.getElementById('infoBack481').onclick=()=>{try{openClassMenu461()}catch{overlay.classList.add('hidden')}};}
-  window.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-info461]');if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openInfo481(b.dataset.info461);},true);
+  window.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-info461]');if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();const k=b.dataset.info461;if(window.openCharacterInfo551){window.openCharacterInfo551(k);return;}openInfo481(k);},true);
   ensureStyle481();
   console.log('Chrono Shards 4.8.1 — ultimates polidas, Bombardeiro aprimorado e lores revisadas carregado');
 })();
@@ -18002,7 +18002,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   function barHTML(k,attr,title,sub){const d=getData(k), mx=maxes(k), cur=d[attr]||0, co=color(k), cost=nextCost(attr,k), lock=!owned(k);const done=cur>=mx[attr];const nextText=lock?'Compre este personagem para liberar esta trilha de maestria.':done?'Todos os compartimentos deste atributo já foram comprados.':compText(attr,k,cur);const previewLabel=lock?'BLOQUEADO':done?'ATRIBUTO COMPLETO':'PRÓXIMO UPGRADE';const previewCost=lock?'':done?'Máximo alcançado':`Custo: ${cost?cost.label:'MAX'}`;let segs='';for(let i=0;i<mx[attr];i++){const on=i<cur,next=i===cur,gold=i===mx[attr]-1,txt=compText(attr,k,i);segs+=`<span class="masterySeg551 ${on?'on':''} ${next?'next':''} ${gold?'gold':''}" style="--c:${co}" aria-label="${esc(txt)}"><i class="masterySegNum552">${i+1}</i><span class="masterySegTip552"><b>${gold?'Upgrade final':'Compartimento '+(i+1)}</b><em>${esc(txt)}</em></span></span>`;}return `<div class="masteryBar551"><div class="masteryBarHead551"><div><strong>${esc(title)}</strong><span>${esc(sub)}</span></div><span>${cur}/${mx[attr]}</span></div><div class="masteryRow551"><div><div class="masterySegs551">${segs}</div><div class="masteryPreview552"><b>${previewLabel}</b><span>${esc(nextText)}</span>${previewCost?`<small>${esc(previewCost)}</small>`:''}</div></div><button class="masteryBuy551" data-buy-mastery551="${esc(attr)}" ${lock||!cost?'disabled':''}>${lock?'🔒':cost?cost.label:'MAX'}</button></div></div>`;}
   function effectiveHp(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]||{}, d=getData(k);return Math.round(num(c.hp)*(1+hpPct(k)*d.hp));}
   function effectiveDmg(k){const d=getData(k);return `+${Math.round(dmgPct(k)*d.damage*1000)/10}%`;}
-  function openStats(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k];if(!c)return;ensureStyle();overlay.classList.remove('hidden');overlayCard.className='card dune461';const co=color(k), isOwned=owned(k), d=getData(k), lvl=level(k), max=lvl>=10;const bars=`${barHTML(k,'hp','HP')}${barHTML(k,'damage','Dano')}${barHTML(k,'shield','Escudo')}${barHTML(k,'special',specName(k),'Aprimoramentos únicos do kit do personagem.')}`;overlayCard.innerHTML=`<div class="${max?'masteryMax551':''}"><h1 style="text-align:center">${esc(c.name)}</h1><p class="duneSub461">Estatísticas e Maestria individual. Todo personagem começa no nível 1 e chega ao nível 10 ao comprar todos os compartimentos.</p><div class="masteryLayout551"><aside class="masterySide551"><div class="modelBox461"><div class="heroModel461" data-hero="${esc(k)}" style="--c:${co}"><i></i><b></b><em></em></div></div><span class="badge461" style="--co:${max?'#ffd166':co}">${max?'MAESTRIA MÁXIMA':'MAESTRIA'}</span><div class="masteryLvl551">LVL ${lvl}/10</div>${isOwned?`<div class="masteryStats551"><div class="masteryStat551"><small>HP</small><b>${effectiveHp(k)}</b></div><div class="masteryStat551"><small>ESCUDO</small><b>${num(c.shield)} + ${d.shield}</b></div><div class="masteryStat551"><small>DANO</small><b>${effectiveDmg(k)}</b></div><div class="masteryStat551"><small>ARMA</small><b style="font-size:14px">${esc(weaponName(k))}</b></div></div>`:`<div class="masteryLocked551"><div><b>🔒 APRIMORAMENTOS BLOQUEADOS</b><br><span>Compre este personagem para revelar status e liberar a Maestria.</span></div></div>`}<div class="masteryNote551"></div></aside><section class="masteryBars551">${bars}</section></div><div class="masteryActions551"><button class="duneBtn461 dark" id="statsBack551">← Seleção</button><button class="duneBtn461 blue" id="statsInfo551">Informações</button></div></div>`;document.getElementById('statsBack551').onclick=()=>window.openClassMenu?.();document.getElementById('statsInfo551').onclick=()=>openInfoOnly(k);overlayCard.querySelectorAll('[data-buy-mastery551]').forEach(btn=>btn.onclick=e=>{e.preventDefault();e.stopPropagation();buy(k,btn.dataset.buyMastery551);});}
+  function openStats(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k];if(!c)return;ensureStyle();overlay.classList.remove('hidden');overlayCard.className='card dune461';const co=color(k), isOwned=owned(k), d=getData(k), lvl=level(k), max=lvl>=10;const bars=`${barHTML(k,'hp','HP','')}${barHTML(k,'damage','Dano','')}${barHTML(k,'shield','Escudo','')}${barHTML(k,'special',specName(k),'')}`;overlayCard.innerHTML=`<div class="${max?'masteryMax551':''}"><h1 style="text-align:center">${esc(c.name)}</h1><p class="duneSub461">Estatísticas e Maestria individual. Todo personagem começa no nível 1 e chega ao nível 10 ao comprar todos os compartimentos.</p><div class="masteryLayout551"><aside class="masterySide551"><div class="modelBox461"><div class="heroModel461" data-hero="${esc(k)}" style="--c:${co}"><i></i><b></b><em></em></div></div><span class="badge461" style="--co:${max?'#ffd166':co}">${max?'MAESTRIA MÁXIMA':'MAESTRIA'}</span><div class="masteryLvl551">LVL ${lvl}/10</div>${isOwned?`<div class="masteryStats551"><div class="masteryStat551"><small>HP</small><b>${effectiveHp(k)}</b></div><div class="masteryStat551"><small>ESCUDO</small><b>${num(c.shield)} + ${d.shield}</b></div><div class="masteryStat551"><small>DANO</small><b>${effectiveDmg(k)}</b></div><div class="masteryStat551"><small>ARMA</small><b style="font-size:14px">${esc(weaponName(k))}</b></div></div>`:`<div class="masteryLocked551"><div><b>🔒 APRIMORAMENTOS BLOQUEADOS</b><br><span>Compre este personagem para revelar status e liberar a Maestria.</span></div></div>`}<div class="masteryNote551"></div></aside><section class="masteryBars551">${bars}</section></div><div class="masteryActions551"><button class="duneBtn461 dark" id="statsBack551">← Seleção</button><button class="duneBtn461 blue" id="statsInfo551">Informações</button></div></div>`;document.getElementById('statsBack551').onclick=()=>window.openClassMenu?.();document.getElementById('statsInfo551').onclick=()=>openInfoOnly(k);overlayCard.querySelectorAll('[data-buy-mastery551]').forEach(btn=>btn.onclick=e=>{e.preventDefault();e.stopPropagation();buy(k,btn.dataset.buyMastery551);});}
   function buy(k,attr){if(!owned(k))return;const d=getData(k), mx=maxes(k), cur=d[attr]||0;if(cur>=mx[attr])return;const cost=nextCost(attr,k);if(!cost)return;const m=meta();if(cost.kind==='chrono'){if(num(m.chronoFragments)<cost.amount)return; m.chronoFragments=num(m.chronoFragments)-cost.amount;}else{if(num(m.relicShards)<cost.amount)return; m.relicShards=num(m.relicShards)-cost.amount;}d[attr]=cur+1;setData(k,d);if(typeof addFloatingText==='function'&&window.game?.player)addFloatingText(game.player.x,game.player.y-30,'MAESTRIA +1','#ffd166',15);openStats(k);}
   function patchCards(){ensureStyle();if(!overlayCard?.querySelector)return;const cards=[...overlayCard.querySelectorAll('.classCard461')];if(!cards.length)return;for(const card of cards){const k=detectCardKey(card);if(!k||!(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k])continue;if(!card.querySelector('[data-stats551]'))card.insertAdjacentHTML('afterbegin',statButtonHTML(k));card.classList.toggle('masteryMaxCard551',level(k)>=10&&owned(k));const stat=card.querySelector('[data-stats551]');if(stat&&!stat._m551){stat._m551=true;stat.onclick=e=>{e.preventDefault();e.stopPropagation();openStats(k);};}const info=card.querySelector('[data-info461],[data-info-rico529],[data-info-archer470]');if(info&&!info._m551){info._m551=true;info.onclick=e=>{e.preventDefault();e.stopPropagation();openInfoOnly(k);};}}
   }
@@ -18049,5 +18049,566 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   setTimeout(safePatch,600);
 })();
 </script>
+
+
+<script>
+(()=>{
+  const PATCH='Chrono Shards 5.8 — Loja Chronal polida + baú balanceado';
+  if(window.__chronoShop56Loaded)return; window.__chronoShop56Loaded=true;
+
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const $=sel=>document.querySelector(sel);
+  const N=v=>Number(v||0);
+  const esc56=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  function readMeta56(){let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{m={}};m.relicShards=N(m.relicShards);m.chronoFragments=N(m.chronoFragments);m.awakeningKeys=N(m.awakeningKeys);m.highScore=N(m.highScore);m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected);return m;}
+  function writeMeta56(m){m=m||{};m.relicShards=N(m.relicShards);m.chronoFragments=N(m.chronoFragments);m.awakeningKeys=N(m.awakeningKeys);m.highScore=N(m.highScore);m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected);localStorage.setItem(SAVE,JSON.stringify(m));try{if(typeof game!=='undefined'&&game){game.meta=Object.assign(game.meta||{},m);}}catch{}return m;}
+  function addRelics56(n){const m=readMeta56();m.relicShards=N(m.relicShards)+N(n);writeMeta56(m);return m.relicShards;}
+  function addChrono56(n){const m=readMeta56();m.chronoFragments=N(m.chronoFragments)+N(n);m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected)+N(n);writeMeta56(m);return m.chronoFragments;}
+  function addAwakeningKeys56(n){const m=readMeta56();m.awakeningKeys=N(m.awakeningKeys)+N(n);writeMeta56(m);return m.awakeningKeys;}
+  function rnd56(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+  function weightedAmount56(a,b,skew=2.35){a=Math.floor(Number(a||0));b=Math.floor(Number(b||a));if(b<=a)return a;const t=Math.pow(Math.random(),skew);return a+Math.floor((b-a+1)*t);}
+  function clamp56(v,a,b){return Math.max(a,Math.min(b,v));}
+  function currentDiscount56(){return 1-Math.min(N(game?.upgrades?.shopDiscount),0.45);}
+  function price56(base){return Math.max(1,Math.floor(Number(base||0)*currentDiscount56()));}
+  function ensureShopState56(){
+    if(!game)return;
+    game.shopCounts=game.shopCounts||{};
+    game.shopLimits=game.shopLimits||{};
+    const counts=['hpMax','focusMax','damageBoost','armorBoost','dashServo','turretPack','relicTrade','luckyPotion','chronoChest'];
+    for(const k of counts)if(game.shopCounts[k]===undefined)game.shopCounts[k]=0;
+    Object.assign(game.shopLimits,{hpMax:8,focusMax:6,damageBoost:6,armorBoost:5,dashServo:6,turretPack:3,relicTrade:4,luckyPotion:1},game.shopLimits||{});
+    game.upgrades=game.upgrades||{};
+    game.upgrades.dashRegen=N(game.upgrades.dashRegen)||1;
+    game.miniTurrets=game.miniTurrets||[];
+  }
+
+  function addShopStyle56(){
+    if($('#shop56Style'))return;
+    const st=document.createElement('style');st.id='shop56Style';st.textContent=`
+      .weapon-return-wrap{display:none!important}
+      .shop56{width:min(95vw,1080px);max-height:calc(100vh - 22px);text-align:left;position:relative;overflow-y:auto!important;overflow-x:hidden;scrollbar-gutter:stable;padding-bottom:10px!important;background:radial-gradient(circle at 18% 0%,rgba(255,209,102,.17),transparent 35%),radial-gradient(circle at 92% 8%,rgba(97,218,251,.13),transparent 34%),linear-gradient(155deg,rgba(9,12,27,.985),rgba(2,4,12,.99))!important;border-color:rgba(135,215,255,.22)!important}
+      .shop56:before{content:'';position:absolute;inset:-30%;background:conic-gradient(from 0deg,transparent,rgba(97,218,251,.11),transparent,rgba(255,209,102,.11),transparent,rgba(159,108,255,.11),transparent);animation:shopSpin56 18s linear infinite;filter:blur(24px);opacity:.8;pointer-events:none}.shop56>*{position:relative;z-index:1}@keyframes shopSpin56{to{transform:rotate(360deg)}}
+      .shopTop56{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px}.shopTop56 h1{margin:0;font-size:34px}.shopSub56{margin:5px 0 0;color:#bdd1f6;line-height:1.45}.wallet56{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.wallet56 span{border-radius:16px;padding:9px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font:900 12px Orbitron,sans-serif;letter-spacing:.08em}.wallet56 b{color:#ffd166}.wallet56 .relic b{color:#ffb8ff}.wallet56 .luck b{color:#86ffb0}
+      .shopSection56{margin:18px 0 8px;font:900 13px Orbitron,sans-serif;letter-spacing:.18em;color:#9bedff;text-transform:uppercase;display:flex;align-items:center;gap:10px}.shopSection56:after{content:'';height:1px;flex:1;background:linear-gradient(90deg,rgba(155,237,255,.36),transparent)}
+      .shopGrid56{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.shopItem56{min-height:126px;text-align:left;border-radius:20px;padding:13px;border:1px solid color-mix(in srgb,var(--co,#61dafb) 45%,rgba(255,255,255,.10));background:radial-gradient(circle at 12% 0%,color-mix(in srgb,var(--co,#61dafb) 18%,transparent),transparent 40%),linear-gradient(150deg,rgba(10,14,32,.95),rgba(3,5,15,.98));color:#eaf4ff;box-shadow:0 0 26px color-mix(in srgb,var(--co,#61dafb) 12%,transparent);position:relative;overflow:hidden}.shopItem56:hover{box-shadow:0 0 34px color-mix(in srgb,var(--co,#61dafb) 22%,transparent);transform:translateY(-2px) scale(1.012)}.shopItem56:disabled{opacity:.38;filter:grayscale(.35);cursor:not-allowed}.shopItem56 .icon56{position:absolute;right:12px;top:10px;font-size:28px;filter:drop-shadow(0 0 12px var(--co,#61dafb));opacity:.92}.shopItem56 small{display:inline-flex;padding:4px 8px;border-radius:999px;border:1px solid var(--co,#61dafb);color:var(--co,#61dafb);background:color-mix(in srgb,var(--co,#61dafb) 12%,transparent);font:900 10px Orbitron,sans-serif;letter-spacing:.1em;margin-bottom:9px}.shopItem56 strong{display:block;font:900 16px Orbitron,sans-serif;color:#fff;padding-right:36px}.shopItem56 span{display:block;margin-top:7px;color:#c6d8fa;line-height:1.32;font-size:13px}.shopItem56 .cost56{margin-top:12px;display:inline-flex;gap:5px;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(255,209,102,.13);border:1px solid rgba(255,209,102,.42);color:#ffe7a1;font:900 11px Orbitron,sans-serif}
+      .shopActions56{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px -4px 0;padding:12px 8px 4px;position:sticky;bottom:-10px;z-index:9;background:linear-gradient(180deg,rgba(5,8,20,.25),rgba(5,8,20,.96) 45%,rgba(5,8,20,.99));backdrop-filter:blur(10px);border-top:1px solid rgba(155,237,255,.16)}.continue56{font-family:Orbitron,sans-serif;letter-spacing:.08em;box-shadow:0 0 26px rgba(97,218,251,.28)}.shopHint56{margin-top:14px;text-align:center;color:#91a8d2;font-size:12px}
+      .luckyBadge56{position:absolute;top:72px;right:max(1vw,calc((100vw - min(98vw,1320px))/2 + 10px));z-index:7;padding:9px 13px;border-radius:999px;background:linear-gradient(135deg,rgba(134,255,176,.22),rgba(255,209,102,.16));border:1px solid rgba(134,255,176,.46);box-shadow:0 0 24px rgba(134,255,176,.18);font:900 11px Orbitron,sans-serif;letter-spacing:.1em;color:#dffff0;pointer-events:none}.luckyBadge56 b{color:#86ffb0;text-shadow:0 0 12px #86ffb0}
+      .chestStage56{width:min(94vw,820px);min-height:560px;text-align:center;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--c,#61dafb) 24%,transparent),transparent 42%),linear-gradient(150deg,rgba(7,10,24,.98),rgba(2,3,10,.995))!important;border-color:color-mix(in srgb,var(--c,#61dafb) 55%,rgba(255,255,255,.12))!important}.chestStage56:before{content:'';position:absolute;inset:-35%;background:radial-gradient(circle, color-mix(in srgb,var(--c,#61dafb) 24%,transparent), transparent 28%);filter:blur(26px);opacity:.9;animation:chestGlow56 2.1s ease-in-out infinite alternate}.chestStage56>*{position:relative;z-index:1}@keyframes chestGlow56{to{transform:scale(1.07);opacity:.55}}
+      .chestBox56{width:210px;height:165px;margin:28px auto 12px;position:relative;filter:drop-shadow(0 0 28px var(--c,#61dafb));cursor:pointer;transition:.2s transform}.chestBox56:hover{transform:translateY(-4px) scale(1.03)}.chestBox56.shake{animation:shakeChest56 .52s ease}.chestBox56.open{animation:openChest56 .9s ease forwards}@keyframes shakeChest56{0%,100%{transform:rotate(0)}20%{transform:rotate(-6deg)}40%{transform:rotate(6deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(4deg)}}@keyframes openChest56{50%{transform:scale(1.08)}100%{transform:scale(1.18) translateY(-8px)}}
+      .chestLid56{position:absolute;left:17px;right:17px;top:0;height:64px;border-radius:22px 22px 12px 12px;background:linear-gradient(135deg,var(--c,#61dafb),#fff);border:3px solid rgba(255,255,255,.85);box-shadow:inset 0 -12px 16px rgba(0,0,0,.22)}.chestBase56{position:absolute;left:0;right:0;bottom:0;height:112px;border-radius:18px 18px 28px 28px;background:linear-gradient(155deg,#151927,var(--c,#61dafb));border:3px solid rgba(255,255,255,.85);box-shadow:inset 0 0 24px rgba(0,0,0,.35)}.chestLock56{position:absolute;left:50%;top:78px;transform:translateX(-50%);width:42px;height:46px;border-radius:12px;background:#ffd166;border:3px solid #fff2b8;box-shadow:0 0 16px rgba(255,209,102,.75)}.chestRarity56{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:999px;border:1px solid var(--c,#61dafb);color:var(--c,#61dafb);background:color-mix(in srgb,var(--c,#61dafb) 14%,rgba(0,0,0,.45));font:900 12px Orbitron,sans-serif;letter-spacing:.12em}.chestPrompt56{font:900 22px Orbitron,sans-serif;color:#fff;text-shadow:0 0 18px var(--c,#61dafb);margin-top:16px}.orbs56{display:flex;justify-content:center;gap:9px;margin:14px 0}.orb56{width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid var(--c,#61dafb);box-shadow:0 0 14px var(--c,#61dafb)}.orb56.used{opacity:.22;filter:grayscale(1);box-shadow:none}.orb56.hide{display:none}
+      .rewardGrid56{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:20px 0}.rewardCard56{border-radius:20px;border:1px solid color-mix(in srgb,var(--c,#61dafb) 50%,rgba(255,255,255,.12));background:radial-gradient(circle at 15% 0%,color-mix(in srgb,var(--c,#61dafb) 17%,transparent),transparent 40%),rgba(255,255,255,.045);padding:16px;min-height:130px;display:grid;place-items:center}.rewardCard56 i{font-size:36px;font-style:normal;filter:drop-shadow(0 0 16px var(--c,#61dafb))}.rewardCard56 strong{font:900 16px Orbitron,sans-serif;color:#fff}.rewardCard56 span{color:#c9daf7;font-size:13px}.death-card56{width:min(94vw,1000px);text-align:left;background:radial-gradient(circle at 20% 0%,rgba(255,209,102,.18),transparent 36%),linear-gradient(155deg,rgba(7,10,24,.98),rgba(2,3,11,.995))!important}.deathHero56{text-align:center;margin-bottom:18px}.deathHero56 h1{font-size:42px;margin:0}.deathHero56 p{margin:8px auto 0;max-width:650px;color:#bcd2f8}.deathGrid56{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.deathStat56{border-radius:18px;padding:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);text-align:center}.deathStat56 small{display:block;font:900 10px Orbitron,sans-serif;letter-spacing:.12em;color:#91a8d2}.deathStat56 b{display:block;margin-top:5px;font:900 22px Orbitron,sans-serif;color:#fff}.conversion56{margin:16px 0;padding:14px;border-radius:20px;border:1px solid rgba(255,209,102,.32);background:linear-gradient(135deg,rgba(255,209,102,.12),rgba(255,255,255,.04));color:#ffe9ac;text-align:center;font:900 13px Orbitron,sans-serif;letter-spacing:.06em}.build56{margin-top:14px;padding:15px;border-radius:18px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1);color:#cad9f7;line-height:1.5}
+
+      .chestStage56.rarity-common{background:radial-gradient(circle at 50% 28%,rgba(134,162,189,.20),transparent 42%),linear-gradient(150deg,rgba(7,10,24,.98),rgba(2,3,10,.995))!important}
+      .chestStage56.rarity-rare:after,.chestStage56.rarity-epic:after,.chestStage56.rarity-legendary:after,.chestStage56.rarity-mythic:after{content:'';position:absolute;inset:-18%;pointer-events:none;z-index:0;opacity:.65}
+      .chestStage56.rarity-rare:after{background:repeating-conic-gradient(from 0deg,transparent 0 14deg,rgba(76,224,179,.16) 14deg 18deg);animation:rarityRay56 7s linear infinite;filter:blur(1px)}
+      .chestStage56.rarity-epic:after{background:radial-gradient(circle at 28% 28%,rgba(183,124,255,.24),transparent 12%),radial-gradient(circle at 72% 38%,rgba(255,255,255,.12),transparent 8%),radial-gradient(circle at 50% 70%,rgba(183,124,255,.16),transparent 18%);animation:epicOrbit56 4.4s ease-in-out infinite alternate;filter:blur(6px)}
+      .chestStage56.rarity-legendary:after{background:linear-gradient(115deg,transparent 22%,rgba(255,209,102,.0) 36%,rgba(255,255,210,.32) 46%,rgba(255,209,102,.0) 56%,transparent 78%);animation:legendSweep56 2.25s ease-in-out infinite;filter:blur(2px)}
+      .chestStage56.rarity-mythic:after{background:radial-gradient(circle at 20% 20%,rgba(255,48,79,.25),transparent 10%),radial-gradient(circle at 75% 25%,rgba(255,138,216,.22),transparent 12%),radial-gradient(circle at 55% 72%,rgba(255,255,255,.18),transparent 8%),repeating-conic-gradient(from 0deg,transparent 0 16deg,rgba(255,48,79,.13) 16deg 20deg);animation:mythicStorm56 2.8s linear infinite;filter:blur(3px)}
+      .chestBox56.rarity-common{animation:idleCommon56 3.8s ease-in-out infinite}.chestBox56.rarity-rare{animation:idleRare56 2.2s ease-in-out infinite}.chestBox56.rarity-epic{animation:idleEpic56 3s ease-in-out infinite}.chestBox56.rarity-legendary{animation:idleLegend56 2.6s ease-in-out infinite}.chestBox56.rarity-mythic{animation:idleMythic56 1.7s ease-in-out infinite}
+      .chestBox56.rarity-epic:before,.chestBox56.rarity-legendary:before,.chestBox56.rarity-mythic:before{content:'';position:absolute;inset:-18px;border-radius:32px;border:2px solid var(--c,#61dafb);opacity:.32;animation:ringSpin56 4s linear infinite}.chestBox56.rarity-legendary:before{border-color:#ffe8a8;box-shadow:0 0 26px rgba(255,209,102,.38)}.chestBox56.rarity-mythic:before{border-color:#ff8ad8;box-shadow:0 0 34px rgba(255,48,79,.48);animation-duration:1.8s}
+      .chestBox56.rarity-legendary .chestLock56{background:linear-gradient(135deg,#fff2a8,#ffb300);animation:lockLegend56 1.25s ease-in-out infinite alternate}.chestBox56.rarity-mythic .chestLock56{background:linear-gradient(135deg,#fff,#ff304f,#ff8ad8);animation:lockMythic56 .85s ease-in-out infinite alternate}
+      .chestBox56.open{animation:openChest56 .9s ease forwards!important}
+      @keyframes rarityRay56{to{transform:rotate(360deg)}}@keyframes epicOrbit56{to{transform:scale(1.08) rotate(8deg);opacity:.9}}@keyframes legendSweep56{0%{transform:translateX(-45%) rotate(0deg);opacity:.1}45%{opacity:.8}100%{transform:translateX(45%) rotate(0deg);opacity:.1}}@keyframes mythicStorm56{to{transform:rotate(360deg) scale(1.04)}}
+      @keyframes idleCommon56{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes idleRare56{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.025)}}@keyframes idleEpic56{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-9px) rotate(1.5deg)}}@keyframes idleLegend56{0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 30px var(--c,#ffd166))}50%{transform:translateY(-10px) scale(1.04);filter:drop-shadow(0 0 44px #ffd166)}}@keyframes idleMythic56{0%,100%{transform:translateY(0) rotate(-1deg) scale(1)}25%{transform:translateY(-7px) rotate(1deg) scale(1.03)}55%{transform:translateY(-2px) rotate(-2deg) scale(1.05)}80%{transform:translateY(-9px) rotate(1.5deg) scale(1.04)}}
+      @keyframes ringSpin56{to{transform:rotate(360deg)}}@keyframes lockLegend56{to{box-shadow:0 0 28px rgba(255,209,102,.95);transform:translateX(-50%) scale(1.08)}}@keyframes lockMythic56{to{box-shadow:0 0 32px rgba(255,48,79,.95),0 0 50px rgba(255,138,216,.55);transform:translateX(-50%) scale(1.12)}}
+      @media(max-width:720px){.shop56{width:98vw;max-height:calc(100vh - 12px);padding:18px!important}.shopTop56 h1,.deathHero56 h1{font-size:30px}.chestBox56{transform:scale(.86);margin-top:10px}.shopGrid56{grid-template-columns:1fr}.wallet56{justify-content:flex-start}.luckyBadge56{top:auto;right:10px;bottom:88px}}
+    `;document.head.appendChild(st);
+  }
+
+  function luckyActive56(){return !!(game&&game.luckyPotion56&&game.wave>=N(game.luckyPotion56.startWave)&&game.wave<=N(game.luckyPotion56.untilWave));}
+  function luckyRemaining56(){if(!game?.luckyPotion56)return 0;const start=N(game.luckyPotion56.startWave), until=N(game.luckyPotion56.untilWave);if(game.wave<start)return Math.max(0,until-start+1);return Math.max(0,until-game.wave+1);}
+  function ensureLuckyBadge56(){
+    addShopStyle56();
+    let el=$('#luckyBadge56');
+    if(!el){el=document.createElement('div');el.id='luckyBadge56';el.className='luckyBadge56';el.style.display='none';document.body.appendChild(el);}
+    if(game?.luckyPotion56&&luckyRemaining56()>0){el.style.display='block';el.innerHTML=`🍀 <b>Sortudo</b> • ${luckyRemaining56()} waves`;}
+    else el.style.display='none';
+  }
+
+  const RARITIES56={
+    common:{name:'COMUM',color:'#86a2bd',rank:0,emoji:'📦'},
+    rare:{name:'RARO',color:'#4ce0b3',rank:1,emoji:'🟩'},
+    epic:{name:'ÉPICO',color:'#b77cff',rank:2,emoji:'🟪'},
+    legendary:{name:'LENDÁRIO',color:'#ffd166',rank:3,emoji:'🟨'},
+    mythic:{name:'MÍTICO',color:'#ff304f',rank:4,emoji:'🟥'}
+  };
+  const RARITY_ORDER56=['common','rare','epic','legendary','mythic'];
+  function higherRarity56(a,b){return RARITIES56[b].rank>RARITIES56[a].rank?b:a;}
+  function rollRarityUpgrade56(){
+    const r=Math.random();
+    if(r<0.015)return 'mythic';
+    if(r<0.065)return 'legendary';
+    if(r<0.215)return 'epic';
+    if(r<0.515)return 'rare';
+    return 'common';
+  }
+  const CHEST_RARITY_TO_CATALOG56={rare:'RARO',epic:'ÉPICO',legendary:'LENDÁRIO',mythic:'MÍTICO'};
+  const CHEST_UNLOCK_KEY56=SAVE+'_power_catalog_unlocks_544';
+  function ensureCatalogStateForChest56(){
+    ensureShopState56();
+    game.upgrades.uniquePicks37=game.upgrades.uniquePicks37||{};
+    game.upgrades.powerPicks548=game.upgrades.powerPicks548||{};
+    game.upgrades.synergy529=game.upgrades.synergy529||{tags:{},active:{}};
+    game.upgrades.synergy529.tags=game.upgrades.synergy529.tags||{};
+    game.upgrades.synergy529.active=game.upgrades.synergy529.active||{};
+    const fields=['goldDropBonus548','relicDropBonus548','bossRelicBonus548','rareBossDropBonus548','skillHaste548','dashHaste548','dashDistanceBonus548','dashDamageBonus548','turretDamage548'];
+    for(const f of fields)game.upgrades[f]=N(game.upgrades[f]);
+  }
+  function unlockCatalogPower56(p){
+    if(!p)return;
+    try{const u=JSON.parse(localStorage.getItem(CHEST_UNLOCK_KEY56)||'{}')||{};u[p.id||String(p.name||'power').toLowerCase().replace(/\s+/g,'_')]=true;localStorage.setItem(CHEST_UNLOCK_KEY56,JSON.stringify(u));}catch{}
+  }
+  function addCatalogTag56(tag){
+    ensureCatalogStateForChest56();
+    tag=tag||'geral';
+    const s=game.upgrades.synergy529;
+    s.tags[tag]=N(s.tags[tag])+1;
+    if(s.tags[tag]<3||s.active[tag])return;
+    s.active[tag]=true;
+    if(tag==='precisao'){game.upgrades.precisionSynergy529=true;game.upgrades.critChance=N(game.upgrades.critChance)+.04;game.upgrades.damage=N(game.upgrades.damage||1)+.04;}
+    if(tag==='velocidade'){game.upgrades.speed=N(game.upgrades.speed||1)+.06;game.upgrades.fireRate=N(game.upgrades.fireRate||1)+.06;game.upgrades.archerChargeHaste548=N(game.upgrades.archerChargeHaste548)+.06;}
+    if(tag==='dash'){game.upgrades.dashHaste548=N(game.upgrades.dashHaste548)+.08;game.upgrades.dashDamageBonus548=N(game.upgrades.dashDamageBonus548)+.05;}
+    if(tag==='foco'){game.upgrades.focusRegen=N(game.upgrades.focusRegen||1)+.18;game.upgrades.skillHaste548=N(game.upgrades.skillHaste548)+.04;}
+    if(tag==='escudo'){game.upgrades.armor=N(game.upgrades.armor)+.06;game.upgrades.guardianSynergy529=true;}
+    if(tag==='explosao'){game.upgrades.explosionSynergy529=true;game.upgrades.unstableAmmo529=N(game.upgrades.unstableAmmo529)+1;}
+    if(tag==='veneno'){game.upgrades.acidMastery=N(game.upgrades.acidMastery)+.40;}
+    if(tag==='construcao'){game.upgrades.buildSynergy529=true;game.upgrades.turretDamage548=N(game.upgrades.turretDamage548)+.10;}
+    if(tag==='vampirismo'){game.upgrades.chronoBlood529=N(game.upgrades.chronoBlood529)+1;game.upgrades.lifesteal=Math.min(.035,N(game.upgrades.lifesteal)+.003);}
+    if(tag==='economia'){game.upgrades.goldDropBonus548=N(game.upgrades.goldDropBonus548)+.05;game.upgrades.relicDropBonus548=N(game.upgrades.relicDropBonus548)+.02;}
+    if(tag==='tesouro'){game.upgrades.rareBossDropBonus548=N(game.upgrades.rareBossDropBonus548)+.005;}
+    if(tag==='geral'){game.upgrades.damage=N(game.upgrades.damage||1)+.03;game.upgrades.focusRegen=N(game.upgrades.focusRegen||1)+.05;}
+    try{addFloatingText(game.player.x,game.player.y-48,'SINERGIA ATIVADA','#ffd166',18);addRing(game.player.x,game.player.y,'#ffd166',125,5)}catch{}
+  }
+  function pickCatalogPower56(rarityLabel){
+    ensureCatalogStateForChest56();
+    const catalog=Array.isArray(window.CHRONO_FINAL_POWERUPS_548)?window.CHRONO_FINAL_POWERUPS_548:[];
+    let pool=catalog.filter(p=>p&&p.rarity===rarityLabel).filter(p=>{try{return !p.show||p.show()}catch{return true}});
+    if(!pool.length)pool=catalog.filter(p=>p&&p.rarity===rarityLabel);
+    if(!pool.length)pool=catalog.filter(Boolean);
+    if(!pool.length)return null;
+    const total=pool.reduce((sum,p)=>sum+Math.max(0.001,N(p.weight||1)),0)||1;
+    let roll=Math.random()*total;
+    for(const p of pool){roll-=Math.max(0.001,N(p.weight||1));if(roll<=0)return p;}
+    return pool[pool.length-1];
+  }
+  function powerupReward56(rarity){
+    ensureCatalogStateForChest56();
+    const label=CHEST_RARITY_TO_CATALOG56[rarity]||'RARO';
+    const p=pickCatalogPower56(label);
+    if(!p)return {icon:'✨',title:'Power-up indisponível',desc:'Nenhum power-up válido foi encontrado no catálogo final.',kind:'power'};
+    try{p.apply?.();}catch(e){console.warn('Power-up do catálogo no Baú Chronal falhou',p,e)}
+    try{game.upgrades.powerPicks548[p.id]=N(game.upgrades.powerPicks548[p.id])+1;}catch{}
+    unlockCatalogPower56(p);
+    addCatalogTag56(p.tag||'geral');
+    game.upgrades.lifesteal=Math.min(.035,N(game.upgrades.lifesteal));
+    return {icon:'✨',title:p.name,desc:`${p.desc} • Catálogo ${label}.`,kind:'power'};
+  }
+  function applyChestReward56(type,rarity){
+    if(type==='gold'){
+      const ranges={common:[5,20],rare:[25,70],epic:[55,150],legendary:[65,200],mythic:[70,300]}[rarity]||[5,20];
+      const amt=weightedAmount56(ranges[0],ranges[1],2.75);game.gold=N(game.gold)+amt;return {icon:'🪙',title:`+${amt} ouro`,desc:'Adicionado ao ouro da run.',kind:'gold'};
+    }
+    if(type==='relic'){
+      const ranges={common:[1,3],rare:[3,5],epic:[4,10],legendary:[11,25],mythic:[35,60]}[rarity]||[1,3];
+      const amt=weightedAmount56(ranges[0],ranges[1],2.35);addRelics56(amt);return {icon:'🜂',title:`+${amt} relíquias`,desc:'Progresso permanente recebido.',kind:'relic'};
+    }
+    if(type==='rarePower')return powerupReward56('rare');
+    if(type==='epicPower')return powerupReward56('epic');
+    if(type==='legendaryPower')return powerupReward56('legendary');
+    if(type==='mythicPower')return powerupReward56('mythic');
+    if(type==='key'){
+      const ranges={rare:[1,1],epic:[2,3],legendary:[3,4],mythic:[4,8]}[rarity]||[1,1];
+      const amt=weightedAmount56(ranges[0],ranges[1],2.15);addAwakeningKeys56(amt);return {icon:'🗝️',title:`+${amt} chave${amt>1?'s':''} de Awakening`,desc:'Usada nas missões de awakening.',kind:'key'};
+    }
+    if(type==='chrono'){
+      const ranges={epic:[1,1],legendary:[2,4],mythic:[5,10]}[rarity]||[1,1];
+      const amt=weightedAmount56(ranges[0],ranges[1],2.15);addChrono56(amt);return {icon:'✦',title:`+${amt} Fragmento${amt>1?'s':''} Chrono`,desc:'Recurso raro da progressão.',kind:'chrono'};
+    }
+    if(type==='secret'){
+      const m=readMeta56();m.secretChronalChest56=true;writeMeta56(m);return {icon:'❔',title:'Algo secreto...',desc:'Você ganhou algo secreto, mas ainda está em desenvolvimento.',kind:'secret'};
+    }
+    return applyChestReward56('gold',rarity);
+  }
+  function pickChestRewardType56(rarity){
+    const table={
+      common:[['gold',70],['relic',20],['rarePower',10]],
+      rare:[['gold',60],['relic',25],['epicPower',3],['key',2]],
+      epic:[['gold',45],['relic',35],['legendaryPower',10],['key',8],['chrono',2]],
+      legendary:[['gold',30],['relic',45],['mythicPower',5],['key',15],['chrono',5]],
+      mythic:[['gold',10],['relic',45],['key',20],['chrono',15],['secret',10]]
+    }[rarity]||[];
+    let total=table.reduce((s,x)=>s+x[1],0), r=Math.random()*Math.max(100,total), acc=0;
+    for(const [type,w] of table){acc+=w;if(r<acc)return type;}
+    return table[0]?.[0]||'gold';
+  }
+
+  function resetChestViewport56(){
+    try{
+      overlay.classList.add('chestMode56');
+      overlay.scrollTop=0;
+      overlayCard.scrollTop=0;
+      document.documentElement.scrollTop=0;
+      document.body.scrollTop=0;
+    }catch{}
+    try{requestAnimationFrame(()=>{overlay.scrollTop=0;overlayCard.scrollTop=0;});}catch{}
+  }
+
+  function openChestRewards56(state){
+    const meta=RARITIES56[state.rarity], rewards=[];
+    for(let i=0;i<3;i++)rewards.push(applyChestReward56(pickChestRewardType56(state.rarity),state.rarity));
+    try{updateHUD?.();ensureLuckyBadge56();}catch{}
+    overlay.classList.remove('hidden');
+    overlayCard.className='card chestStage56 chestRewardStage56 rarity-'+state.rarity;
+    overlayCard.style.setProperty('--c',meta.color);
+    resetChestViewport56();
+    overlayCard.innerHTML=`
+      <h1>BAÚ CHRONAL ABERTO</h1>
+      <p class="shopSub56">Raridade final: <span class="chestRarity56">${meta.emoji} ${meta.name}</span></p>
+      <div class="rewardGrid56">
+        ${rewards.map(r=>`<div class="rewardCard56" style="--c:${meta.color}"><i>${r.icon}</i><strong>${esc56(r.title)}</strong><span>${esc56(r.desc)}</span></div>`).join('')}
+      </div>
+      <button class="main-btn continue56" id="backShop56">Voltar para loja</button>`;
+    resetChestViewport56();
+    $('#backShop56').onclick=()=>{try{overlay.classList.remove('chestMode56');}catch{};openShopMenu();};
+  }
+  function openChronalChest56(){
+    game.running=false;game.betweenWaves=true;
+    const state={rarity:'common',used:0,animating:false,readyOpen:false,rollingTo:null,lastChanged:false};
+    function render(){
+      const meta=RARITIES56[state.rarity];
+      overlay.classList.remove('hidden');
+      overlayCard.className='card chestStage56 rarity-'+state.rarity;
+      overlayCard.style.setProperty('--c',meta.color);
+      resetChestViewport56();
+      const hidden=state.rarity==='mythic';
+      const msg=state.readyOpen||state.used>=5||state.rarity==='mythic'?'Clique para abrir!':(state.lastChanged?'Raridade aumentou!':'Me Clique!');
+      overlayCard.innerHTML=`
+        <h1>BAÚ CHRONAL</h1>
+        <p class="shopSub56">Clique no baú para tentar aumentar a raridade.</p>
+        <div class="chestRarity56">${meta.emoji} ${meta.name}</div>
+        <div class="chestBox56 rarity-${state.rarity} ${state.lastChanged?'rarityUp56':''}" id="chestBox56" data-rarity="${state.rarity}"><div class="chestLid56"></div><div class="chestBase56"></div><div class="chestLock56"></div></div>
+        <div class="chestPrompt56">${msg}</div>
+        <div class="orbs56">${Array.from({length:5},(_,i)=>`<i class="orb56 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div>
+        <p class="muted">Raro 30% • Épico 15% • Lendário 5% • Mítico 1.5%</p>`;
+      resetChestViewport56();
+      const box=$('#chestBox56');if(box)box.onclick=click;
+      if(state.lastChanged){
+        setTimeout(()=>{state.lastChanged=false;const b=$('#chestBox56');if(b)b.classList.remove('rarityUp56');},700);
+      }
+    }
+    function click(){
+      if(state.animating)return;
+      if(state.readyOpen||state.used>=5||state.rarity==='mythic'){
+        const box=$('#chestBox56');if(box)box.classList.add('open');setTimeout(()=>openChestRewards56(state),660);return;
+      }
+      state.animating=true;state.used++;
+      const before=state.rarity;
+      const rolled=rollRarityUpgrade56();
+      const next=higherRarity56(before,rolled);
+      const box=$('#chestBox56');
+      if(box){
+        box.classList.remove('shake','rarityUp56');
+        void box.offsetWidth;
+        box.classList.add('shake');
+      }
+      const prompt=$('.chestPrompt56');if(prompt)prompt.textContent='...';
+      setTimeout(()=>{
+        state.rarity=next;
+        state.animating=false;
+        state.lastChanged=before!==next;
+        if(state.rarity==='mythic'||state.used>=5)state.readyOpen=true;
+        render();
+        if(before!==state.rarity){
+          try{addFloatingText(W/2,H/2-90,RARITIES56[state.rarity].name,RARITIES56[state.rarity].color,22)}catch{}
+        }
+      },640);
+    }
+    render();
+  }
+
+  function spawnChronoLoot56(x,y,amount=1){
+    if(!game)return;
+    game.loot=game.loot||[];
+    game.loot.push({kind:'chronoFragment',x,y,r:10,value:amount,pulse:Math.random()*Math.PI*2});
+  }
+
+  const prevReset56=window.resetGame||globalThis.resetGame;
+  if(typeof prevReset56==='function'){
+    window.resetGame=function(classKey){const r=prevReset56.apply(this,arguments);try{ensureShopState56();game.luckyPotion56=null;game.__goldConverted56=false;game.shopCounts.luckyPotion=0;game.shopCounts.chronoChest=0;game.__shopWaveForChest56=null;game.shopCounts.relicTrade=N(game.shopCounts.relicTrade);game.shopLimits.relicTrade=4;ensureLuckyBadge56();}catch(e){console.warn('Reset loja 5.6 falhou',e)}return r;};
+    try{if(typeof resetGame!=='undefined')resetGame=window.resetGame;}catch{}
+  }
+
+  const prevUpdateHUD56=window.updateHUD||globalThis.updateHUD;
+  if(typeof prevUpdateHUD56==='function'){
+    window.updateHUD=function(){const r=prevUpdateHUD56.apply(this,arguments);try{ensureLuckyBadge56();}catch{}return r;};
+    try{if(typeof updateHUD!=='undefined')updateHUD=window.updateHUD;}catch{}
+  }
+
+  const prevEnemyDeath56=window.enemyDeath||globalThis.enemyDeath;
+  if(typeof prevEnemyDeath56==='function'){
+    window.enemyDeath=function(index,e){
+      const wasBoss=!!(e&&(e.type==='boss'||e.bossType));const x=N(e?.x),y=N(e?.y);
+      const r=prevEnemyDeath56.apply(this,arguments);
+      try{
+        if(wasBoss&&game&&luckyActive56()){
+          const drops=[];
+          if(Math.random()<.10){if(typeof spawnRelicShard==='function')spawnRelicShard(x+18,y,1);else addRelics56(1);drops.push('RELÍQUIA')}
+          if(Math.random()<.10){spawnChronoLoot56(x-18,y,1);drops.push('FRAGMENTO')}
+          if(Math.random()<.10){addAwakeningKeys56(1);drops.push('CHAVE')}
+          if(drops.length){try{addFloatingText(x,y-54,'SORTUDO: '+drops.join(' + '),'#86ffb0',16);addRing(x,y,'#86ffb0',78,4)}catch{}}
+        }
+      }catch(err){console.warn('Sorte 5.6 boss drop falhou',err)}
+      return r;
+    };
+    try{if(typeof enemyDeath!=='undefined')enemyDeath=window.enemyDeath;}catch{}
+  }
+
+  const prevSpawnMini56=window.spawnMiniTurret||globalThis.spawnMiniTurret;
+  function randomTurretSpot56(){
+    const safe=(p)=>{
+      if(!p)return false;
+      if(game?.player&&Math.hypot(p.x-game.player.x,p.y-game.player.y)<170)return false;
+      try{
+        if(game?.mapDecor?.obstacles&&typeof collideCircleRect==='function'){
+          const probe={x:p.x,y:p.y,r:18};
+          for(const o of game.mapDecor.obstacles){if(collideCircleRect(probe,o))return false;}
+        }
+      }catch{}
+      return true;
+    };
+    let p={x:W/2,y:H/2};
+    for(let i=0;i<42;i++){
+      p={x:Math.random()*(W-120)+60,y:Math.random()*(H-120)+60};
+      if(safe(p))return p;
+    }
+    return {x:Math.random()*(W-120)+60,y:Math.random()*(H-120)+60};
+  }
+  window.spawnMiniTurret=function(x,y){
+    ensureShopState56();
+    const spot=randomTurretSpot56();
+    const t={x:clamp56(spot.x,42,W-42),y:clamp56(spot.y,42,H-42),r:11,fireCd:Math.random()*.22,pulse:0,range:355,damage:10.5,color:'#ffd166',accent:'#7af1ff',shopBuff56:true};
+    game.miniTurrets.push(t);
+    try{addFloatingText(t.x,t.y-26,'TORRETA MK-II','#ffd166',15);if(typeof eclipseNotice==='function')eclipseNotice('Torreta MK-II instalada em ponto aleatório','#ffd166',14);}catch{}
+    return t;
+  };
+  try{if(typeof spawnMiniTurret!=='undefined')spawnMiniTurret=window.spawnMiniTurret;}catch{}
+
+  const prevUpdateDrones56=window.updateDrones||globalThis.updateDrones;
+  if(typeof prevUpdateDrones56==='function'){
+    window.updateDrones=function(dt){
+      let shopTurrets=[];
+      try{
+        if(game?.miniTurrets?.length){
+          shopTurrets=game.miniTurrets.filter(t=>t&&t.shopBuff56);
+          if(shopTurrets.length)game.miniTurrets=game.miniTurrets.filter(t=>!t.shopBuff56);
+        }
+      }catch{}
+      const r=prevUpdateDrones56.apply(this,arguments);
+      try{
+        if(shopTurrets.length)game.miniTurrets=(game.miniTurrets||[]).concat(shopTurrets);
+        for(const t of shopTurrets){
+          t.pulse=N(t.pulse)+dt*4.2;
+          t.fireCd=Math.max(0,N(t.fireCd)-dt);
+          if(t.fireCd<=0){
+            let target=null,minD=Infinity;
+            for(const e of (game.enemies||[])){
+              const dd=Math.hypot(e.x-t.x,e.y-t.y);
+              if(dd<N(t.range||355)&&dd<minD){target=e;minD=dd;}
+            }
+            if(target){
+              const a=Math.atan2(target.y-t.y,target.x-t.x);
+              game.bullets=game.bullets||[];
+              game.bullets.push({x:t.x,y:t.y,vx:Math.cos(a)*585,vy:Math.sin(a)*585,r:3.2,life:.9,damage:N(t.damage||10.5)*N(game.upgrades?.damage||1),pierce:0,weaponKey:'pulse',explosive:false});
+              t.fireCd=.50;
+              try{addParticles(t.x,t.y,t.accent||'#7af1ff',4,.35)}catch{}
+            }
+          }
+        }
+      }catch(err){console.warn('Update MK-II 5.7 falhou',err)}
+      return r;
+    };
+    try{if(typeof updateDrones!=='undefined')updateDrones=window.updateDrones;}catch{}
+  }
+  const prevDrawDrones56=window.drawDrones||globalThis.drawDrones;
+  if(typeof prevDrawDrones56==='function'){
+    window.drawDrones=function(){
+      let shopTurrets=[];
+      try{
+        if(game?.miniTurrets?.length){
+          shopTurrets=game.miniTurrets.filter(t=>t&&t.shopBuff56);
+          if(shopTurrets.length)game.miniTurrets=game.miniTurrets.filter(t=>!t.shopBuff56);
+        }
+      }catch{}
+      const r=prevDrawDrones56.apply(this,arguments);
+      try{
+        if(shopTurrets.length)game.miniTurrets=(game.miniTurrets||[]).concat(shopTurrets);
+        for(const t of shopTurrets){ctx.save();ctx.translate(t.x,t.y);ctx.rotate(t.pulse||0);ctx.shadowBlur=22;ctx.shadowColor=t.accent||'#7af1ff';ctx.fillStyle='rgba(5,12,24,.94)';ctx.strokeStyle=t.accent||'#7af1ff';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-13,-13,26,26,8);ctx.fill();ctx.stroke();ctx.fillStyle=t.color||'#ffd166';ctx.beginPath();ctx.arc(0,0,6,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.72)';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(-18,0);ctx.lineTo(18,0);ctx.moveTo(0,-18);ctx.lineTo(0,18);ctx.stroke();ctx.restore();}
+      }catch{}
+      return r;
+    };
+    try{if(typeof drawDrones!=='undefined')drawDrones=window.drawDrones;}catch{}
+  }
+
+  const prevOpenShop56=window.openShopMenu||globalThis.openShopMenu;
+  window.openShopMenu=function(){
+    if(game&&(game.riftMode50||game.riftMode507||game.riftMode509)&&typeof prevOpenShop56==='function')return prevOpenShop56.apply(this,arguments);
+    if(!game)return;
+    addShopStyle56();ensureShopState56();
+    if(game.__shopWaveForChest56!==N(game.wave)){game.__shopWaveForChest56=N(game.wave);game.shopCounts.chronoChest=0;}
+    game.running=false;game.betweenWaves=true;ensureLuckyBadge56();
+    const c=game.shopCounts, lim=game.shopLimits, relicCost=price56(130*Math.pow(1.5,N(c.relicTrade)));
+    const items={
+      player:[
+        {key:'hpMax',icon:'❤️',tag:'STATUS',color:'#ff6b8a',name:'HP máximo +2.5%',desc:'Aumenta o HP máximo atual em 2.5% e cura a diferença. Preço mantém a escala antiga.',cost:price56(64*Math.pow(1.48,N(c.hpMax))),available:N(c.hpMax)<N(lim.hpMax||8),effect:()=>{const old=N(game.player.maxHp);const add=Math.max(1,Math.round(old*.025));game.player.maxHp=old+add;game.player.hp=N(game.player.hp)+add;c.hpMax=N(c.hpMax)+1}},
+        {key:'focusMax',icon:'🔮',tag:'STATUS',color:'#9bedff',name:'Foco máximo +5%',desc:'Aumenta o foco máximo atual em 5% e também preenche esse bônus.',cost:price56(42*Math.pow(1.32,N(c.focusMax))),available:N(c.focusMax)<N(lim.focusMax||6),effect:()=>{const old=N(game.player.maxFocus);const add=Math.max(1,Math.round(old*.05));game.player.maxFocus=old+add;game.player.focus=N(game.player.focus)+add;c.focusMax=N(c.focusMax)+1}},
+        {key:'damageBoost',icon:'💥',tag:'STATUS',color:'#ffb86b',name:'Dano +10%',desc:'Aumenta o dano global da run em 10%. Mais controlado e balanceado.',cost:price56(52*Math.pow(1.45,N(c.damageBoost))),available:N(c.damageBoost)<N(lim.damageBoost||6),effect:()=>{game.upgrades.damage=N(game.upgrades.damage||1)+.10;c.damageBoost=N(c.damageBoost)+1}},
+        {key:'armorBoost',icon:'🛡️',tag:'STATUS',color:'#86ffb0',name:'Armadura +8%',desc:'Reduz o dano recebido. Mantido como estava.',cost:price56(46*Math.pow(1.40,N(c.armorBoost))),available:N(c.armorBoost)<N(lim.armorBoost||5),effect:()=>{game.upgrades.armor=N(game.upgrades.armor)+.08;c.armorBoost=N(c.armorBoost)+1}},
+        {key:'dashServo',icon:'💨',tag:'MOBILIDADE',color:'#ffd166',name:'Recarga do Dash -10%',desc:'Reduz em cerca de 10% o tempo necessário para o dash voltar.',cost:price56(42*Math.pow(1.33,N(c.dashServo))),available:N(c.dashServo)<N(lim.dashServo||6),effect:()=>{game.upgrades.dashRegen=N(game.upgrades.dashRegen||1)+.303;c.dashServo=N(c.dashServo)+1}}
+      ],
+      rare:[
+        {key:'turretPack',icon:'🔧',tag:'RARO',color:'#7af1ff',name:'Torreta Permanente MK-II',desc:'Instala uma torreta permanente melhorada em um ponto aleatório do mapa.',cost:price56(100*Math.pow(1.44,N(c.turretPack))),available:N(c.turretPack)<N(lim.turretPack||3),effect:()=>{spawnMiniTurret();c.turretPack=N(c.turretPack)+1}},
+        {key:'relicTrade',icon:'🜂',tag:'PERMANENTE',color:'#ffb8ff',name:'Pacote de Relíquias +3',desc:'Compra +3 relíquias permanentes. Pode ser comprado 4 vezes e o preço sobe a cada compra.',cost:relicCost,available:N(c.relicTrade)<4,effect:()=>{addRelics56(3);c.relicTrade=N(c.relicTrade)+1}},
+        {key:'luckyPotion',icon:'🍀',tag:'ÚNICA',color:'#86ffb0',name:'Poção de Sorte',desc:'Se sentindo sortudo? Você pode comprar apenas uma vez, mas vai durar 10 waves.',cost:price56(600),available:N(c.luckyPotion)<1,effect:()=>{c.luckyPotion=1;game.luckyPotion56={startWave:N(game.wave)+1,untilWave:N(game.wave)+10};ensureLuckyBadge56();try{addFloatingText(game.player.x,game.player.y-34,'SORTUDO!','#86ffb0',20)}catch{}}},
+        {key:'chronoChest',icon:'🧰',tag:'RNG',color:'#ffd166',name:'Baú Chronal',desc:`Custa 150 ouro. Limite desta loja: ${Math.max(0,4-N(c.chronoChest))}/4 baús. Dá 3 recompensas.`,cost:price56(150),available:N(c.chronoChest)<4,effect:()=>{c.chronoChest=N(c.chronoChest)+1;openChronalChest56()},noRefresh:true}
+      ]
+    };
+    function card(it,i,group){return `<button class="shopItem56" data-shop56="${group}:${i}" ${it.available?'':'disabled'} style="--co:${it.color}"><span class="icon56">${it.icon}</span><small>${it.tag}</small><strong>${esc56(it.name)}</strong><span>${esc56(it.desc)}</span><em class="cost56">🪙 ${it.cost} ouro</em></button>`;}
+    const luckyText=game.luckyPotion56&&luckyRemaining56()>0?`<span class="luck">🍀 <b>Sortudo ${luckyRemaining56()} waves</b></span>`:'';
+    overlay.classList.remove('hidden');overlayCard.className='card shop56';overlayCard.innerHTML=`
+      <div class="shopTop56"><div><h1>LOJA CHRONAL 🛒</h1><p class="shopSub56">Boss derrotado. Sem armas na loja: agora ela foca em status, recursos e sorte.</p></div><div class="wallet56"><span>🪙 Ouro <b>${N(game.gold)}</b></span><span class="relic">🜂 Relíquias <b>${N(game.meta?.relicShards??readMeta56().relicShards)}</b></span>${luckyText}</div></div>
+      <div class="shopSection56">Aprimoramentos do jogador</div><div class="shopGrid56">${items.player.map((it,i)=>card(it,i,'player')).join('')}</div>
+      <div class="shopSection56">Raros da loja & sorte</div><div class="shopGrid56">${items.rare.map((it,i)=>card(it,i,'rare')).join('')}</div>
+      <div class="shopActions56"><button class="main-btn continue56" id="continueShop56">Continuar →</button></div>
+      <div class="shopHint56">O ouro que sobrar no fim da run vira relíquias: 250 ouro = +1 relíquia.</div>`;
+    overlayCard.querySelectorAll('[data-shop56]').forEach(btn=>{
+      const [group,idx]=btn.dataset.shop56.split(':'),it=items[group][Number(idx)];if(!it||!it.available)return;
+      btn.onclick=()=>{if(N(game.gold)<it.cost){try{addFloatingText(W/2,H/2,'SEM OURO','#ff9ba8',20);if(typeof eclipseNotice==='function')eclipseNotice('SEM OURO','#ff9ba8',18)}catch{}return;}game.gold=N(game.gold)-it.cost;it.effect();try{updateHUD?.();ensureLuckyBadge56();}catch{}if(!it.noRefresh)openShopMenu();};
+    });
+    $('#continueShop56').onclick=()=>{overlay.classList.add('hidden');game.running=true;game.betweenWaves=false;game.shopPending=false;game.wave=N(game.wave)+1;startNextWave();ensureLuckyBadge56();};
+  };
+  try{if(typeof openShopMenu!=='undefined')openShopMenu=window.openShopMenu;}catch{}
+
+  const prevGameOver56=window.gameOver||globalThis.gameOver;
+  window.gameOver=function(){
+    if(game&&(game.riftMode50||game.riftMode507||game.riftMode509)&&typeof prevGameOver56==='function')return prevGameOver56.apply(this,arguments);
+    if(!game)return;
+    addShopStyle56();ensureShopState56();game.running=false;
+    const m=readMeta56();const finalGold=N(game.gold);let converted=0;
+    if(!game.__goldConverted56){converted=Math.floor(finalGold/250);if(converted>0){m.relicShards=N(m.relicShards)+converted;}game.__goldConverted56=true;}
+    m.highScore=Math.max(N(m.highScore),N(game.score));writeMeta56(m);
+    const p=game.player||{}, high=N(game.score)>=N(m.highScore), lucky=game.luckyPotion56&&luckyRemaining56()>0;
+    overlay.classList.remove('hidden');overlayCard.className='card death-card56';overlayCard.innerHTML=`
+      <div class="deathHero56"><h1>FIM DA RUN 💀</h1><p>${high?'<strong style="color:#ffd166">🏆 NOVO HIGH SCORE!</strong><br>':''}A linha temporal registrou sua build, seus recursos e a conversão final de ouro.</p></div>
+      <div class="deathGrid56">
+        <div class="deathStat56"><small>SCORE</small><b>${N(game.score).toLocaleString()}</b></div><div class="deathStat56"><small>WAVE</small><b>${N(game.wave)}</b></div><div class="deathStat56"><small>KILLS</small><b>${N(game.kills)}</b></div><div class="deathStat56"><small>LEVEL</small><b>${N(game.level)}</b></div><div class="deathStat56"><small>OURO FINAL</small><b>${finalGold}</b></div><div class="deathStat56"><small>RELÍQUIAS</small><b>${N(m.relicShards)}</b></div><div class="deathStat56"><small>CHAVES</small><b>${N(m.awakeningKeys)}</b></div><div class="deathStat56"><small>CHRONO</small><b>${N(m.chronoFragments)}</b></div>
+      </div>
+      <div class="conversion56">🪙 Conversão final: ${finalGold} ouro ⇒ +${converted} relíquia${converted===1?'':'s'} ${converted?'/ adicionadas ao total permanente':''}</div>
+      <div class="build56"><b>Classe:</b> ${esc56(CLASSES?.[game.classKey]?.name||game.classKey)}<br><b>Arma:</b> ${esc56(WEAPONS?.[game.weaponKey]?.name||game.weaponKey)}${lucky?`<br><b>🍀 Sortudo:</b> ainda restavam ${luckyRemaining56()} waves de efeito.`:''}<br><b>HP máx:</b> ${Math.round(N(p.maxHp))} • <b>Foco máx:</b> ${Math.round(N(p.maxFocus))} • <b>Escudo máx:</b> ${Math.round(N(p.maxShield))}<br><b>Dano:</b> ${Math.round(N(game.upgrades?.damage||1)*100)}% • <b>Cadência:</b> ${Math.round(N(game.upgrades?.fireRate||1)*100)}% • <b>Velocidade:</b> ${Math.round(N(game.upgrades?.speed||1)*100)}% • <b>Armadura:</b> ${Math.round(N(game.upgrades?.armor)*100)}%</div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px"><button class="main-btn" id="again56">Jogar novamente</button><button class="main-btn" id="home56" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Menu inicial</button></div>`;
+    $('#again56').onclick=()=>{(window.openClassMenu461||window.openClassMenu)?.();};$('#home56').onclick=()=>{(window.openStartMenu461||window.openStartMenu)?.();};
+  };
+  try{if(typeof gameOver!=='undefined')gameOver=window.gameOver;}catch{}
+
+  try{addShopStyle56();ensureLuckyBadge56();}catch{}
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<style id="chestScrollFix59">
+  .overlay.chestMode56{align-items:center!important;justify-items:center!important;overflow:hidden!important}
+  .overlay.chestMode56 .card.chestStage56{max-height:calc(100vh - 22px)!important;overflow-y:auto!important;overscroll-behavior:contain;scrollbar-gutter:stable;padding-bottom:24px!important;transform:none!important}
+  .overlay.chestMode56 .card.chestStage56:not(.shop56){scroll-behavior:auto!important}
+  .chestBox56.shake{animation:shakeChest56 .64s cubic-bezier(.2,.75,.25,1.25)!important}
+  .chestBox56.rarityUp56{animation:rarityUpPop56 .72s cubic-bezier(.2,.85,.22,1.25)!important}
+  .chestBox56.rarityUp56 .chestLid56{animation:lidSpark56 .72s ease!important}
+  .chestPrompt56{min-height:32px}
+  @keyframes rarityUpPop56{0%{transform:scale(.96)}35%{transform:scale(1.14) translateY(-8px)}65%{transform:scale(1.03)}100%{transform:scale(1)}}
+  @keyframes lidSpark56{0%,100%{filter:brightness(1)}45%{filter:brightness(1.65) saturate(1.35)}}
+  @media(max-width:720px){.overlay.chestMode56 .card.chestStage56{width:98vw!important;max-height:calc(100vh - 10px)!important;padding:18px!important}.chestPrompt56{font-size:18px!important}}
+</style>
+
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.8.1 — Loja das Fissuras + Baú Chronal Épico
+   - Espólios reajustados
+   - Baú Chronal das Fissuras começa Épico com 3 tentativas
+   - Info dos personagens força tela mais recente da Maestria
+   - Núcleo Vampírico: 1% do HP máximo por kill
+   ──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoRiftStoreChest581)return; window.__chronoRiftStoreChest581=true;
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const CHEST_UNLOCK_KEY=SAVE+'_power_catalog_unlocks_544';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const q=s=>document.querySelector(s);
+  function curGame(){try{return game||null}catch{return null}}
+  function meta(){let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{m={}};m.relicShards=N(m.relicShards);m.chronoFragments=N(m.chronoFragments);m.awakeningKeys=N(m.awakeningKeys);m.riftSparks=N(m.riftSparks);m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected);m.riftPerm=m.riftPerm||{};return m;}
+  function save(m){m=m||{};m.relicShards=N(m.relicShards);m.chronoFragments=N(m.chronoFragments);m.awakeningKeys=N(m.awakeningKeys);m.riftSparks=N(m.riftSparks);m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected);m.riftPerm=m.riftPerm||{};localStorage.setItem(SAVE,JSON.stringify(m));try{const g=curGame();if(g)g.meta=Object.assign(g.meta||{},m);}catch{}return m;}
+  function addRelics(n){const m=meta();m.relicShards=N(m.relicShards)+N(n);save(m);return m.relicShards;}
+  function addChrono(n){const m=meta();m.chronoFragments=N(m.chronoFragments)+N(n);m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected)+N(n);save(m);return m.chronoFragments;}
+  function addAwakeningKeys(n){const m=meta();m.awakeningKeys=N(m.awakeningKeys)+N(n);save(m);return m.awakeningKeys;}
+  function weightedAmount(a,b,skew=2.45){a=Math.floor(N(a));b=Math.floor(N(b,a));if(b<=a)return a;const t=Math.pow(Math.random(),skew);return a+Math.floor((b-a+1)*t);}
+  function ensureStyle(){
+    if(document.getElementById('riftStoreChest581Style'))return;
+    const st=document.createElement('style');st.id='riftStoreChest581Style';st.textContent=`
+      .riftStore581{max-width:1040px!important;background:radial-gradient(circle at 50% -8%,rgba(255,209,102,.18),transparent 32%),radial-gradient(circle at 15% 102%,rgba(98,255,155,.13),transparent 33%),linear-gradient(150deg,#040510,#11091d 55%,#050714)!important;border:1px solid rgba(255,209,102,.25)!important;box-shadow:0 0 90px rgba(255,209,102,.10),0 30px 110px rgba(0,0,0,.68)!important;}
+      .riftStoreHeader581{text-align:center;margin-bottom:18px}.riftStoreHeader581 h1{font-family:Orbitron,sans-serif;font-size:33px;background:linear-gradient(135deg,#ffd166,#d4a0ff,#62ff9b);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.riftStoreHeader581 p{color:#b9c8ef;margin:8px auto 10px;max-width:720px}.riftSparkTotal581{display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:9px 18px;border-radius:999px;border:1px solid rgba(255,209,102,.28);background:rgba(255,209,102,.09);color:#ffd166;font-family:Orbitron,sans-serif;font-size:13px;box-shadow:0 0 22px rgba(255,209,102,.10)}
+      .riftStoreCat581{display:flex;align-items:center;gap:10px;text-align:left;margin:20px 0 10px;font-family:Orbitron,sans-serif;color:#ffd166;letter-spacing:.12em;font-size:13px}.riftStoreCat581:before,.riftStoreCat581:after{content:'';height:1px;flex:1;background:linear-gradient(90deg,transparent,rgba(255,209,102,.32),transparent)}
+      .riftStoreGrid581{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}.riftStoreBuy581{text-align:left;padding:15px;border-radius:19px;background:radial-gradient(circle at 20% 0%,color-mix(in srgb,var(--c),transparent 82%),transparent 40%),linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.022));border:1px solid color-mix(in srgb,var(--c),transparent 58%);color:#eaf2ff;min-height:128px;position:relative;overflow:hidden}.riftStoreBuy581:before{content:'';position:absolute;inset:-60% -80% auto auto;width:170px;height:170px;border-radius:50%;background:color-mix(in srgb,var(--c),transparent 84%);filter:blur(3px)}.riftStoreBuy581 strong{display:block;color:#fff;font-size:15px;margin-bottom:5px;position:relative}.riftStoreBuy581 span{display:block;color:#aebfe8;font-size:12px;line-height:1.35;position:relative}.riftStoreBuy581 .cost{margin-top:11px;color:var(--c);font-family:Orbitron,sans-serif;font-size:11px;position:relative}.riftStoreBuy581:hover{box-shadow:0 0 24px color-mix(in srgb,var(--c),transparent 78%);transform:translateY(-2px)}.riftStoreBuy581:disabled{opacity:.42;filter:grayscale(.5);cursor:not-allowed}.riftStoreBtns581{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+      .riftChestStage581{background:radial-gradient(circle at 50% 0%,color-mix(in srgb,var(--c),transparent 78%),transparent 36%),linear-gradient(150deg,#04050f,#10071b 62%,#050816)!important;border:1px solid color-mix(in srgb,var(--c),transparent 58%)!important;max-width:760px!important;overflow:hidden!important}.riftChestStage581 h1{background:linear-gradient(135deg,var(--c),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.riftChestSub581{color:#bdc9ef;margin-bottom:10px!important}.riftChestRarity581{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border-radius:999px;background:color-mix(in srgb,var(--c),transparent 86%);border:1px solid color-mix(in srgb,var(--c),transparent 45%);color:var(--c);font:900 13px Orbitron,sans-serif;margin:6px 0 10px;box-shadow:0 0 24px color-mix(in srgb,var(--c),transparent 78%)}
+      .riftChestBox581{width:190px;height:145px;margin:18px auto 10px;position:relative;cursor:pointer;filter:drop-shadow(0 0 36px color-mix(in srgb,var(--c),transparent 55%));transform-origin:50% 90%}.riftChestBox581:before{content:'';position:absolute;left:50%;top:51%;width:260px;height:112px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c),transparent 72%),transparent 66%);z-index:-2;animation:riftAura581 1.7s infinite ease-in-out}.riftChestLid581{position:absolute;left:22px;right:22px;top:14px;height:52px;border-radius:24px 24px 9px 9px;background:linear-gradient(135deg,#fff6bf,var(--c) 32%,#35213e);border:2px solid rgba(255,255,255,.24);box-shadow:inset 0 -12px 18px rgba(0,0,0,.28)}.riftChestBase581{position:absolute;left:14px;right:14px;bottom:10px;height:76px;border-radius:16px 16px 24px 24px;background:linear-gradient(150deg,#151729,var(--c) 45%,#050711);border:2px solid rgba(255,255,255,.22);box-shadow:inset 0 0 24px rgba(0,0,0,.42)}.riftChestLock581{position:absolute;left:50%;top:70px;transform:translateX(-50%);width:34px;height:42px;border-radius:10px;background:linear-gradient(135deg,#fff2b8,#ffd166);box-shadow:0 0 18px rgba(255,209,102,.55)}.riftChestBox581.shake581{animation:riftChestShake581 .64s cubic-bezier(.34,1.56,.64,1)}.riftChestBox581.up581{animation:riftChestPop581 .75s ease-out}.riftChestBox581.open581 .riftChestLid581{animation:riftLidOpen581 .65s ease forwards}.riftChestBox581.open581 .riftChestBase581{filter:brightness(1.35)}
+      .riftChestPrompt581{font:900 17px Orbitron,sans-serif;color:#fff;margin:12px 0 10px;text-shadow:0 0 14px var(--c)}.riftOrbs581{display:flex;justify-content:center;gap:8px;margin:6px 0 10px}.riftOrb581{width:14px;height:14px;border-radius:50%;border:1px solid color-mix(in srgb,var(--c),transparent 38%);background:var(--c);box-shadow:0 0 14px color-mix(in srgb,var(--c),transparent 40%)}.riftOrb581.used{background:transparent;opacity:.35}.riftOrb581.hide{display:none}.riftRewardGrid581{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:18px 0}.riftRewardCard581{padding:15px;border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid color-mix(in srgb,var(--c),transparent 62%);box-shadow:0 0 25px color-mix(in srgb,var(--c),transparent 88%)}.riftRewardCard581 i{font-style:normal;font-size:28px;display:block;margin-bottom:7px}.riftRewardCard581 strong{display:block;color:#fff}.riftRewardCard581 span{display:block;font-size:12px;line-height:1.35;color:#b8c8ee;margin-top:5px}
+      .riftChestStage581.rarity-epic .riftChestBox581:after{content:'';position:absolute;inset:-16px;border-radius:50%;border:1px solid rgba(183,124,255,.34);animation:riftSpin581 2.4s linear infinite}.riftChestStage581.rarity-legendary .riftChestBox581:after{content:'✦ ✦ ✦';position:absolute;left:50%;top:-13px;transform:translateX(-50%);color:#ffd166;letter-spacing:18px;text-shadow:0 0 12px #ffd166;animation:riftFloat581 1.2s infinite alternate}.riftChestStage581.rarity-mythic .riftChestBox581:after{content:'';position:absolute;inset:-22px;border-radius:40%;background:conic-gradient(from 0deg,transparent,#ff304f,transparent,#ffffff33,transparent);z-index:-1;animation:riftSpin581 1.05s linear infinite;filter:blur(2px)}
+      @keyframes riftAura581{50%{transform:translate(-50%,-50%) scale(1.12);opacity:.72}}@keyframes riftChestShake581{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-10px) rotate(-7deg)}30%{transform:translateX(9px) rotate(6deg)}45%{transform:translateX(-7px) rotate(-4deg)}60%{transform:translateX(6px) rotate(3deg)}75%{transform:translateX(-3px) rotate(-2deg)}}@keyframes riftChestPop581{0%{transform:scale(1)}40%{transform:scale(1.16);filter:brightness(1.55) drop-shadow(0 0 46px var(--c))}100%{transform:scale(1)}}@keyframes riftLidOpen581{to{transform:translateY(-36px) rotate(-8deg)}}@keyframes riftSpin581{to{transform:rotate(360deg)}}@keyframes riftFloat581{to{transform:translateX(-50%) translateY(-8px);opacity:.7}}
+    `;document.head.appendChild(st);
+  }
+  const RARITIES={common:{name:'COMUM',color:'#86a2bd',rank:0,emoji:'📦'},rare:{name:'RARO',color:'#4ce0b3',rank:1,emoji:'🟩'},epic:{name:'ÉPICO',color:'#b77cff',rank:2,emoji:'🟪'},legendary:{name:'LENDÁRIO',color:'#ffd166',rank:3,emoji:'🟨'},mythic:{name:'MÍTICO',color:'#ff304f',rank:4,emoji:'🟥'}};
+  function higher(a,b){return RARITIES[b].rank>RARITIES[a].rank?b:a;}
+  function rollUpgrade(){const r=Math.random();if(r<0.015)return 'mythic';if(r<0.065)return 'legendary';if(r<0.215)return 'epic';if(r<0.515)return 'rare';return 'common';}
+  const RARITY_TO_CATALOG={rare:'RARO',epic:'ÉPICO',legendary:'LENDÁRIO',mythic:'MÍTICO'};
+  function ensureCatalogState(){const g=curGame();if(!g)return;g.upgrades=g.upgrades||{};g.upgrades.uniquePicks37=g.upgrades.uniquePicks37||{};g.upgrades.powerPicks548=g.upgrades.powerPicks548||{};g.upgrades.synergy529=g.upgrades.synergy529||{tags:{},active:{}};g.upgrades.synergy529.tags=g.upgrades.synergy529.tags||{};g.upgrades.synergy529.active=g.upgrades.synergy529.active||{};const fields=['goldDropBonus548','relicDropBonus548','bossRelicBonus548','rareBossDropBonus548','skillHaste548','dashHaste548','dashDistanceBonus548','dashDamageBonus548','turretDamage548'];for(const f of fields)g.upgrades[f]=N(g.upgrades[f]);}
+  function unlockCatalogPower(p){if(!p)return;try{const u=JSON.parse(localStorage.getItem(CHEST_UNLOCK_KEY)||'{}')||{};u[p.id||String(p.name||'power').toLowerCase().replace(/\s+/g,'_')]=true;localStorage.setItem(CHEST_UNLOCK_KEY,JSON.stringify(u));}catch{}}
+  function addCatalogTag(tag){const g=curGame();if(!g)return;ensureCatalogState();tag=tag||'geral';const s=g.upgrades.synergy529;s.tags[tag]=N(s.tags[tag])+1;if(s.tags[tag]<3||s.active[tag])return;s.active[tag]=true;if(tag==='precisao'){g.upgrades.precisionSynergy529=true;g.upgrades.critChance=N(g.upgrades.critChance)+.04;g.upgrades.damage=N(g.upgrades.damage||1)+.04;}if(tag==='velocidade'){g.upgrades.speed=N(g.upgrades.speed||1)+.06;g.upgrades.fireRate=N(g.upgrades.fireRate||1)+.06;g.upgrades.archerChargeHaste548=N(g.upgrades.archerChargeHaste548)+.06;}if(tag==='dash'){g.upgrades.dashHaste548=N(g.upgrades.dashHaste548)+.08;g.upgrades.dashDamageBonus548=N(g.upgrades.dashDamageBonus548)+.05;}if(tag==='foco'){g.upgrades.focusRegen=N(g.upgrades.focusRegen||1)+.18;g.upgrades.skillHaste548=N(g.upgrades.skillHaste548)+.04;}if(tag==='escudo'){g.upgrades.armor=N(g.upgrades.armor)+.06;g.upgrades.guardianSynergy529=true;}if(tag==='explosao'){g.upgrades.explosionSynergy529=true;g.upgrades.unstableAmmo529=N(g.upgrades.unstableAmmo529)+1;}if(tag==='veneno'){g.upgrades.acidMastery=N(g.upgrades.acidMastery)+.40;}if(tag==='construcao'){g.upgrades.buildSynergy529=true;g.upgrades.turretDamage548=N(g.upgrades.turretDamage548)+.10;}if(tag==='vampirismo'){g.upgrades.chronoBlood529=N(g.upgrades.chronoBlood529)+1;g.upgrades.lifesteal=Math.min(.035,N(g.upgrades.lifesteal)+.003);}if(tag==='economia'){g.upgrades.goldDropBonus548=N(g.upgrades.goldDropBonus548)+.05;g.upgrades.relicDropBonus548=N(g.upgrades.relicDropBonus548)+.02;}if(tag==='tesouro'){g.upgrades.rareBossDropBonus548=N(g.upgrades.rareBossDropBonus548)+.005;}if(tag==='geral'){g.upgrades.damage=N(g.upgrades.damage||1)+.03;g.upgrades.focusRegen=N(g.upgrades.focusRegen||1)+.05;}}
+  function pickCatalogPower(rarityLabel){ensureCatalogState();const catalog=Array.isArray(window.CHRONO_FINAL_POWERUPS_548)?window.CHRONO_FINAL_POWERUPS_548:[];let pool=catalog.filter(p=>p&&p.rarity===rarityLabel).filter(p=>{try{return !p.show||p.show()}catch{return true}});if(!pool.length)pool=catalog.filter(p=>p&&p.rarity===rarityLabel);if(!pool.length)pool=catalog.filter(Boolean);if(!pool.length)return null;const total=pool.reduce((sum,p)=>sum+Math.max(.001,N(p.weight||1)),0)||1;let r=Math.random()*total;for(const p of pool){r-=Math.max(.001,N(p.weight||1));if(r<=0)return p;}return pool[pool.length-1];}
+  function powerupReward(rarity){const g=curGame();const label=RARITY_TO_CATALOG[rarity]||'RARO';const p=pickCatalogPower(label);if(!p)return {icon:'✨',title:'Power-up indisponível',desc:'Nenhum power-up válido foi encontrado no catálogo final.',kind:'power'};try{p.apply?.();}catch(e){console.warn('Power-up do Baú da Fissura falhou',p,e)}try{if(g?.upgrades?.powerPicks548)g.upgrades.powerPicks548[p.id]=N(g.upgrades.powerPicks548[p.id])+1;}catch{}unlockCatalogPower(p);addCatalogTag(p.tag||'geral');try{if(g?.upgrades)g.upgrades.lifesteal=Math.min(.035,N(g.upgrades.lifesteal));}catch{}return {icon:'✨',title:p.name,desc:`${p.desc} • Catálogo ${label}.`,kind:'power'};}
+  function rewardType(rarity){const table={common:[['gold',70],['relic',20],['rarePower',10]],rare:[['gold',60],['relic',25],['epicPower',3],['key',2]],epic:[['gold',45],['relic',35],['legendaryPower',10],['key',8],['chrono',2]],legendary:[['gold',30],['relic',45],['mythicPower',5],['key',15],['chrono',5]],mythic:[['gold',10],['relic',45],['key',20],['chrono',15],['secret',10]]}[rarity]||[];let total=table.reduce((s,x)=>s+x[1],0),r=Math.random()*Math.max(100,total),acc=0;for(const [type,w] of table){acc+=w;if(r<acc)return type;}return table[0]?.[0]||'gold';}
+  function applyReward(type,rarity){const g=curGame();if(type==='gold'){const ranges={common:[5,20],rare:[25,70],epic:[55,150],legendary:[65,200],mythic:[70,300]}[rarity]||[5,20];const amt=weightedAmount(ranges[0],ranges[1],2.75);if(g)g.gold=N(g.gold)+amt;return {icon:'🪙',title:`+${amt} ouro`,desc:'Adicionado ao ouro da run.',kind:'gold'};}if(type==='relic'){const ranges={common:[1,3],rare:[3,5],epic:[4,10],legendary:[11,25],mythic:[35,60]}[rarity]||[1,3];const amt=weightedAmount(ranges[0],ranges[1],2.35);addRelics(amt);return {icon:'🜂',title:`+${amt} relíquias`,desc:'Progresso permanente recebido.',kind:'relic'};}if(type==='rarePower')return powerupReward('rare');if(type==='epicPower')return powerupReward('epic');if(type==='legendaryPower')return powerupReward('legendary');if(type==='mythicPower')return powerupReward('mythic');if(type==='key'){const ranges={rare:[1,1],epic:[2,3],legendary:[3,4],mythic:[4,8]}[rarity]||[1,1];const amt=weightedAmount(ranges[0],ranges[1],2.15);addAwakeningKeys(amt);return {icon:'🗝️',title:`+${amt} chave${amt>1?'s':''} de Awakening`,desc:'Usada nas missões de awakening.',kind:'key'};}if(type==='chrono'){const ranges={epic:[1,1],legendary:[2,4],mythic:[5,10]}[rarity]||[1,1];const amt=weightedAmount(ranges[0],ranges[1],2.15);addChrono(amt);return {icon:'✦',title:`+${amt} Fragmento${amt>1?'s':''} Chrono`,desc:'Recurso raro da progressão.',kind:'chrono'};}if(type==='secret'){const m=meta();m.secretChronalChest56=true;save(m);return {icon:'❔',title:'Algo secreto...',desc:'Você ganhou algo secreto, mas ainda está em desenvolvimento.',kind:'secret'};}return applyReward('gold',rarity);}
+  function collectStats(){const t=overlayCard?.innerText||'';const get=(label)=>{const re=new RegExp(label+'\\s*\\n?\\s*\\+?(\\d+)','i');const m=t.match(re);return m?N(m[1]):0};const m=meta();return {wave:get('WAVE')||N(curGame()?.wave),closed:get('FISSURAS')||N(curGame()?.rift50?.closed),kills:get('KILLS')||N(curGame()?.kills),gain:get('GANHAS')||get('GANHO')||N(curGame()?.rift50?.lastGain50||curGame()?.rift50?.lastGain507||curGame()?.rift50?.lastGain518),total:N(m.riftSparks)};}
+  function itemHTML(id,name,desc,cost,color){const m=meta(),ok=N(m.riftSparks)>=cost;return `<button class="riftStoreBuy581" data-rift-buy581="${esc(id)}" style="--c:${color}" ${ok?'':'disabled'}><strong>${esc(name)}</strong><span>${esc(desc)}</span><div class="cost">${cost} FAÍSCAS</div></button>`;}
+  function renderStore(stats){ensureStyle();stats=stats||collectStats();window.__riftCleanEndStage518='store';overlay.classList.remove('hidden');overlayCard.className='card dune461 riftStore518 riftStore581';const m=meta();overlayCard.innerHTML=`
+    <div class="riftStoreHeader581"><h1>LOJA MÍSTICA DA FISSURA</h1><p>Troque suas Faíscas por espólios raros, Baús Chronais e melhorias permanentes do Modo das Fissuras.</p><div class="riftSparkTotal581">✦ ${N(m.riftSparks)} FAÍSCAS DE FISSURA</div></div>
+    <div class="riftStoreCat581">ESPÓLIOS</div><div class="riftStoreGrid581">${itemHTML('key','Chave de Awakening','Compra 1 chave de Awakening.',35,'#ffd166')}${itemHTML('chrono','Fragmento Chrono','Recebe 1 Fragmento Chrono.',55,'#9f6cff')}${itemHTML('relic','Relíquias','Recebe 25 relíquias.',40,'#ffb8ff')}${itemHTML('chest','Baú Chronal Épico','Começa em Épico, tem 3 tentativas de raridade e usa os mesmos loots do Baú Chronal.',35,'#b77cff')}</div>
+    <div class="riftStoreCat581">MELHORIAS PERMANENTES DAS FISSURAS</div><div class="riftStoreGrid581">${itemHTML('core','Núcleo Reforçado','Aumenta o HP inicial do núcleo nesse modo.',115,'#9ef5d8')}${itemHTML('area','Área de Construção','Aumenta a área inicial onde é possível construir.',100,'#62ff9b')}${itemHTML('turret','Limite de Torretas','Comece podendo ter mais uma torreta.',140,'#61dafb')}${itemHTML('gold','Reserva de Ouro','Comece futuras defesas com mais ouro.',85,'#ffe999')}${itemHTML('blessing','Benção Dourada','Aumenta levemente recompensas de fissuras douradas.',160,'#ffd166')}</div>
+    <div class="riftStoreBtns581"><button class="duneBtn461" id="riftAgain581">Jogar Modo das Fissuras</button><button class="duneBtn461 dark" id="riftHome581">Menu inicial</button></div>`;
+    overlayCard.querySelectorAll('[data-rift-buy581]').forEach(b=>b.onclick=()=>buy(b.dataset.riftBuy581,stats));
+    q('#riftAgain581').onclick=()=>{exitRiftEnd(false);window.__forceRiftNext518=true;(window.openClassMenu461||window.openClassMenu)?.();};
+    q('#riftHome581').onclick=()=>{exitRiftEnd(true);(window.openStartMenu461||window.openStartMenu)?.();};
+  }
+  function buy(id,stats){const costs={key:35,chrono:55,relic:40,chest:35,core:115,area:100,turret:140,gold:85,blessing:160};const cost=costs[id],m=meta();if(!cost||N(m.riftSparks)<cost)return;m.riftSparks=N(m.riftSparks)-cost;m.riftPerm=m.riftPerm||{};if(id==='key')m.awakeningKeys=N(m.awakeningKeys)+1;if(id==='chrono'){m.chronoFragments=N(m.chronoFragments)+1;m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected)+1;}if(id==='relic')m.relicShards=N(m.relicShards)+25;if(id==='core')m.riftPerm.coreHp=N(m.riftPerm.coreHp)+1;if(id==='area')m.riftPerm.buildArea=N(m.riftPerm.buildArea)+1;if(id==='turret')m.riftPerm.turretLimit=N(m.riftPerm.turretLimit)+1;if(id==='gold')m.riftPerm.startGold=N(m.riftPerm.startGold)+1;if(id==='blessing')m.riftPerm.goldBlessing=N(m.riftPerm.goldBlessing)+1;save(m);if(id==='chest'){openRiftChest(stats);return;}renderStore(stats);}
+  function openRiftChest(stats){ensureStyle();const state={rarity:'epic',used:0,maxUses:3,animating:false,readyOpen:false,lastChanged:false};function render(){const r=RARITIES[state.rarity];overlay.classList.remove('hidden');overlayCard.className=`card riftChestStage581 rarity-${state.rarity}`;overlayCard.style.setProperty('--c',r.color);const hidden=state.rarity==='mythic';const msg=state.readyOpen||state.used>=state.maxUses||hidden?'Clique para abrir!':(state.lastChanged?'Raridade aumentou!':'Me Clique!');overlayCard.innerHTML=`<h1>BAÚ CHRONAL DA FISSURA</h1><p class="riftChestSub581">Este baú começa Épico e tem 3 tentativas para subir de raridade. Ele nunca regride.</p><div class="riftChestRarity581">${r.emoji} ${r.name}</div><div class="riftChestBox581 ${state.lastChanged?'up581':''}" id="riftChestBox581"><div class="riftChestLid581"></div><div class="riftChestBase581"></div><div class="riftChestLock581"></div></div><div class="riftChestPrompt581">${msg}</div><div class="riftOrbs581">${Array.from({length:state.maxUses},(_,i)=>`<i class="riftOrb581 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div><p class="muted">Raro 30% • Épico 15% • Lendário 5% • Mítico 1.5%</p>`;const box=q('#riftChestBox581');if(box)box.onclick=click;if(state.lastChanged)setTimeout(()=>{state.lastChanged=false;const b=q('#riftChestBox581');if(b)b.classList.remove('up581');},720);}function click(){if(state.animating)return;if(state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic'){const box=q('#riftChestBox581');if(box)box.classList.add('open581');setTimeout(()=>showRewards(state,stats),660);return;}state.animating=true;state.used++;const before=state.rarity;const rolled=rollUpgrade();const next=higher(before,rolled);const box=q('#riftChestBox581');if(box){box.classList.remove('shake581','up581');void box.offsetWidth;box.classList.add('shake581');}const p=q('.riftChestPrompt581');if(p)p.textContent='...';setTimeout(()=>{state.rarity=next;state.animating=false;state.lastChanged=before!==next;if(state.rarity==='mythic'||state.used>=state.maxUses)state.readyOpen=true;render();},650);}render();}
+  function showRewards(state,stats){const r=RARITIES[state.rarity],rewards=[];for(let i=0;i<3;i++)rewards.push(applyReward(rewardType(state.rarity),state.rarity));try{updateHUD?.()}catch{}overlay.classList.remove('hidden');overlayCard.className=`card riftChestStage581 riftChestReward581 rarity-${state.rarity}`;overlayCard.style.setProperty('--c',r.color);overlayCard.innerHTML=`<h1>BAÚ CHRONAL ABERTO</h1><p class="riftChestSub581">Raridade final: <span class="riftChestRarity581">${r.emoji} ${r.name}</span></p><div class="riftRewardGrid581">${rewards.map(x=>`<div class="riftRewardCard581" style="--c:${r.color}"><i>${x.icon}</i><strong>${esc(x.title)}</strong><span>${esc(x.desc)}</span></div>`).join('')}</div><button class="main-btn" id="backRiftStore581">Voltar para loja</button>`;q('#backRiftStore581').onclick=()=>renderStore(stats);}
+  function exitRiftEnd(){window.__riftCleanEndStage518='none';window.__riftSuppressOldEnd518=performance.now()+1500;const g=curGame();if(g){try{g.riftBuild50=g.riftBuild505=g.riftBuild507=g.riftBuild508=g.riftBuild509=null;}catch{}try{if(g.rift50){g.rift50.shopOpen=false;g.rift50.endAwarded50=true;g.rift50.endAwarded507=true;}}catch{}g.riftMode50=false;g.running=false;g.shopPending=false;g.betweenWaves=false;g.enemyBullets=[];g.enemies=[];}overlay.classList.remove('hidden');overlayCard.className='card';}
+  const obs=new MutationObserver(()=>{try{const cls=overlayCard?.className||'';const txt=overlayCard?.innerText||'';if(/riftStore518/.test(cls)&&!/riftStore581/.test(cls)&&/LOJA MÍSTICA DA FISSURA|ESPÓLIOS/.test(txt)){setTimeout(()=>{const c=overlayCard?.className||'';if(/riftStore518/.test(c)&&!/riftStore581/.test(c))renderStore(collectStats());},0);}}catch(e){console.warn('rift store 581 observer',e)}});try{obs.observe(overlayCard,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});}catch{}
+  // Informações dos personagens: qualquer clique nos botões antigos é reenviado para a tela mais recente da Maestria.
+  function infoKeyFrom(btn){if(!btn)return '';return btn.dataset.info461||btn.dataset.infoRico529||btn.dataset.infoArcher470||btn.closest?.('[data-card461]')?.dataset.card461||btn.closest?.('[data-card-rico529]')?.dataset.cardRico529||btn.closest?.('[data-card-archer470]')?.dataset.cardArcher470||'';}
+  function openLatestInfo(k){if(!k)return;setTimeout(()=>{try{if(window.openCharacterInfo551)window.openCharacterInfo551(k);else if(window.openClassInfo35)window.openClassInfo35(k);}catch(e){console.warn('info latest 581',e)}},35);}
+  window.addEventListener('pointerdown',e=>{const b=e.target?.closest?.('[data-info461],[data-info-rico529],[data-info-archer470]');if(!b)return;openLatestInfo(infoKeyFrom(b));},true);
+  window.addEventListener('click',e=>{const b=e.target?.closest?.('[data-info-rico529],[data-info-archer470]');if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openLatestInfo(infoKeyFrom(b));},true);
+  function patchInfoButtons(){try{document.querySelectorAll('[data-info461],[data-info-rico529],[data-info-archer470]').forEach(b=>{if(b.dataset.latestInfo581)return;b.dataset.latestInfo581='1';b.title='Informações mais recentes';b.onclick=e=>{e.preventDefault();e.stopPropagation();openLatestInfo(infoKeyFrom(b));};});}catch{}}
+  try{new MutationObserver(()=>setTimeout(patchInfoButtons,30)).observe(document.body,{childList:true,subtree:true});setTimeout(patchInfoButtons,300);}catch{}
+  // Núcleo Vampírico permanente: 1% do HP máximo por kill, sem manter a cura fixa antiga.
+  try{if(typeof RELICS!=='undefined'){const r=RELICS.find(x=>x.id==='vampiric_core');if(r){r.desc='Kills curam 1% do HP máximo.';r.apply=g=>{g.upgrades.killHealPct=0.01;g.upgrades.killHeal=0;};}}}catch{}
+  const prevEnemyDeath=window.enemyDeath||globalThis.enemyDeath;
+  if(typeof prevEnemyDeath==='function'){
+    window.enemyDeath=function(index,en){const beforeHp=N(curGame()?.player?.hp);const out=prevEnemyDeath.apply(this,arguments);try{const g=curGame(),p=g?.player,pct=N(g?.upgrades?.killHealPct);if(p&&pct>0){const heal=Math.max(1,Math.round(N(p.maxHp)*pct));p.hp=Math.min(N(p.maxHp),N(p.hp)+heal);if(N(p.hp)>beforeHp)try{addFloatingText(p.x,p.y-36,`+${heal} HP`,'#ff7b9c',14)}catch{}}}catch(e){console.warn('vampiric pct 581',e)}return out;};
+    try{if(typeof enemyDeath!=='undefined')enemyDeath=window.enemyDeath;}catch{}
+  }
+  console.log('Chrono Shards 5.8.1 — Loja das Fissuras, baú épico e ajustes finais carregados');
+})();
+</script>
+
 </body>
 </html>
