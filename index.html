@@ -17227,7 +17227,7 @@ function killKey37(e){
     addStyle();
     try{
       const h=overlayCard?.querySelector?.('h1');
-      if(!h||!/CONQUISTAS|MISSÕES/i.test(h.textContent||''))return;
+      if(!h||!/CONQUISTAS\s*(?:&|E)\s*MISSÕES/i.test(h.textContent||''))return;
       if($('#hubPowerUps544',overlayCard))return;
       const grid=overlayCard.querySelector('.menu-grid37,.duneGrid461,.duneGrid37')||overlayCard.querySelector('div');
       if(!grid)return;
@@ -17274,7 +17274,7 @@ function killKey37(e){
   function isHub(){
     try{
       const h=window.overlayCard?.querySelector?.('h1');
-      return !!(h && /CONQUISTAS|MISSÕES/i.test(h.textContent||''));
+      return !!(h && /CONQUISTAS\s*(?:&|E)\s*MISSÕES/i.test(h.textContent||''));
     }catch{return false}
   }
   function openHubSafe(){
@@ -17291,7 +17291,7 @@ function killKey37(e){
     try{
       if(!isHub())return;
       const card=window.overlayCard;
-      const grid=card?.querySelector?.('.duneGrid461.hubThree462,.duneGrid461,.missionGrid461');
+      const grid=card?.querySelector?.('.duneGrid461.hubThree462,.menu-grid37,.duneGrid461,.duneGrid37');
       const best=card?.querySelector?.('#hubBestiarySafe540,#hubBestiaryRift537,#hubBestiary461,#hubBestiary40,#hubBestiary37,#hubBestiaryG');
       if(!grid && !best?.parentElement)return;
       let btn=document.getElementById('hubPowerUps544');
@@ -18003,7 +18003,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   function effectiveHp(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]||{}, d=getData(k);return Math.round(num(c.hp)*(1+hpPct(k)*d.hp));}
   function effectiveDmg(k){const d=getData(k);return `+${Math.round(dmgPct(k)*d.damage*1000)/10}%`;}
   function openStats(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k];if(!c)return;ensureStyle();overlay.classList.remove('hidden');overlayCard.className='card dune461';const co=color(k), isOwned=owned(k), d=getData(k), lvl=level(k), max=lvl>=10;const bars=`${barHTML(k,'hp','HP','')}${barHTML(k,'damage','Dano','')}${barHTML(k,'shield','Escudo','')}${barHTML(k,'special',specName(k),'')}`;overlayCard.innerHTML=`<div class="${max?'masteryMax551':''}"><h1 style="text-align:center">${esc(c.name)}</h1><p class="duneSub461">Estatísticas e Maestria individual. Todo personagem começa no nível 1 e chega ao nível 10 ao comprar todos os compartimentos.</p><div class="masteryLayout551"><aside class="masterySide551"><div class="modelBox461"><div class="heroModel461" data-hero="${esc(k)}" style="--c:${co}"><i></i><b></b><em></em></div></div><span class="badge461" style="--co:${max?'#ffd166':co}">${max?'MAESTRIA MÁXIMA':'MAESTRIA'}</span><div class="masteryLvl551">LVL ${lvl}/10</div>${isOwned?`<div class="masteryStats551"><div class="masteryStat551"><small>HP</small><b>${effectiveHp(k)}</b></div><div class="masteryStat551"><small>ESCUDO</small><b>${num(c.shield)} + ${d.shield}</b></div><div class="masteryStat551"><small>DANO</small><b>${effectiveDmg(k)}</b></div><div class="masteryStat551"><small>ARMA</small><b style="font-size:14px">${esc(weaponName(k))}</b></div></div>`:`<div class="masteryLocked551"><div><b>🔒 APRIMORAMENTOS BLOQUEADOS</b><br><span>Compre este personagem para revelar status e liberar a Maestria.</span></div></div>`}<div class="masteryNote551"></div></aside><section class="masteryBars551">${bars}</section></div><div class="masteryActions551"><button class="duneBtn461 dark" id="statsBack551">← Seleção</button><button class="duneBtn461 blue" id="statsInfo551">Informações</button></div></div>`;document.getElementById('statsBack551').onclick=()=>window.openClassMenu?.();document.getElementById('statsInfo551').onclick=()=>openInfoOnly(k);overlayCard.querySelectorAll('[data-buy-mastery551]').forEach(btn=>btn.onclick=e=>{e.preventDefault();e.stopPropagation();buy(k,btn.dataset.buyMastery551);});}
-  function buy(k,attr){if(!owned(k))return;const d=getData(k), mx=maxes(k), cur=d[attr]||0;if(cur>=mx[attr])return;const cost=nextCost(attr,k);if(!cost)return;const m=meta();if(cost.kind==='chrono'){if(num(m.chronoFragments)<cost.amount)return; m.chronoFragments=num(m.chronoFragments)-cost.amount;}else{if(num(m.relicShards)<cost.amount)return; m.relicShards=num(m.relicShards)-cost.amount;}d[attr]=cur+1;setData(k,d);if(typeof addFloatingText==='function'&&window.game?.player)addFloatingText(game.player.x,game.player.y-30,'MAESTRIA +1','#ffd166',15);openStats(k);}
+  function buy(k,attr){if(!owned(k))return;const d=getData(k), mx=maxes(k), cur=d[attr]||0;if(cur>=mx[attr])return;const cost=nextCost(attr,k);if(!cost)return;const m=meta();if(cost.kind==='chrono'){if(num(m.chronoFragments)<cost.amount)return;m.chronoFragments=num(m.chronoFragments)-cost.amount;}else{if(num(m.relicShards)<cost.amount)return;m.relicShards=num(m.relicShards)-cost.amount;}d[attr]=cur+1;m.characterMastery551=m.characterMastery551||{};m.characterMastery551[k]={hp:num(d.hp),damage:num(d.damage),shield:num(d.shield),special:num(d.special)};save(m);try{if(window.game){game.meta=m;if(typeof updateHUD==='function')updateHUD();}}catch{}if(typeof addFloatingText==='function'&&window.game?.player)addFloatingText(game.player.x,game.player.y-30,'MAESTRIA +1','#ffd166',15);openStats(k);}
   function patchCards(){ensureStyle();if(!overlayCard?.querySelector)return;const cards=[...overlayCard.querySelectorAll('.classCard461')];if(!cards.length)return;for(const card of cards){const k=detectCardKey(card);if(!k||!(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k])continue;if(!card.querySelector('[data-stats551]'))card.insertAdjacentHTML('afterbegin',statButtonHTML(k));card.classList.toggle('masteryMaxCard551',level(k)>=10&&owned(k));const stat=card.querySelector('[data-stats551]');if(stat&&!stat._m551){stat._m551=true;stat.onclick=e=>{e.preventDefault();e.stopPropagation();openStats(k);};}const info=card.querySelector('[data-info461],[data-info-rico529],[data-info-archer470]');if(info&&!info._m551){info._m551=true;info.onclick=e=>{e.preventDefault();e.stopPropagation();openInfoOnly(k);};}}
   }
   function cleanInfoStatsOld(){try{if(!overlayCard?.querySelector)return;const title=(overlayCard.textContent||'').slice(0,160);if(/Informações completas restauradas|Informações completas do novo caçador|Personagem de precisão sem ultimate/.test(title)){/* telas antigas só são substituídas quando vierem da seleção */}}catch{}}
@@ -18607,6 +18607,96 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     try{if(typeof enemyDeath!=='undefined')enemyDeath=window.enemyDeath;}catch{}
   }
   console.log('Chrono Shards 5.8.1 — Loja das Fissuras, baú épico e ajustes finais carregados');
+})();
+</script>
+
+
+<script>
+/* ── Chrono Shards 5.8.3 — Botão de Power-Ups apenas no Hub, nunca dentro da aba Missões ── */
+(()=>{
+  if(window.__chronoPrecisePowerHubMissionFix583)return;
+  window.__chronoPrecisePowerHubMissionFix583=true;
+
+  function card583(){return document.getElementById('overlayCard')}
+  function overlayVisible583(){const o=document.getElementById('overlay');return !!(o&&!o.classList.contains('hidden'))}
+  function title583(){return (card583()?.querySelector?.('h1')?.textContent||'').trim().toUpperCase()}
+  function isPowerCatalog583(){const c=card583();return !!(c&&(c.classList.contains('powerPage544')||c.querySelector('#powerBack544,#synBack544,.powerGrid544,.powerTabs544,.synGuide544')))}
+  function isMissionsTab583(){
+    const c=card583();
+    if(!c||!overlayVisible583()||isPowerCatalog583())return false;
+    const h=title583();
+    if(h==='MISSÕES')return true;
+    // Segurança extra: se a tela tem grids de missões/awakening e NÃO tem o grid do hub, é a aba interna de missões.
+    return !!((c.querySelector('.missionGrid461,.mission-grid40,.mission-grid39,.mission-grid37,.awakGrid461')||null) && !c.querySelector('.hubThree462,.menu-grid37'));
+  }
+  function isHub583(){
+    const c=card583();
+    if(!c||!overlayVisible583()||isPowerCatalog583())return false;
+    return /^CONQUISTAS\s*(?:&|E)\s*MISSÕES$/i.test(c.querySelector('h1')?.textContent?.trim()||'');
+  }
+  function removeOnlyWrongMissionPowerButton583(){
+    try{
+      const c=card583();
+      if(!c||!isMissionsTab583())return;
+      // Remove apenas o botão duplicado dentro da tela interna de MISSÕES.
+      c.querySelectorAll('.missionGrid461 #hubPowerUps544,.missionGrid461 .powerHub544,.awakGrid461 #hubPowerUps544,.awakGrid461 .powerHub544,#hubPowerUps544.powerHub544,[data-open-powerups].powerHub544').forEach(el=>{try{el.remove()}catch{}});
+      // Se algum script antigo colocou o botão fora do grid mas ainda na aba MISSÕES, remove também.
+      c.querySelectorAll('#hubPowerUps544,.powerHub544,[data-open-powerups]').forEach(el=>{try{el.remove()}catch{}});
+    }catch(e){console.warn('mission power button cleanup 5.8.3',e)}
+  }
+  function keepCorrectHubButtonFunctional583(){
+    try{
+      const c=card583();
+      if(!c||!isHub583())return;
+      const btn=c.querySelector('#hubPowerUps544,.powerHub544,[data-open-powerups]');
+      if(!btn)return;
+      btn.onclick=function(ev){
+        ev?.preventDefault?.();ev?.stopPropagation?.();ev?.stopImmediatePropagation?.();
+        try{(window.openPowerCatalog548||window.openPowerCatalog544)?.('COMUM')}catch(e){console.error('Falha ao abrir catálogo final de Power-Ups',e)}
+      };
+    }catch(e){console.warn('hub power button hook 5.8.3',e)}
+  }
+  function sync583(){removeOnlyWrongMissionPowerButton583();keepCorrectHubButtonFunctional583();}
+
+  // Reaplica após qualquer tela ser montada, porque scripts antigos ainda podem tentar reinserir o botão.
+  try{new MutationObserver(()=>{requestAnimationFrame(sync583);setTimeout(sync583,40);}).observe(document.body,{childList:true,subtree:true});}catch{}
+  ['openMissions461','openMissions40','openMissions37'].forEach(name=>{
+    try{
+      const fn=window[name];
+      if(typeof fn==='function'&&!fn.__noPowerMission583){
+        const wrapped=function(){const r=fn.apply(this,arguments);setTimeout(sync583,0);setTimeout(sync583,80);return r;};
+        wrapped.__noPowerMission583=true;window[name]=wrapped;
+        try{eval(name+'=window[name]')}catch{}
+      }
+    }catch{}
+  });
+  ['openDuneHub461','openHub461','openHub40','openHubMenu37'].forEach(name=>{
+    try{
+      const fn=window[name];
+      if(typeof fn==='function'&&!fn.__keepPowerHub583){
+        const wrapped=function(){const r=fn.apply(this,arguments);setTimeout(sync583,0);setTimeout(sync583,80);return r;};
+        wrapped.__keepPowerHub583=true;window[name]=wrapped;
+        try{eval(name+'=window[name]')}catch{}
+      }
+    }catch{}
+  });
+  document.addEventListener('click',e=>{
+    try{
+      const p=e.target?.closest?.('#hubPowerUps544,.powerHub544,[data-open-powerups]');
+      if(!p)return;
+      if(isMissionsTab583()){
+        e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+        p.remove();
+        return;
+      }
+      if(isHub583()){
+        e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+        (window.openPowerCatalog548||window.openPowerCatalog544)?.('COMUM');
+      }
+    }catch{}
+  },true);
+  setTimeout(sync583,0);setTimeout(sync583,120);setTimeout(sync583,500);
+  console.log('Chrono Shards 5.8.3 — botão Power-Ups mantido no hub e removido da aba Missões');
 })();
 </script>
 
