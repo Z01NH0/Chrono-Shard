@@ -12901,7 +12901,7 @@ function killKey37(e){
   window.__chronoRiftMode502=true;
   const PATCH='Chrono Shards 5.0.2 — Modo das Fissuras: boss flow, mapa novo, escala 60%, fissuras reforçadas';
   const RIFT_COLORS_502={red:'#ff375f',blue:'#4ed8ff',black:'#bf3dff',gold:'#ffd166',core:'#a977ff'};
-  function isRift502(){return !!(window.game&&game.riftMode50&&game.rift50);}
+  function isRift502(){return !!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);}
   function safeNum502(v,d=0){return Number.isFinite(Number(v))?Number(v):d;}
   function riftColor502(type){return RIFT_COLORS_502[type]||'#ffd166';}
 
@@ -13157,7 +13157,7 @@ function killKey37(e){
     cristalizado:'#76e9ff',instavel:'#ff9b45',cronal:'#ffd166',voraz:'#62ff9b',
     eco:'#b9a7ff',quebrador:'#c99a62',sitiador:'#ff5e7e'
   };
-  function isRift(){return !!(window.game&&game.riftMode50&&game.rift50);}
+  function isRift(){return !!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);}
   function n(v,d=0){return Number.isFinite(Number(v))?Number(v):d;}
   function dist2(a,b){return Math.hypot((a.x||0)-(b.x||0),(a.y||0)-(b.y||0));}
 
@@ -13338,7 +13338,7 @@ function killKey37(e){
   window.__chronoRiftMode504=true;
   const PATCH='Chrono Shards 5.0.4 — Modo das Fissuras: rota Jogar corrigida, mapa galáctico e sem muros convencionais';
   const PLAY_IDS=new Set(['play461','play27','playBtn','startBtn','playBtn23','playStart37']);
-  function isRift504(){return !!(window.game&&game.riftMode50&&game.rift50);}
+  function isRift504(){return !!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);}
   function isMainPlayBtn504(el){
     const b=el&&el.closest?el.closest('button'):null;
     if(!b)return null;
@@ -13519,7 +13519,7 @@ function killKey37(e){
   window.__chronoRiftMode505=true;
   const PATCH='Chrono Shards 5.0.5 — Modo das Fissuras: loja wave 3 e boss wave flow corrigidos';
   const BUILD_GRID_505=38;
-  function isRift505(){return !!(window.game&&game.riftMode50&&game.rift50);}
+  function isRift505(){return !!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);}
   function num505(v,d=0){return Number.isFinite(Number(v))?Number(v):d;}
   function clamp505(v,a,b){return Math.max(a,Math.min(b,v));}
   function safeEsc505(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]||m));}
@@ -13724,7 +13724,7 @@ function killKey37(e){
   if(window.__chronoRiftMode506)return;
   window.__chronoRiftMode506=true;
   const PATCH='Chrono Shards 5.0.6 — correção raiz da wave 5 do Modo das Fissuras';
-  function isRift506(){return !!(window.game&&game.riftMode50&&game.rift50);}
+  function isRift506(){return !!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);}
   function n506(v,d=0){return Number.isFinite(Number(v))?Number(v):d;}
   function gold506(){return Number(game?.gold||0);}
   function esc506(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]||m));}
@@ -13955,7 +13955,7 @@ function killKey37(e){
     {name:'Diamante',hp:780,color:'#5fd6ff',stroke:'#e8fdff',costNext:370,next:'Chrono'},
     {name:'Chrono',hp:1120,color:'#5f3bff',stroke:'#d4a0ff',costNext:null,next:null}
   ];
-  function isRift(){return !!(window.game&&game.riftMode50&&game.rift50);}
+  function isRift(){return !!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);}
   function num(v,d=0){return Number.isFinite(Number(v))?Number(v):d;}
   function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
   function esc(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]||m));}
@@ -14160,7 +14160,7 @@ function killKey37(e){
     {name:'Diamante',hp:780,color:'#5fd6ff',stroke:'#e8fdff',nextCost:350,next:'Chrono'},
     {name:'Chrono',hp:1120,color:'#5f3bff',stroke:'#d4a0ff',nextCost:null,next:null}
   ];
-  const isRift=()=>!!(window.game&&game.riftMode50&&game.rift50);
+  const isRift=()=>!!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);
   const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const esc=s=>String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]||m));
@@ -14285,7 +14285,7 @@ function killKey37(e){
   const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
   const clamp2=(v,a,b)=>Math.max(a,Math.min(b,v));
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const isRift=()=>!!(window.game&&game.riftMode50&&game.rift50);
+  const isRift=()=>!!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);
   function readMeta(){try{return JSON.parse(localStorage.getItem(META_KEY)||'{}')||{};}catch{return {};}}
   function writeMeta(m){localStorage.setItem(META_KEY,JSON.stringify(m||{}));}
   function gold(){return n(game?.gold,0);}function spend(cost){cost=Math.ceil(n(cost,0));if(gold()<cost)return false;game.gold-=cost;try{updateHUD?.()}catch{}return true;}
@@ -14363,8 +14363,74 @@ function killKey37(e){
   const spawnBossPrev509=window.spawnBoss||spawnBoss;window.spawnBoss=function(){const before=isRift()?new Set(game.enemies||[]):null;const out=spawnBossPrev509.apply(this,arguments);if(isRift()&&game.wave===5){for(const e of game.enemies||[]){if((!before||!before.has(e))&&(e.type==='boss'||e.bossType)&&!e._riftWave5Minus10_509){e.maxHp=Math.max(1,Math.floor(n(e.maxHp,e.hp)*.90));e.hp=Math.min(n(e.hp,e.maxHp),e.maxHp);e._riftWave5Minus10_509=true;}}}return out;};if(typeof spawnBoss!=='undefined')spawnBoss=window.spawnBoss;
   function repairCost(s){if(!s||s.hp>=s.maxHp)return 0;const miss=(s.maxHp-s.hp)/Math.max(1,s.maxHp);let base=55;if(s.kind==='wall')base=WALLS[clamp2(n(s.level,1),1,5)-1].repair;else base=TURRETS[clamp2(n(s.level,1),1,5)-1].repair*(s.kind==='heavy'?1.25:1);return Math.max(12,Math.ceil(base*miss));}
   function structureName(s){if(s.kind==='wall')return `Muro ${WALLS[clamp2(n(s.level,1),1,5)-1].name}`;return `${s.kind==='heavy'?'Torre Pesada':'Torre Básica'} ${TURRETS[clamp2(n(s.level,1),1,5)-1].name}`;}
-  function openRepair509(){if(!isRift())return;ensureStyle();const r=game.rift50;const list=(r.structures||[]).filter(s=>s.hp>0);if(!list.length){afterRepair509();return;}game.running=false;r.shopOpen=true;r.repairWave509=game.wave;overlay.classList.remove('hidden');overlayCard.className='card dune461 riftRepair509';let sec=10;function render(){overlayCard.innerHTML=`<div class="riftHead509"><div><h1>OFICINA DA FISSURA</h1><p>Intervalo defensivo. Conserte construções antes da próxima wave.</p></div><div class="riftChip509">Ouro: ${gold()} • Próxima wave em <span class="riftTimer509">${sec}s</span></div></div><div class="riftGrid509">${list.map((s,i)=>{const lvl=clamp2(n(s.level,1),1,5), hpPct=Math.max(0,Math.min(1,s.hp/s.maxHp)), cost=repairCost(s);const isWall=s.kind==='wall', c=isWall?WALLS[lvl-1].color:TURRETS[lvl-1].color, st=isWall?WALLS[lvl-1].stroke:TURRETS[lvl-1].color;return `<div class="riftRepairCard509" style="--c:${st}"><div class="riftRepairPreview509">${isWall?`<div class="wallMini509" style="--c:${c};--s:${st}"></div>`:`<div class="turretMini509" style="--c:${st}"></div>`}</div><strong>${esc(structureName(s))}</strong><span>HP: ${Math.ceil(s.hp)} / ${Math.ceil(s.maxHp)}</span><div class="riftRepairBar509"><i style="width:${hpPct*100}%"></i></div><button class="duneBtn461" data-repair509="${i}" ${cost<=0||gold()<cost?'disabled':''}>${cost<=0?'Integra':`Consertar • ${cost} ouro`}</button></div>`;}).join('')}</div><div class="duneActions461"><button class="duneBtn461 dark" id="skipRepair509">Continuar</button></div>`;overlayCard.querySelectorAll('[data-repair509]').forEach(b=>b.onclick=()=>{const s=list[Number(b.dataset.repair509)],cost=repairCost(s);if(!s||cost<=0||!spend(cost))return;s.hp=s.maxHp;try{addRing(s.x,s.y,'#62ff9b',70,4);addFloatingText(s.x,s.y-34,'REPARADO','#62ff9b',15)}catch{}render();});document.getElementById('skipRepair509').onclick=afterRepair509;}
-    render();const timer=setInterval(()=>{if(!isRift()||!overlayCard.classList.contains('riftRepair509')){clearInterval(timer);return;}sec--;if(sec<=0){clearInterval(timer);afterRepair509();return;}const t=overlayCard.querySelector('.riftTimer509');if(t)t.textContent=sec+'s';},1000);
+  function openRepair509(){
+    if(!isRift())return;
+    ensureStyle();
+    const r=game.rift50;
+    const list=(r.structures||[]).filter(s=>s&&s.hp>0);
+    if(!list.length){afterRepair509();return;}
+    game.running=false;
+    r.shopOpen=true;
+    r.repairWave509=game.wave;
+    overlay.classList.remove('hidden');
+    overlayCard.className='card dune461 riftRepair509 riftRepairPolish591';
+    let sec=10;
+    const discountRateLocal509=()=>Math.max(0,Math.min(.75,Number(game?.upgrades?.riftShopDiscount584||0)));
+    const repairDiscountedLocal509=(base)=>Math.max(1,Math.ceil(Number(base||0)*(1-discountRateLocal509())));
+    const repairPriceHTML509=(base)=>{
+      base=Math.ceil(Number(base||0));
+      if(base<=0)return '<b>Integra</b>';
+      const final=repairDiscountedLocal509(base), d=discountRateLocal509();
+      if(d>0&&final<base){
+        return `<span class="riftPriceOld591">${base} OURO</span><b class="riftPriceNew591">${final} OURO</b><small class="riftPriceCut591">-${Math.round(d*100)}%</small>`;
+      }
+      return `<b class="riftPriceNew591">${base} OURO</b>`;
+    };
+    const cardHTML=(s,i)=>{
+      const lvl=clamp2(n(s.level,1),1,5);
+      const hpPct=Math.max(0,Math.min(1,n(s.hp,0)/Math.max(1,n(s.maxHp,1))));
+      const cost=repairCost(s), final=repairDiscountedLocal509(cost);
+      const isWall=s.kind==='wall';
+      const mat=isWall?WALLS[lvl-1]:TURRETS[lvl-1];
+      const c=isWall?mat.color:mat.color;
+      const st=isWall?mat.stroke:mat.color;
+      const icon=isWall?`<div class="wallMini509" style="--c:${c};--s:${st}"></div>`:`<div class="turretMini509" style="--c:${st}"></div>`;
+      const disabled=cost<=0||gold()<final;
+      return `<div class="riftRepairCard509 riftRepairCard591" style="--c:${st}">
+        <div class="riftRepairPreview509">${icon}</div>
+        <div class="riftRepairMeta591"><strong>${esc(structureName(s))}</strong><small>Nível ${lvl} • ${isWall?'Muro':'Torre'}</small></div>
+        <span>HP: ${Math.ceil(n(s.hp,0))} / ${Math.ceil(n(s.maxHp,0))}</span>
+        <div class="riftRepairBar509"><i style="width:${hpPct*100}%"></i></div>
+        <div class="riftRepairPrice591">${repairPriceHTML509(cost)}</div>
+        <button class="duneBtn461" data-repair509="${i}" ${disabled?'disabled':''}>${cost<=0?'Integra':'Consertar'}</button>
+      </div>`;
+    };
+    function render(){
+      const walls=list.map((s,i)=>({s,i})).filter(x=>x.s.kind==='wall');
+      const turrets=list.map((s,i)=>({s,i})).filter(x=>x.s.kind==='turret'||x.s.kind==='heavy');
+      overlayCard.innerHTML=`<div class="riftHead509 riftRepairHead591"><div><h1>OFICINA DA FISSURA</h1><p>Intervalo defensivo. Muros e torretas ficam separados para você consertar tudo com calma.</p></div><div class="riftChip509">Ouro: ${gold()} • Próxima wave em <span class="riftTimer509">${sec}s</span></div></div>
+        <div class="riftRepairSplit591">
+          <section class="riftRepairSection591"><div class="riftCatalog509">MUROS</div><div class="riftGrid509">${walls.length?walls.map(x=>cardHTML(x.s,x.i)).join(''):`<div class="riftEmptyRepair591">Nenhum muro ativo para reparar.</div>`}</div></section>
+          <section class="riftRepairSection591"><div class="riftCatalog509">TORRETAS</div><div class="riftGrid509">${turrets.length?turrets.map(x=>cardHTML(x.s,x.i)).join(''):`<div class="riftEmptyRepair591">Nenhuma torreta ativa para reparar.</div>`}</div></section>
+        </div>
+        <div class="duneActions461"><button class="duneBtn461 dark" id="skipRepair509">Continuar</button></div>`;
+      overlayCard.querySelectorAll('[data-repair509]').forEach(b=>b.onclick=()=>{
+        const s=list[Number(b.dataset.repair509)],base=repairCost(s),final=repairDiscountedLocal509(base);
+        if(!s||base<=0||!spend(final))return;
+        s.hp=s.maxHp;
+        try{addRing(s.x,s.y,'#62ff9b',70,4);addFloatingText(s.x,s.y-34,'REPARADO','#62ff9b',15)}catch{}
+        render();
+      });
+      const skip=document.getElementById('skipRepair509');
+      if(skip)skip.onclick=afterRepair509;
+    }
+    render();
+    const timer=setInterval(()=>{
+      if(!isRift()||!overlayCard.classList.contains('riftRepair509')){clearInterval(timer);return;}
+      sec--;
+      if(sec<=0){clearInterval(timer);afterRepair509();return;}
+      const t=overlayCard.querySelector('.riftTimer509');if(t)t.textContent=sec+'s';
+    },1000);
   }
   function afterRepair509(){if(!isRift())return;const r=game.rift50;r.shopOpen=false;overlay.classList.add('hidden');if(game.wave>0&&game.wave%3===0&&!r.waveDoneShop){r.waveDoneShop=true;openShop509();return;}nextWave509();}
   const wavePrev509=window.updateWaveState||updateWaveState;window.updateWaveState=function(){if(!isRift())return wavePrev509.apply(this,arguments);const r=game.rift50;if(!game.running||r.shopOpen||game.riftBuild50||game.riftBuild505||game.riftBuild507||game.riftBuild508||game.riftBuild509)return;game.shopPending=false;game.betweenWaves=false;if(game.waveBoss){game.enemiesToSpawn=1;if(n(game.enemiesSpawnedThisWave,0)>1)game.enemiesSpawnedThisWave=1;}game.enemies=(game.enemies||[]).filter(e=>e&&Number.isFinite(e.x)&&Number.isFinite(e.y)&&n(e.hp,0)>0&&e.x>-260&&e.x<W+260&&e.y>-260&&e.y<H+260);const hasBoss=(game.enemies||[]).some(e=>e&&(e.type==='boss'||e.bossType));if(game.waveBoss&&!hasBoss&&n(game.enemiesSpawnedThisWave,0)>=1){game.enemiesToSpawn=1;game.enemiesSpawnedThisWave=1;game.bossActive=false;game.enemyBullets=[];}const noEnemies=(game.enemies||[]).length===0,noRifts=(r.fissures||[]).length===0,allSpawned=game.waveBoss?(n(game.enemiesSpawnedThisWave,0)>=1&&!hasBoss):(n(game.enemiesSpawnedThisWave,0)>=n(game.enemiesToSpawn,0));if(allSpawned&&noEnemies&&noRifts){r._readyWaveSince509=r._readyWaveSince509||game.time||0;const waited=(game.time||0)-r._readyWaveSince509;if(game.waveBoss||waited>.35)game.enemyBullets=[];if((game.enemyBullets||[]).length===0){game.bossActive=false;game.shopPending=false;game.betweenWaves=false;r._readyWaveSince509=0;const hasStruct=(r.structures||[]).some(s=>s.hp>0);if(hasStruct&&r.repairWave509!==game.wave){openRepair509();return;}if(game.wave>0&&game.wave%3===0&&!r.waveDoneShop){r.waveDoneShop=true;openShop509();return;}nextWave509();}}else r._readyWaveSince509=0;};if(typeof updateWaveState!=='undefined')updateWaveState=window.updateWaveState;
@@ -14390,7 +14456,7 @@ function killKey37(e){
   const META_KEY=typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta';
   const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const isRift=()=>!!(window.game&&game.riftMode50&&game.rift50);
+  const isRift=()=>!!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);
   function meta(){try{return JSON.parse(localStorage.getItem(META_KEY)||'{}')||{};}catch{return {};}}
   function save(m){localStorage.setItem(META_KEY,JSON.stringify(m||{}));}
   function ensureStyle(){
@@ -14533,7 +14599,7 @@ function killKey37(e){
   const PATCH='Chrono Shards 5.1.9 — fixes reaplicados: dunas isoladas, fissuras com hitbox total, torretas remodeladas e bosses aleatórios';
   const num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
   const rand519=(a,b)=>{try{return (typeof rand==='function')?rand(a,b):a+Math.random()*(b-a)}catch{return a+Math.random()*(b-a)}};
-  const isRift=()=>!!(window.game&&game.riftMode50&&game.rift50);
+  const isRift=()=>!!((typeof game!=='undefined')&&game&&game.riftMode50&&game.rift50);
   const riftColors={red:'#ff405f',blue:'#61dafb',black:'#a06bff',gold:'#ffd166'};
 
   function killDuneInRift(){
@@ -14973,24 +15039,17 @@ function killKey37(e){
   function spend(cost){if(gold()<cost)return false;game.gold-=cost;try{updateHUD?.();}catch{}return true;}
   const oldShop=window.openRiftWaveShop509||window.openRiftWaveShop50;
   function patchCurrentShop(){
-    if(!isRift()||!overlayCard)return;
-    // Corrige só se uma loja de wave estiver aberta.
-    if(!/riftShop/.test(overlayCard.className||''))return;
-    overlayCard.querySelectorAll('[data-riftbuy509], [data-riftbuy507], [data-rift-buy506], [data-rift-buy505], [data-rift-buy50]').forEach(btn=>{
-      const id=btn.dataset.riftbuy509||btn.dataset.riftbuy507||btn.dataset.riftBuy506||btn.dataset.riftBuy505||btn.dataset.riftBuy50;
-      if(!id)return;
-      const costNode=btn.querySelector('.cost');
-      if(id==='turret'&&costNode)costNode.textContent='70 OURO';
-      if(id==='heavy'&&costNode)costNode.textContent='120 OURO';
-      if(id==='wall'&&costNode)costNode.textContent='30 OURO';
-    });
+    // 5.9.1: neutralizado. Este patch antigo reescrevia preços cheios em intervalo
+    // e brigava com o sistema novo de desconto, causando flicker visual.
+    return;
   }
   for(const key of ['openRiftWaveShop509','openRiftWaveShop508','openRiftWaveShop507','openRiftWaveShop506','openRiftWaveShop505','openRiftWaveShop50']){
     const fn=window[key];
     if(typeof fn==='function')window[key]=function(){const out=fn.apply(this,arguments);setTimeout(patchCurrentShop,0);return out;};
   }
   // Corrige os custos mesmo se a função antiga comprar pelo dataset atual.
-  const oldGoldSetter=setInterval(()=>{try{patchCurrentShop();}catch{}},700);
+  // 5.9.1: intervalo antigo de preço fixo removido para evitar flicker com descontos.
+  const oldGoldSetter=null;
   // Último reforço de rotação: se nenhum handler antigo tiver mudado o estado, o keyup garante uma rotação perceptível.
   let lastRDown=null;
   window.addEventListener('keydown',e=>{if(!isRift()||!(e.key&&e.key.toLowerCase()==='r'))return;const b=game.riftBuild509||game.riftBuild508||game.riftBuild507||game.riftBuild505||game.riftBuild50;if(b&&b.mode==='build')lastRDown={b,rot:b.rot,t:performance.now()};},true);
@@ -18699,6 +18758,981 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   console.log('Chrono Shards 5.8.3 — botão Power-Ups mantido no hub e removido da aba Missões');
 })();
 </script>
+
+<script>
+/* ── Chrono Shards 5.8.4 — Ultimates na interface nova + Power-Ups exclusivos das Fissuras ── */
+(()=>{
+  if(window.__chronoRiftPowersUltimate584)return;
+  window.__chronoRiftPowersUltimate584=true;
+
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const UNLOCK_KEY=SAVE+'_power_catalog_unlocks_544';
+  const $=(q,r=document)=>r.querySelector(q);
+  const $$=(q,r=document)=>Array.from(r.querySelectorAll(q));
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const dist=(a,b)=>Math.hypot(N(a?.x)-N(b?.x),N(a?.y)-N(b?.y));
+  const isRift=()=>!!(window.game&&(game.riftMode50||game.mode==='rift'||game.rift50));
+  const readMeta=()=>{try{return JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{return {}}};
+  const writeMeta=m=>{try{localStorage.setItem(SAVE,JSON.stringify(m||{}));if(window.game)game.meta=m;}catch{}return m};
+  const readUnlocks=()=>{try{return JSON.parse(localStorage.getItem(UNLOCK_KEY)||'{}')||{}}catch{return {}}};
+  const writeUnlocks=m=>{try{localStorage.setItem(UNLOCK_KEY,JSON.stringify(m||{}))}catch{}};
+  const norm=s=>String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')||'power';
+
+  const COLORS={COMUM:'#75d8ff',RARO:'#86ffb0','ÉPICO':'#c6a0ff','LENDÁRIO':'#ffd166','MÍTICO':'#ff5c9f'};
+  const RARITIES=[['COMUM',COLORS.COMUM,'Comuns'],['RARO',COLORS.RARO,'Raros'],['ÉPICO',COLORS['ÉPICO'],'Épicos'],['LENDÁRIO',COLORS['LENDÁRIO'],'Lendários'],['MÍTICO',COLORS['MÍTICO'],'Míticos']];
+  const TAGS={
+    precisao:['PRECISÃO','#75d8ff'],velocidade:['VELOCIDADE','#7fffd4'],dash:['DASH','#ffe08c'],foco:['FOCO','#b58cff'],escudo:['ESCUDO','#86ffb0'],explosao:['EXPLOSÃO','#ffb347'],veneno:['VENENO','#9dff6e'],construcao:['CONSTRUÇÃO','#ffd166'],vampirismo:['VAMPIRISMO','#ff7b9c'],economia:['ECONOMIA','#ffe999'],tesouro:['TESOURO','#ffb8ff'],geral:['GERAL','#b7c8ef'],fissura:['FISSURA','#9f6cff']
+  };
+  const iconFor=p=>({precisao:'🎯',velocidade:'💨',dash:'⚡',foco:'🔮',escudo:'🛡️',explosao:'💥',veneno:'☣️',construcao:'🛠️',vampirismo:'🩸',economia:'💰',tesouro:'💎',geral:'✦',fissura:'◇'}[p?.tag]||'✦');
+
+  const ULT584={
+    assault:{name:'Zona de Guerra',emoji:'🔥',color:'#7fe9ff',desc:'O Assault transforma a arena em território de combate total: rajadas pesadas, granadas de apoio e resistência temporária para avançar no meio do caos.'},
+    sniper:{name:'Protocolo Olho-Morto',emoji:'🎯',color:'#ffe38c',desc:'Desacelera o tempo e marca os alvos mais resistentes da arena. Quando o fluxo volta, disparos letais atravessam os alvos marcados, causando dano brutal baseado na vida deles. Contra bosses, o dano é limitado.'},
+    reaper:{name:'Espíritos Vingativos',emoji:'🩸',color:'#ff7b9c',desc:'O Reaper desperta espíritos vingativos que orbitam sua lâmina, caçam inimigos, retornam carregando almas e explodem quando a vingança termina.'},
+    alchemist:{name:'Transmutação Proibida',emoji:'☣️',color:'#4ce0b3',desc:'O Alquimista mistura veneno, fogo químico e ácido em uma reação proibida, criando poças instáveis e explosões tóxicas em cadeia.'},
+    engineer:{name:'Protocolo Fortaleza',emoji:'🛠️',color:'#8ff8ff',desc:'O Artífice ergue uma fortaleza temporária com torretas especiais, drones de apoio e uma descarga final de energia concentrada.'},
+    colonel:{name:'Ordem de Extermínio',emoji:'✈️',color:'#78d66b',desc:'O Coronel autoriza apoio militar total: aviões cruzam a arena, rajadas varrem o campo e mísseis procuram os inimigos mais perigosos.'},
+    archer:{name:'Fera do Tempo',emoji:'🐺',color:'#6fdcff',desc:'Dispara uma flecha lendária que desperta uma Fera do Tempo gigantesca. A criatura atravessa a arena, puxa inimigos próximos para dentro da caçada, empurra tudo pelo caminho e causa dano contínuo. Bosses não são puxados.'}
+  };
+  function ultUnlocked584(k){const m=readMeta();return !!(m.awakeningUltimates?.[k]||m.awakeningRewards480?.[k]);}
+  function ultimateRow584(k){
+    if(ULT584[k]){const u=ULT584[k],on=ultUnlocked584(k);return `<div class="skillRow461 ultimateRow584 ${on?'':'ultLocked584'}" style="--co:${u.color}"><b>X — ${on?`${u.emoji} ${esc(u.name)}`:'???'}</b><br><span>${on?esc(u.desc):'Complete a missão de Awakening deste personagem para revelar a Ultimate.'}</span></div>`;}
+    if(k==='chronoHero')return `<div class="skillRow461 ultimateRow584" style="--co:#9f6cff"><b>X — 💎 Rajada prismática x1.000</b><br><span>Um dos únicos com ultimate própria. Faz tudo parar ao ser ativada e dispara uma rajada imensa de energia na direção da mira.</span></div>`;
+    if(k==='moonSlayer')return `<div class="skillRow461 ultimateRow584" style="--co:#ff4d73"><b>X — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>O Exterminador tira sua espada da bainha e faz cortes multidimensionais azuis, quebrando a linha temporal em pedaços.</span></div>`;
+    if(k==='shadowChild')return `<div class="skillRow461 ultimateRow584" style="--co:#ff2e63"><b>X — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>`;
+    return '';
+  }
+  function injectUltimateInfo584(k){
+    try{
+      const card=$('#overlayCard');
+      if(!card||!k||card.querySelector('.ultimateRow584'))return;
+      const row=ultimateRow584(k); if(!row)return;
+      const heads=[...card.querySelectorAll('h3,.section461')];
+      const lore=heads.find(h=>/LORE/i.test(h.textContent||''));
+      if(lore)lore.insertAdjacentHTML('beforebegin',row);
+      else card.querySelector('.statsGrid461')?.insertAdjacentHTML('afterend',`<h3 class="section461">HABILIDADES</h3>${row}`);
+    }catch(e){console.warn('ultimate info 5.8.4',e)}
+  }
+  function ensureStyle584(){
+    if($('#riftPowersUltimate584Style'))return;
+    const st=document.createElement('style');st.id='riftPowersUltimate584Style';st.textContent=`
+      .ultimateRow584{border-color:color-mix(in srgb,var(--co,#9f6cff) 45%,rgba(255,255,255,.12))!important;background:linear-gradient(135deg,color-mix(in srgb,var(--co,#9f6cff) 16%,rgba(255,255,255,.04)),rgba(6,8,18,.86));box-shadow:inset 0 0 18px rgba(255,255,255,.035)}
+      .ultimateRow584 b{color:var(--co,#ffd166)!important}.ultimateRow584.ultLocked584{filter:saturate(.72);opacity:.9;border-style:dashed!important}.ultimateRow584.ultLocked584 span{color:#9fb0d5!important}
+      .riftOnlyBadge584{display:inline-grid;place-items:center;padding:3px 8px;border-radius:999px;border:1px solid #9f6cff66;background:#9f6cff18;color:#d8c7ff;font:900 10px Orbitron,sans-serif;letter-spacing:.1em;margin-left:6px}
+      .riftMine584{position:absolute}.riftFireHint584{font-size:11px;color:#ffb347}.powerTicket548.fissure584.active{box-shadow:0 0 24px rgba(159,108,255,.45)!important;background:linear-gradient(135deg,#9f6cff66,rgba(8,10,23,.94))!important;color:#fff!important}
+    `;document.head.appendChild(st);
+  }
+
+  ensureStyle584();
+  const oldInfo584=window.openCharacterInfo551;
+  if(typeof oldInfo584==='function'){
+    window.openCharacterInfo551=function(k){const r=oldInfo584.apply(this,arguments);setTimeout(()=>injectUltimateInfo584(k),0);setTimeout(()=>injectUltimateInfo584(k),80);return r;};
+  }
+  window.addEventListener('click',e=>{const b=e.target?.closest?.('[data-info461],[data-info-rico529],[data-info-archer470]');if(!b)return;const k=b.dataset.info461||b.dataset.infoRico529||b.dataset.infoArcher470||b.closest?.('[data-card461]')?.dataset.card461;setTimeout(()=>injectUltimateInfo584(k),90);},true);
+
+  function ensureRiftState584(){
+    if(!game)return;game.upgrades=game.upgrades||{};
+    const u=game.upgrades;
+    u.uniquePicks37=u.uniquePicks37||{};u.powerPicks548=u.powerPicks548||{};u.riftPowerPicks584=u.riftPowerPicks584||{};u.riftUniquePicks584=u.riftUniquePicks584||{};
+    u.synergy529=u.synergy529||{tags:{},active:{}};u.synergy529.tags=u.synergy529.tags||{};u.synergy529.active=u.synergy529.active||{};
+    ['riftCoreRegen584','riftCoreGold584','riftGoldFromFissures584','riftWallHpPct584','riftTurretDamagePct584','riftTurretFlat584','riftTurretHaste584','riftEnemySlow584','riftShopDiscount584','riftSparkEndBonus584','riftRewardMult584','riftFissureFreq584','riftInfernalTurrets584','riftWallWire584','riftCoreGravity584','riftAbsoluteCore584'].forEach(f=>u[f]=N(u[f]));
+    if(game.rift50){game.rift50.riftFires584=game.rift50.riftFires584||[];game.rift50.riftGoldMines584=game.rift50.riftGoldMines584||[];}
+  }
+  function growCore584(pct){ensureRiftState584();const c=game?.rift50?.core;if(!c)return;const old=N(c.maxHp,1);c.maxHp=Math.max(1,Math.round(old*(1+pct)));c.hp=Math.min(c.maxHp,N(c.hp)+Math.max(1,Math.round(old*pct)));try{addFloatingText(c.x,c.y-58,'NÚCLEO +'+Math.round(pct*100)+'%','#d8c7ff',15);addRing(c.x,c.y,'#9f6cff',110,4)}catch{}}
+  function addWallHp584(pct){ensureRiftState584();game.upgrades.riftWallHpPct584+=pct;for(const s of game?.rift50?.structures||[]){if(s.kind==='wall')s._riftAppliedWallPct584=0;}normalizeWalls584();}
+  function normalizeWalls584(){if(!isRift())return;ensureRiftState584();const pct=N(game.upgrades.riftWallHpPct584);for(const s of game.rift50.structures||[]){if(s.kind!=='wall'||s.hp<=0)continue;const applied=N(s._riftAppliedWallPct584);if(pct>applied){const base=N(s.maxHp,1)/(1+applied);const newMax=Math.max(1,Math.round(base*(1+pct)));const ratio=clamp(N(s.hp,newMax)/N(s.maxHp,newMax),.05,1);s.maxHp=newMax;s.hp=Math.max(s.hp,Math.round(newMax*ratio));s._riftAppliedWallPct584=pct;}if(game.upgrades.riftAbsoluteCore584){s.hp=s.maxHp;}if(game.upgrades.riftWallShield584){const target=Math.round(N(s.maxHp)*.5);if(!N(s._riftShieldMax584)||N(s._riftShieldMax584)!==target){s._riftShieldMax584=target;s._riftShield584=Math.max(N(s._riftShield584),target);}}}}
+  function spawnGoldMine584(){if(!isRift())return;const r=game.rift50;const margin=90;let x,y;for(let tries=0;tries<30;tries++){x=margin+Math.random()*(W-margin*2);y=margin+Math.random()*(H-margin*2);if(Math.hypot(x-r.core.x,y-r.core.y)>140)break;}r.riftGoldMines584=r.riftGoldMines584||[];r.riftGoldMines584.push({x,y,t:0,pulse:0});try{addRing(x,y,'#ffd166',95,5);addFloatingText(x,y-32,'MINA DE OURO','#ffd166',17)}catch{}}
+
+  const RIFT_POWERS584=[
+    {id:'rift_nucleo_bruto',mode:'rift',rarity:'COMUM',tag:'fissura',weight:32,name:'Núcleo Bruto',desc:'Aumente o HP total do núcleo em 3%.',apply:()=>growCore584(.03)},
+    {id:'rift_ouro_tolo',mode:'rift',rarity:'COMUM',tag:'fissura',weight:30,name:'Ouro de Tolo',desc:'Fissuras dão +5% de ouro.',apply:()=>{ensureRiftState584();game.upgrades.riftGoldFromFissures584+=.05}},
+    {id:'rift_paredes_reforcadas',mode:'rift',rarity:'COMUM',tag:'fissura',weight:30,name:'Paredes Reforçadas',desc:'Muros têm 3% mais defesa.',apply:()=>addWallHp584(.03)},
+    {id:'rift_aprimoramento_balas',mode:'rift',rarity:'COMUM',tag:'fissura',weight:30,name:'Aprimoramento de Balas',desc:'Torretas dão +4% de dano.',apply:()=>{ensureRiftState584();game.upgrades.riftTurretDamagePct584+=.04}},
+    {id:'rift_armamento_refinado',mode:'rift',rarity:'RARO',tag:'fissura',weight:16,name:'Armamento Refinado',desc:'Torretas dão +5 de dano e atiram 3% mais rápido.',apply:()=>{ensureRiftState584();game.upgrades.riftTurretFlat584+=5;game.upgrades.riftTurretHaste584+=.03}},
+    {id:'rift_nucleo_ferro',mode:'rift',rarity:'RARO',tag:'fissura',weight:16,name:'Núcleo de Ferro',desc:'Aumente o HP total do núcleo em 8%.',apply:()=>growCore584(.08)},
+    {id:'rift_muralha_consistente',mode:'rift',rarity:'RARO',tag:'fissura',weight:16,name:'Muralha Consistente',desc:'Muros têm 10% mais defesa.',apply:()=>addWallHp584(.10)},
+    {id:'rift_atraso_encomendas',mode:'rift',rarity:'RARO',tag:'fissura',weight:14,name:'Atraso de Encomendas',desc:'Todos os monstros, incluindo bosses, andam 5% mais lentos.',apply:()=>{ensureRiftState584();game.upgrades.riftEnemySlow584+=.05}},
+    {id:'rift_oferta_fim_semana',mode:'rift',rarity:'RARO',tag:'fissura',weight:13,name:'Oferta de Fim de Semana',desc:'Reparos e a loja durante as waves ficam 5% mais baratos.',apply:()=>{ensureRiftState584();game.upgrades.riftShopDiscount584+=.05;patchRiftShop584()}},
+    {id:'rift_espolios_guerra',mode:'rift',rarity:'RARO',tag:'fissura',weight:12,name:'Espólios de Guerra',desc:'Ao fim da run, receba +2% de faíscas ao total.',apply:()=>{ensureRiftState584();game.upgrades.riftSparkEndBonus584+=.02}},
+    {id:'rift_muralha_arames',mode:'rift',rarity:'ÉPICO',tag:'fissura',weight:7,unique:true,name:'Muralha de Arames',desc:'Muros recebem +8% de HP. Inimigos que batem neles sofrem knockback e pequeno dano.',show:()=>!game?.upgrades?.riftUniquePicks584?.rift_muralha_arames,apply:()=>{ensureRiftState584();game.upgrades.riftUniquePicks584.rift_muralha_arames=true;game.upgrades.riftWallWire584=1;addWallHp584(.08)}},
+    {id:'rift_nucleo_gravitacional',mode:'rift',rarity:'ÉPICO',tag:'fissura',weight:7,unique:true,name:'Núcleo Gravitacional',desc:'A cada 10 segundos, o núcleo puxa recursos caídos no mapa para seu centro.',show:()=>!game?.upgrades?.riftUniquePicks584?.rift_nucleo_gravitacional,apply:()=>{ensureRiftState584();game.upgrades.riftUniquePicks584.rift_nucleo_gravitacional=true;game.upgrades.riftCoreGravity584=1;game.rift50.gravityTimer584=2}},
+    {id:'rift_torretas_infernais',mode:'rift',rarity:'ÉPICO',tag:'fissura',weight:7,unique:true,name:'Torretas Infernais',desc:'Torretas atiram 10% mais rápido e deixam pequenos rastros de fogo de dano baixo.',show:()=>!game?.upgrades?.riftUniquePicks584?.rift_torretas_infernais,apply:()=>{ensureRiftState584();game.upgrades.riftUniquePicks584.rift_torretas_infernais=true;game.upgrades.riftInfernalTurrets584=1;game.upgrades.riftTurretHaste584+=.10}},
+    {id:'rift_regeneracao_chronos',mode:'rift',rarity:'ÉPICO',tag:'fissura',weight:7,name:'Regeneração do Chronos',desc:'O núcleo regenera 0.2% de HP por segundo.',apply:()=>{ensureRiftState584();game.upgrades.riftCoreRegen584+=.002}},
+    {id:'rift_faca_dois_gumes',mode:'rift',rarity:'ÉPICO',tag:'fissura',weight:6,name:'Faca de Dois Gumes',desc:'Fissuras aparecem com mais frequência, mas dão mais recompensas.',apply:()=>{ensureRiftState584();game.upgrades.riftFissureFreq584+=.22;game.upgrades.riftRewardMult584+=.14}},
+    {id:'rift_mina_ouro',mode:'rift',rarity:'LENDÁRIO',tag:'fissura',weight:2,unique:true,name:'Mina de Ouro',desc:'Invoca uma mina de ouro aleatória que gera pequenas quantias de ouro por segundo. Não possui HP nem limite.',show:()=>!game?.upgrades?.riftUniquePicks584?.rift_mina_ouro,apply:()=>{ensureRiftState584();game.upgrades.riftUniquePicks584.rift_mina_ouro=true;spawnGoldMine584()}},
+    {id:'rift_black_friday',mode:'rift',rarity:'LENDÁRIO',tag:'fissura',weight:2,unique:true,name:'Black Friday',desc:'Reparos e itens na loja durante as waves ficam 20% mais baratos.',show:()=>!game?.upgrades?.riftUniquePicks584?.rift_black_friday,apply:()=>{ensureRiftState584();game.upgrades.riftUniquePicks584.rift_black_friday=true;game.upgrades.riftShopDiscount584+=.20;patchRiftShop584()}},
+    {id:'rift_passos_lentos',mode:'rift',rarity:'LENDÁRIO',tag:'fissura',weight:2,name:'Passos Lentos',desc:'Inimigos e bosses andam 15% mais lentos.',apply:()=>{ensureRiftState584();game.upgrades.riftEnemySlow584+=.15}},
+    {id:'rift_defesa_impenetravel',mode:'rift',rarity:'LENDÁRIO',tag:'fissura',weight:1.8,unique:true,name:'Defesa Impenetrável',desc:'Concede escudo aos muros igual à metade do HP deles. Quando quebra, explode e empurra inimigos próximos.',show:()=>!game?.upgrades?.riftUniquePicks584?.rift_defesa_impenetravel,apply:()=>{ensureRiftState584();game.upgrades.riftUniquePicks584.rift_defesa_impenetravel=true;game.upgrades.riftWallShield584=1;normalizeWalls584()}},
+    {id:'rift_nucleo_absoluto',mode:'rift',rarity:'MÍTICO',tag:'fissura',weight:.05,unique:true,name:'Núcleo Absoluto',desc:'O núcleo gera ouro por segundo, tem +50% HP, regenera 0.5% HP/s, buffa construções próximas em 50% e repara muros para 100% HP.',show:()=>!game?.upgrades?.riftUniquePicks584?.rift_nucleo_absoluto,apply:()=>{ensureRiftState584();game.upgrades.riftUniquePicks584.rift_nucleo_absoluto=true;game.upgrades.riftAbsoluteCore584=1;game.upgrades.riftCoreGold584+=1;game.upgrades.riftCoreRegen584+=.005;growCore584(.50);normalizeWalls584();try{addFloatingText(game.rift50.core.x,game.rift50.core.y-76,'NÚCLEO ABSOLUTO','#ff5c9f',22);addRing(game.rift50.core.x,game.rift50.core.y,'#ff5c9f',180,8)}catch{}}}
+  ];
+  window.CHRONO_RIFT_POWERUPS_584=RIFT_POWERS584;
+
+  function unlockCatalog584(p){if(!p)return;const u=readUnlocks();u[p.id||norm(p.name)]=true;writeUnlocks(u)}
+  function activateNormalSynergy584(tag){ensureRiftState584();const s=game.upgrades.synergy529;s.tags[tag]=N(s.tags[tag])+1;if(s.tags[tag]<3||s.active[tag])return;s.active[tag]=true;const label=(TAGS[tag]||[tag])[0],color=(TAGS[tag]||['', '#fff'])[1];
+    if(tag==='precisao'){game.upgrades.precisionSynergy529=true;game.upgrades.critChance+=.04;game.upgrades.damage+=.04;}
+    if(tag==='velocidade'){game.upgrades.speed+=.06;game.upgrades.fireRate+=.06;game.upgrades.archerChargeHaste548=N(game.upgrades.archerChargeHaste548)+.06;}
+    if(tag==='dash'){game.upgrades.dashHaste548+=.08;game.upgrades.dashDamageBonus548+=.05;}
+    if(tag==='foco'){game.upgrades.focusRegen=(game.upgrades.focusRegen||1)+.18;game.upgrades.skillHaste548+=.04;}
+    if(tag==='escudo'){game.upgrades.armor+=.06;game.upgrades.guardianSynergy529=true;}
+    if(tag==='explosao'){game.upgrades.explosionSynergy529=true;game.upgrades.unstableAmmo529=N(game.upgrades.unstableAmmo529)+1;}
+    if(tag==='veneno'){game.upgrades.acidMastery=(game.upgrades.acidMastery||0)+.40;}
+    if(tag==='construcao'){game.upgrades.buildSynergy529=true;game.upgrades.turretDamage548=N(game.upgrades.turretDamage548)+.10;}
+    if(tag==='vampirismo'){game.upgrades.chronoBlood529=N(game.upgrades.chronoBlood529)+1;game.upgrades.lifesteal=Math.min(.035,N(game.upgrades.lifesteal)+.003);}
+    if(tag==='economia'){game.upgrades.goldDropBonus548=N(game.upgrades.goldDropBonus548)+.05;game.upgrades.relicDropBonus548=N(game.upgrades.relicDropBonus548)+.02;}
+    if(tag==='tesouro'){game.upgrades.rareBossDropBonus548=N(game.upgrades.rareBossDropBonus548)+.005;}
+    if(tag==='geral'){game.upgrades.damage+=.03;game.upgrades.focusRegen=(game.upgrades.focusRegen||1)+.05;}
+    try{addFloatingText(game.player.x,game.player.y-48,'SINERGIA: '+label,color,18);addRing(game.player.x,game.player.y,color,125,5)}catch{}
+  }
+  function weightedPick584(pool){const total=pool.reduce((a,p)=>a+Math.max(0,N(p.weight,1)),0)||1;let r=Math.random()*total;for(let i=0;i<pool.length;i++){r-=Math.max(0,N(pool[i].weight,1));if(r<=0)return pool.splice(i,1)[0];}return pool.pop();}
+  function validNormalPool584(){const arr=Array.isArray(window.CHRONO_FINAL_POWERUPS_548)?window.CHRONO_FINAL_POWERUPS_548:[];return arr.filter(p=>!p.show||p.show()).filter(Boolean);}
+  function validRiftPool584(){ensureRiftState584();return RIFT_POWERS584.filter(p=>!p.show||p.show()).filter(Boolean);}
+
+  const previousUpgradeMenu584=window.openUpgradeMenu;
+  window.openUpgradeMenu=function(){
+    if(!isRift())return previousUpgradeMenu584?.apply(this,arguments);
+    ensureRiftState584();game.running=false;overlay.classList.remove('hidden');overlayCard.className='card dune461';
+    const pool=validNormalPool584().concat(validRiftPool584()), choices=[], used=new Set();
+    while(choices.length<3&&pool.length){const p=weightedPick584(pool);if(!p||used.has(p.id))continue;used.add(p.id);choices.push(p)}
+    const sy=game.upgrades.synergy529||{tags:{}};
+    overlayCard.innerHTML=`<h1>LEVEL UP ${game.level}</h1><p>Escolha uma melhoria. No Modo das Fissuras, power-ups normais continuam aparecendo e novos poderes exclusivos podem surgir. <span class="riftOnlyBadge584">FISSURAS</span></p><div class="upgrade-grid">${choices.map((u,i)=>{const col=COLORS[u.rarity]||'#fff',tag=TAGS[u.tag]||TAGS.geral,count=u.mode==='rift'?'EXCLUSIVO':Math.min(3,N(sy.tags?.[u.tag]))+'/3';return `<button class="upgrade-btn clean-up27" data-up584="${i}" style="--rarity:${col};border-color:${col}55"><span class="rarity-label27" style="color:${col}">${esc(u.rarity)}${u.mode==='rift'?' • FISSURA':''}</span><strong>${esc(u.name)}</strong><span>${esc(u.desc)}</span><em class="synergyChip529" style="--tag:${tag[1]}">${esc(tag[0])} ${esc(count)}</em></button>`}).join('')}</div>`;
+    overlayCard.querySelectorAll('[data-up584]').forEach(b=>b.onclick=()=>{const u=choices[N(b.dataset.up584)];if(!u)return;ensureRiftState584();try{u.apply?.()}catch(e){console.warn('Power-up fissura 5.8.4 falhou',u,e)}
+      if(u.mode==='rift'){game.upgrades.riftPowerPicks584[u.id]=N(game.upgrades.riftPowerPicks584[u.id])+1;unlockCatalog584(u);}else{game.upgrades.powerPicks548[u.id]=N(game.upgrades.powerPicks548[u.id])+1;unlockCatalog584(u);activateNormalSynergy584(u.tag||'geral');}
+      game.upgrades.lifesteal=Math.min(.035,N(game.upgrades.lifesteal));overlay.classList.add('hidden');game.running=true;try{updateHUD?.();addFloatingText(game.player.x,game.player.y-34,u.name,COLORS[u.rarity]||'#fff',16)}catch{}});
+  };
+  try{if(typeof openUpgradeMenu!=='undefined')openUpgradeMenu=window.openUpgradeMenu}catch{}
+
+  function ensureTickets584(active='powers'){
+    try{$$('#powerTickets544,#powerTickets548,.powerTickets544,.powerTickets548,[data-power-ticket-root]').forEach(el=>el.remove());const box=document.createElement('div');box.id='powerTickets548';box.className='powerTickets548';box.setAttribute('data-power-ticket-root','1');box.innerHTML=`<button class="powerTicket548 ${active==='powers'?'active':''}" id="ticketPowers548">Power-Ups</button><button class="powerTicket548 fissure584 ${active==='rift'?'active':''}" id="ticketRift584">Fissuras</button><button class="powerTicket548 ${active==='syn'?'active':''}" id="ticketSyn548">Sinergias</button>`;document.body.appendChild(box);$('#ticketPowers548').onclick=()=>window.openPowerCatalog548?.('COMUM');$('#ticketRift584').onclick=()=>window.openRiftPowerCatalog584?.('COMUM');$('#ticketSyn548').onclick=()=>window.openSynergyGuide548?.();}catch(e){console.warn('tickets fissuras 5.8.4',e)}
+  }
+  function returnHub584(){try{(window.openDuneHub461||window.openHub461||window.openHub40||window.openHubMenu37)?.()}catch{overlay?.classList?.add('hidden')}}
+  window.openRiftPowerCatalog584=function(rarity='COMUM'){
+    ensureStyle584();ensureTickets584('rift');overlay.classList.remove('hidden');overlayCard.className='card dune461 powerPage544';
+    if(!RARITIES.some(x=>x[0]===rarity))rarity='COMUM';const unlocks=readUnlocks(),m=readMeta(),revealed=!!(m.allUnlocked||m.allInUnlocked);const list=RIFT_POWERS584.filter(p=>p.rarity===rarity);
+    const tabs=RARITIES.map(([r,c,l])=>`<button class="${r===rarity?'active':''}" style="--co:${c}" data-rift-rarity584="${esc(r)}">${esc(l)}</button>`).join('');
+    const cards=list.map(p=>{const ok=revealed||unlocks[p.id]||unlocks[norm(p.name)];const tag=TAGS.fissura;return `<div class="powerCard544 ${ok?'':'locked'}" style="--co:${COLORS[p.rarity]};--tag:${tag[1]}"><span class="powerLock544">${ok?'✓':'🔒'}</span><div class="powerIcon544 ${ok?'':'powerUnknown544'}">${ok?iconFor(p):'?'}</div><strong>${esc(ok?p.name:'???')}</strong><p>${esc(ok?p.desc:'Pegue este power-up uma vez no Modo das Fissuras para revelar suas informações.')}</p><span class="powerTag544">FISSURA${p.unique?' • ÚNICO':''}</span></div>`}).join('')||'<p>Nenhum power-up exclusivo nessa raridade.</p>';
+    overlayCard.innerHTML=`<div class="powerTop544"><span class="badge461" style="--co:${COLORS[rarity]}">CATÁLOGO</span><h1>POWER-UPS DAS FISSURAS</h1><p class="duneSub461">Poderes exclusivos do Modo das Fissuras. Eles só entram no ciclo de escolhas desse modo e não aparecem no modo normal.</p></div><div class="powerTabs544">${tabs}</div><div class="powerGrid544">${cards}</div><div class="duneActions461"><button class="duneBtn461 dark" id="riftPowerBack584">← Conquistas & Missões</button></div>`;
+    overlayCard.querySelectorAll('[data-rift-rarity584]').forEach(b=>b.onclick=()=>window.openRiftPowerCatalog584(b.dataset.riftRarity584));$('#riftPowerBack584')?.addEventListener('click',e=>{e.preventDefault();returnHub584()},{once:true});
+  };
+  const oldPowerCatalog584=window.openPowerCatalog548||window.openPowerCatalog544;
+  if(typeof oldPowerCatalog584==='function')window.openPowerCatalog548=window.openPowerCatalog544=function(){const r=oldPowerCatalog584.apply(this,arguments);setTimeout(()=>ensureTickets584('powers'),0);setTimeout(()=>ensureTickets584('powers'),80);return r;};
+  const oldSyn584=window.openSynergyGuide548||window.openSynergyGuide544;
+  if(typeof oldSyn584==='function')window.openSynergyGuide548=window.openSynergyGuide544=function(){const r=oldSyn584.apply(this,arguments);setTimeout(()=>ensureTickets584('syn'),0);setTimeout(()=>ensureTickets584('syn'),80);return r;};
+
+  function snapshotWalls584(){const map=new Map();if(isRift())for(const s of game.rift50.structures||[])if(s.kind==='wall'&&s.hp>0)map.set(s,N(s.hp));return map;}
+  function shieldWalls584(before){if(!isRift()||!game.upgrades?.riftWallShield584)return;normalizeWalls584();for(const s of game.rift50.structures||[]){if(s.kind!=='wall'||!before.has(s))continue;const old=before.get(s),now=N(s.hp);if(now<old&&N(s._riftShield584)>0){const dmg=old-now;s.hp=old;s._riftShield584-=dmg;s.hit=.25;if(s._riftShield584<=0){s._riftShield584=0;try{addRing(s.x,s.y,'#ffd166',150,7);addParticles(s.x,s.y,'#ffd166',42,1.2)}catch{}for(const e of game.enemies||[]){const d=Math.hypot(e.x-s.x,e.y-s.y);if(d<165){const a=Math.atan2(e.y-s.y,e.x-s.x);e.x+=Math.cos(a)*95;e.y+=Math.sin(a)*95;e.hp-=22;if(e.hp<=0){const i=game.enemies.indexOf(e);if(i>=0)try{enemyDeath(i,e)}catch{}}}}}}}}
+  function applyWireWalls584(dt){if(!isRift()||!game.upgrades?.riftWallWire584)return;for(const s of game.rift50.structures||[]){if(s.kind!=='wall'||s.hp<=0)continue;const rr=s.r||Math.max(N(s.w),N(s.h))/2||42;for(const e of game.enemies||[]){if(!e||e.hp<=0)continue;const d=Math.hypot(e.x-s.x,e.y-s.y);if(d<(e.r||10)+rr+8){e._wireCd584=Math.max(0,N(e._wireCd584)-dt);if(e._wireCd584<=0){e._wireCd584=.45;const a=Math.atan2(e.y-s.y,e.x-s.x);e.x+=Math.cos(a)*38;e.y+=Math.sin(a)*38;e.hp-=5+N(game.wave)*.25;e.hitFlash=.12;if(e.hp<=0){const i=game.enemies.indexOf(e);if(i>=0)try{enemyDeath(i,e)}catch{}}}}}}}
+  function tickRiftEconomy584(dt){if(!isRift())return;ensureRiftState584();const r=game.rift50,u=game.upgrades,c=r.core;if(c){const regen=N(u.riftCoreRegen584);if(regen>0&&c.hp>0)c.hp=Math.min(c.maxHp,N(c.hp)+N(c.maxHp)*regen*dt);if(N(u.riftCoreGold584)>0){r.coreGoldTick584=N(r.coreGoldTick584)+dt;if(r.coreGoldTick584>=1){const add=Math.max(1,Math.floor(N(u.riftCoreGold584)*2));game.gold=N(game.gold)+add;r.coreGoldTick584=0;try{addFloatingText(c.x,c.y-66,'+'+add+' OURO','#ffd166',12)}catch{}}}}
+    if(N(u.riftCoreGravity584)>0){r.gravityTimer584=N(r.gravityTimer584,10)-dt;if(r.gravityTimer584<=0){r.gravityTimer584=10;r.gravityPulse584=1.6;try{addRing(c.x,c.y,'#9f6cff',210,3);addFloatingText(c.x,c.y-70,'GRAVIDADE','#d8c7ff',14)}catch{}}if(N(r.gravityPulse584)>0){r.gravityPulse584=Math.max(0,N(r.gravityPulse584)-dt);for(const it of game.loot||[]){const d=Math.hypot(c.x-it.x,c.y-it.y);if(d>8){it.x+=(c.x-it.x)/d*520*dt;it.y+=(c.y-it.y)/d*520*dt;}}}}
+    for(const mine of r.riftGoldMines584||[]){mine.t=N(mine.t)+dt;mine.pulse=N(mine.pulse)+dt*3;if(mine.t>=1){mine.t=0;const add=2+Math.floor(Math.random()*3);game.gold=N(game.gold)+add;try{addFloatingText(mine.x,mine.y-24,'+'+add,'#ffd166',11)}catch{}}}
+    if(N(u.riftFissureFreq584)>0&&N(r.spawnFissureTimer)>0)r.spawnFissureTimer=Math.max(0,r.spawnFissureTimer-dt*N(u.riftFissureFreq584));
+    normalizeWalls584();
+  }
+  function updateFires584(dt){if(!isRift())return;const arr=game.rift50.riftFires584||[];for(let i=arr.length-1;i>=0;i--){const f=arr[i];f.life-=dt;if(f.life<=0){arr.splice(i,1);continue;}f.tick=N(f.tick)-dt;if(f.tick<=0){f.tick=.35;for(const e of game.enemies||[]){if(Math.hypot(e.x-f.x,e.y-f.y)<f.r+(e.r||10)){e.hp-=f.dmg;e.hitFlash=.08;if(e.hp<=0){const idx=game.enemies.indexOf(e);if(idx>=0)try{enemyDeath(idx,e)}catch{}}}}for(const rf of game.rift50.fissures||[]){if(Math.hypot(rf.x-f.x,rf.y-f.y)<f.r+(rf.r||26)){rf.hp-=f.dmg*.8;rf._flash508=.12;}}}}}
+
+  const oldUpdateEnemies584=window.updateEnemies;
+  if(typeof oldUpdateEnemies584==='function'){
+    window.updateEnemies=function(dt){if(!isRift())return oldUpdateEnemies584.apply(this,arguments);ensureRiftState584();const before=snapshotWalls584();const slow=clamp(N(game.upgrades.riftEnemySlow584),0,.65);const speeds=new Map();if(slow>0){for(const e of game.enemies||[]){if(!e)continue;speeds.set(e,N(e.speed));e.speed=N(e.speed)*(1-slow);}}const beforeClosed=N(game.rift50.closed),beforeGold=N(game.gold),beforeSparks=N(game.rift50.sparksRun);const out=oldUpdateEnemies584.apply(this,arguments);for(const [e,sp] of speeds){if((game.enemies||[]).includes(e))e.speed=sp;}shieldWalls584(before);applyWireWalls584(dt);const dc=N(game.rift50.closed)-beforeClosed;if(dc>0){const dg=Math.max(0,N(game.gold)-beforeGold),ds=Math.max(0,N(game.rift50.sparksRun)-beforeSparks),bonus=N(game.upgrades.riftGoldFromFissures584)+N(game.upgrades.riftRewardMult584);if(dg>0&&bonus>0)game.gold+=Math.max(1,Math.floor(dg*bonus));if(ds>0&&N(game.upgrades.riftRewardMult584)>0)game.rift50.sparksRun+=Math.max(1,Math.floor(ds*N(game.upgrades.riftRewardMult584)));}return out;};try{if(typeof updateEnemies!=='undefined')updateEnemies=window.updateEnemies}catch{}
+  }
+  const oldEnemyBullets584=window.updateEnemyBullets;
+  if(typeof oldEnemyBullets584==='function'){
+    window.updateEnemyBullets=function(dt){const before=snapshotWalls584();const out=oldEnemyBullets584.apply(this,arguments);shieldWalls584(before);return out;};try{if(typeof updateEnemyBullets!=='undefined')updateEnemyBullets=window.updateEnemyBullets}catch{}
+  }
+  const oldUpdateFX584=window.updateFX;
+  if(typeof oldUpdateFX584==='function'){
+    window.updateFX=function(dt){if(!isRift())return oldUpdateFX584.apply(this,arguments);ensureRiftState584();const beforeBullets=(game.bullets||[]).length;const out=oldUpdateFX584.apply(this,arguments);const u=game.upgrades,r=game.rift50;for(let i=beforeBullets;i<(game.bullets||[]).length;i++){const b=game.bullets[i];if(!b||b._riftMod584)continue;let near=null;for(const s of r.structures||[]){if((s.kind==='turret'||s.kind==='heavy')&&Math.hypot(b.x-s.x,b.y-s.y)<36){near=s;break;}}if(near){let mult=1+N(u.riftTurretDamagePct584)+N(u.turretDamage548);if(u.riftAbsoluteCore584&&Math.hypot(near.x-r.core.x,near.y-r.core.y)<310)mult+=.5;b.damage=(N(b.damage,10)+N(u.riftTurretFlat584))*mult;b._riftMod584=true;if(u.riftInfernalTurrets584)b._riftFire584=true;}}for(const s of r.structures||[]){if(s.kind==='turret'||s.kind==='heavy'){const haste=N(u.riftTurretHaste584)+(u.riftAbsoluteCore584&&Math.hypot(s.x-r.core.x,s.y-r.core.y)<310?.5:0);if(haste>0&&N(s.fire)>0)s.fire=Math.max(.05,N(s.fire)*(1-Math.min(.75,haste)));}}for(const b of game.bullets||[]){if(b._riftFire584){b._fireT584=N(b._fireT584)-dt;if(b._fireT584<=0){b._fireT584=.32;if(Math.random()<.45)(r.riftFires584=r.riftFires584||[]).push({x:b.x,y:b.y,r:20,life:1.2,tick:.05,dmg:2+N(game.wave)*.04});}}}tickRiftEconomy584(dt);updateFires584(dt);return out;};try{if(typeof updateFX!=='undefined')updateFX=window.updateFX}catch{}
+  }
+  const oldUpdateLoot584=window.updateLoot;
+  if(typeof oldUpdateLoot584==='function'){
+    window.updateLoot=function(dt){if(isRift())tickRiftEconomy584(dt);return oldUpdateLoot584.apply(this,arguments);};try{if(typeof updateLoot!=='undefined')updateLoot=window.updateLoot}catch{}
+  }
+  const oldDrawParticles584=window.drawParticles;
+  if(typeof oldDrawParticles584==='function'){
+    window.drawParticles=function(){const out=oldDrawParticles584.apply(this,arguments);try{if(isRift()){const r=game.rift50;ctx.save();for(const f of r.riftFires584||[]){const a=clamp(f.life/1.2,0,1);ctx.globalAlpha=.34*a;ctx.fillStyle='#ff7b22';ctx.shadowBlur=18;ctx.shadowColor='#ff7b22';ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.05-a*.2),0,Math.PI*2);ctx.fill();}for(const m of r.riftGoldMines584||[]){ctx.globalAlpha=1;ctx.save();ctx.translate(m.x,m.y);ctx.shadowBlur=22;ctx.shadowColor='#ffd166';ctx.fillStyle='#39250a';ctx.strokeStyle='#ffd166';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-24);ctx.lineTo(24,-4);ctx.lineTo(14,24);ctx.lineTo(-18,22);ctx.lineTo(-25,-5);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#ffd166';ctx.font='900 18px Orbitron';ctx.textAlign='center';ctx.fillText('₲',0,7);ctx.restore();}ctx.restore();}}catch{}return out;};try{if(typeof drawParticles!=='undefined')drawParticles=window.drawParticles}catch{}
+  }
+
+  function shopDiscount584(){return clamp(N(game?.upgrades?.riftShopDiscount584),0,.75)}
+  const SHOP_COSTS584={hp:85,dmg:95,mag:65,dash:75,turret:70,heavy:120,wall:30,expand:145,healCore:130,upgradeWall:0,upgradeTurret:0};
+  function patchRiftShop584(){return;}
+
+  for(const name of ['openRiftWaveShop509','openRiftWaveShop508','openRiftWaveShop507','openRiftWaveShop506','openRiftWaveShop505','openRiftWaveShop50']){try{const fn=window[name];if(typeof fn==='function'){window[name]=function(){const r=fn.apply(this,arguments);setTimeout(patchRiftShop584,0);setTimeout(patchRiftShop584,90);return r;};try{eval(name+'=window[name]')}catch{}}}catch{}}
+  // Desconto antigo 5.8.4 neutralizado: substituído pelo patch seguro final 5.8.7.
+
+
+  let lastSparks584=N(readMeta().riftSparks);
+  setInterval(()=>{try{const bonus=N(game?.upgrades?.riftSparkEndBonus584);const m=readMeta();const cur=N(m.riftSparks);if(bonus>0&&cur>lastSparks584){const diff=cur-lastSparks584,extra=Math.floor(diff*bonus);if(extra>0){m.riftSparks=cur+extra;writeMeta(m);lastSparks584=m.riftSparks;}else lastSparks584=cur;}else if(cur!==lastSparks584)lastSparks584=cur;}catch{}},900);
+
+  try{new MutationObserver(()=>{if($('#overlayCard')?.classList?.contains('powerPage544'))setTimeout(()=>{const txt=$('#overlayCard')?.textContent||'';if(/POWER-UPS DAS FISSURAS/i.test(txt))ensureTickets584('rift');else if(/SINERGIAS/i.test(txt))ensureTickets584('syn');else if(/POWER-UPS/i.test(txt))ensureTickets584('powers');},40);}).observe(document.body,{childList:true,subtree:true});}catch{}
+
+  console.log('Chrono Shards 5.8.4 — ultimate na interface nova e power-ups exclusivos das Fissuras carregados');
+})();
+</script>
+
+
+
+
+<!-- Removido: patch 5.8.5 de tickets por causar conflito/flicker. Substituído pelo patch 5.8.6. -->
+
+
+
+
+<script>
+/* ── Chrono Shards 5.8.6 — Catálogo estável: tickets internos sem conflito/flicker ── */
+(()=>{
+  if(window.__chronoCatalogStable586)return;
+  window.__chronoCatalogStable586=true;
+
+  const $=(q,r=document)=>{try{return r.querySelector(q)}catch{return null}};
+  const $$=(q,r=document)=>{try{return Array.from(r.querySelectorAll(q))}catch{return []}};
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const UNLOCK_KEY=SAVE+'_power_catalog_unlocks_544';
+  const COLORS={
+    'COMUM':'#75d8ff',
+    'RARO':'#62ff9b',
+    'ÉPICO':'#b58cff',
+    'LENDÁRIO':'#ffd166',
+    'MÍTICO':'#ff5c9f'
+  };
+  const RARITIES=[['COMUM','#75d8ff','Comuns'],['RARO','#62ff9b','Raros'],['ÉPICO','#b58cff','Épicos'],['LENDÁRIO','#ffd166','Lendários'],['MÍTICO','#ff5c9f','Míticos']];
+  const TAGS={
+    precisao:['PRECISÃO','#ffd166'],velocidade:['VELOCIDADE','#75d8ff'],dash:['DASH','#ffcf6e'],foco:['FOCO','#b58cff'],escudo:['ESCUDO','#62ff9b'],explosao:['EXPLOSÃO','#ff8b5f'],veneno:['VENENO','#b6ff7a'],construcao:['CONSTRUÇÃO','#9ee7ff'],vampirismo:['VAMPIRISMO','#ff7b9c'],economia:['ECONOMIA','#ffd166'],tesouro:['TESOURO','#ffb8ff'],fissura:['FISSURA','#b58cff'],geral:['GERAL','#cbd8ff']
+  };
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+
+  // Guarda as funções atuais antes de sobrescrever. A 5.8.5 foi removida do arquivo gerado.
+  const rawPower586=window.openPowerCatalog548||window.openPowerCatalog544;
+  const rawSyn586=window.openSynergyGuide548||window.openSynergyGuide544;
+  const rawRift586=window.openRiftPowerCatalog584;
+
+  function ensureStyle586(){
+    if($('#catalogStable586Style'))return;
+    const st=document.createElement('style');
+    st.id='catalogStable586Style';
+    st.textContent=`
+      /* Esconde os tickets antigos que eram criados por observers anteriores e causavam flicker. */
+      #powerTickets544,#powerTickets548,.powerTickets544,.powerTickets548,[data-power-ticket-root]{
+        display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+      }
+      .catalogTickets586{
+        position:fixed!important;right:18px!important;top:50%!important;transform:translateY(-50%)!important;
+        z-index:999999!important;display:grid!important;gap:10px!important;pointer-events:auto!important;
+      }
+      .catalogTicket586{
+        pointer-events:auto!important;user-select:none!important;touch-action:manipulation!important;
+        writing-mode:vertical-rl!important;transform:rotate(180deg)!important;
+        border-radius:16px 0 0 16px!important;border:1px solid rgba(255,255,255,.18)!important;
+        background:linear-gradient(180deg,rgba(117,216,255,.25),rgba(159,108,255,.24))!important;
+        color:#fff!important;padding:14px 9px!important;font:900 11px Orbitron,sans-serif!important;
+        letter-spacing:.12em!important;cursor:pointer!important;box-shadow:0 0 24px rgba(117,216,255,.16)!important;
+      }
+      .catalogTicket586.active{
+        border-color:#ffd166!important;background:linear-gradient(180deg,rgba(255,209,102,.36),rgba(117,216,255,.22))!important;
+        box-shadow:0 0 30px rgba(255,209,102,.30)!important;
+      }
+      .catalogTicket586.rift{
+        background:linear-gradient(180deg,rgba(159,108,255,.36),rgba(97,218,251,.20))!important;
+        box-shadow:0 0 26px rgba(159,108,255,.20)!important;
+      }
+      .catalogPage586{position:relative!important}
+      @media(max-width:820px){.catalogTickets586{right:6px!important}.catalogTicket586{padding:10px 6px!important;font-size:10px!important}}
+    `;
+    document.head.appendChild(st);
+  }
+
+  function removeOldTickets586(){
+    $$('#powerTickets544,#powerTickets548,.powerTickets544,.powerTickets548,[data-power-ticket-root]').forEach(el=>{try{el.remove()}catch{}});
+  }
+
+  function pageKind586(){
+    const card=$('#overlayCard');
+    if(!card)return null;
+    if(card.querySelector('#riftPowerBack584,[data-rift-rarity584]'))return 'rift';
+    if(card.querySelector('#synBack544,.synGuide544,.synCard544,.synGrid548'))return 'syn';
+    if(card.querySelector('#powerBack544,.powerGrid544,.powerGrid548,[data-rarity548],[data-rarity544]'))return 'powers';
+    return null;
+  }
+  function isCatalog586(){
+    const overlay=$('#overlay'),card=$('#overlayCard');
+    if(!overlay||!card||overlay.classList.contains('hidden'))return false;
+    return !!pageKind586();
+  }
+
+  function ticketHtml586(active){
+    return `<div class="catalogTickets586" data-catalog-root586="1" data-active="${esc(active)}">
+      <button type="button" class="catalogTicket586 ${active==='powers'?'active':''}" data-catalog586="powers">Power-Ups</button>
+      <button type="button" class="catalogTicket586 rift ${active==='rift'?'active':''}" data-catalog586="rift">Fissuras</button>
+      <button type="button" class="catalogTicket586 ${active==='syn'?'active':''}" data-catalog586="syn">Sinergias</button>
+    </div>`;
+  }
+
+  function installTickets586(active){
+    ensureStyle586();
+    removeOldTickets586();
+    const card=$('#overlayCard');
+    if(!card||!isCatalog586())return;
+    active=active||pageKind586()||'powers';
+    card.classList.add('catalogPage586');
+    const old=card.querySelector('[data-catalog-root586]');
+    if(old)old.remove();
+    card.insertAdjacentHTML('afterbegin',ticketHtml586(active));
+  }
+
+  function readUnlocks586(){try{return JSON.parse(localStorage.getItem(UNLOCK_KEY)||'{}')||{}}catch{return {}}}
+  function readMeta586(){try{return JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{return {}}}
+  function allRevealed586(){const m=readMeta586();return !!(m.allUnlocked||m.allInUnlocked)}
+  function iconFor586(p){
+    const text=((p?.name||'')+' '+(p?.desc||'')).toLowerCase();
+    if(/núcleo|core/.test(text))return '◈'; if(/ouro|mina|compra|loja|reparo|espólio/.test(text))return '💰';
+    if(/muro|muralha|parede|defesa/.test(text))return '▰'; if(/torreta|bala|armamento/.test(text))return '⌁';
+    if(/lento|atraso|encomenda|passos/.test(text))return '⏳'; if(/gravita/.test(text))return '🌀';
+    if(/fogo|infernal/.test(text))return '🔥'; if(/vamp|sangue|cura/.test(text))return '🩸';
+    if(/explos|mina/.test(text))return '💥'; return '✦';
+  }
+
+  function fallbackPower586(rarity='COMUM'){
+    ensureStyle586();
+    if(!RARITIES.some(x=>x[0]===rarity))rarity='COMUM';
+    const list=(Array.isArray(window.CHRONO_FINAL_POWERUPS_548)?window.CHRONO_FINAL_POWERUPS_548:[]).filter(p=>p&&p.rarity===rarity);
+    const u=readUnlocks586(), revealed=allRevealed586();
+    const tabs=RARITIES.map(([r,c,l])=>`<button class="${r===rarity?'active':''}" style="--co:${c}" data-rarity548="${esc(r)}">${esc(l)}</button>`).join('');
+    const cards=list.map(p=>{const ok=revealed||u[p.id]||u[norm(p.name)];const tag=TAGS[p.tag]||TAGS.geral;return `<div class="powerCard544 ${ok?'':'locked'}" style="--co:${COLORS[p.rarity]||'#75d8ff'};--tag:${tag[1]}"><span class="powerLock544">${ok?'✓':'🔒'}</span><div class="powerIcon544 ${ok?'':'powerUnknown544'}">${ok?iconFor586(p):'?'}</div><strong>${esc(ok?p.name:'???')}</strong><p>${esc(ok?p.desc:'Pegue este power-up uma vez durante a gameplay para revelar suas informações.')}</p><span class="powerTag544">${esc(tag[0])}</span></div>`}).join('')||'<p>Nenhum power-up nessa raridade.</p>';
+    overlay.classList.remove('hidden');overlayCard.className='card dune461 powerPage544 catalogPage586';
+    overlayCard.innerHTML=`<div class="powerTop544"><span class="badge461" style="--co:${COLORS[rarity]}">CATÁLOGO</span><h1>POWER-UPS</h1><p class="duneSub461">Todos os power-ups normais do jogo. Os bloqueados aparecem como mistério até você pegar cada um.</p></div><div class="powerTabs544">${tabs}</div><div class="powerGrid544">${cards}</div><div class="duneActions461"><button class="duneBtn461 dark" id="powerBack544">← Conquistas & Missões</button></div>`;
+    $('#powerBack544')?.addEventListener('click',e=>{e.preventDefault();returnHub586();},{once:true});
+  }
+
+  function fallbackRift586(rarity='COMUM'){
+    ensureStyle586();
+    if(!RARITIES.some(x=>x[0]===rarity))rarity='COMUM';
+    const list=(Array.isArray(window.CHRONO_RIFT_POWERUPS_584)?window.CHRONO_RIFT_POWERUPS_584:[]).filter(p=>p&&p.rarity===rarity);
+    const u=readUnlocks586(), revealed=allRevealed586();
+    const tabs=RARITIES.map(([r,c,l])=>`<button class="${r===rarity?'active':''}" style="--co:${c}" data-rift-rarity584="${esc(r)}">${esc(l)}</button>`).join('');
+    const cards=list.map(p=>{const ok=revealed||u[p.id]||u[norm(p.name)];return `<div class="powerCard544 ${ok?'':'locked'}" style="--co:${COLORS[p.rarity]||'#b58cff'};--tag:${TAGS.fissura[1]}"><span class="powerLock544">${ok?'✓':'🔒'}</span><div class="powerIcon544 ${ok?'':'powerUnknown544'}">${ok?iconFor586(p):'?'}</div><strong>${esc(ok?p.name:'???')}</strong><p>${esc(ok?p.desc:'Pegue este power-up no Modo das Fissuras para revelar suas informações.')}</p><span class="powerTag544">FISSURA${p.unique?' • ÚNICO':''}</span></div>`}).join('')||'<p>Nenhum power-up exclusivo nessa raridade.</p>';
+    overlay.classList.remove('hidden');overlayCard.className='card dune461 powerPage544 catalogPage586';
+    overlayCard.innerHTML=`<div class="powerTop544"><span class="badge461" style="--co:${COLORS[rarity]}">FISSURAS</span><h1>POWER-UPS DAS FISSURAS</h1><p class="duneSub461">Poderes exclusivos que só aparecem no ciclo do Modo das Fissuras.</p></div><div class="powerTabs544">${tabs}</div><div class="powerGrid544">${cards}</div><div class="duneActions461"><button class="duneBtn461 dark" id="riftPowerBack584">← Conquistas & Missões</button></div>`;
+    $('#riftPowerBack584')?.addEventListener('click',e=>{e.preventDefault();returnHub586();},{once:true});
+  }
+
+  function fallbackSyn586(){
+    ensureStyle586();
+    const entries=Object.entries(TAGS).filter(([k])=>!['geral','fissura'].includes(k));
+    const cards=entries.map(([k,v])=>`<div class="synCard544" style="--co:${v[1]}"><h3>${esc(v[0])}</h3><p><b>Junte 3 power-ups com essa tag.</b></p><div class="synViz544"><span class="synDot544">✦</span><span class="synArrow544">+</span><span class="synDot544">✦</span><span class="synArrow544">+</span><span class="synDot544">✦</span><span class="synArrow544">→</span><span class="synDot544">★</span></div><p>Ativa um bônus especial ligado a essa categoria durante a run.</p></div>`).join('');
+    overlay.classList.remove('hidden');overlayCard.className='card dune461 powerPage544 catalogPage586';
+    overlayCard.innerHTML=`<div class="powerTop544"><span class="badge461" style="--co:#ffd166">GUIA</span><h1>SINERGIAS</h1><p class="duneSub461">Cada power-up possui uma tag. Ao juntar 3 da mesma tag, uma sinergia ativa aparece durante a run.</p></div><div class="synGuide544">${cards}</div><div class="duneActions461"><button class="duneBtn461 dark" id="synBack544">← Conquistas & Missões</button></div>`;
+    $('#synBack544')?.addEventListener('click',e=>{e.preventDefault();returnHub586();},{once:true});
+  }
+
+  function afterOpen586(active){
+    setTimeout(()=>installTickets586(active),0);
+    setTimeout(()=>installTickets586(active),70);
+    setTimeout(()=>installTickets586(active),160);
+  }
+
+  function openPower586(rarity='COMUM'){
+    ensureStyle586();removeOldTickets586();
+    try{if(typeof rawPower586==='function')rawPower586.call(window,rarity);else fallbackPower586(rarity)}catch(e){console.warn('Power catalog 5.8.6 fallback',e);fallbackPower586(rarity)}
+    afterOpen586('powers');
+  }
+  function openRift586(rarity='COMUM'){
+    ensureStyle586();removeOldTickets586();
+    try{if(typeof rawRift586==='function')rawRift586.call(window,rarity);else fallbackRift586(rarity)}catch(e){console.warn('Rift catalog 5.8.6 fallback',e);fallbackRift586(rarity)}
+    afterOpen586('rift');
+  }
+  function openSyn586(){
+    ensureStyle586();removeOldTickets586();
+    try{if(typeof rawSyn586==='function')rawSyn586.call(window);else fallbackSyn586()}catch(e){console.warn('Synergy catalog 5.8.6 fallback',e);fallbackSyn586()}
+    afterOpen586('syn');
+  }
+  function returnHub586(){
+    removeOldTickets586();
+    try{if(typeof window.openHub461==='function')window.openHub461();else if(typeof window.openDuneHub461==='function')window.openDuneHub461();else if(typeof window.openHub==='function')window.openHub();else if(typeof window.openStartMenu461==='function')window.openStartMenu461();}catch(e){console.warn('hub 5.8.6 fallback',e)}
+    setTimeout(removeOldTickets586,0);setTimeout(removeOldTickets586,90);setTimeout(removeOldTickets586,220);
+  }
+
+  window.openPowerCatalog586=openPower586;
+  window.openRiftPowerCatalog586=openRift586;
+  window.openSynergyGuide586=openSyn586;
+  window.openPowerCatalog548=window.openPowerCatalog544=openPower586;
+  window.openRiftPowerCatalog584=openRift586;
+  window.openSynergyGuide548=window.openSynergyGuide544=openSyn586;
+
+  document.addEventListener('click',e=>{
+    const t=e.target;
+    const ticket=t?.closest?.('[data-catalog586]');
+    if(ticket){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      const kind=ticket.dataset.catalog586;
+      if(kind==='rift')openRift586('COMUM');
+      else if(kind==='syn')openSyn586();
+      else openPower586('COMUM');
+      return;
+    }
+    const oldTicket=t?.closest?.('#ticketPowers548,#ticketRift584,#ticketSyn548,#powerTickets548 .powerTicket548,#powerTickets544 .powerTicket544');
+    if(oldTicket){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      const txt=(oldTicket.textContent||'').toLowerCase();
+      if(/fissur/.test(txt)||oldTicket.id==='ticketRift584')openRift586('COMUM');
+      else if(/sinerg/.test(txt)||oldTicket.id==='ticketSyn548')openSyn586();
+      else openPower586('COMUM');
+      return;
+    }
+    const rr=t?.closest?.('[data-rift-rarity584]');
+    if(rr&&isCatalog586()){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      openRift586(rr.dataset.riftRarity584||'COMUM');return;
+    }
+    const pr=t?.closest?.('[data-rarity548],[data-rarity544]');
+    if(pr&&isCatalog586()){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      openPower586(pr.dataset.rarity548||pr.dataset.rarity544||'COMUM');return;
+    }
+    const hub=t?.closest?.('#hubPowerUps544,[data-open-powerups],.powerHub544');
+    if(hub){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      openPower586('COMUM');return;
+    }
+    const back=t?.closest?.('#powerBack544,#synBack544,#riftPowerBack584');
+    if(back){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      returnHub586();return;
+    }
+  },true);
+
+  function sync586(){
+    ensureStyle586();
+    removeOldTickets586();
+    if(isCatalog586()&&!$('#overlayCard [data-catalog-root586]'))installTickets586(pageKind586()||'powers');
+  }
+  try{new MutationObserver(()=>setTimeout(sync586,45)).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style']});}catch{}
+  setInterval(sync586,1200);
+  setTimeout(sync586,0);setTimeout(sync586,200);
+
+  console.log('Chrono Shards 5.8.6 — catálogo estabilizado sem flicker e com tickets funcionais');
+})();
+</script>
+
+
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   CHRONO SHARDS 5.8.7 — FIX FINAL: torretas das Fissuras + ponte game + auditoria de power-ups
+   - O jogo usa `let game`; vários patches recentes consultavam `window.game`.
+   - Esta ponte deixa esses patches enxergarem o estado real sem trocar a arquitetura.
+   - Adiciona um disparo reserva das torretas usando o mesmo cooldown `s.fire`, sem duplicar tiro se a lógica antiga já funcionou.
+   ──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoRiftTurretPowerFix587)return;
+  window.__chronoRiftTurretPowerFix587=true;
+
+  const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const has=(v)=>Number.isFinite(Number(v));
+
+  // Ponte segura: patches antigos/recentes que usam window.game passam a enxergar o `let game` real.
+  try{
+    const desc=Object.getOwnPropertyDescriptor(window,'game');
+    if(!desc || (!desc.get && desc.configurable!==false)){
+      Object.defineProperty(window,'game',{
+        configurable:true,
+        get(){try{return game}catch{return undefined}},
+        set(v){try{game=v}catch{}}
+      });
+    }
+  }catch(e){console.warn('game bridge 5.8.7',e)}
+
+  function isRift(){try{return !!(game && game.riftMode50 && game.rift50)}catch{return false}}
+  function rift(){return isRift()?game.rift50:null}
+  function upgrades(){if(!game) return {}; game.upgrades=game.upgrades||{}; return game.upgrades;}
+  function ensureRiftPowerState(){
+    const u=upgrades();
+    u.riftPowerPicks584=u.riftPowerPicks584||{};
+    u.riftUniquePicks584=u.riftUniquePicks584||{};
+    ['riftCoreRegen584','riftCoreGold584','riftGoldFromFissures584','riftWallHpPct584','riftTurretDamagePct584','riftTurretFlat584','riftTurretHaste584','riftEnemySlow584','riftShopDiscount584','riftSparkEndBonus584','riftRewardMult584','riftFissureFreq584','riftInfernalTurrets584','riftWallWire584','riftCoreGravity584','riftAbsoluteCore584','riftWallShield584'].forEach(k=>{u[k]=n(u[k]);});
+    const r=rift();
+    if(r){r.riftFires584=r.riftFires584||[];r.riftGoldMines584=r.riftGoldMines584||[];}
+  }
+
+  function validTarget(obj){return obj && has(obj.x) && has(obj.y) && n(obj.hp,1)>0;}
+  function findTurretTarget(s){
+    const r=rift(); if(!r)return null;
+    const lvl=clamp(n(s.level,1)|0,1,5);
+    const range=(s.kind==='heavy'?345:290)+lvl*10;
+    let target=null, best=Infinity, type='enemy';
+    for(const e of game.enemies||[]){
+      if(!validTarget(e))continue;
+      const d=Math.hypot(e.x-s.x,e.y-s.y);
+      if(d<range && d<best){best=d;target=e;type='enemy';}
+    }
+    for(const f of r.fissures||[]){
+      if(!validTarget(f))continue;
+      const d=Math.hypot(f.x-s.x,f.y-s.y);
+      if(d<range && d<best){best=d;target=f;type='fissure';}
+    }
+    return target?{target,type,dist:best}:null;
+  }
+
+  function fireRiftTurret(s,hit){
+    const r=rift(), u=upgrades(); if(!r||!hit)return false;
+    const lvl=clamp(n(s.level,1)|0,1,5);
+    const heavy=s.kind==='heavy';
+    const a=Math.atan2(hit.target.y-s.y,hit.target.x-s.x);
+    const nearAbsolute=!!(u.riftAbsoluteCore584 && r.core && Math.hypot(s.x-r.core.x,s.y-r.core.y)<310);
+    const pct=n(u.riftTurretDamagePct584)+n(u.turretDamage548)+(nearAbsolute?.50:0);
+    const flat=n(u.riftTurretFlat584);
+    const levelMult=1+(lvl-1)*(heavy?.18:.14);
+    const base=heavy?40:18;
+    const dmg=(base*levelMult+flat)*(1+pct);
+    const haste=clamp(n(u.riftTurretHaste584)+(nearAbsolute?.50:0),0,.80);
+    const cd=(heavy?.95:.34)/(1+haste);
+    const speed=heavy?430:555;
+    const bullet={
+      x:s.x+Math.cos(a)*(heavy?22:18),
+      y:s.y+Math.sin(a)*(heavy?22:18),
+      vx:Math.cos(a)*speed,
+      vy:Math.sin(a)*speed,
+      r:heavy?6:4,
+      life:heavy?1.35:1.15,
+      damage:dmg,
+      pierce:0,
+      weaponKey:heavy?'cannon':'blaster',
+      explosive:heavy,
+      _riftTurretBullet587:true,
+      _riftMod584:true
+    };
+    if(u.riftInfernalTurrets584)bullet._riftFire584=true;
+    game.bullets=game.bullets||[];
+    game.bullets.push(bullet);
+    s.fire=cd;
+    s.aim509=s.aim519=s.aim520=s.aim521=a;
+    try{addParticles?.(s.x,s.y,heavy?'#ffb35f':'#9bedff',4,.45)}catch{}
+    return true;
+  }
+
+  function updateRiftTurretFallback(dt){
+    const r=rift(); if(!r||!Array.isArray(r.structures))return;
+    ensureRiftPowerState();
+    for(const s of r.structures){
+      if(!s || !(s.kind==='turret'||s.kind==='heavy') || n(s.hp)<=0)continue;
+      if(!has(s.fire))s.fire=0;
+      // Usa o cooldown oficial. Se a lógica antiga já disparou, ela terá colocado s.fire positivo e este fallback não duplica.
+      if(s.fire>0){s.fire=Math.max(0,s.fire-dt);continue;}
+      const hit=findTurretTarget(s);
+      if(hit)fireRiftTurret(s,hit);
+    }
+  }
+
+  function updateRiftFireFields(dt){
+    const r=rift(); if(!r)return;
+    const arr=r.riftFires584||[];
+    for(let i=arr.length-1;i>=0;i--){
+      const f=arr[i];
+      f.life=n(f.life)-dt;
+      if(f.life<=0){arr.splice(i,1);continue;}
+      f.tick=n(f.tick)-dt;
+      if(f.tick<=0){
+        f.tick=.35;
+        for(const e of game.enemies||[]){
+          if(!validTarget(e))continue;
+          if(Math.hypot(e.x-f.x,e.y-f.y)<n(f.r,20)+(e.r||10)){
+            e.hp-=n(f.dmg,2); e.hitFlash=.08;
+            if(e.hp<=0){const idx=game.enemies.indexOf(e); if(idx>=0)try{enemyDeath(idx,e)}catch{}}
+          }
+        }
+        for(const rf of r.fissures||[]){
+          if(!validTarget(rf))continue;
+          if(Math.hypot(rf.x-f.x,rf.y-f.y)<n(f.r,20)+(rf.r||26))rf.hp-=n(f.dmg,2)*.8;
+        }
+      }
+    }
+  }
+
+  function spawnFireFromInfernalBullets(dt){
+    const r=rift(); if(!r)return;
+    for(const b of game.bullets||[]){
+      if(!b || !b._riftFire584)continue;
+      b._fireT584=n(b._fireT584)-dt;
+      if(b._fireT584<=0){
+        b._fireT584=.32;
+        if(Math.random()<.45){
+          (r.riftFires584=r.riftFires584||[]).push({x:b.x,y:b.y,r:20,life:1.2,tick:.05,dmg:2+n(game.wave)*.04});
+        }
+      }
+    }
+  }
+
+  // Guarda valores anteriores para conferir bônus de fissuras mesmo se algum patch antigo não rodar.
+  function preEnemySnapshot(){
+    const r=rift(); if(!r)return null;
+    return {closed:n(r.closed),gold:n(game.gold),sparks:n(r.sparksRun)};
+  }
+  function postEnemyRewards(snap){
+    const r=rift(), u=upgrades(); if(!r||!snap)return;
+    const dc=n(r.closed)-snap.closed;
+    if(dc<=0)return;
+    const dg=Math.max(0,n(game.gold)-snap.gold), ds=Math.max(0,n(r.sparksRun)-snap.sparks);
+    const goldBonus=n(u.riftGoldFromFissures584)+n(u.riftRewardMult584);
+    if(dg>0&&goldBonus>0)game.gold+=Math.max(1,Math.floor(dg*goldBonus));
+    if(ds>0&&n(u.riftRewardMult584)>0)r.sparksRun+=Math.max(1,Math.floor(ds*n(u.riftRewardMult584)));
+  }
+
+  // Slow final seguro: aplica só durante a chamada do updateEnemies e restaura depois.
+  const oldEnemies=window.updateEnemies|| (typeof updateEnemies!=='undefined'?updateEnemies:null);
+  if(typeof oldEnemies==='function'){
+    window.updateEnemies=function(dt){
+      if(!isRift())return oldEnemies.apply(this,arguments);
+      ensureRiftPowerState();
+      const snap=preEnemySnapshot();
+      const slow=clamp(n(upgrades().riftEnemySlow584),0,.65);
+      const saved=[];
+      if(slow>0){
+        for(const e of game.enemies||[]){
+          if(e&&has(e.speed)){saved.push([e,e.speed]);e.speed=n(e.speed)*(1-slow);}
+        }
+      }
+      let out;
+      try{out=oldEnemies.apply(this,arguments);}finally{
+        for(const [e,sp] of saved){if((game.enemies||[]).includes(e))e.speed=sp;}
+      }
+      postEnemyRewards(snap);
+      return out;
+    };
+    try{if(typeof updateEnemies!=='undefined')updateEnemies=window.updateEnemies;}catch{}
+  }
+
+  const oldFX=window.updateFX || (typeof updateFX!=='undefined'?updateFX:null);
+  if(typeof oldFX==='function'){
+    window.updateFX=function(dt){
+      let out;
+      try{out=oldFX.apply(this,arguments);}catch(err){console.warn('updateFX anterior falhou; fallback 5.8.7 ativo',err);}
+      if(isRift()&&game.running){
+        ensureRiftPowerState();
+        updateRiftTurretFallback(n(dt,.016));
+        spawnFireFromInfernalBullets(n(dt,.016));
+        updateRiftFireFields(n(dt,.016));
+      }
+      return out;
+    };
+    try{if(typeof updateFX!=='undefined')updateFX=window.updateFX;}catch{}
+  }
+
+  // Se a função de level-up das Fissuras estiver no patch 5.8.4, a ponte window.game já faz ela funcionar.
+  // Este check só avisa no console caso alguma versão antiga ainda esteja sem catálogo de poderes das fissuras.
+  setTimeout(()=>{
+    try{
+      if(!Array.isArray(window.CHRONO_RIFT_POWERUPS_584)||window.CHRONO_RIFT_POWERUPS_584.length<18){
+        console.warn('Catálogo de power-ups das Fissuras menor que o esperado.');
+      }
+    }catch{}
+  },0);
+
+  console.log('Chrono Shards 5.8.7 — torretas das Fissuras e power-ups revisados/corrigidos');
+})();
+</script>
+
+
+
+<script id="riftDiscountSafe587">
+(()=>{
+  if(window.__chronoRiftDiscountSafe587)return;
+  window.__chronoRiftDiscountSafe587=true;
+  const PATCH='Chrono Shards 5.8.7 — descontos das Fissuras estáveis sem MutationObserver e auditoria dos power-ups';
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const hasGame=()=>{try{return typeof game!=='undefined'&&!!game;}catch{return false;}};
+  const g=()=>hasGame()?game:null;
+  const isRift=()=>{const gg=g();return !!(gg&&gg.riftMode50&&gg.rift50);};
+  const gold=()=>n(g()?.gold,0);
+  const upgrades=()=>g()?.upgrades||{};
+  const rift=()=>g()?.rift50||null;
+
+  const WALLS587=[
+    {name:'Madeira',repair:35,nextCost:100},
+    {name:'Aço',repair:55,nextCost:150},
+    {name:'Ouro',repair:85,nextCost:250},
+    {name:'Diamante',repair:125,nextCost:350},
+    {name:'Chrono',repair:180,nextCost:null}
+  ];
+  const TURRETS587=[
+    {name:'MK-I',repair:55,nextCost:110},
+    {name:'MK-II',repair:80,nextCost:165},
+    {name:'MK-III',repair:115,nextCost:260},
+    {name:'MK-IV',repair:160,nextCost:380},
+    {name:'CHRONO',repair:220,nextCost:null}
+  ];
+  const BASE_COSTS587={hp:85,dmg:95,mag:65,dash:75,turret:70,heavy:120,wall:30,expand:145};
+
+  function ensureRiftState587(){
+    const gg=g(); if(!gg)return;
+    gg.upgrades=gg.upgrades||{};
+    const u=gg.upgrades;
+    u.riftShopDiscount584=n(u.riftShopDiscount584,0);
+    u.riftUniquePicks584=u.riftUniquePicks584||{};
+    // Corrige saves antigos onde o poder único foi marcado, mas o valor numérico não foi reconstituído.
+    if(u.riftUniquePicks584.rift_black_friday && u.riftShopDiscount584<0.20)u.riftShopDiscount584+=0.20;
+    ['riftGoldFromFissures584','riftRewardMult584','riftSparkEndBonus584','riftEnemySlow584','riftTurretDamagePct584','riftTurretFlat584','riftTurretHaste584','riftWallHpPct584','riftCoreRegen584','riftCoreGold584','riftFissureFreq584'].forEach(k=>u[k]=n(u[k],0));
+  }
+  function discountRate587(){
+    ensureRiftState587();
+    const u=upgrades();
+    return clamp(n(u.riftShopDiscount584,0),0,.75);
+  }
+  function discounted587(base){
+    base=Math.ceil(n(base,0));
+    if(base<=0)return 0;
+    const d=discountRate587();
+    return Math.max(1,Math.ceil(base*(1-d)));
+  }
+  function healCoreCost587(){
+    const r=rift();
+    return Math.ceil(130*Math.pow(1.25,n(r?.healCoreUses508||r?.healCoreUses509,0)));
+  }
+  function shopBaseCost587(id){
+    if(id==='healCore')return healCoreCost587();
+    return BASE_COSTS587[id]||0;
+  }
+  function wallUpgradeCost587(s){
+    if(!s||s.kind!=='wall')return 0;
+    const lvl=clamp(n(s.level,1),1,5);
+    return WALLS587[lvl-1]?.nextCost||0;
+  }
+  function turretUpgradeCost587(s){
+    if(!s||!(s.kind==='turret'||s.kind==='heavy'))return 0;
+    const lvl=clamp(n(s.level,1),1,5);
+    return TURRETS587[lvl-1]?.nextCost||0;
+  }
+  function repairBaseCost587(s){
+    if(!s||n(s.hp,0)>=n(s.maxHp,0))return 0;
+    const miss=(n(s.maxHp,1)-n(s.hp,0))/Math.max(1,n(s.maxHp,1));
+    let base=55;
+    if(s.kind==='wall')base=WALLS587[clamp(n(s.level,1),1,5)-1]?.repair||55;
+    else base=(TURRETS587[clamp(n(s.level,1),1,5)-1]?.repair||55)*(s.kind==='heavy'?1.25:1);
+    return Math.max(12,Math.ceil(base*miss));
+  }
+  function canUseShopItem587(id){
+    const gg=g(), r=rift(); if(!gg||!r)return false;
+    const structs=r.structures||[];
+    const used=structs.filter(s=>s&&(s.kind==='turret'||s.kind==='heavy')&&n(s.hp,0)>0).length;
+    if((id==='turret'||id==='heavy')&&used>=n(r.maxTurrets,0))return false;
+    if(id==='healCore'&&r.core&&n(r.core.hp,0)>=n(r.core.maxHp,0))return false;
+    if(id==='upgradeWall')return structs.some(s=>s&&s.kind==='wall'&&n(s.hp,0)>0&&n(s.level,1)<5);
+    if(id==='upgradeTurret')return structs.some(s=>s&&(s.kind==='turret'||s.kind==='heavy')&&n(s.hp,0)>0&&n(s.level,1)<5);
+    return true;
+  }
+  function shopSelector587(){return '[data-riftbuy509],[data-riftbuy508],[data-riftbuy507],[data-rift-buy506],[data-rift-buy505],[data-rift-buy50],[data-rift-buy]';}
+  function getShopId587(btn){return btn?.dataset?.riftbuy509||btn?.dataset?.riftbuy508||btn?.dataset?.riftbuy507||btn?.dataset?.riftBuy506||btn?.dataset?.riftBuy505||btn?.dataset?.riftBuy50||btn?.dataset?.riftBuy||'';}
+  function setCostHTML587(el,base,final,label='OURO'){
+    if(!el)return;
+    const d=discountRate587();
+    let html;
+    if(d>0&&base>0&&final<base){
+      html=`<span class="riftPriceOld591">${base} ${label}</span><b class="riftPriceNew591">${final} ${label}</b><small class="riftPriceCut591">-${Math.round(d*100)}%</small>`;
+    }else html=base>0?`<b class="riftPriceNew591">${base} ${label}</b>`:el.textContent;
+    if(el.innerHTML!==html)el.innerHTML=html;
+  }
+  function patchVisibleShop587(){
+    if(!isRift()||!overlayCard||!/riftShop/i.test(overlayCard.className||''))return;
+    ensureRiftState587();
+    overlayCard.querySelectorAll(shopSelector587()).forEach(btn=>{
+      const id=getShopId587(btn); if(!id)return;
+      const costEl=btn.querySelector('.cost');
+      if(id==='upgradeWall'){
+        const cheapest=(rift()?.structures||[]).filter(s=>s&&s.kind==='wall'&&n(s.hp,0)>0&&n(s.level,1)<5).map(wallUpgradeCost587).filter(Boolean).sort((a,b)=>a-b)[0]||0;
+        if(cheapest)setCostHTML587(costEl,cheapest,discounted587(cheapest));
+        btn.disabled=!canUseShopItem587(id);
+        return;
+      }
+      if(id==='upgradeTurret'){
+        const cheapest=(rift()?.structures||[]).filter(s=>s&&(s.kind==='turret'||s.kind==='heavy')&&n(s.hp,0)>0&&n(s.level,1)<5).map(turretUpgradeCost587).filter(Boolean).sort((a,b)=>a-b)[0]||0;
+        if(cheapest)setCostHTML587(costEl,cheapest,discounted587(cheapest));
+        btn.disabled=!canUseShopItem587(id);
+        return;
+      }
+      const base=shopBaseCost587(id); if(!base)return;
+      const final=discounted587(base);
+      btn.dataset.riftBaseCost587=String(base);
+      btn.dataset.riftFinalCost587=String(final);
+      setCostHTML587(costEl,base,final);
+      btn.disabled=!canUseShopItem587(id)||gold()<final;
+    });
+  }
+  function patchVisibleRepair587(){
+    if(!isRift()||!overlayCard||!/riftRepair/i.test(overlayCard.className||''))return;
+    ensureRiftState587();
+    const list=(rift()?.structures||[]).filter(s=>s&&n(s.hp,0)>0);
+    overlayCard.querySelectorAll('[data-repair509],[data-repair508],[data-repair507],[data-repair506],[data-repair505]').forEach(btn=>{
+      const idx=Number(btn.dataset.repair509??btn.dataset.repair508??btn.dataset.repair507??btn.dataset.repair506??btn.dataset.repair505);
+      const s=list[idx]; if(!s)return;
+      const base=repairBaseCost587(s), final=discounted587(base);
+      btn.dataset.riftRepairBase587=String(base);
+      btn.dataset.riftRepairFinal587=String(final);
+      if(base<=0){if(btn.textContent!=='Integra')btn.textContent='Integra';btn.disabled=true;return;}
+      const card=btn.closest('.riftRepairCard509');
+      const price=card?.querySelector?.('.riftRepairPrice591');
+      if(price){
+        const d=discountRate587();
+        const html=d>0&&final<base?`<span class="riftPriceOld591">${base} OURO</span><b class="riftPriceNew591">${final} OURO</b><small class="riftPriceCut591">-${Math.round(d*100)}%</small>`:`<b class="riftPriceNew591">${base} OURO</b>`;
+        if(price.innerHTML!==html)price.innerHTML=html;
+        if(btn.textContent!=='Consertar')btn.textContent='Consertar';
+      }else{
+        const d=discountRate587();
+        const txt=d>0&&final<base?`Consertar • ${final} ouro (-${Math.round(d*100)}%)`:`Consertar • ${base} ouro`;
+        if(btn.textContent!==txt)btn.textContent=txt;
+      }
+      btn.disabled=gold()<final;
+    });
+  }
+  function patchVisible587(){patchVisibleShop587();patchVisibleRepair587();}
+
+  function targetStructure587(kind){
+    const gg=g(), r=rift(); if(!gg||!r)return null;
+    let best=null,bd=Infinity;
+    for(const s of r.structures||[]){
+      if(!s||n(s.hp,0)<=0)continue;
+      if(kind==='wall' && (s.kind!=='wall'||n(s.level,1)>=5))continue;
+      if(kind==='turret' && !((s.kind==='turret'||s.kind==='heavy')&&n(s.level,1)<5))continue;
+      const d=Math.hypot((mouse?.x||0)-s.x,(mouse?.y||0)-s.y);
+      if(d<bd){bd=d;best=s;}
+    }
+    return best&&bd<=75?best:null;
+  }
+  function withDiscountedSpend587(base,fn,after){
+    const gg=g(); if(!gg||base<=0)return fn?.();
+    const final=discounted587(base), before=gold();
+    if(before<final)return false;
+    if(final>=base){const out=fn?.();after?.(false,before,base,final);return out;}
+    const temp=Math.max(before,base);
+    gg.gold=temp;
+    try{updateHUD?.();}catch{}
+    const out=fn?.();
+    setTimeout(()=>{
+      try{
+        const now=gold();
+        // Se a ação realmente gastou, o ouro terá caído abaixo do valor temporário.
+        const spent=now<temp-.001 || !!(g()?.riftBuild509&&g().riftBuild509.mode==='build');
+        if(spent){gg.gold=Math.max(0,before-final);}else{gg.gold=before;}
+        if(gg.riftBuild509&&gg.riftBuild509.mode==='build')gg.riftBuild509.cost=final;
+        if(gg.riftBuild508&&gg.riftBuild508.mode==='build')gg.riftBuild508.cost=final;
+        if(gg.riftBuild507&&gg.riftBuild507.mode==='build')gg.riftBuild507.cost=final;
+        if(gg.riftBuild505&&gg.riftBuild505.mode==='build')gg.riftBuild505.cost=final;
+        after?.(spent,before,base,final);
+        try{updateHUD?.();}catch{}
+        patchVisible587();
+      }catch(e){console.warn('discount safe 5.8.7 after spend',e);}
+    },0);
+    return out;
+  }
+
+  // Capture antes dos onClick antigos. Não altera DOM continuamente e não usa MutationObserver.
+  document.addEventListener('click',e=>{
+    try{
+      if(!isRift()||discountRate587()<=0)return;
+      const btn=e.target?.closest?.(shopSelector587()+',[data-repair509],[data-repair508],[data-repair507],[data-repair506],[data-repair505]');
+      if(!btn)return;
+      // Reparos.
+      if(btn.matches?.('[data-repair509],[data-repair508],[data-repair507],[data-repair506],[data-repair505]')){
+        const list=(rift()?.structures||[]).filter(s=>s&&n(s.hp,0)>0);
+        const idx=Number(btn.dataset.repair509??btn.dataset.repair508??btn.dataset.repair507??btn.dataset.repair506??btn.dataset.repair505);
+        const s=list[idx]; const base=repairBaseCost587(s); if(!s||base<=0)return;
+        if(gold()<discounted587(base))return;
+        const before=gold(), temp=Math.max(before,base); g().gold=temp;
+        setTimeout(()=>{try{const repaired=n(s.hp,0)>=n(s.maxHp,1);g().gold=repaired?Math.max(0,before-discounted587(base)):before;updateHUD?.();patchVisible587();}catch{}},0);
+        return;
+      }
+      // Loja de wave.
+      const id=getShopId587(btn); if(!id)return;
+      if(id==='upgradeWall'||id==='upgradeTurret')return; // gasto ocorre no clique na construção, tratado abaixo.
+      const base=shopBaseCost587(id); if(!base||!canUseShopItem587(id))return;
+      if(gold()<discounted587(base))return;
+      const before=gold(), temp=Math.max(before,base); g().gold=temp;
+      setTimeout(()=>{try{
+        const gg=g(); if(!gg)return;
+        const spent=gold()<temp-.001 || !!(gg.riftBuild509&&gg.riftBuild509.mode==='build');
+        if(spent)gg.gold=Math.max(0,before-discounted587(base)); else gg.gold=before;
+        if(gg.riftBuild509&&gg.riftBuild509.mode==='build')gg.riftBuild509.cost=discounted587(base);
+        if(gg.riftBuild508&&gg.riftBuild508.mode==='build')gg.riftBuild508.cost=discounted587(base);
+        if(gg.riftBuild507&&gg.riftBuild507.mode==='build')gg.riftBuild507.cost=discounted587(base);
+        if(gg.riftBuild505&&gg.riftBuild505.mode==='build')gg.riftBuild505.cost=discounted587(base);
+        updateHUD?.(); patchVisible587();
+      }catch(err){console.warn('discount safe 5.8.7 shop click',err);}},0);
+    }catch(err){console.warn('discount safe 5.8.7 click',err);}
+  },true);
+
+  document.addEventListener('click',e=>{
+    try{
+      if(!isRift()||discountRate587()<=0)return;
+      const build=g()?.riftBuild509||g()?.riftBuild508||g()?.riftBuild507||g()?.riftBuild505;
+      if(!build||!(build.mode==='upgradeWall'||build.mode==='upgradeTurret'))return;
+      const kind=build.mode==='upgradeWall'?'wall':'turret';
+      const s=targetStructure587(kind); if(!s)return;
+      const base=kind==='wall'?wallUpgradeCost587(s):turretUpgradeCost587(s); if(!base)return;
+      if(gold()<discounted587(base))return;
+      const before=gold(), oldLevel=n(s.level,1), temp=Math.max(before,base); g().gold=temp;
+      setTimeout(()=>{try{
+        const upgraded=n(s.level,1)>oldLevel;
+        g().gold=upgraded?Math.max(0,before-discounted587(base)):before;
+        updateHUD?.(); patchVisible587();
+      }catch(err){console.warn('discount safe 5.8.7 upgrade click',err);}},0);
+    }catch(err){console.warn('discount safe 5.8.7 canvas prep',err);}
+  },true);
+
+  // Wrappers: depois de cada render de loja, aplica os preços reais/visuais uma única vez.
+  ['openRiftWaveShop509','openRiftWaveShop508','openRiftWaveShop507','openRiftWaveShop506','openRiftWaveShop505','openRiftWaveShop50'].forEach(name=>{
+    try{
+      const old=window[name];
+      if(typeof old==='function'&&!old._discountSafe587){
+        const wrapped=function(){const out=old.apply(this,arguments);setTimeout(patchVisible587,0);setTimeout(patchVisible587,80);return out;};
+        wrapped._discountSafe587=true;
+        window[name]=wrapped;
+        try{eval(name+'=window[name]')}catch{}
+      }
+    }catch{}
+  });
+
+  // Reparo não é global; este intervalo leve é idempotente, não observa mutations e não reescreve texto igual.
+  setInterval(()=>{try{patchVisible587();}catch(e){console.warn('discount safe 5.8.7 interval',e);}},350);
+
+  // Auditoria/normalização dos novos power-ups, para saves antigos e picks com apply parcial.
+  function auditRiftPowers587(){
+    if(!isRift())return;
+    ensureRiftState587();
+    const u=upgrades(), r=rift(); if(!u||!r)return;
+    u.riftUniquePicks584=u.riftUniquePicks584||{};
+    if(u.riftUniquePicks584.rift_torretas_infernais){u.riftInfernalTurrets584=1;if(n(u.riftTurretHaste584)<.10)u.riftTurretHaste584+=.10;}
+    if(u.riftUniquePicks584.rift_muralha_arames)u.riftWallWire584=1;
+    if(u.riftUniquePicks584.rift_nucleo_gravitacional){u.riftCoreGravity584=1;r.gravityTimer584=n(r.gravityTimer584,2)||2;}
+    if(u.riftUniquePicks584.rift_defesa_impenetravel)u.riftWallShield584=1;
+    if(u.riftUniquePicks584.rift_nucleo_absoluto){u.riftAbsoluteCore584=1;u.riftCoreGold584=Math.max(n(u.riftCoreGold584),1);u.riftCoreRegen584=Math.max(n(u.riftCoreRegen584),.005);}
+    if(u.riftUniquePicks584.rift_black_friday && n(u.riftShopDiscount584)<.20)u.riftShopDiscount584+=.20;
+    for(const s of r.structures||[]){
+      if(!s)continue;
+      if(s.kind==='wall'&&u.riftWallShield584){const target=Math.round(n(s.maxHp,1)*.5);if(!n(s._riftShieldMax584)||n(s._riftShieldMax584)!==target){s._riftShieldMax584=target;s._riftShield584=Math.max(n(s._riftShield584),target);}}
+      if(u.riftAbsoluteCore584&&s.kind==='wall'&&n(s.hp,0)>0)s.hp=s.maxHp;
+    }
+  }
+  setInterval(()=>{try{auditRiftPowers587();}catch(e){console.warn('rift power audit 5.8.7',e);}},900);
+
+  console.log(PATCH);
+})();
+</script>
+
+
+<style id="riftDiscountRepairPolish591Style">
+  .riftPriceOld591{opacity:.56;text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:#ff6b7f;margin-right:7px;color:#d8af70;white-space:nowrap}
+  .riftPriceNew591{color:#ffe08c;margin-right:6px;white-space:nowrap;font-family:Orbitron,sans-serif}
+  .riftPriceCut591{display:inline-block;color:#62ff9b;font-weight:900;font-size:10px;letter-spacing:.06em;white-space:nowrap}
+  .riftBuy509 .cost{min-height:20px;display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+  .riftRepairPolish591{max-width:min(96vw,1040px)!important}
+  .riftRepairHead591{position:sticky;top:0;z-index:3;padding-bottom:10px;background:linear-gradient(180deg,rgba(5,8,23,.98),rgba(5,8,23,.82) 78%,transparent);backdrop-filter:blur(8px)}
+  .riftRepairSplit591{display:grid;gap:16px;margin-top:6px}
+  .riftRepairSection591{border:1px solid rgba(255,255,255,.10);border-radius:22px;padding:12px;background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018));box-shadow:inset 0 0 24px rgba(255,255,255,.025)}
+  .riftRepairCard591{display:grid;gap:7px;min-height:245px}
+  .riftRepairMeta591 strong{display:block;color:#fff;font-family:Orbitron,sans-serif;font-size:13px;letter-spacing:.05em}
+  .riftRepairMeta591 small{display:block;color:#9fb0d5;font-size:11px;margin-top:2px}
+  .riftRepairPrice591{display:flex;align-items:center;gap:3px;flex-wrap:wrap;margin:2px 0 4px;min-height:24px}
+  .riftEmptyRepair591{padding:18px;border-radius:16px;border:1px dashed rgba(255,255,255,.16);background:rgba(0,0,0,.18);color:#9fb0d5;text-align:center;font-size:13px}
+</style>
 
 </body>
 </html>
