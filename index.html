@@ -18061,7 +18061,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   function barHTML(k,attr,title,sub){const d=getData(k), mx=maxes(k), cur=d[attr]||0, co=color(k), cost=nextCost(attr,k), lock=!owned(k);const done=cur>=mx[attr];const nextText=lock?'Compre este personagem para liberar esta trilha de maestria.':done?'Todos os compartimentos deste atributo já foram comprados.':compText(attr,k,cur);const previewLabel=lock?'BLOQUEADO':done?'ATRIBUTO COMPLETO':'PRÓXIMO UPGRADE';const previewCost=lock?'':done?'Máximo alcançado':`Custo: ${cost?cost.label:'MAX'}`;let segs='';for(let i=0;i<mx[attr];i++){const on=i<cur,next=i===cur,gold=i===mx[attr]-1,txt=compText(attr,k,i);segs+=`<span class="masterySeg551 ${on?'on':''} ${next?'next':''} ${gold?'gold':''}" style="--c:${co}" aria-label="${esc(txt)}"><i class="masterySegNum552">${i+1}</i><span class="masterySegTip552"><b>${gold?'Upgrade final':'Compartimento '+(i+1)}</b><em>${esc(txt)}</em></span></span>`;}return `<div class="masteryBar551"><div class="masteryBarHead551"><div><strong>${esc(title)}</strong><span>${esc(sub)}</span></div><span>${cur}/${mx[attr]}</span></div><div class="masteryRow551"><div><div class="masterySegs551">${segs}</div><div class="masteryPreview552"><b>${previewLabel}</b><span>${esc(nextText)}</span>${previewCost?`<small>${esc(previewCost)}</small>`:''}</div></div><button class="masteryBuy551" data-buy-mastery551="${esc(attr)}" ${lock||!cost?'disabled':''}>${lock?'🔒':cost?cost.label:'MAX'}</button></div></div>`;}
   function effectiveHp(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k]||{}, d=getData(k);return Math.round(num(c.hp)*(1+hpPct(k)*d.hp));}
   function effectiveDmg(k){const d=getData(k);return `+${Math.round(dmgPct(k)*d.damage*1000)/10}%`;}
-  function openStats(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k];if(!c)return;ensureStyle();overlay.classList.remove('hidden');overlayCard.className='card dune461';const co=color(k), isOwned=owned(k), d=getData(k), lvl=level(k), max=lvl>=10;const bars=`${barHTML(k,'hp','HP','')}${barHTML(k,'damage','Dano','')}${barHTML(k,'shield','Escudo','')}${barHTML(k,'special',specName(k),'')}`;overlayCard.innerHTML=`<div class="${max?'masteryMax551':''}"><h1 style="text-align:center">${esc(c.name)}</h1><p class="duneSub461">Estatísticas e Maestria individual. Todo personagem começa no nível 1 e chega ao nível 10 ao comprar todos os compartimentos.</p><div class="masteryLayout551"><aside class="masterySide551"><div class="modelBox461"><div class="heroModel461" data-hero="${esc(k)}" style="--c:${co}"><i></i><b></b><em></em></div></div><span class="badge461" style="--co:${max?'#ffd166':co}">${max?'MAESTRIA MÁXIMA':'MAESTRIA'}</span><div class="masteryLvl551">LVL ${lvl}/10</div>${isOwned?`<div class="masteryStats551"><div class="masteryStat551"><small>HP</small><b>${effectiveHp(k)}</b></div><div class="masteryStat551"><small>ESCUDO</small><b>${num(c.shield)} + ${d.shield}</b></div><div class="masteryStat551"><small>DANO</small><b>${effectiveDmg(k)}</b></div><div class="masteryStat551"><small>ARMA</small><b style="font-size:14px">${esc(weaponName(k))}</b></div></div>`:`<div class="masteryLocked551"><div><b>🔒 APRIMORAMENTOS BLOQUEADOS</b><br><span>Compre este personagem para revelar status e liberar a Maestria.</span></div></div>`}<div class="masteryNote551"></div></aside><section class="masteryBars551">${bars}</section></div><div class="masteryActions551"><button class="duneBtn461 dark" id="statsBack551">← Seleção</button><button class="duneBtn461 blue" id="statsInfo551">Informações</button></div></div>`;document.getElementById('statsBack551').onclick=()=>window.openClassMenu?.();document.getElementById('statsInfo551').onclick=()=>openInfoOnly(k);overlayCard.querySelectorAll('[data-buy-mastery551]').forEach(btn=>btn.onclick=e=>{e.preventDefault();e.stopPropagation();buy(k,btn.dataset.buyMastery551);});}
+  function openStats(k){const c=(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k];if(!c)return;ensureStyle();overlay.classList.remove('hidden');overlayCard.className='card dune461';const co=color(k), isOwned=owned(k), d=getData(k), lvl=level(k), max=lvl>=10;const bars=`${barHTML(k,'hp','HP','')}${barHTML(k,'damage','Dano','')}${barHTML(k,'shield','Escudo','')}${barHTML(k,'special',specName(k),'')}`;overlayCard.innerHTML=`<div class="${max?'masteryMax551':''}"><h1 style="text-align:center">${esc(c.name)}</h1><p class="duneSub461">Estatísticas e Maestria individual. Todo personagem começa no nível 1 e chega ao nível 10 ao comprar todos os compartimentos.</p><div class="masteryLayout551"><aside class="masterySide551"><div class="modelBox461"><div class="heroModel461" data-hero="${esc(k)}" style="--c:${co}"><i></i><b></b><em></em></div></div><span class="badge461" style="--co:${max?'#ffd166':co}">${max?'MAESTRIA MÁXIMA':'MAESTRIA'}</span><div class="masteryLvl551">LVL ${lvl}/10</div>${isOwned?`<div class="masteryStats551"><div class="masteryStat551"><small>HP</small><b>${effectiveHp(k)}</b></div><div class="masteryStat551"><small>ESCUDO</small><b>${num(c.shield)} + ${d.shield}</b></div><div class="masteryStat551"><small>DANO</small><b>${effectiveDmg(k)}</b></div><div class="masteryStat551"><small>ARMA</small><b style="font-size:14px">${esc(weaponName(k))}</b></div></div>`:`<div class="masteryLocked551"><div><b>🔒 APRIMORAMENTOS BLOQUEADOS</b><br><span>Compre este personagem para revelar status e liberar a Maestria.</span></div></div>`}<div class="masteryNote551"></div></aside><section class="masteryBars551">${bars}</section></div><div class="masteryActions551"><button class="duneBtn461 dark" id="statsBack551">← Seleção</button><button class="duneBtn461 blue" id="statsInfo551" data-stats551="${esc(k)}">Informações</button></div></div>`;document.getElementById('statsBack551').onclick=()=>window.openClassMenu?.();document.getElementById('statsInfo551').onclick=()=>openInfoOnly(k);overlayCard.querySelectorAll('[data-buy-mastery551]').forEach(btn=>btn.onclick=e=>{e.preventDefault();e.stopPropagation();buy(k,btn.dataset.buyMastery551);});}
   function buy(k,attr){if(!owned(k))return;const d=getData(k), mx=maxes(k), cur=d[attr]||0;if(cur>=mx[attr])return;const cost=nextCost(attr,k);if(!cost)return;const m=meta();if(cost.kind==='chrono'){if(num(m.chronoFragments)<cost.amount)return;m.chronoFragments=num(m.chronoFragments)-cost.amount;}else{if(num(m.relicShards)<cost.amount)return;m.relicShards=num(m.relicShards)-cost.amount;}d[attr]=cur+1;m.characterMastery551=m.characterMastery551||{};m.characterMastery551[k]={hp:num(d.hp),damage:num(d.damage),shield:num(d.shield),special:num(d.special)};save(m);try{if(window.game){game.meta=m;if(typeof updateHUD==='function')updateHUD();}}catch{}if(typeof addFloatingText==='function'&&window.game?.player)addFloatingText(game.player.x,game.player.y-30,'MAESTRIA +1','#ffd166',15);openStats(k);}
   function patchCards(){ensureStyle();if(!overlayCard?.querySelector)return;const cards=[...overlayCard.querySelectorAll('.classCard461')];if(!cards.length)return;for(const card of cards){const k=detectCardKey(card);if(!k||!(typeof CLASSES!=='undefined'?CLASSES:window.CLASSES)?.[k])continue;if(!card.querySelector('[data-stats551]'))card.insertAdjacentHTML('afterbegin',statButtonHTML(k));card.classList.toggle('masteryMaxCard551',level(k)>=10&&owned(k));const stat=card.querySelector('[data-stats551]');if(stat&&!stat._m551){stat._m551=true;stat.onclick=e=>{e.preventDefault();e.stopPropagation();openStats(k);};}const info=card.querySelector('[data-info461],[data-info-rico529],[data-info-archer470]');if(info&&!info._m551){info._m551=true;info.onclick=e=>{e.preventDefault();e.stopPropagation();openInfoOnly(k);};}}
   }
@@ -19733,6 +19733,899 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   .riftRepairPrice591{display:flex;align-items:center;gap:3px;flex-wrap:wrap;margin:2px 0 4px;min-height:24px}
   .riftEmptyRepair591{padding:18px;border-radius:16px;border:1px dashed rgba(255,255,255,.16);background:rgba(0,0,0,.18);color:#9fb0d5;text-align:center;font-size:13px}
 </style>
+
+
+<style id="chronoUserRework609Style">
+  #overlayCard.card{max-height:90vh;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable}
+  #overlayCard.shop56,.shop56,.chestStage56{max-height:calc(100vh - 18px)!important;overflow-y:auto!important;overflow-x:hidden!important;contain:layout paint style;}
+  .shop56 .shopGrid56{align-items:start!important}.shop56 .chestBox56{flex:0 0 auto!important;will-change:transform;contain:layout paint;}
+  .shop56 .chestBox56.open{transform:scale(1.08) translateY(-6px)!important;}
+  .ultimaName609{color:#d9f8ff!important;text-shadow:0 0 14px rgba(111,220,255,.7)}
+</style>
+<script>
+(()=>{
+  if(window.__chronoUserReworks609) return;
+  window.__chronoUserReworks609 = true;
+  const PATCH='Chrono Shards 6.0.9 — reworks finais do João';
+  const SHADOW='shadowChild';
+  const ARCHER='archer';
+  const clamp609=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const rand609=(a,b)=>Math.random()*(b-a)+a;
+  const dist609=(a,b)=>Math.hypot((a.x||0)-(b.x||0),(a.y||0)-(b.y||0));
+  const angle609=(a,b)=>Math.atan2((b.y||0)-(a.y||0),(b.x||0)-(a.x||0));
+  const safeArr609=(o,k)=>{ if(!o[k]) o[k]=[]; return o[k]; };
+
+  function tryRing609(x,y,c,r,w){try{addRing(x,y,c,r,w||4)}catch{}}
+  function tryPart609(x,y,c,n,f){try{addParticles(x,y,c,n,f||1)}catch{}}
+  function tryText609(x,y,t,c,s){try{addFloatingText(x,y,t,c,s||15)}catch{}}
+  function damageEnemy609(e,dmg,opts={}){
+    if(!game||!e||!game.enemies)return false;
+    const i=game.enemies.indexOf(e); if(i<0)return false;
+    if(opts.markPoison) e._killedByBlackPoison609=true;
+    e.hp-=dmg; e.hitFlash=Math.max(e.hitFlash||0,.18);
+    if(opts.stun) e._microStun23=Math.max(e._microStun23||0,opts.stun);
+    if(e.hp<=0){ enemyDeath(i,e); return true; }
+    return false;
+  }
+  function areaDamage609(x,y,r,dmg,col,opts={}){
+    if(!game)return 0; let kills=0;
+    tryRing609(x,y,col,r,opts.width||5); tryPart609(x,y,col,opts.particles||18,opts.force||1);
+    for(let i=(game.enemies||[]).length-1;i>=0;i--){
+      const e=game.enemies[i], d=Math.hypot(e.x-x,e.y-y);
+      if(d<r+(e.r||0)){
+        if(opts.push){const a=Math.atan2(e.y-y,e.x-x);e.x+=Math.cos(a)*opts.push;e.y+=Math.sin(a)*opts.push;}
+        if(opts.markPoison) e._killedByBlackPoison609=true;
+        e.hp-=dmg; e.hitFlash=Math.max(e.hitFlash||0,.2);
+        if(opts.stun) e._microStun23=Math.max(e._microStun23||0,opts.stun);
+        if(e.hp<=0){ enemyDeath(i,e); kills++; }
+      }
+    }
+    return kills;
+  }
+  function nearestEnemy609(x,y,range=99999,skip){
+    let best=null,bd=range;
+    for(const e of game?.enemies||[]){ if(e===skip)continue; const d=Math.hypot(e.x-x,e.y-y); if(d<bd){bd=d;best=e;} }
+    return best;
+  }
+
+  // Nomes/descrições finais nas informações mais recentes.
+  function patchDefinitions609(){
+    try{
+      if(typeof SKILL_DEFS!=='undefined' && typeof CLASSES!=='undefined'){
+        const sc=CLASSES[SHADOW];
+        if(sc&&sc.skills){
+          const eKey=sc.skills[1], rKey=sc.skills[2];
+          if(SKILL_DEFS[eKey]) Object.assign(SKILL_DEFS[eKey],{
+            name:'Fissura Nociva',emoji:'☠️',focusCost:SKILL_DEFS[eKey].focusCost||55,cooldown:SKILL_DEFS[eKey].cooldown||20,
+            desc:'Abre uma fissura real no chão. Ela libera gases tóxicos negros em direções aleatórias, criando poças de veneno por 3s. Kills do veneno curam 0,5% do HP máximo.'
+          });
+          if(SKILL_DEFS[rKey]) Object.assign(SKILL_DEFS[rKey],{
+            name:'Fosso Demoníaco',emoji:'🕳️',focusCost:SKILL_DEFS[rKey].focusCost||48,cooldown:SKILL_DEFS[rKey].cooldown||13,
+            desc:'Cria um fosso médio no alvo por 5s. Ele puxa monstros, causa dano no centro, lança ondas de choque a cada 2s e inimigos mortos dentro viram aliados explosivos.'
+          });
+          sc.desc='Personagem mítico secreto. Usa fissuras vivas, veneno negro e fossos demoníacos para transformar inimigos em explosões sombrias.';
+        }
+      }
+    }catch{}
+  }
+  patchDefinitions609();
+
+  // Troca qualquer texto antigo da ultimate do Arqueiro sem alterar o comportamento base.
+  const oldAddFloating609=addFloatingText;
+  addFloatingText=function(x,y,text,color,size){
+    if(String(text||'').toUpperCase().includes('FERA DO TEMPO')) text='FLECHA SÔNICA DIVINA';
+    return oldAddFloating609(x,y,text,color,size);
+  };
+  function replaceArcherTexts609(root=document){
+    try{
+      const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT); const nodes=[];
+      while(walker.nextNode()) nodes.push(walker.currentNode);
+      for(const n of nodes){
+        if(n.nodeValue&&n.nodeValue.includes('Fera do Tempo')) n.nodeValue=n.nodeValue.replaceAll('Fera do Tempo','Flecha Sônica Divina');
+        if(n.nodeValue&&n.nodeValue.includes('🐺 Flecha Sônica Divina')) n.nodeValue=n.nodeValue.replaceAll('🐺 Flecha Sônica Divina','🌠 Flecha Sônica Divina');
+      }
+    }catch{}
+  }
+  function patchInfo609(k){
+    replaceArcherTexts609(overlayCard||document);
+    try{
+      if(k===SHADOW){
+        const rows=[...overlayCard.querySelectorAll('.skillRow461,.dunePanel461,.ultimateRow584')];
+        rows.forEach(r=>{
+          const txt=r.textContent||'';
+          if(/Ecos Vermelhos|SOMBRAS FAMINTAS/i.test(txt)){
+            r.innerHTML='<b>Q/E — ☠️ Fissura Nociva</b><br><span>Abre uma fissura no chão que solta gases tóxicos negros em direções aleatórias, criando poças de veneno por 3s. Somente kills desse veneno curam 0,5% do HP máximo.</span>';
+          }
+          if(/Chuva de Flechas|ARCO DO CARRASCO|Fosso Demon/i.test(txt)){
+            r.innerHTML='<b>R — 🕳️ Fosso Demoníaco</b><br><span>Cria um buraco médio onde você mira por 5s. Ele puxa monstros de leve, causa dano no centro, solta onda de choque a cada 2s que atordoa por 1s e transforma mortos dentro dele em aliados explosivos.</span>';
+          }
+        });
+      }
+      if(k===ARCHER){
+        const rows=[...overlayCard.querySelectorAll('.ultimateRow584,.skillRow461')];
+        rows.forEach(r=>{ if((r.textContent||'').includes('Flecha Sônica Divina')) r.classList.add('ultimaName609'); });
+      }
+    }catch{}
+  }
+  if(typeof window.openCharacterInfo551==='function'){
+    const prevInfo609=window.openCharacterInfo551;
+    window.openCharacterInfo551=function(k){
+      const r=prevInfo609.apply(this,arguments);
+      [0,50,150,320].forEach(t=>setTimeout(()=>patchInfo609(k),t));
+      return r;
+    };
+  }
+  document.addEventListener('click',e=>{
+    const b=e.target.closest&&e.target.closest('#statsInfo551');
+    if(!b)return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    const k=b.dataset.stats551 || overlayCard?.querySelector?.('[data-stats551]')?.dataset?.stats551 || game?.classKey;
+    if(k&&window.openCharacterInfo551) window.openCharacterInfo551(k);
+  },true);
+
+  // Corrige Carcaça-Crisálida: minions até morrer, não por orçamento finito.
+  const oldUpdateEnemies609=updateEnemies;
+  updateEnemies=function(dt){
+    if(game?.enemies){
+      for(const e of game.enemies){
+        if(e.type==='dreadbus'||/carca|cris|chrys|dread/i.test(String(e.name||e.title||e.type||''))){
+          e.spawnBudget=999999; e.spawnCd=Math.min(e.spawnCd||.5,.65);
+        }
+      }
+    }
+    return oldUpdateEnemies609(dt);
+  };
+
+  // Filho das Trevas: E e R reworkados + remove roubo de vida dos ataques antigos.
+  function castShadowFissure609(idx,sk){
+    const p=game.player; if(game.skillCds[idx]>0||p.focus<(sk.focusCost||0)) return false;
+    p.focus-=sk.focusCost||0; game.skillCds[idx]=sk.cooldown||18;
+    safeArr609(game,'shadowBlackPuddles609'); safeArr609(game,'shadowGas609');
+    const a=angle609(p,mouse), tx=mouse.x, ty=mouse.y;
+    const base={x:p.x,y:p.y,a,len:Math.min(560,Math.hypot(tx-p.x,ty-p.y)+120),life:.75,maxLife:.75,pts:[]};
+    for(let i=0;i<13;i++){
+      const t=i/12, wob=Math.sin(t*10)*28+rand609(-18,18), ax=Math.cos(a), ay=Math.sin(a), nx=-ay, ny=ax;
+      base.pts.push({x:p.x+ax*base.len*t+nx*wob,y:p.y+ay*base.len*t+ny*wob});
+    }
+    game.shadowGas609.push(base);
+    for(let i=0;i<13;i++){
+      const aa=a+rand609(-1.25,1.25), d=rand609(70,330);
+      const px=clamp609(p.x+Math.cos(aa)*d,45,W-45), py=clamp609(p.y+Math.sin(aa)*d,45,H-45);
+      game.shadowGas609.push({x:p.x,y:p.y,tx:px,ty:py,a:aa,life:.42,maxLife:.42,gas:true});
+      game.shadowBlackPuddles609.push({x:px,y:py,r:rand609(34,58),life:3,maxLife:3,tick:0,pulse:rand609(0,9)});
+    }
+    tryText609(p.x,p.y-34,'FISSURA NOCIVA','#111111',19); tryRing609(p.x,p.y,'#0a0a0a',150,7); game.shake=Math.max(game.shake||0,20);
+    return true;
+  }
+  function castDemonicPit609(idx,sk){
+    const p=game.player; if(game.skillCds[idx]>0||p.focus<(sk.focusCost||0)) return false;
+    p.focus-=sk.focusCost||0; game.skillCds[idx]=sk.cooldown||15;
+    safeArr609(game,'demonicPits609'); safeArr609(game,'shadowAllies609');
+    const x=clamp609(mouse.x,65,W-65), y=clamp609(mouse.y,65,H-65);
+    game.demonicPits609.push({x,y,r:132,inner:46,life:5,maxLife:5,tick:0,shock:2,pulse:rand609(0,9)});
+    tryText609(x,y-30,'FOSSO DEMONÍACO','#ff1f3d',21); tryRing609(x,y,'#ff1f3d',140,8); game.shake=Math.max(game.shake||0,24);
+    return true;
+  }
+  const oldUseSkill609=useSkill;
+  useSkill=function(idx){
+    try{
+      patchDefinitions609();
+      if(game?.classKey===SHADOW){
+        const skills=CLASSES[SHADOW]?.skills||[], skKey=skills[idx], sk=SKILL_DEFS[skKey]||{};
+        if(idx===1) return castShadowFissure609(idx,sk);
+        if(idx===2) return castDemonicPit609(idx,sk);
+      }
+    }catch(err){console.warn('shadow rework fallback',err)}
+    return oldUseSkill609(idx);
+  };
+  function updateShadow609(dt,hpBefore){
+    if(!game)return;
+    for(const b of game.darkProjectiles||[]) b.heal=0;
+    for(const b of game.darkArrows||[]) b.heal=0;
+    const p=game.player;
+    for(let i=(game.shadowGas609||[]).length-1;i>=0;i--){const g=game.shadowGas609[i];g.life-=dt;if(g.life<=0)game.shadowGas609.splice(i,1);}
+    for(let i=(game.shadowBlackPuddles609||[]).length-1;i>=0;i--){
+      const h=game.shadowBlackPuddles609[i]; h.life-=dt; h.tick-=dt; h.pulse+=dt*7;
+      if(h.life<=0){game.shadowBlackPuddles609.splice(i,1);continue;}
+      if(h.tick<=0){
+        h.tick=.22;
+        for(let j=(game.enemies||[]).length-1;j>=0;j--){
+          const e=game.enemies[j]; if(dist609(h,e)<h.r+(e.r||0)){
+            e._darkSlow=Math.max(e._darkSlow||0,.22);
+            const before=e.hp; e._killedByBlackPoison609=true;
+            e.hp-=17*(game.upgrades?.damage||1); e.hitFlash=Math.max(e.hitFlash||0,.16);
+            if(e.hp<=0){ enemyDeath(j,e); if(p) p.hp=clamp609(p.hp+p.maxHp*.005,0,p.maxHp); }
+            else e._killedByBlackPoison609=false;
+          }
+        }
+      }
+    }
+    for(let i=(game.demonicPits609||[]).length-1;i>=0;i--){
+      const pit=game.demonicPits609[i]; pit.life-=dt; pit.tick-=dt; pit.shock-=dt; pit.pulse+=dt*5;
+      if(pit.life<=0){game.demonicPits609.splice(i,1);continue;}
+      if(pit.shock<=0){
+        pit.shock=2; areaDamage609(pit.x,pit.y,pit.r+24,12*(game.upgrades?.damage||1),'#ff1f3d',{stun:1,width:7,particles:24,force:1.15});
+      }
+      for(let j=(game.enemies||[]).length-1;j>=0;j--){
+        const e=game.enemies[j], d=Math.hypot(e.x-pit.x,e.y-pit.y);
+        if(d<pit.r+(e.r||0)){
+          const a=Math.atan2(pit.y-e.y,pit.x-e.x), pull=e.type==='boss'?18:72;
+          e.x+=Math.cos(a)*pull*dt; e.y+=Math.sin(a)*pull*dt;
+          if(d<pit.inner+(e.r||0) && pit.tick<=0){
+            const dmg=30*(game.upgrades?.damage||1); e.hp-=dmg; e.hitFlash=Math.max(e.hitFlash||0,.2);
+            if(e.hp<=0){ const sx=e.x,sy=e.y; enemyDeath(j,e); safeArr609(game,'shadowAllies609').push({x:sx,y:sy,r:12,life:5,spd:260,pulse:0}); }
+          }
+        }
+      }
+      if(pit.tick<=0)pit.tick=.28;
+    }
+    for(let i=(game.shadowAllies609||[]).length-1;i>=0;i--){
+      const a=game.shadowAllies609[i]; a.life-=dt; a.pulse+=dt*8; if(a.life<=0){game.shadowAllies609.splice(i,1);continue;}
+      const t=nearestEnemy609(a.x,a.y,9999); if(!t)continue;
+      const ang=Math.atan2(t.y-a.y,t.x-a.x); a.x+=Math.cos(ang)*a.spd*dt; a.y+=Math.sin(ang)*a.spd*dt;
+      if(dist609(a,t)<(a.r||12)+(t.r||12)+8){ areaDamage609(a.x,a.y,72,68*(game.upgrades?.damage||1),'#101010',{particles:24,push:35}); game.shadowAllies609.splice(i,1); }
+    }
+    if(game.classKey===SHADOW && p && typeof hpBefore==='number'){
+      const allowed=game._shadowAllowedHeal609||0; game._shadowAllowedHeal609=0;
+      const darkActive=(game.darkProjectiles?.length||0)+(game.darkArrows?.length||0)+(game.darkFissures?.length||0);
+      if(darkActive && p.hp>hpBefore+allowed+.01) p.hp=clamp609(hpBefore+allowed,0,p.maxHp);
+    }
+  }
+
+  // Artífice Q: garante drones perseguindo/infectando também no modo Fissuras.
+  function updateNanoDrones609(dt){
+    if(!game)return;
+    const arr=game.nanoHijackDrones23||game.nanoHijackDrones609; if(!arr||!arr.length)return;
+    game.nanoHijackDrones23=arr;
+    for(let i=arr.length-1;i>=0;i--){
+      const d=arr[i]; d.life-=dt; if(d.life<=0){arr.splice(i,1);continue;}
+      if(!d.target||!game.enemies.includes(d.target)||d.target.type==='boss') d.target=nearestEnemy609(d.x,d.y,9999,d.target);
+      if(!d.target)continue;
+      const a=angle609(d,d.target), sp=d.speed||560; d.vx=Math.cos(a)*sp; d.vy=Math.sin(a)*sp; d.x+=d.vx*dt; d.y+=d.vy*dt;
+      if(dist609(d,d.target)<(d.r||8)+(d.target.r||12)+8){
+        d.target._hijack23=Math.max(d.target._hijack23||0,3.0); d.target._hijack609=true; d.target.hitFlash=.3;
+        tryRing609(d.target.x,d.target.y,'#59ff9a',62,5); tryPart609(d.target.x,d.target.y,'#59ff9a',16,1);
+        arr.splice(i,1);
+      }
+    }
+    for(let i=(game.enemies||[]).length-1;i>=0;i--){
+      const e=game.enemies[i]; if(!e._hijack23&&!e._hijack609)continue;
+      e._hijack23=(e._hijack23||0)-dt; if(e._hijack23<=0){e._hijack609=false;continue;}
+      const t=nearestEnemy609(e.x,e.y,9999,e); if(!t)continue;
+      const a=angle609(e,t); e.vx=Math.cos(a)*260; e.vy=Math.sin(a)*260; e.x+=Math.cos(a)*135*dt; e.y+=Math.sin(a)*135*dt;
+      if(dist609(e,t)<(e.r||12)+(t.r||12)+12){ areaDamage609(e.x,e.y,90,112*(game.upgrades?.damage||1),'#59ff9a',{particles:28,push:42}); e._hijack23=0; e._hijack609=false; }
+    }
+  }
+
+  // Sniper: dano escala melhor em inimigos com pouca vida + raio visual entrelaçado.
+  function sniperBefore609(){
+    if(!(game?.ults481?.sniper)&&!game?.deadeye480)return null;
+    const s=game.ults481?.sniper||game.deadeye480; if(!s||s.shot)return null;
+    return (game.enemies||[]).map(e=>({e,hp:e.hp,max:e.maxHp||e.hp,x:e.x,y:e.y,type:e.type,elite:e.elite}));
+  }
+  function enhanceSniper609(list){
+    if(!game||!list)return; safeArr609(game,'sniperRays609');
+    const p=game.player||{x:W/2,y:H/2};
+    let n=0;
+    for(const rec of list){ const e=rec.e; if(!e||!game.enemies.includes(e))continue;
+      const missing=clamp609(1-(rec.hp/(rec.max||1)),0,1);
+      const base=(rec.type==='boss'?0.075:0.18)+(rec.type==='boss'?0.16:0.56)*missing;
+      const extra=(rec.max||rec.hp)*base*(game.upgrades?.damage||1);
+      damageEnemy609(e,extra);
+      game.sniperRays609.push({x1:p.x,y1:p.y,x2:rec.x,y2:rec.y,life:.9,maxLife:.9,seed:Math.random()*999,thick:rec.type==='boss'?8:6});
+      n++;
+    }
+    if(n){tryText609(p.x,p.y-48,'RAIO ENTRELAÇADO','#ffe38c',18);game.shake=Math.max(game.shake||0,18);game.flash=Math.max(game.flash||0,.22);game.flashColor='#fff4b2';}
+  }
+
+  // Coronel: impede as naves de grudarem em boss; troca para bombardeio em faixas do mapa.
+  function updateColonelJets609(dt){
+    if(!game?.colonelJets492)return;
+    const active=!!(game.ults481&&game.ults481.colonel);
+    for(const jet of game.colonelJets492){
+      if(active){ jet.drop=999; jet._drop609=(jet._drop609||rand609(.08,.32))-dt; }
+      if(active && jet._drop609<=0){
+        jet._drop609=rand609(.20,.38);
+        const laneY=clamp609((jet.y||H/2)+rand609(-210,210),55,H-55);
+        const ahead=clamp609((jet.x||W/2)+(jet.dir||1)*rand609(80,260),45,W-45);
+        const boss=(game.enemies||[]).find(e=>e.type==='boss');
+        let tx=ahead, ty=laneY;
+        if(boss&&Math.random()<.18){tx=clamp609(boss.x+rand609(-140,140),45,W-45);ty=clamp609(boss.y+rand609(-140,140),45,H-45);} // só algumas bombas focam boss
+        safeArr609(game,'colonelCarpetBlasts609').push({x:tx,y:ty,life:.18,maxLife:.18,r:72});
+        setTimeout(()=>{if(game)areaDamage609(tx,ty,86,70*(game.upgrades?.damage||1),'#ffb33d',{particles:26,push:40});},90);
+      }
+    }
+  }
+
+  // Assault ultimate: nerf real de 10% apenas durante a ultimate e modelo mecha novo.
+  function activeAssaultUlt609(){return !!(game?.classKey==='assault'&&game.ults481&&game.ults481.assault);}
+
+  // Arqueiro: efeitos extras na flecha/fera sem mexer na mecânica.
+  function updateArcherFX609(dt){
+    if(!game)return; safeArr609(game,'sonicArrowFX609');
+    if(game.fera481){
+      game._sonicFxTick609=(game._sonicFxTick609||0)-dt;
+      if(game._sonicFxTick609<=0){
+        game._sonicFxTick609=.055;
+        game.sonicArrowFX609.push({x:game.fera481.x,y:game.fera481.y,r:32,life:.42,maxLife:.42,a:game.fera481.a||0});
+      }
+    }
+    for(let i=game.sonicArrowFX609.length-1;i>=0;i--){const fx=game.sonicArrowFX609[i];fx.life-=dt;fx.r+=dt*220;if(fx.life<=0)game.sonicArrowFX609.splice(i,1);}
+  }
+
+  // Update central: aplica correções sem reabrir blocos antigos.
+  const oldUpdatePlayer609=updatePlayer;
+  updatePlayer=function(dt){
+    const snBefore=sniperBefore609();
+    const hpBefore=game?.player?.hp;
+    const assault=activeAssaultUlt609();
+    let oldDmg=null;
+    if(assault&&game?.upgrades){oldDmg=game.upgrades.damage;game.upgrades.damage=oldDmg*.90;}
+    const r=oldUpdatePlayer609(dt);
+    if(oldDmg!==null&&game?.upgrades) game.upgrades.damage=oldDmg;
+    if(snBefore){ const s=game?.ults481?.sniper||game?.deadeye480; if(s&&s.shot&&!s._extra609){s._extra609=true;enhanceSniper609(snBefore);} }
+    updateNanoDrones609(dt);
+    updateColonelJets609(dt);
+    updateArcherFX609(dt);
+    updateShadow609(dt,hpBefore);
+    replaceArcherTexts609(overlayCard||document);
+    return r;
+  };
+
+  // EnemyDeath: cura somente quando morto pelo veneno negro do E.
+  const oldEnemyDeath609=enemyDeath;
+  enemyDeath=function(index,e){
+    const poison=!!(e&&e._killedByBlackPoison609&&game?.classKey===SHADOW);
+    const hpBefore=game?.player?.hp;
+    const r=oldEnemyDeath609(index,e);
+    if(poison&&game?.player){
+      const heal=game.player.maxHp*.005;
+      game.player.hp=clamp609((hpBefore??game.player.hp)+heal,0,game.player.maxHp);
+      game._shadowAllowedHeal609=(game._shadowAllowedHeal609||0)+heal;
+      tryText609(game.player.x,game.player.y-32,'+0.5% HP','#1aff7a',14);
+    }
+    return r;
+  };
+
+  // HUD/texto do X do Arqueiro.
+  const oldUpdateHUD609=updateHUD;
+  updateHUD=function(){
+    const r=oldUpdateHUD609();
+    try{
+      if(game?.classKey===ARCHER){
+        replaceArcherTexts609(document);
+        const ult=document.getElementById('awakUltEmoji480')||document.querySelector('.awak-ult-emoji,.ultimate-emoji');
+        if(ult)ult.textContent='🌠';
+      }
+    }catch{}
+    return r;
+  };
+
+  // Desenho: substitui o Reaper empilhado por um modelo único e adiciona o mecha melhorado.
+  function drawReaper609(){
+    if(!game?.player)return; const p=game.player, ult=!!(game.ults481&&game.ults481.reaper);
+    ctx.save(); ctx.translate(p.x,p.y); ctx.globalCompositeOperation='source-over';
+    for(let i=0;i<10+(ult?8:0);i++){const a=game.time*(1.2+i*.06)+i*Math.PI*2/(10+(ult?8:0));ctx.globalAlpha=ult?.18:.10;ctx.strokeStyle=ult?'#ffffff':'#ff7b9c';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(Math.cos(a)*28,Math.sin(a)*28);ctx.lineTo(Math.cos(a)*((ult?70:46)+Math.sin(game.time*4+i)*8),Math.sin(a)*((ult?70:46)+Math.cos(game.time*3+i)*8));ctx.stroke();}
+    ctx.globalAlpha=1;ctx.shadowBlur=ult?46:24;ctx.shadowColor=ult?'#ffffff':'#ff7b9c';
+    const grd=ctx.createLinearGradient(0,-34,0,38);grd.addColorStop(0,ult?'#160018':'#100610');grd.addColorStop(.55,'#030303');grd.addColorStop(1,ult?'#3b0020':'#16000b');ctx.fillStyle=grd;ctx.strokeStyle=ult?'#ffffff':'#ff7b9c';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(0,-36);ctx.quadraticCurveTo(31,-18,24,26);ctx.lineTo(10,40);ctx.lineTo(0,30);ctx.lineTo(-10,40);ctx.lineTo(-24,26);ctx.quadraticCurveTo(-31,-18,0,-36);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#050505';ctx.strokeStyle=ult?'#ff315f':'#ff7b9c';ctx.beginPath();ctx.arc(0,-17,15,Math.PI*.05,Math.PI*.95,true);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle=ult?'#fff':'#ff315f';ctx.shadowColor=ctx.fillStyle;ctx.fillRect(-8,-20,5,3);ctx.fillRect(3,-20,5,3);
+    const a=angle609(p,mouse); ctx.rotate(a);ctx.strokeStyle=ult?'#fff':'#ff7b9c';ctx.lineWidth=4;ctx.shadowBlur=28;ctx.beginPath();ctx.moveTo(-20,22);ctx.lineTo(34,-24);ctx.stroke();ctx.lineWidth=6;ctx.beginPath();ctx.arc(48,-30,32,Math.PI*.82,Math.PI*1.72);ctx.stroke();
+    ctx.restore();
+  }
+  function drawMecha609(){
+    if(!game?.player)return;const p=game.player,t=game.time;ctx.save();ctx.translate(p.x,p.y);ctx.globalCompositeOperation='lighter';ctx.shadowBlur=36;ctx.shadowColor='#7fe9ff';
+    ctx.globalAlpha=.82;ctx.fillStyle='rgba(9,24,42,.96)';ctx.strokeStyle='#7fe9ff';ctx.lineWidth=3;
+    ctx.beginPath();ctx.roundRect(-29,-31,58,63,12);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#bdf7ff';ctx.globalAlpha=.95;ctx.beginPath();ctx.arc(0,-9,9+Math.sin(t*9)*1.5,0,Math.PI*2);ctx.fill();
+    for(const s of [-1,1]){ctx.fillStyle='rgba(4,16,30,.98)';ctx.strokeStyle='#9ef8ff';ctx.lineWidth=2.5;ctx.beginPath();ctx.roundRect(s*22,-35,s*24,28,8);ctx.fill();ctx.stroke();ctx.beginPath();ctx.roundRect(s*26,12,s*18,28,7);ctx.fill();ctx.stroke();ctx.fillStyle='#ffcf66';ctx.globalAlpha=.55+.25*Math.sin(t*14);ctx.beginPath();ctx.arc(s*29,40,7,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.95;}
+    const a=angle609(p,mouse);ctx.rotate(a);ctx.strokeStyle='#ffffff';ctx.lineWidth=7;ctx.shadowColor='#ffffff';ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(52,0);ctx.stroke();ctx.strokeStyle='#7fe9ff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(14,-8);ctx.lineTo(48,-8);ctx.moveTo(14,8);ctx.lineTo(48,8);ctx.stroke();ctx.restore();
+  }
+  const oldDrawPlayer609=drawPlayer;
+  drawPlayer=function(){
+    if(game?.classKey==='reaper'){drawReaper609();return;}
+    oldDrawPlayer609();
+    if(activeAssaultUlt609())drawMecha609();
+  };
+
+  function drawSoul609(s){
+    const k=clamp609((s.life||1)/(s.maxLife||9),0,1), pulse=Math.sin((game.time||0)*7+(s.pulse||0));
+    ctx.save();ctx.translate(s.x||0,s.y||0);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.62*k;ctx.shadowBlur=28;ctx.shadowColor='#ffb6d5';
+    const g=ctx.createRadialGradient(0,-8,2,0,0,26);g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.25,'rgba(255,180,220,.68)');g.addColorStop(1,'rgba(255,123,156,0)');ctx.fillStyle=g;
+    ctx.beginPath();ctx.ellipse(0,-7,13+pulse*2,20,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.75)';ctx.beginPath();ctx.arc(-4,-11,2,0,Math.PI*2);ctx.arc(4,-11,2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-7,8);ctx.quadraticCurveTo(-2,22,0,33);ctx.quadraticCurveTo(4,20,8,8);ctx.stroke();ctx.restore();
+  }
+  function drawInfernoTower609(){
+    const f=game?.bigFortress491; if(!f)return; const x=f.x,y=f.y,life=clamp609((f.life||0)/(f.maxLife||1),0,1);
+    ctx.save();ctx.translate(x,y);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.95;ctx.shadowBlur=32;ctx.shadowColor='#55d9ff';
+    ctx.fillStyle='rgba(4,18,34,.95)';ctx.strokeStyle='#7fe9ff';ctx.lineWidth=3;
+    ctx.beginPath();ctx.roundRect(-28,22,56,18,5);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-20,22);ctx.lineTo(-13,-36);ctx.lineTo(13,-36);ctx.lineTo(20,22);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#aef7ff';ctx.beginPath();ctx.arc(0,-42,14+Math.sin(game.time*7)*2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#55d9ff';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(0,-29);ctx.lineTo(0,15);ctx.stroke();
+    ctx.globalAlpha=.24*life;ctx.fillStyle='rgba(65,255,120,.33)';ctx.beginPath();ctx.arc(0,0,180+Math.sin(game.time*3)*5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(99,255,150,.78)';ctx.lineWidth=3;ctx.setLineDash([10,8]);ctx.beginPath();ctx.arc(0,0,180,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    for(let i=0;i<10;i++){const a=game.time*1.6+i*Math.PI*2/10;ctx.globalAlpha=.45*life;ctx.fillStyle='#8dffb0';ctx.beginPath();ctx.arc(Math.cos(a)*rand609(72,162),Math.sin(a)*rand609(72,162),3+Math.sin(game.time*5+i)*1.2,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  }
+  const oldDrawParticles609=drawParticles;
+  drawParticles=function(){
+    oldDrawParticles609(); if(!game)return; ctx.save();
+    // Sniper raios entrelaçados
+    for(let i=(game.sniperRays609||[]).length-1;i>=0;i--){const r=game.sniperRays609[i];r.life-=game.dt||0.016;const k=clamp609(r.life/r.maxLife,0,1);if(r.life<=0){game.sniperRays609.splice(i,1);continue;}const dx=r.x2-r.x1,dy=r.y2-r.y1,len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.9*k;ctx.shadowBlur=38;ctx.shadowColor='#fff4b2';for(let f=0;f<7;f++){ctx.strokeStyle=f%2?'#ffe38c':'#ffffff';ctx.lineWidth=(r.thick||6)*(f===0?1:.35)*k;ctx.beginPath();for(let s=0;s<=26;s++){const t=s/26,w=Math.sin(t*Math.PI*6+f*1.7+r.seed)*18*(1-Math.abs(t-.5));const x=r.x1+dx*t+nx*w,y=r.y1+dy*t+ny*w;if(s===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.stroke();}for(let f=0;f<5;f++){const t=(f+1)/6,ba=Math.atan2(dy,dx)+rand609(-.8,.8);ctx.globalAlpha=.36*k;ctx.lineWidth=2;ctx.strokeStyle='#bdf7ff';ctx.beginPath();ctx.moveTo(r.x1+dx*t,r.y1+dy*t);ctx.lineTo(r.x1+dx*t+Math.cos(ba)*rand609(38,90),r.y1+dy*t+Math.sin(ba)*rand609(38,90));ctx.stroke();}}
+    // Reaper souls melhores
+    const souls=[...(game.reaperSouls485||[]),...(game.reaperSouls481||[]),...(game.reaperSouls480||[])]; for(const s of souls)drawSoul609(s);
+    // Artífice: torre azul estilo infernal e campo verde de cura.
+    drawInfernoTower609();
+    // Arqueiro: ondas sônicas divinas extras.
+    ctx.globalCompositeOperation='lighter';
+    for(const fx of game.sonicArrowFX609||[]){const k=clamp609(fx.life/fx.maxLife,0,1);ctx.globalAlpha=.55*k;ctx.strokeStyle='#eaffff';ctx.lineWidth=3*k;ctx.shadowBlur=22;ctx.shadowColor='#6fdcff';ctx.beginPath();ctx.ellipse(fx.x,fx.y,fx.r*1.35,fx.r*.55,fx.a||0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#ffdfff';ctx.lineWidth=1.5*k;ctx.beginPath();ctx.arc(fx.x,fx.y,fx.r*.45,0,Math.PI*2);ctx.stroke();}
+    // Shadow visuals
+    for(const h of game.shadowBlackPuddles609||[]){const k=clamp609(h.life/h.maxLife,0,1);ctx.globalAlpha=.62*k;ctx.fillStyle='rgba(0,0,0,.72)';ctx.shadowBlur=28;ctx.shadowColor='#111';ctx.beginPath();ctx.ellipse(h.x,h.y,h.r*(1+.05*Math.sin(h.pulse)),h.r*.62,Math.sin(h.pulse)*.2,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(35,255,110,.55)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(h.x,h.y,h.r,h.r*.62,Math.sin(h.pulse)*.2,0,Math.PI*2);ctx.stroke();}
+    for(const g of game.shadowGas609||[]){const k=clamp609(g.life/g.maxLife,0,1);ctx.globalAlpha=.55*k;ctx.strokeStyle=g.gas?'rgba(10,10,10,.9)':'#050505';ctx.lineWidth=g.gas?18:12;ctx.shadowBlur=20;ctx.shadowColor='#000';ctx.beginPath();if(g.pts){ctx.moveTo(g.pts[0].x,g.pts[0].y);for(const p of g.pts)ctx.lineTo(p.x,p.y);}else{ctx.moveTo(g.x,g.y);ctx.lineTo(g.tx,g.ty);}ctx.stroke();}
+    for(const pit of game.demonicPits609||[]){const k=clamp609(pit.life/pit.maxLife,0,1);ctx.globalAlpha=.78*k;ctx.shadowBlur=38;ctx.shadowColor='#ff1f3d';ctx.fillStyle='rgba(0,0,0,.82)';ctx.beginPath();ctx.arc(pit.x,pit.y,pit.r*(.62+.04*Math.sin(pit.pulse)),0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ff1f3d';ctx.lineWidth=4;ctx.setLineDash([12,10]);ctx.beginPath();ctx.arc(pit.x,pit.y,pit.r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);for(let q=0;q<8;q++){const a=-pit.pulse+q*Math.PI*2/8;ctx.globalAlpha=.38*k;ctx.strokeStyle=q%2?'#ffffff':'#ff1f3d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pit.x+Math.cos(a)*pit.r*.88,pit.y+Math.sin(a)*pit.r*.88);ctx.lineTo(pit.x+Math.cos(a)*pit.r*.38,pit.y+Math.sin(a)*pit.r*.38);ctx.stroke();}}
+    for(const a of game.shadowAllies609||[]){ctx.globalAlpha=.8;ctx.fillStyle='#050505';ctx.strokeStyle='#ff1f3d';ctx.lineWidth=2;ctx.shadowBlur=20;ctx.shadowColor='#ff1f3d';ctx.beginPath();ctx.arc(a.x,a.y,(a.r||12)+Math.sin(a.pulse)*2,0,Math.PI*2);ctx.fill();ctx.stroke();}
+    for(const b of game.colonelCarpetBlasts609||[]){b.life-=game.dt||0.016;const k=clamp609(b.life/b.maxLife,0,1);ctx.globalAlpha=.3*k;ctx.fillStyle='rgba(255,179,61,.45)';ctx.beginPath();ctx.arc(b.x,b.y,b.r*(1-k),0,Math.PI*2);ctx.fill();}
+    game.colonelCarpetBlasts609=(game.colonelCarpetBlasts609||[]).filter(b=>b.life>0);
+    ctx.restore();
+  };
+
+  // Estabiliza loja/baú se alguma animação tentar expandir a aba.
+  const mo609=new MutationObserver(()=>{
+    try{
+      if(!overlayCard)return;
+      if(/shop56|chestStage56/i.test(overlayCard.className||'')){overlayCard.style.maxHeight='calc(100vh - 18px)';overlayCard.style.overflowY='auto';overlayCard.style.overflowX='hidden';}
+      patchDefinitions609(); replaceArcherTexts609(overlayCard||document);
+    }catch{}
+  });
+  try{mo609.observe(document.body,{childList:true,subtree:true,characterData:true});}catch{}
+  setTimeout(patchDefinitions609,100);
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<style id="chronoFix610Style">
+  .shadowFixKnife610{pointer-events:none}
+</style>
+<script>
+(()=>{
+  if(window.__chronoFix610) return;
+  window.__chronoFix610 = true;
+  const PATCH='Chrono Shards 6.1.0 — correção Reaper/Filho/Info';
+  const SHADOW='shadowChild';
+  const REAPER='reaper';
+  const clamp610=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const rand610=(a,b)=>Math.random()*(b-a)+a;
+  const dist610=(a,b)=>Math.hypot((a.x||0)-(b.x||0),(a.y||0)-(b.y||0));
+  const angle610=(a,b)=>Math.atan2((b.y||0)-(a.y||0),(b.x||0)-(a.x||0));
+  const arr610=(o,k)=>{ if(o && !o[k]) o[k]=[]; return o ? o[k] : []; };
+  const esc610=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const norm610=s=>String(s||'').toLowerCase().replace(/[^a-z0-9áàâãéêíóôõúç]+/gi,' ').trim();
+
+  function ring610(x,y,c,r,w){try{addRing(x,y,c,r,w||4)}catch(_){}}
+  function part610(x,y,c,n,f){try{addParticles(x,y,c,n,f||1)}catch(_){}}
+  function text610(x,y,t,c,s){try{addFloatingText(x,y,t,c,s||15)}catch(_){}}
+  function safeDamage610(e,dmg,opts={}){
+    if(!game||!e||!game.enemies) return false;
+    const i=game.enemies.indexOf(e); if(i<0) return false;
+    if(opts.poison) e._killedByBlackPoison609=true;
+    e.hp-=dmg; e.hitFlash=Math.max(e.hitFlash||0,.22);
+    if(opts.stun) e._microStun23=Math.max(e._microStun23||0,opts.stun);
+    if(e.hp<=0){ enemyDeath(i,e); return true; }
+    if(opts.poison) e._killedByBlackPoison609=false;
+    return false;
+  }
+  function lineHit610(e,x1,y1,x2,y2,w){
+    const vx=x2-x1, vy=y2-y1, wx=e.x-x1, wy=e.y-y1;
+    const c1=vx*wx+vy*wy, c2=vx*vx+vy*vy||1;
+    const t=clamp610(c1/c2,0,1), px=x1+vx*t, py=y1+vy*t;
+    return Math.hypot(e.x-px,e.y-py)<w+(e.r||0);
+  }
+  function nearest610(x,y,skip=null){
+    let best=null,bd=999999;
+    for(const e of game?.enemies||[]){ if(e===skip) continue; const d=Math.hypot(e.x-x,e.y-y); if(d<bd){bd=d;best=e;} }
+    return best;
+  }
+
+  function patchShadowDefinitions610(){
+    try{
+      if(!CLASSES?.[SHADOW]||!SKILL_DEFS) return;
+      CLASSES[SHADOW].weapon='shadowSlash';
+      CLASSES[SHADOW].skills=['shadowFissure','shadowClones','shadowRain'];
+      CLASSES[SHADOW].desc='Personagem mítico secreto. Usa facas abissais, fissuras vivas, veneno negro e um fosso demoníaco que transforma mortes em explosões sombrias.';
+      WEAPONS.shadowSlash=Object.assign(WEAPONS.shadowSlash||{}, {name:'Facas Abissais',cooldown:.27,bulletSpeed:760,damage:42,spread:.035,projectiles:1,life:.88});
+      Object.assign(SKILL_DEFS.shadowFissure||={}, {name:'Rasgo Abissal',emoji:'🗡️',focusCost:42,cooldown:12,desc:'Q — Corta o chão com uma fissura larga e viva, causando dano forte em linha e deixando energia sombria latejando por alguns instantes.'});
+      Object.assign(SKILL_DEFS.shadowClones||={}, {name:'Fissura Nociva',emoji:'☠️',focusCost:55,cooldown:17,desc:'E — Abre uma fissura real que solta gases tóxicos negros em direções aleatórias. Eles formam poças negras por 3s; somente kills desse veneno curam 0,5% do HP máximo.'});
+      Object.assign(SKILL_DEFS.shadowRain||={}, {name:'Fosso Demoníaco',emoji:'🕳️',focusCost:48,cooldown:14,desc:'R — Cria um fosso médio onde você mira por 5s. Ele puxa monstros, causa dano no centro, emite ondas de choque a cada 2s e transforma mortos dentro dele em aliados explosivos.'});
+    }catch(e){console.warn('shadow definitions 610',e)}
+  }
+  patchShadowDefinitions610();
+
+  // Botão de informações dentro da tela de Estatísticas/Maestria: força a tela mais recente.
+  let currentStatsKey610='';
+  function guessStatsKey610(){
+    if(currentStatsKey610 && CLASSES?.[currentStatsKey610]) return currentStatsKey610;
+    const h=norm610(overlayCard?.querySelector?.('h1')?.textContent||'');
+    if(h){
+      for(const k of Object.keys(CLASSES||{})){
+        const cn=norm610(CLASSES[k]?.name||'');
+        if(cn && (h.includes(cn.slice(0,Math.min(10,cn.length))) || cn.includes(h.slice(0,Math.min(10,h.length))))) return k;
+      }
+    }
+    return game?.classKey || '';
+  }
+  function openLatestInfo610(k){
+    patchShadowDefinitions610();
+    const key=k||guessStatsKey610(); if(!key) return;
+    currentStatsKey610=key;
+    try{
+      if(typeof window.openCharacterInfo551==='function') window.openCharacterInfo551(key);
+      else if(typeof openCharacterInfo551==='function') openCharacterInfo551(key);
+    }catch(e){ console.warn('open latest info 610',e); }
+    setTimeout(()=>patchInfoText610(key),20); setTimeout(()=>patchInfoText610(key),120);
+  }
+  function attachStatsInfo610(){
+    try{
+      const b=document.getElementById('statsInfo551'); if(!b) return;
+      const key=guessStatsKey610(); b.dataset.statsFix610=key; b.dataset.stats551=key; b.title='Informações mais recentes';
+      b.onclick=e=>{e.preventDefault();e.stopPropagation();openLatestInfo610(key||guessStatsKey610());return false;};
+    }catch(_){ }
+  }
+  function patchInfoText610(k){
+    try{
+      if(!overlayCard?.querySelector) return;
+      if(k===SHADOW){
+        patchShadowDefinitions610();
+        const rows=[...overlayCard.querySelectorAll('.skill-row-v23,.skill-row27,.skillRow461,.dunePanel461,.ultimateRow584')];
+        for(const r of rows){
+          const t=r.textContent||'';
+          if(/Rasgo|Fissura Demon|FISSURA ABISSAL|Fissura Abissal/i.test(t)) r.innerHTML='<b>Q — 🗡️ Rasgo Abissal</b><br><span>Corta o chão com uma fissura larga e viva, causando dano forte em linha e deixando energia sombria latejando por alguns instantes.</span>';
+          if(/Ecos Vermelhos|SOMBRAS FAMINTAS|Fissura Nociva/i.test(t)) r.innerHTML='<b>E — ☠️ Fissura Nociva</b><br><span>Abre uma fissura real que solta gases tóxicos negros em direções aleatórias. Eles formam poças negras por 3s; somente kills desse veneno curam 0,5% do HP máximo.</span>';
+          if(/Chuva de Flechas|ARCO DO CARRASCO|Fosso Demon/i.test(t)) r.innerHTML='<b>R — 🕳️ Fosso Demoníaco</b><br><span>Cria um fosso médio onde você mira por 5s. Ele puxa monstros, causa dano no centro, solta ondas de choque a cada 2s e transforma mortos dentro dele em aliados explosivos.</span>';
+          if(/shurikens vampíricas|recupera vida|vamp/i.test(t)) r.innerHTML='<b>X — 🩸 Ira Abissal</b><br><span>Transformação mítica temporária com resistência elevada e rajadas sombrias. Os ataques do Filho das Trevas não roubam vida.</span>';
+        }
+      }
+    }catch(e){console.warn('patch info text 610',e)}
+  }
+  if(typeof window.openCharacterStats551==='function'){
+    const prevStats610=window.openCharacterStats551;
+    window.openCharacterStats551=function(k){ currentStatsKey610=k||currentStatsKey610; const r=prevStats610.apply(this,arguments); setTimeout(attachStatsInfo610,0); setTimeout(attachStatsInfo610,80); return r; };
+    try{ if(typeof openCharacterStats551!=='undefined') openCharacterStats551=window.openCharacterStats551; }catch(_){ }
+  }
+  document.addEventListener('click',e=>{
+    const go=e.target?.closest?.('#goStats551,[data-stats551]'); if(go?.dataset?.stats551) currentStatsKey610=go.dataset.stats551;
+    const b=e.target?.closest?.('#statsInfo551'); if(!b) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    openLatestInfo610(b.dataset.statsFix610||guessStatsKey610());
+  },true);
+  try{ new MutationObserver(()=>{setTimeout(attachStatsInfo610,10); setTimeout(()=>patchInfoText610(guessStatsKey610()),40);}).observe(overlayCard,{childList:true,subtree:true}); }catch(_){ }
+
+  // Reaper: modelo único e simples, sem chamar camadas antigas do personagem.
+  function activeReaperUlt610(){ return !!(game?.classKey===REAPER && ((game.ults481&&game.ults481.reaper) || game.reaperUlt || game.reaperUltimate)); }
+  function cleanReaperVisualGarbage610(){
+    if(!game || game.classKey!==REAPER) return;
+    game.reaperSoulSlashes=[];
+    if(!activeReaperUlt610()){
+      game.reaperSouls481=[]; game.reaperSouls480=[]; game.reaperSouls485=[];
+    }
+  }
+  function drawSimpleReaper610(){
+    const p=game.player, ult=activeReaperUlt610(), a=angle610(p,mouse);
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.globalCompositeOperation='source-over';
+    // sombra no chão
+    ctx.globalAlpha=.28; ctx.fillStyle='#000'; ctx.beginPath(); ctx.ellipse(0,18,24,9,0,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+    // brilho simples
+    ctx.shadowBlur=ult?32:18; ctx.shadowColor=ult?'#ffffff':'#ff6b9d';
+    ctx.fillStyle=ult?'#050006':'#080308'; ctx.strokeStyle=ult?'#ffffff':'#ff6b9d'; ctx.lineWidth=3;
+    // corpo/roupão único
+    ctx.beginPath();
+    ctx.moveTo(0,-31); ctx.quadraticCurveTo(22,-18,18,20); ctx.lineTo(8,36); ctx.lineTo(0,28); ctx.lineTo(-8,36); ctx.lineTo(-18,20); ctx.quadraticCurveTo(-22,-18,0,-31); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    // rosto/capuz
+    ctx.fillStyle='#000'; ctx.strokeStyle=ult?'#ff4d7d':'#ff6b9d'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(0,-29); ctx.quadraticCurveTo(15,-19,10,-8); ctx.quadraticCurveTo(0,-1,-10,-8); ctx.quadraticCurveTo(-15,-19,0,-29); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=ult?'#fff':'#ff315f'; ctx.shadowBlur=12; ctx.shadowColor=ctx.fillStyle; ctx.fillRect(-7,-16,4,3); ctx.fillRect(3,-16,4,3);
+    // foice limpa apontando para o mouse
+    ctx.rotate(a);
+    ctx.shadowBlur=ult?26:16; ctx.shadowColor=ult?'#fff':'#ff6b9d';
+    ctx.strokeStyle=ult?'#ffffff':'#ff9ab8'; ctx.lineWidth=4; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(-14,18); ctx.lineTo(32,-22); ctx.stroke();
+    ctx.strokeStyle=ult?'#ff315f':'#ff6b9d'; ctx.lineWidth=5;
+    ctx.beginPath(); ctx.arc(42,-28,23,Math.PI*.80,Math.PI*1.68); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Filho das Trevas: ataques próprios, visíveis e sem depender dos projéteis antigos.
+  function ensureShadow610(){
+    if(!game) return;
+    arr610(game,'shadowKnives610'); arr610(game,'shadowRifts610'); arr610(game,'shadowGas610'); arr610(game,'shadowPuddles610'); arr610(game,'demonicPits610'); arr610(game,'shadowAllies610'); arr610(game,'shadowBurstMarks610');
+  }
+  function clearOldShadowCombat610(){
+    if(!game || game.classKey!==SHADOW) return;
+    game.darkProjectiles=[]; game.darkArrows=[]; game.darkFissures=[]; game.darkClones=[];
+    for(const b of game.shadowKnives610||[]) b.heal=0;
+  }
+  function castQ610(idx,sk){
+    const p=game.player; if(game.skillCds[idx]>0 || p.focus<(sk.focusCost||0)) return false;
+    p.focus-=sk.focusCost||0; game.skillCds[idx]=sk.cooldown||12; ensureShadow610();
+    const a=angle610(p,mouse), len=620, w=64;
+    const pts=[]; for(let i=0;i<=16;i++){const t=i/16, ax=Math.cos(a), ay=Math.sin(a), nx=-ay, ny=ax, wob=Math.sin(t*16)*24+rand610(-14,14); pts.push({x:p.x+ax*len*t+nx*wob,y:p.y+ay*len*t+ny*wob});}
+    const fiss={kind:'q',x:p.x,y:p.y,a,len,w,life:1.15,maxLife:1.15,tick:.12,pts,hit:new Set()};
+    game.shadowRifts610.push(fiss);
+    for(let i=game.enemies.length-1;i>=0;i--){const e=game.enemies[i]; if(lineHit610(e,p.x,p.y,p.x+Math.cos(a)*len,p.y+Math.sin(a)*len,w)){safeDamage610(e,145*(game.upgrades?.damage||1),{stun:.35});}}
+    ring610(p.x,p.y,'#ff1f3d',130,7); text610(p.x,p.y-35,'RASGO ABISSAL','#ff1f3d',19); game.shake=Math.max(game.shake||0,22); game.flash=Math.max(game.flash||0,.18); game.flashColor='#ff1f3d';
+    return true;
+  }
+  function castE610(idx,sk){
+    const p=game.player; if(game.skillCds[idx]>0 || p.focus<(sk.focusCost||0)) return false;
+    p.focus-=sk.focusCost||0; game.skillCds[idx]=sk.cooldown||17; ensureShadow610();
+    const a=angle610(p,mouse), len=500;
+    const pts=[]; for(let i=0;i<=13;i++){const t=i/13, ax=Math.cos(a), ay=Math.sin(a), nx=-ay, ny=ax, wob=Math.sin(t*12)*34+rand610(-20,20); pts.push({x:p.x+ax*len*t+nx*wob,y:p.y+ay*len*t+ny*wob});}
+    game.shadowRifts610.push({kind:'e',x:p.x,y:p.y,a,len,w:58,life:.95,maxLife:.95,tick:.1,pts,hit:new Set()});
+    for(let n=0;n<18;n++){
+      const aa=a+rand610(-1.55,1.55), d=rand610(80,360), px=clamp610(p.x+Math.cos(aa)*d,42,W-42), py=clamp610(p.y+Math.sin(aa)*d,42,H-42);
+      game.shadowGas610.push({x:p.x,y:p.y,tx:px,ty:py,a:aa,life:.52,maxLife:.52,r:rand610(16,24)});
+      game.shadowPuddles610.push({x:px,y:py,r:rand610(44,70),life:3,maxLife:3,tick:0,pulse:rand610(0,9)});
+    }
+    ring610(p.x,p.y,'#111111',180,8); text610(p.x,p.y-36,'FISSURA NOCIVA','#0b0b0b',20); game.shake=Math.max(game.shake||0,24); game.flash=Math.max(game.flash||0,.20); game.flashColor='#101010';
+    return true;
+  }
+  function castR610(idx,sk){
+    const p=game.player; if(game.skillCds[idx]>0 || p.focus<(sk.focusCost||0)) return false;
+    p.focus-=sk.focusCost||0; game.skillCds[idx]=sk.cooldown||14; ensureShadow610();
+    const x=clamp610(mouse.x,75,W-75), y=clamp610(mouse.y,75,H-75);
+    game.demonicPits610.push({x,y,r:145,inner:58,life:5,maxLife:5,tick:0,shock:.25,pulse:rand610(0,9)});
+    ring610(x,y,'#ff1f3d',165,9); text610(x,y-34,'FOSSO DEMONÍACO','#ff1f3d',22); game.shake=Math.max(game.shake||0,28); game.flash=Math.max(game.flash||0,.25); game.flashColor='#ff1f3d';
+    return true;
+  }
+  const prevUseSkill610=useSkill;
+  useSkill=function(idx){
+    patchShadowDefinitions610();
+    if(game?.classKey===SHADOW){
+      ensureShadow610(); clearOldShadowCombat610();
+      const key=CLASSES[SHADOW].skills[idx], sk=SKILL_DEFS[key]||{};
+      if(idx===0) return castQ610(idx,sk);
+      if(idx===1) return castE610(idx,sk);
+      if(idx===2) return castR610(idx,sk);
+    }
+    return prevUseSkill610.apply(this,arguments);
+  };
+  try{ window.useSkill=useSkill; }catch(_){ }
+
+  function shootShadow610(){
+    if(!game || game.classKey!==SHADOW) return false;
+    const p=game.player; if(!game.running || p.fireCd>0) return true;
+    ensureShadow610(); clearOldShadowCombat610();
+    const a=angle610(p,mouse), ult=(game.darkUltMode||0)>0;
+    game.shadowAttackCount=(game.shadowAttackCount||0)+1;
+    const fan=ult ? 7 : (game.shadowAttackCount%3===0 ? 5 : 2);
+    const spread=ult ? .40 : (fan>2 ? .25 : .08);
+    for(let i=0;i<fan;i++){
+      const off=(i-(fan-1)/2)*(spread/Math.max(1,fan-1));
+      const aa=a+off+rand610(-.025,.025), sp=ult?900:790, dmg=(ult?30:fan>2?31:46)*(game.upgrades?.damage||1);
+      game.shadowKnives610.push({x:p.x+Math.cos(aa)*28,y:p.y+Math.sin(aa)*28,vx:Math.cos(aa)*sp,vy:Math.sin(aa)*sp,r:10,life:ult?.78:.88,maxLife:ult?.78:.88,damage:dmg,pierce:ult?1:0,ang:aa,spin:rand610(0,Math.PI*2),trail:[]});
+    }
+    p.fireCd=(ult?.15:.25)/(game.upgrades?.fireRate||1);
+    part610(p.x+Math.cos(a)*22,p.y+Math.sin(a)*22,'#ff1f3d',8,.5);
+    return true;
+  }
+  const prevShoot610=shoot;
+  shoot=function(){ if(shootShadow610()) return; return prevShoot610.apply(this,arguments); };
+  try{ window.shoot=shoot; }catch(_){ }
+
+  function updateShadowSystems610(dt){
+    if(!game || game.classKey!==SHADOW) return;
+    ensureShadow610(); clearOldShadowCombat610();
+    // facas principais
+    for(let i=game.shadowKnives610.length-1;i>=0;i--){
+      const b=game.shadowKnives610[i], ox=b.x, oy=b.y;
+      b.trail.unshift({x:b.x,y:b.y}); if(b.trail.length>8) b.trail.pop();
+      b.x+=b.vx*dt; b.y+=b.vy*dt; b.life-=dt; b.spin+=dt*18;
+      if(typeof shotBlockedByMap==='function' && shotBlockedByMap(ox,oy,b,1)){ game.shadowKnives610.splice(i,1); continue; }
+      if(b.life<=0 || b.x<-80 || b.x>W+80 || b.y<-80 || b.y>H+80){ game.shadowKnives610.splice(i,1); continue; }
+      for(let j=game.enemies.length-1;j>=0;j--){
+        const e=game.enemies[j]; if(dist610(b,e)>b.r+(e.r||12)) continue;
+        e.hp-=b.damage; e.hitFlash=Math.max(e.hitFlash||0,.20); e._killedByBlackPoison609=false;
+        part610(e.x,e.y,'#ff1f3d',8,.7); ring610(e.x,e.y,'#ff1f3d',32,3);
+        if(e.hp<=0){ enemyDeath(j,e); }
+        b.pierce--; if(b.pierce<0){ game.shadowKnives610.splice(i,1); break; }
+      }
+    }
+    // fissuras Q/E
+    for(let i=game.shadowRifts610.length-1;i>=0;i--){
+      const f=game.shadowRifts610[i]; f.life-=dt; f.tick-=dt; if(f.life<=0){game.shadowRifts610.splice(i,1);continue;}
+      if(f.tick<=0){
+        f.tick=f.kind==='q'?.18:.16;
+        const x2=f.x+Math.cos(f.a)*f.len, y2=f.y+Math.sin(f.a)*f.len;
+        for(let j=game.enemies.length-1;j>=0;j--){const e=game.enemies[j]; if(lineHit610(e,f.x,f.y,x2,y2,(f.w||50)*.72)){safeDamage610(e,(f.kind==='q'?22:16)*(game.upgrades?.damage||1),{stun:f.kind==='q'?.18:0});}}
+      }
+    }
+    // gás visual
+    for(let i=game.shadowGas610.length-1;i>=0;i--){const g=game.shadowGas610[i]; g.life-=dt; if(g.life<=0) game.shadowGas610.splice(i,1);}
+    // poças negras do E: únicas que curam
+    for(let i=game.shadowPuddles610.length-1;i>=0;i--){
+      const h=game.shadowPuddles610[i]; h.life-=dt; h.tick-=dt; h.pulse+=dt*7; if(h.life<=0){game.shadowPuddles610.splice(i,1);continue;}
+      if(h.tick<=0){
+        h.tick=.20;
+        for(let j=game.enemies.length-1;j>=0;j--){
+          const e=game.enemies[j]; if(dist610(h,e)<h.r+(e.r||0)){ e._darkSlow=Math.max(e._darkSlow||0,.26); safeDamage610(e,26*(game.upgrades?.damage||1),{poison:true}); }
+        }
+      }
+    }
+    // fosso demoníaco
+    for(let i=game.demonicPits610.length-1;i>=0;i--){
+      const pit=game.demonicPits610[i]; pit.life-=dt; pit.tick-=dt; pit.shock-=dt; pit.pulse+=dt*5.5; if(pit.life<=0){game.demonicPits610.splice(i,1);continue;}
+      if(pit.shock<=0){
+        pit.shock=2;
+        ring610(pit.x,pit.y,'#ffffff',pit.r+34,6); ring610(pit.x,pit.y,'#ff1f3d',pit.r+24,8);
+        for(let j=game.enemies.length-1;j>=0;j--){const e=game.enemies[j]; if(dist610(pit,e)<pit.r+40+(e.r||0)) safeDamage610(e,24*(game.upgrades?.damage||1),{stun:1});}
+      }
+      if(pit.tick<=0){
+        pit.tick=.18;
+        for(let j=game.enemies.length-1;j>=0;j--){
+          const e=game.enemies[j], d=dist610(pit,e); if(d>pit.r+(e.r||0)) continue;
+          const a=Math.atan2(pit.y-e.y,pit.x-e.x), pull=e.type==='boss'?28:105;
+          e.x+=Math.cos(a)*pull*dt; e.y+=Math.sin(a)*pull*dt;
+          const dmg=(d<pit.inner+(e.r||0)?38:15)*(game.upgrades?.damage||1);
+          const sx=e.x, sy=e.y, died=safeDamage610(e,dmg,{stun:d<pit.inner?0.25:0});
+          if(died) game.shadowAllies610.push({x:sx,y:sy,r:13,life:4.8,spd:300,pulse:0});
+        }
+      }
+    }
+    // aliados explosivos do fosso
+    for(let i=game.shadowAllies610.length-1;i>=0;i--){
+      const a=game.shadowAllies610[i]; a.life-=dt; a.pulse+=dt*8; if(a.life<=0){game.shadowAllies610.splice(i,1);continue;}
+      const t=nearest610(a.x,a.y); if(!t) continue;
+      const an=Math.atan2(t.y-a.y,t.x-a.x); a.x+=Math.cos(an)*a.spd*dt; a.y+=Math.sin(an)*a.spd*dt;
+      if(dist610(a,t)<a.r+(t.r||12)+10){
+        ring610(a.x,a.y,'#ff1f3d',92,6); part610(a.x,a.y,'#ff1f3d',28,1.1);
+        for(let j=game.enemies.length-1;j>=0;j--){const e=game.enemies[j]; if(dist610(a,e)<90+(e.r||0)) safeDamage610(e,92*(game.upgrades?.damage||1),{stun:.25});}
+        game.shadowAllies610.splice(i,1);
+      }
+    }
+  }
+
+  const prevUpdatePlayer610=updatePlayer;
+  updatePlayer=function(dt){
+    const r=prevUpdatePlayer610.apply(this,arguments);
+    cleanReaperVisualGarbage610();
+    updateShadowSystems610(dt);
+    attachStatsInfo610();
+    return r;
+  };
+  try{ window.updatePlayer=updatePlayer; }catch(_){ }
+
+  const prevDrawPlayer610=drawPlayer;
+  drawPlayer=function(){
+    if(game?.classKey===REAPER){ cleanReaperVisualGarbage610(); drawSimpleReaper610(); return; }
+    return prevDrawPlayer610.apply(this,arguments);
+  };
+  try{ window.drawPlayer=drawPlayer; }catch(_){ }
+
+  function drawShadowKnife610(b){
+    ctx.save();
+    for(let i=b.trail.length-1;i>=0;i--){const t=b.trail[i], k=(i+1)/b.trail.length; ctx.globalAlpha=.10*k; ctx.strokeStyle='#ff1f3d'; ctx.lineWidth=7*k; ctx.beginPath(); ctx.moveTo(t.x-Math.cos(b.ang)*18,t.y-Math.sin(b.ang)*18); ctx.lineTo(t.x+Math.cos(b.ang)*18,t.y+Math.sin(b.ang)*18); ctx.stroke();}
+    ctx.translate(b.x,b.y); ctx.rotate(b.ang); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=1; ctx.shadowBlur=22; ctx.shadowColor='#ff1f3d';
+    ctx.fillStyle='#060006'; ctx.strokeStyle='#ffffff'; ctx.lineWidth=2.4;
+    ctx.beginPath(); ctx.moveTo(22,0); ctx.lineTo(0,-8); ctx.lineTo(-18,0); ctx.lineTo(0,8); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle='#ff1f3d'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-10,0); ctx.lineTo(18,0); ctx.stroke();
+    ctx.restore();
+  }
+  function drawShadowSystems610(){
+    if(!game) return; ctx.save(); ctx.globalCompositeOperation='lighter';
+    for(const f of game.shadowRifts610||[]){
+      const k=clamp610(f.life/f.maxLife,0,1); ctx.globalAlpha=.88*k; ctx.shadowBlur=34; ctx.shadowColor=f.kind==='q'?'#ff1f3d':'#000';
+      ctx.strokeStyle=f.kind==='q'?'rgba(255,31,61,.55)':'rgba(0,0,0,.92)'; ctx.lineWidth=f.w||54; ctx.lineCap='round'; ctx.lineJoin='round';
+      ctx.beginPath(); const pts=f.pts||[]; if(pts.length){ctx.moveTo(pts[0].x,pts[0].y); for(const p of pts) ctx.lineTo(p.x,p.y);} else {ctx.moveTo(f.x,f.y); ctx.lineTo(f.x+Math.cos(f.a)*f.len,f.y+Math.sin(f.a)*f.len);} ctx.stroke();
+      ctx.strokeStyle='#ffffff'; ctx.lineWidth=3.5; ctx.globalAlpha=.82*k; ctx.beginPath(); if(pts.length){ctx.moveTo(pts[0].x,pts[0].y); for(const p of pts) ctx.lineTo(p.x,p.y);} else {ctx.moveTo(f.x,f.y); ctx.lineTo(f.x+Math.cos(f.a)*f.len,f.y+Math.sin(f.a)*f.len);} ctx.stroke();
+      ctx.strokeStyle='#ff1f3d'; ctx.lineWidth=7; ctx.globalAlpha=.7*k; ctx.beginPath(); if(pts.length){ctx.moveTo(pts[0].x,pts[0].y); for(const p of pts) ctx.lineTo(p.x,p.y);} else {ctx.moveTo(f.x,f.y); ctx.lineTo(f.x+Math.cos(f.a)*f.len,f.y+Math.sin(f.a)*f.len);} ctx.stroke();
+    }
+    for(const g of game.shadowGas610||[]){const k=clamp610(g.life/g.maxLife,0,1); ctx.globalAlpha=.55*k; ctx.shadowBlur=26; ctx.shadowColor='#000'; ctx.strokeStyle='rgba(0,0,0,.95)'; ctx.lineWidth=g.r||20; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(g.x,g.y); ctx.lineTo(g.tx,g.ty); ctx.stroke(); ctx.strokeStyle='rgba(68,255,130,.35)'; ctx.lineWidth=3; ctx.stroke();}
+    for(const h of game.shadowPuddles610||[]){const k=clamp610(h.life/h.maxLife,0,1), wob=1+.06*Math.sin(h.pulse); ctx.globalAlpha=.70*k; ctx.shadowBlur=30; ctx.shadowColor='#000'; ctx.fillStyle='rgba(0,0,0,.82)'; ctx.beginPath(); ctx.ellipse(h.x,h.y,h.r*wob,h.r*.62,Math.sin(h.pulse)*.2,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='rgba(68,255,130,.62)'; ctx.lineWidth=2.4; ctx.beginPath(); ctx.ellipse(h.x,h.y,h.r,h.r*.62,Math.sin(h.pulse)*.2,0,Math.PI*2); ctx.stroke();}
+    for(const pit of game.demonicPits610||[]){const k=clamp610(pit.life/pit.maxLife,0,1), spin=pit.pulse; ctx.globalAlpha=.86*k; ctx.shadowBlur=46; ctx.shadowColor='#ff1f3d'; ctx.fillStyle='rgba(0,0,0,.88)'; ctx.beginPath(); ctx.arc(pit.x,pit.y,pit.r*.66*(1+.04*Math.sin(spin)),0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#ff1f3d'; ctx.lineWidth=5; ctx.setLineDash([14,9]); ctx.beginPath(); ctx.arc(pit.x,pit.y,pit.r,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]); for(let q=0;q<10;q++){const a=-spin+q*Math.PI*2/10; ctx.globalAlpha=.45*k; ctx.strokeStyle=q%2?'#fff':'#ff1f3d'; ctx.lineWidth=2.6; ctx.beginPath(); ctx.moveTo(pit.x+Math.cos(a)*pit.r*.96,pit.y+Math.sin(a)*pit.r*.96); ctx.lineTo(pit.x+Math.cos(a)*pit.r*.35,pit.y+Math.sin(a)*pit.r*.35); ctx.stroke();}}
+    for(const a of game.shadowAllies610||[]){ctx.globalAlpha=.9; ctx.shadowBlur=26; ctx.shadowColor='#ff1f3d'; ctx.fillStyle='#030003'; ctx.strokeStyle='#ff1f3d'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(a.x,a.y,a.r+Math.sin(a.pulse)*2,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle='#fff'; ctx.fillRect(a.x-5,a.y-4,3,2); ctx.fillRect(a.x+2,a.y-4,3,2);}
+    for(const b of game.shadowKnives610||[]) drawShadowKnife610(b);
+    ctx.restore();
+  }
+  function drawCleanReaperSouls610(){
+    if(!game || game.classKey!==REAPER || !activeReaperUlt610()) return;
+    const p=game.player, count=5;
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    for(let i=0;i<count;i++){
+      const a=game.time*1.4+i*Math.PI*2/count, x=p.x+Math.cos(a)*52, y=p.y+Math.sin(a)*38;
+      ctx.globalAlpha=.55; ctx.shadowBlur=24; ctx.shadowColor='#ffffff';
+      const g=ctx.createRadialGradient(x,y-7,1,x,y,22); g.addColorStop(0,'rgba(255,255,255,.95)'); g.addColorStop(.4,'rgba(255,150,200,.55)'); g.addColorStop(1,'rgba(255,80,140,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(x,y,10+Math.sin(game.time*6+i)*1.5,18,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.globalAlpha=.8; ctx.beginPath(); ctx.arc(x-3,y-4,1.8,0,Math.PI*2); ctx.arc(x+3,y-4,1.8,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  const prevDrawParticles610=drawParticles;
+  drawParticles=function(){
+    if(game?.classKey===REAPER) cleanReaperVisualGarbage610();
+    const r=prevDrawParticles610.apply(this,arguments);
+    drawCleanReaperSouls610();
+    drawShadowSystems610();
+    return r;
+  };
+  try{ window.drawParticles=drawParticles; }catch(_){ }
+
+  setInterval(()=>{try{patchShadowDefinitions610();attachStatsInfo610();if(game?.classKey===REAPER)cleanReaperVisualGarbage610();}catch(_){}},500);
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<script>
+(()=>{
+  if(window.__statsInfoButtonFix611) return;
+  window.__statsInfoButtonFix611=true;
+  const PATCH='Chrono Shards 6.1.1 — botão Informações das Estatísticas';
+  const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9áàâãéêíóôõúç]+/gi,' ').trim();
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function guessKey(){
+    try{
+      const btn=document.getElementById('statsInfo551');
+      if(btn?.dataset?.stats551) return btn.dataset.stats551;
+      const h=norm(document.querySelector('#overlayCard h1')?.textContent||'');
+      if(h && typeof CLASSES!=='undefined'){
+        for(const k of Object.keys(CLASSES)){
+          const n=norm(CLASSES[k]?.name||'');
+          if(n && (h.includes(n.slice(0,Math.min(9,n.length))) || n.includes(h.slice(0,Math.min(9,h.length))))) return k;
+        }
+      }
+      return game?.classKey||'';
+    }catch(_){return game?.classKey||'';}
+  }
+  function primeButton(){
+    const b=document.getElementById('statsInfo551');
+    if(!b) return;
+    const k=guessKey();
+    if(k){ b.dataset.stats551=k; b.dataset.statsFix610=k; }
+    b.removeAttribute('disabled');
+    b.style.pointerEvents='auto';
+    b.title='Abrir informações mais recentes';
+  }
+  // Recria a função da tela de estatísticas com data-stats551 no botão. Isso corrige também os caminhos que chamavam o openStats local antigo.
+  if(typeof window.openCharacterStats551==='function' && !window.openCharacterStats551.__fix611){
+    const prev=window.openCharacterStats551;
+    const wrapped=function(k){
+      const r=prev.apply(this,arguments);
+      setTimeout(()=>{
+        primeButton();
+        const b=document.getElementById('statsInfo551');
+        if(b && k){ b.dataset.stats551=k; b.dataset.statsFix610=k; }
+      },0);
+      setTimeout(primeButton,80);
+      return r;
+    };
+    wrapped.__fix611=true;
+    window.openCharacterStats551=wrapped;
+    try{ openCharacterStats551=wrapped; }catch(_){}
+  }
+  // Captura antes dos onclicks normais; agora sempre há uma key válida para os listeners antigos e para este fallback.
+  document.addEventListener('pointerdown',primeButton,true);
+  document.addEventListener('click',e=>{
+    const b=e.target?.closest?.('#statsInfo551');
+    if(!b) return;
+    primeButton();
+    const k=b.dataset.stats551||guessKey();
+    if(k && typeof window.openCharacterInfo551==='function'){
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      window.openCharacterInfo551(k);
+      setTimeout(()=>{try{ if(typeof patchInfoText610==='function') patchInfoText610(k); }catch(_){}},60);
+    }
+  },true);
+  try{ new MutationObserver(primeButton).observe(document.body,{childList:true,subtree:true}); }catch(_){}
+  setInterval(primeButton,400);
+  console.log(PATCH+' carregado');
+})();
+</script>
 
 </body>
 </html>
