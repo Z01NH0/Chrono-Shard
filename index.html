@@ -18195,10 +18195,10 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   function higherRarity56(a,b){return RARITIES56[b].rank>RARITIES56[a].rank?b:a;}
   function rollRarityUpgrade56(){
     const r=Math.random();
-    if(r<0.015)return 'mythic';
-    if(r<0.065)return 'legendary';
-    if(r<0.215)return 'epic';
-    if(r<0.515)return 'rare';
+    if(r<0.01)return 'mythic';
+    if(r<0.045)return 'legendary';
+    if(r<0.195)return 'epic';
+    if(r<0.495)return 'rare';
     return 'common';
   }
   const CHEST_RARITY_TO_CATALOG56={rare:'RARO',epic:'ÉPICO',legendary:'LENDÁRIO',mythic:'MÍTICO'};
@@ -18260,11 +18260,11 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     unlockCatalogPower56(p);
     addCatalogTag56(p.tag||'geral');
     game.upgrades.lifesteal=Math.min(.035,N(game.upgrades.lifesteal));
-    return {icon:'✨',title:p.name,desc:`${p.desc} • Catálogo ${label}.`,kind:'power'};
+    return {icon:'✨',title:p.name,desc:`${p.desc} • Catálogo ${label}.`,kind:'power',rare:label==='LENDÁRIO'||label==='MÍTICO'};
   }
   function applyChestReward56(type,rarity){
     if(type==='gold'){
-      const ranges={common:[5,20],rare:[25,70],epic:[55,150],legendary:[65,200],mythic:[70,300]}[rarity]||[5,20];
+      const ranges={common:[5,20],rare:[25,50],epic:[55,100],legendary:[65,150],mythic:[70,300]}[rarity]||[5,20];
       const amt=weightedAmount56(ranges[0],ranges[1],2.75);game.gold=N(game.gold)+amt;return {icon:'🪙',title:`+${amt} ouro`,desc:'Adicionado ao ouro da run.',kind:'gold'};
     }
     if(type==='relic'){
@@ -18275,26 +18275,27 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     if(type==='epicPower')return powerupReward56('epic');
     if(type==='legendaryPower')return powerupReward56('legendary');
     if(type==='mythicPower')return powerupReward56('mythic');
+    if(type==='augmentation')return window.ChronoAug620?.unlockRandom?.()||{icon:'⧖',title:'Ampliação Chronal',desc:'Ampliação liberada.',kind:'augmentation',rare:true};
     if(type==='key'){
       const ranges={rare:[1,1],epic:[2,3],legendary:[3,4],mythic:[4,8]}[rarity]||[1,1];
       const amt=weightedAmount56(ranges[0],ranges[1],2.15);addAwakeningKeys56(amt);return {icon:'🗝️',title:`+${amt} chave${amt>1?'s':''} de Awakening`,desc:'Usada nas missões de awakening.',kind:'key'};
     }
     if(type==='chrono'){
       const ranges={epic:[1,1],legendary:[2,4],mythic:[5,10]}[rarity]||[1,1];
-      const amt=weightedAmount56(ranges[0],ranges[1],2.15);addChrono56(amt);return {icon:'✦',title:`+${amt} Fragmento${amt>1?'s':''} Chrono`,desc:'Recurso raro da progressão.',kind:'chrono'};
+      const amt=weightedAmount56(ranges[0],ranges[1],2.15);addChrono56(amt);return {icon:'✦',title:`+${amt} Fragmento${amt>1?'s':''} Chrono`,desc:'Recurso raro da progressão.',kind:'chrono',rare:true};
     }
     if(type==='secret'){
-      const m=readMeta56();m.secretChronalChest56=true;writeMeta56(m);return {icon:'❔',title:'Algo secreto...',desc:'Você ganhou algo secreto, mas ainda está em desenvolvimento.',kind:'secret'};
+      const m=readMeta56();m.secretChronalChest56=true;writeMeta56(m);return {icon:'❔',title:'Algo secreto...',desc:'Você ganhou algo secreto, mas ainda está em desenvolvimento.',kind:'secret',rare:true};
     }
     return applyChestReward56('gold',rarity);
   }
   function pickChestRewardType56(rarity){
     const table={
-      common:[['gold',70],['relic',20],['rarePower',10]],
-      rare:[['gold',60],['relic',25],['epicPower',3],['key',2]],
-      epic:[['gold',45],['relic',35],['legendaryPower',10],['key',8],['chrono',2]],
-      legendary:[['gold',30],['relic',45],['mythicPower',5],['key',15],['chrono',5]],
-      mythic:[['gold',10],['relic',45],['key',20],['chrono',15],['secret',10]]
+      common:[['gold',75],['relic',15],['rarePower',9],['augmentation',1]],
+      rare:[['gold',65],['relic',23],['epicPower',5],['key',4],['augmentation',3]],
+      epic:[['gold',45],['relic',30],['legendaryPower',10],['key',8],['augmentation',5],['chrono',2]],
+      legendary:[['gold',30],['relic',40],['mythicPower',2],['key',15],['augmentation',9],['chrono',4]],
+      mythic:[['gold',10],['relic',45],['key',20],['chrono',12],['augmentation',11],['secret',2]]
     }[rarity]||[];
     let total=table.reduce((s,x)=>s+x[1],0), r=Math.random()*Math.max(100,total), acc=0;
     for(const [type,w] of table){acc+=w;if(r<acc)return type;}
@@ -18324,7 +18325,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
       <h1>BAÚ CHRONAL ABERTO</h1>
       <p class="shopSub56">Raridade final: <span class="chestRarity56">${meta.emoji} ${meta.name}</span></p>
       <div class="rewardGrid56">
-        ${rewards.map(r=>`<div class="rewardCard56" style="--c:${meta.color}"><i>${r.icon}</i><strong>${esc56(r.title)}</strong><span>${esc56(r.desc)}</span></div>`).join('')}
+        ${rewards.map(r=>`<div class="rewardCard56 ${r.rare?'rareLoot620':''}" style="--c:${r.color||meta.color}"><i>${r.icon}</i><strong>${esc56(r.title)}</strong><span>${esc56(r.desc)}</span></div>`).join('')}
       </div>
       <button class="main-btn continue56" id="backShop56">Voltar para loja</button>`;
     resetChestViewport56();
@@ -18348,7 +18349,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
         <div class="chestBox56 rarity-${state.rarity} ${state.lastChanged?'rarityUp56':''}" id="chestBox56" data-rarity="${state.rarity}"><div class="chestLid56"></div><div class="chestBase56"></div><div class="chestLock56"></div></div>
         <div class="chestPrompt56">${msg}</div>
         <div class="orbs56">${Array.from({length:5},(_,i)=>`<i class="orb56 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div>
-        <p class="muted">Raro 30% • Épico 15% • Lendário 5% • Mítico 1.5%</p>`;
+        <p class="muted">Raro 30% • Épico 15% • Lendário 3.5% • Mítico 1%</p>`;
       resetChestViewport56();
       const box=$('#chestBox56');if(box)box.onclick=click;
       if(state.lastChanged){
@@ -18626,15 +18627,15 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   }
   const RARITIES={common:{name:'COMUM',color:'#86a2bd',rank:0,emoji:'📦'},rare:{name:'RARO',color:'#4ce0b3',rank:1,emoji:'🟩'},epic:{name:'ÉPICO',color:'#b77cff',rank:2,emoji:'🟪'},legendary:{name:'LENDÁRIO',color:'#ffd166',rank:3,emoji:'🟨'},mythic:{name:'MÍTICO',color:'#ff304f',rank:4,emoji:'🟥'}};
   function higher(a,b){return RARITIES[b].rank>RARITIES[a].rank?b:a;}
-  function rollUpgrade(){const r=Math.random();if(r<0.015)return 'mythic';if(r<0.065)return 'legendary';if(r<0.215)return 'epic';if(r<0.515)return 'rare';return 'common';}
+  function rollUpgrade(){const r=Math.random();if(r<0.01)return 'mythic';if(r<0.045)return 'legendary';if(r<0.195)return 'epic';if(r<0.495)return 'rare';return 'common';}
   const RARITY_TO_CATALOG={rare:'RARO',epic:'ÉPICO',legendary:'LENDÁRIO',mythic:'MÍTICO'};
   function ensureCatalogState(){const g=curGame();if(!g)return;g.upgrades=g.upgrades||{};g.upgrades.uniquePicks37=g.upgrades.uniquePicks37||{};g.upgrades.powerPicks548=g.upgrades.powerPicks548||{};g.upgrades.synergy529=g.upgrades.synergy529||{tags:{},active:{}};g.upgrades.synergy529.tags=g.upgrades.synergy529.tags||{};g.upgrades.synergy529.active=g.upgrades.synergy529.active||{};const fields=['goldDropBonus548','relicDropBonus548','bossRelicBonus548','rareBossDropBonus548','skillHaste548','dashHaste548','dashDistanceBonus548','dashDamageBonus548','turretDamage548'];for(const f of fields)g.upgrades[f]=N(g.upgrades[f]);}
   function unlockCatalogPower(p){if(!p)return;try{const u=JSON.parse(localStorage.getItem(CHEST_UNLOCK_KEY)||'{}')||{};u[p.id||String(p.name||'power').toLowerCase().replace(/\s+/g,'_')]=true;localStorage.setItem(CHEST_UNLOCK_KEY,JSON.stringify(u));}catch{}}
   function addCatalogTag(tag){const g=curGame();if(!g)return;ensureCatalogState();tag=tag||'geral';const s=g.upgrades.synergy529;s.tags[tag]=N(s.tags[tag])+1;if(s.tags[tag]<3||s.active[tag])return;s.active[tag]=true;if(tag==='precisao'){g.upgrades.precisionSynergy529=true;g.upgrades.critChance=N(g.upgrades.critChance)+.04;g.upgrades.damage=N(g.upgrades.damage||1)+.04;}if(tag==='velocidade'){g.upgrades.speed=N(g.upgrades.speed||1)+.06;g.upgrades.fireRate=N(g.upgrades.fireRate||1)+.06;g.upgrades.archerChargeHaste548=N(g.upgrades.archerChargeHaste548)+.06;}if(tag==='dash'){g.upgrades.dashHaste548=N(g.upgrades.dashHaste548)+.08;g.upgrades.dashDamageBonus548=N(g.upgrades.dashDamageBonus548)+.05;}if(tag==='foco'){g.upgrades.focusRegen=N(g.upgrades.focusRegen||1)+.18;g.upgrades.skillHaste548=N(g.upgrades.skillHaste548)+.04;}if(tag==='escudo'){g.upgrades.armor=N(g.upgrades.armor)+.06;g.upgrades.guardianSynergy529=true;}if(tag==='explosao'){g.upgrades.explosionSynergy529=true;g.upgrades.unstableAmmo529=N(g.upgrades.unstableAmmo529)+1;}if(tag==='veneno'){g.upgrades.acidMastery=N(g.upgrades.acidMastery)+.40;}if(tag==='construcao'){g.upgrades.buildSynergy529=true;g.upgrades.turretDamage548=N(g.upgrades.turretDamage548)+.10;}if(tag==='vampirismo'){g.upgrades.chronoBlood529=N(g.upgrades.chronoBlood529)+1;g.upgrades.lifesteal=Math.min(.035,N(g.upgrades.lifesteal)+.003);}if(tag==='economia'){g.upgrades.goldDropBonus548=N(g.upgrades.goldDropBonus548)+.05;g.upgrades.relicDropBonus548=N(g.upgrades.relicDropBonus548)+.02;}if(tag==='tesouro'){g.upgrades.rareBossDropBonus548=N(g.upgrades.rareBossDropBonus548)+.005;}if(tag==='geral'){g.upgrades.damage=N(g.upgrades.damage||1)+.03;g.upgrades.focusRegen=N(g.upgrades.focusRegen||1)+.05;}}
   function pickCatalogPower(rarityLabel){ensureCatalogState();const catalog=Array.isArray(window.CHRONO_FINAL_POWERUPS_548)?window.CHRONO_FINAL_POWERUPS_548:[];let pool=catalog.filter(p=>p&&p.rarity===rarityLabel).filter(p=>{try{return !p.show||p.show()}catch{return true}});if(!pool.length)pool=catalog.filter(p=>p&&p.rarity===rarityLabel);if(!pool.length)pool=catalog.filter(Boolean);if(!pool.length)return null;const total=pool.reduce((sum,p)=>sum+Math.max(.001,N(p.weight||1)),0)||1;let r=Math.random()*total;for(const p of pool){r-=Math.max(.001,N(p.weight||1));if(r<=0)return p;}return pool[pool.length-1];}
-  function powerupReward(rarity){const g=curGame();const label=RARITY_TO_CATALOG[rarity]||'RARO';const p=pickCatalogPower(label);if(!p)return {icon:'✨',title:'Power-up indisponível',desc:'Nenhum power-up válido foi encontrado no catálogo final.',kind:'power'};try{p.apply?.();}catch(e){console.warn('Power-up do Baú da Fissura falhou',p,e)}try{if(g?.upgrades?.powerPicks548)g.upgrades.powerPicks548[p.id]=N(g.upgrades.powerPicks548[p.id])+1;}catch{}unlockCatalogPower(p);addCatalogTag(p.tag||'geral');try{if(g?.upgrades)g.upgrades.lifesteal=Math.min(.035,N(g.upgrades.lifesteal));}catch{}return {icon:'✨',title:p.name,desc:`${p.desc} • Catálogo ${label}.`,kind:'power'};}
-  function rewardType(rarity){const table={common:[['gold',70],['relic',20],['rarePower',10]],rare:[['gold',60],['relic',25],['epicPower',3],['key',2]],epic:[['gold',45],['relic',35],['legendaryPower',10],['key',8],['chrono',2]],legendary:[['gold',30],['relic',45],['mythicPower',5],['key',15],['chrono',5]],mythic:[['gold',10],['relic',45],['key',20],['chrono',15],['secret',10]]}[rarity]||[];let total=table.reduce((s,x)=>s+x[1],0),r=Math.random()*Math.max(100,total),acc=0;for(const [type,w] of table){acc+=w;if(r<acc)return type;}return table[0]?.[0]||'gold';}
-  function applyReward(type,rarity){const g=curGame();if(type==='gold'){const ranges={common:[5,20],rare:[25,70],epic:[55,150],legendary:[65,200],mythic:[70,300]}[rarity]||[5,20];const amt=weightedAmount(ranges[0],ranges[1],2.75);if(g)g.gold=N(g.gold)+amt;return {icon:'🪙',title:`+${amt} ouro`,desc:'Adicionado ao ouro da run.',kind:'gold'};}if(type==='relic'){const ranges={common:[1,3],rare:[3,5],epic:[4,10],legendary:[11,25],mythic:[35,60]}[rarity]||[1,3];const amt=weightedAmount(ranges[0],ranges[1],2.35);addRelics(amt);return {icon:'🜂',title:`+${amt} relíquias`,desc:'Progresso permanente recebido.',kind:'relic'};}if(type==='rarePower')return powerupReward('rare');if(type==='epicPower')return powerupReward('epic');if(type==='legendaryPower')return powerupReward('legendary');if(type==='mythicPower')return powerupReward('mythic');if(type==='key'){const ranges={rare:[1,1],epic:[2,3],legendary:[3,4],mythic:[4,8]}[rarity]||[1,1];const amt=weightedAmount(ranges[0],ranges[1],2.15);addAwakeningKeys(amt);return {icon:'🗝️',title:`+${amt} chave${amt>1?'s':''} de Awakening`,desc:'Usada nas missões de awakening.',kind:'key'};}if(type==='chrono'){const ranges={epic:[1,1],legendary:[2,4],mythic:[5,10]}[rarity]||[1,1];const amt=weightedAmount(ranges[0],ranges[1],2.15);addChrono(amt);return {icon:'✦',title:`+${amt} Fragmento${amt>1?'s':''} Chrono`,desc:'Recurso raro da progressão.',kind:'chrono'};}if(type==='secret'){const m=meta();m.secretChronalChest56=true;save(m);return {icon:'❔',title:'Algo secreto...',desc:'Você ganhou algo secreto, mas ainda está em desenvolvimento.',kind:'secret'};}return applyReward('gold',rarity);}
+  function powerupReward(rarity){const g=curGame();const label=RARITY_TO_CATALOG[rarity]||'RARO';const p=pickCatalogPower(label);if(!p)return {icon:'✨',title:'Power-up indisponível',desc:'Nenhum power-up válido foi encontrado no catálogo final.',kind:'power'};try{p.apply?.();}catch(e){console.warn('Power-up do Baú da Fissura falhou',p,e)}try{if(g?.upgrades?.powerPicks548)g.upgrades.powerPicks548[p.id]=N(g.upgrades.powerPicks548[p.id])+1;}catch{}unlockCatalogPower(p);addCatalogTag(p.tag||'geral');try{if(g?.upgrades)g.upgrades.lifesteal=Math.min(.035,N(g.upgrades.lifesteal));}catch{}return {icon:'✨',title:p.name,desc:`${p.desc} • Catálogo ${label}.`,kind:'power',rare:label==='LENDÁRIO'||label==='MÍTICO'};}
+  function rewardType(rarity){const table={common:[['gold',75],['relic',15],['rarePower',9],['augmentation',1]],rare:[['gold',65],['relic',23],['epicPower',5],['key',4],['augmentation',3]],epic:[['gold',45],['relic',30],['legendaryPower',10],['key',8],['augmentation',5],['chrono',2]],legendary:[['gold',30],['relic',40],['mythicPower',2],['key',15],['augmentation',9],['chrono',4]],mythic:[['gold',10],['relic',45],['key',20],['chrono',12],['augmentation',11],['secret',2]]}[rarity]||[];let total=table.reduce((s,x)=>s+x[1],0),r=Math.random()*Math.max(100,total),acc=0;for(const [type,w] of table){acc+=w;if(r<acc)return type;}return table[0]?.[0]||'gold';}
+  function applyReward(type,rarity){const g=curGame();if(type==='gold'){const ranges={common:[5,20],rare:[25,50],epic:[55,100],legendary:[65,150],mythic:[70,300]}[rarity]||[5,20];const amt=weightedAmount(ranges[0],ranges[1],2.75);if(g)g.gold=N(g.gold)+amt;return {icon:'🪙',title:`+${amt} ouro`,desc:'Adicionado ao ouro da run.',kind:'gold'};}if(type==='relic'){const ranges={common:[1,3],rare:[3,5],epic:[4,10],legendary:[11,25],mythic:[35,60]}[rarity]||[1,3];const amt=weightedAmount(ranges[0],ranges[1],2.35);addRelics(amt);return {icon:'🜂',title:`+${amt} relíquias`,desc:'Progresso permanente recebido.',kind:'relic'};}if(type==='rarePower')return powerupReward('rare');if(type==='epicPower')return powerupReward('epic');if(type==='legendaryPower')return powerupReward('legendary');if(type==='mythicPower')return powerupReward('mythic');if(type==='augmentation')return window.ChronoAug620?.unlockRandom?.()||{icon:'⧖',title:'Ampliação Chronal',desc:'Ampliação liberada.',kind:'augmentation',rare:true};if(type==='key'){const ranges={rare:[1,1],epic:[2,3],legendary:[3,4],mythic:[4,8]}[rarity]||[1,1];const amt=weightedAmount(ranges[0],ranges[1],2.15);addAwakeningKeys(amt);return {icon:'🗝️',title:`+${amt} chave${amt>1?'s':''} de Awakening`,desc:'Usada nas missões de awakening.',kind:'key'};}if(type==='chrono'){const ranges={epic:[1,1],legendary:[2,4],mythic:[5,10]}[rarity]||[1,1];const amt=weightedAmount(ranges[0],ranges[1],2.15);addChrono(amt);return {icon:'✦',title:`+${amt} Fragmento${amt>1?'s':''} Chrono`,desc:'Recurso raro da progressão.',kind:'chrono',rare:true};}if(type==='secret'){const m=meta();m.secretChronalChest56=true;save(m);return {icon:'❔',title:'Algo secreto...',desc:'Você ganhou algo secreto, mas ainda está em desenvolvimento.',kind:'secret',rare:true};}return applyReward('gold',rarity);}
   function collectStats(){const t=overlayCard?.innerText||'';const get=(label)=>{const re=new RegExp(label+'\\s*\\n?\\s*\\+?(\\d+)','i');const m=t.match(re);return m?N(m[1]):0};const m=meta();return {wave:get('WAVE')||N(curGame()?.wave),closed:get('FISSURAS')||N(curGame()?.rift50?.closed),kills:get('KILLS')||N(curGame()?.kills),gain:get('GANHAS')||get('GANHO')||N(curGame()?.rift50?.lastGain50||curGame()?.rift50?.lastGain507||curGame()?.rift50?.lastGain518),total:N(m.riftSparks)};}
   function itemHTML(id,name,desc,cost,color){const m=meta(),ok=N(m.riftSparks)>=cost;return `<button class="riftStoreBuy581" data-rift-buy581="${esc(id)}" style="--c:${color}" ${ok?'':'disabled'}><strong>${esc(name)}</strong><span>${esc(desc)}</span><div class="cost">${cost} FAÍSCAS</div></button>`;}
   function renderStore(stats){ensureStyle();stats=stats||collectStats();window.__riftCleanEndStage518='store';overlay.classList.remove('hidden');overlayCard.className='card dune461 riftStore518 riftStore581';const m=meta();overlayCard.innerHTML=`
@@ -18647,8 +18648,8 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     q('#riftHome581').onclick=()=>{exitRiftEnd(true);(window.openStartMenu461||window.openStartMenu)?.();};
   }
   function buy(id,stats){const costs={key:35,chrono:55,relic:40,chest:35,core:115,area:100,turret:140,gold:85,blessing:160};const cost=costs[id],m=meta();if(!cost||N(m.riftSparks)<cost)return;m.riftSparks=N(m.riftSparks)-cost;m.riftPerm=m.riftPerm||{};if(id==='key')m.awakeningKeys=N(m.awakeningKeys)+1;if(id==='chrono'){m.chronoFragments=N(m.chronoFragments)+1;m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected)+1;}if(id==='relic')m.relicShards=N(m.relicShards)+25;if(id==='core')m.riftPerm.coreHp=N(m.riftPerm.coreHp)+1;if(id==='area')m.riftPerm.buildArea=N(m.riftPerm.buildArea)+1;if(id==='turret')m.riftPerm.turretLimit=N(m.riftPerm.turretLimit)+1;if(id==='gold')m.riftPerm.startGold=N(m.riftPerm.startGold)+1;if(id==='blessing')m.riftPerm.goldBlessing=N(m.riftPerm.goldBlessing)+1;save(m);if(id==='chest'){openRiftChest(stats);return;}renderStore(stats);}
-  function openRiftChest(stats){ensureStyle();const state={rarity:'epic',used:0,maxUses:3,animating:false,readyOpen:false,lastChanged:false};function render(){const r=RARITIES[state.rarity];overlay.classList.remove('hidden');overlayCard.className=`card riftChestStage581 rarity-${state.rarity}`;overlayCard.style.setProperty('--c',r.color);const hidden=state.rarity==='mythic';const msg=state.readyOpen||state.used>=state.maxUses||hidden?'Clique para abrir!':(state.lastChanged?'Raridade aumentou!':'Me Clique!');overlayCard.innerHTML=`<h1>BAÚ CHRONAL DA FISSURA</h1><p class="riftChestSub581">Este baú começa Épico e tem 3 tentativas para subir de raridade. Ele nunca regride.</p><div class="riftChestRarity581">${r.emoji} ${r.name}</div><div class="riftChestBox581 ${state.lastChanged?'up581':''}" id="riftChestBox581"><div class="riftChestLid581"></div><div class="riftChestBase581"></div><div class="riftChestLock581"></div></div><div class="riftChestPrompt581">${msg}</div><div class="riftOrbs581">${Array.from({length:state.maxUses},(_,i)=>`<i class="riftOrb581 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div><p class="muted">Raro 30% • Épico 15% • Lendário 5% • Mítico 1.5%</p>`;const box=q('#riftChestBox581');if(box)box.onclick=click;if(state.lastChanged)setTimeout(()=>{state.lastChanged=false;const b=q('#riftChestBox581');if(b)b.classList.remove('up581');},720);}function click(){if(state.animating)return;if(state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic'){const box=q('#riftChestBox581');if(box)box.classList.add('open581');setTimeout(()=>showRewards(state,stats),660);return;}state.animating=true;state.used++;const before=state.rarity;const rolled=rollUpgrade();const next=higher(before,rolled);const box=q('#riftChestBox581');if(box){box.classList.remove('shake581','up581');void box.offsetWidth;box.classList.add('shake581');}const p=q('.riftChestPrompt581');if(p)p.textContent='...';setTimeout(()=>{state.rarity=next;state.animating=false;state.lastChanged=before!==next;if(state.rarity==='mythic'||state.used>=state.maxUses)state.readyOpen=true;render();},650);}render();}
-  function showRewards(state,stats){const r=RARITIES[state.rarity],rewards=[];for(let i=0;i<3;i++)rewards.push(applyReward(rewardType(state.rarity),state.rarity));try{updateHUD?.()}catch{}overlay.classList.remove('hidden');overlayCard.className=`card riftChestStage581 riftChestReward581 rarity-${state.rarity}`;overlayCard.style.setProperty('--c',r.color);overlayCard.innerHTML=`<h1>BAÚ CHRONAL ABERTO</h1><p class="riftChestSub581">Raridade final: <span class="riftChestRarity581">${r.emoji} ${r.name}</span></p><div class="riftRewardGrid581">${rewards.map(x=>`<div class="riftRewardCard581" style="--c:${r.color}"><i>${x.icon}</i><strong>${esc(x.title)}</strong><span>${esc(x.desc)}</span></div>`).join('')}</div><button class="main-btn" id="backRiftStore581">Voltar para loja</button>`;q('#backRiftStore581').onclick=()=>renderStore(stats);}
+  function openRiftChest(stats){ensureStyle();const state={rarity:'epic',used:0,maxUses:3,animating:false,readyOpen:false,lastChanged:false};function render(){const r=RARITIES[state.rarity];overlay.classList.remove('hidden');overlayCard.className=`card riftChestStage581 rarity-${state.rarity}`;overlayCard.style.setProperty('--c',r.color);const hidden=state.rarity==='mythic';const msg=state.readyOpen||state.used>=state.maxUses||hidden?'Clique para abrir!':(state.lastChanged?'Raridade aumentou!':'Me Clique!');overlayCard.innerHTML=`<h1>BAÚ CHRONAL DA FISSURA</h1><p class="riftChestSub581">Este baú começa Épico e tem 3 tentativas para subir de raridade. Ele nunca regride.</p><div class="riftChestRarity581">${r.emoji} ${r.name}</div><div class="riftChestBox581 ${state.lastChanged?'up581':''}" id="riftChestBox581"><div class="riftChestLid581"></div><div class="riftChestBase581"></div><div class="riftChestLock581"></div></div><div class="riftChestPrompt581">${msg}</div><div class="riftOrbs581">${Array.from({length:state.maxUses},(_,i)=>`<i class="riftOrb581 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div><p class="muted">Raro 30% • Épico 15% • Lendário 3.5% • Mítico 1%</p>`;const box=q('#riftChestBox581');if(box)box.onclick=click;if(state.lastChanged)setTimeout(()=>{state.lastChanged=false;const b=q('#riftChestBox581');if(b)b.classList.remove('up581');},720);}function click(){if(state.animating)return;if(state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic'){const box=q('#riftChestBox581');if(box)box.classList.add('open581');setTimeout(()=>showRewards(state,stats),660);return;}state.animating=true;state.used++;const before=state.rarity;const rolled=rollUpgrade();const next=higher(before,rolled);const box=q('#riftChestBox581');if(box){box.classList.remove('shake581','up581');void box.offsetWidth;box.classList.add('shake581');}const p=q('.riftChestPrompt581');if(p)p.textContent='...';setTimeout(()=>{state.rarity=next;state.animating=false;state.lastChanged=before!==next;if(state.rarity==='mythic'||state.used>=state.maxUses)state.readyOpen=true;render();},650);}render();}
+  function showRewards(state,stats){const r=RARITIES[state.rarity],rewards=[];for(let i=0;i<3;i++)rewards.push(applyReward(rewardType(state.rarity),state.rarity));try{updateHUD?.()}catch{}overlay.classList.remove('hidden');overlayCard.className=`card riftChestStage581 riftChestReward581 rarity-${state.rarity}`;overlayCard.style.setProperty('--c',r.color);overlayCard.innerHTML=`<h1>BAÚ CHRONAL ABERTO</h1><p class="riftChestSub581">Raridade final: <span class="riftChestRarity581">${r.emoji} ${r.name}</span></p><div class="riftRewardGrid581">${rewards.map(x=>`<div class="riftRewardCard581 ${x.rare?'rareLoot620':''}" style="--c:${x.color||r.color}"><i>${x.icon}</i><strong>${esc(x.title)}</strong><span>${esc(x.desc)}</span></div>`).join('')}</div><button class="main-btn" id="backRiftStore581">Voltar para loja</button>`;q('#backRiftStore581').onclick=()=>renderStore(stats);}
   function exitRiftEnd(){window.__riftCleanEndStage518='none';window.__riftSuppressOldEnd518=performance.now()+1500;const g=curGame();if(g){try{g.riftBuild50=g.riftBuild505=g.riftBuild507=g.riftBuild508=g.riftBuild509=null;}catch{}try{if(g.rift50){g.rift50.shopOpen=false;g.rift50.endAwarded50=true;g.rift50.endAwarded507=true;}}catch{}g.riftMode50=false;g.running=false;g.shopPending=false;g.betweenWaves=false;g.enemyBullets=[];g.enemies=[];}overlay.classList.remove('hidden');overlayCard.className='card';}
   const obs=new MutationObserver(()=>{try{const cls=overlayCard?.className||'';const txt=overlayCard?.innerText||'';if(/riftStore518/.test(cls)&&!/riftStore581/.test(cls)&&/LOJA MÍSTICA DA FISSURA|ESPÓLIOS/.test(txt)){setTimeout(()=>{const c=overlayCard?.className||'';if(/riftStore518/.test(c)&&!/riftStore581/.test(c))renderStore(collectStats());},0);}}catch(e){console.warn('rift store 581 observer',e)}});try{obs.observe(overlayCard,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});}catch{}
   // Informações dos personagens: qualquer clique nos botões antigos é reenviado para a tela mais recente da Maestria.
@@ -20624,6 +20625,662 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   try{ new MutationObserver(primeButton).observe(document.body,{childList:true,subtree:true}); }catch(_){}
   setInterval(primeButton,400);
   console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Chrono Shards — Monster polish + Pause Menu patch 6.2.0
+   - Melhora modelos de monstros sem fugir do estilo do jogo
+   - Adiciona menu de pausa por botão e tecla ESC
+──────────────────────────────────────────────────────────────── */
+(()=>{
+  const PATCH='Chrono 6.2.0';
+  const $=s=>document.querySelector(s);
+  const N=v=>Number(v||0);
+
+  function ensurePauseStyle(){
+    if(document.getElementById('pause620Style')) return;
+    const st=document.createElement('style'); st.id='pause620Style';
+    st.textContent=`
+      .pauseBtn620{
+        position:fixed;top:16px;right:16px;z-index:40;
+        border:none;border-radius:999px;padding:10px 16px;cursor:pointer;
+        font:700 13px Rajdhani,sans-serif;letter-spacing:.08em;color:#06101d;
+        background:linear-gradient(135deg,#61dafb,#9f6cff 70%,#c8b6ff);
+        box-shadow:0 10px 28px rgba(0,0,0,.30),0 0 24px rgba(97,218,251,.18);
+      }
+      .pauseBtn620:hover{transform:translateY(-2px);filter:brightness(1.06)}
+      .pauseBtn620[hidden]{display:none!important}
+      .pauseWrap620{
+        position:fixed;inset:0;z-index:70;display:none;place-items:center;
+        background:rgba(2,4,10,.66);backdrop-filter:blur(10px)
+      }
+      .pauseWrap620.show{display:grid}
+      .pauseCard620{
+        width:min(92vw,430px);padding:28px 24px;border-radius:26px;text-align:center;
+        background:linear-gradient(155deg,rgba(10,14,28,.98),rgba(18,12,36,.98));
+        border:1px solid rgba(120,200,255,.18);
+        box-shadow:0 24px 90px rgba(0,0,0,.55),0 0 60px rgba(97,218,251,.08)
+      }
+      .pauseCard620 h2{
+        font-family:Orbitron,sans-serif;font-size:28px;letter-spacing:.12em;margin:0 0 8px;
+        background:linear-gradient(90deg,#61dafb,#9f6cff,#ffd166);
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent
+      }
+      .pauseCard620 p{margin:0 0 18px;color:#cfe4ff;line-height:1.6;font-size:14px}
+      .pauseActions620{display:grid;gap:10px}
+      .pauseOpt620{
+        border:none;border-radius:16px;padding:14px 16px;cursor:pointer;
+        font:700 15px Rajdhani,sans-serif;letter-spacing:.06em;color:#eaf5ff;
+        background:linear-gradient(135deg,rgba(97,218,251,.14),rgba(159,108,255,.14));
+        border:1px solid rgba(97,218,251,.22)
+      }
+      .pauseOpt620:hover{filter:brightness(1.08);transform:translateY(-2px)}
+      .pauseOpt620.exit{background:linear-gradient(135deg,rgba(255,98,129,.14),rgba(159,108,255,.14));border-color:rgba(255,120,150,.25)}
+    `;
+    document.head.appendChild(st);
+  }
+
+  function ensurePauseUI(){
+    ensurePauseStyle();
+    let btn=document.getElementById('pauseBtn620');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.id='pauseBtn620'; btn.className='pauseBtn620'; btn.textContent='⏸ Pausa';
+      btn.onclick=(e)=>{e.preventDefault();togglePause620(true)};
+      document.body.appendChild(btn);
+    }
+    let wrap=document.getElementById('pauseWrap620');
+    if(!wrap){
+      wrap=document.createElement('div'); wrap.id='pauseWrap620'; wrap.className='pauseWrap620';
+      wrap.innerHTML=`<div class="pauseCard620"><h2>JOGO PAUSADO</h2><p>O fluxo temporal foi interrompido. Escolha se quer voltar para a partida ou sair direto para o menu principal.</p><div class="pauseActions620"><button class="pauseOpt620" id="pauseResume620">Voltar</button><button class="pauseOpt620 exit" id="pauseExit620">Sair</button></div></div>`;
+      document.body.appendChild(wrap);
+      wrap.addEventListener('click',e=>{ if(e.target===wrap) togglePause620(false); });
+      wrap.querySelector('#pauseResume620').onclick=()=>togglePause620(false);
+      wrap.querySelector('#pauseExit620').onclick=()=>exitToMenu620();
+    }
+    refreshPauseButton620();
+  }
+
+  function isOverlayOpen620(){
+    try{return !!window.overlay && !overlay.classList.contains('hidden');}catch(_){return false}
+  }
+  function inBuildMode620(g){
+    return !!(g?.riftBuild50||g?.riftBuild505||g?.riftBuild507||g?.riftBuild508||g?.riftBuild509||g?.buildMode);
+  }
+  function canPause620(){
+    const g=window.game; if(!g) return false;
+    if(inBuildMode620(g)) return false;
+    if(isOverlayOpen620()) return false;
+    if(g.pauseMenu620) return true;
+    if(!g.running) return false;
+    if(g.betweenWaves||g.shopPending||g.duneTransition37) return false;
+    return true;
+  }
+  function refreshPauseButton620(){
+    const btn=document.getElementById('pauseBtn620');
+    if(!btn) return;
+    const g=window.game;
+    const on=!!(g && !isOverlayOpen620() && !inBuildMode620(g) && (g.running||g.pauseMenu620));
+    btn.hidden=!on;
+  }
+  function togglePause620(forceOpen){
+    ensurePauseUI();
+    const g=window.game; if(!g) return;
+    const wrap=document.getElementById('pauseWrap620');
+    const opening=typeof forceOpen==='boolean' ? forceOpen : !g.pauseMenu620;
+    if(opening){
+      if(!canPause620()) return;
+      g.pauseMenu620=true; g.pauseWasRunning620=!!g.running; g.running=false;
+      wrap.classList.add('show');
+    } else {
+      if(!g.pauseMenu620) return;
+      g.pauseMenu620=false; wrap.classList.remove('show');
+      if(g.pauseWasRunning620 && !isOverlayOpen620()) g.running=true;
+    }
+    refreshPauseButton620();
+  }
+  function exitToMenu620(){
+    try{ if(window.game) { game.pauseMenu620=false; game.running=false; } }catch(_){ }
+    try{ document.getElementById('pauseWrap620')?.classList.remove('show'); }catch(_){ }
+    refreshPauseButton620();
+    try{ (window.openStartMenu461||window.openStartMenu)?.(); }catch(e){ console.warn(PATCH+' saída para menu falhou',e); }
+  }
+
+  ensurePauseUI();
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Escape') return;
+    const g=window.game;
+    if(g?.pauseMenu620){ e.preventDefault(); e.stopPropagation(); togglePause620(false); return; }
+    if(canPause620()) { e.preventDefault(); e.stopPropagation(); togglePause620(true); }
+  },true);
+  setInterval(refreshPauseButton620,350);
+  const _oldOpenStart620=window.openStartMenu||window.openStartMenu461;
+  ['openStartMenu','openStartMenu461','openClassMenu','openClassMenu461','gameOver','openUpgradeMenu','openShopMenu'].forEach(name=>{
+    const fn=window[name];
+    if(typeof fn==='function' && !fn.__pause620){
+      const wrapped=function(){ try{ if(window.game){ game.pauseMenu620=false; } document.getElementById('pauseWrap620')?.classList.remove('show'); }catch(_){} const r=fn.apply(this,arguments); setTimeout(refreshPauseButton620,0); return r; };
+      wrapped.__pause620=true; window[name]=wrapped; try{ eval(name+'=window[name]'); }catch(_){}
+    }
+  });
+
+  // ===== MODELOS MELHORADOS DOS MONSTROS =====
+  const TARGETS=new Set(['chaser','strafer','bomber','leaper','swarmer','sentinel','tank','medic','medicDrone','sniperDrone','splitter','vomiter','pukeling','archon','titan','oracle']);
+  const prevDraw=window.drawEnemies||globalThis.drawEnemies;
+  function rad(a,b,c,d,r){ if(ctx.roundRect) {ctx.beginPath();ctx.roundRect(a,b,c,d,r);ctx.fill();ctx.stroke();} else {ctx.fillRect(a,b,c,d);ctx.strokeRect(a,b,c,d);} }
+  function glowStroke(col,w=2,alpha=.95){ ctx.lineWidth=w; ctx.strokeStyle=col; ctx.globalAlpha=alpha; }
+  function hpBar620(e){
+    const hp=Math.max(0,Math.min(1,N(e.hp)/Math.max(1,N(e.maxHp))));
+    ctx.globalAlpha=.9; ctx.fillStyle='rgba(0,0,0,.42)'; ctx.fillRect(-e.r,-e.r-17,e.r*2,5);
+    ctx.fillStyle=hp>.55?'#4ce0b3':hp>.25?'#ffd166':'#ff4d6d'; ctx.fillRect(-e.r,-e.r-17,e.r*2*hp,5); ctx.globalAlpha=1;
+  }
+  function eliteAndMarks620(e){
+    if(e.elite&&e.type!=='boss'){ ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=2.1; ctx.beginPath(); ctx.arc(0,0,e.r+5,0,Math.PI*2); ctx.stroke(); }
+    if(e.marked){ ctx.strokeStyle='#ff4d6d'; ctx.lineWidth=2; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.arc(0,0,e.r+8,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]); }
+    if(e.shieldHp>0){ ctx.globalAlpha=.55; ctx.strokeStyle='#88ffcc'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,e.r+3,0,Math.PI*2*(e.shieldHp/Math.max(1,e.maxHp*.3))); ctx.stroke(); ctx.globalAlpha=1; }
+  }
+  function drawTarget620(e){
+    const t=(window.game?.time||0)+(e.wobble||0), id=e.bossType||e.type;
+    const frozen=(window.game?.timeStopActive>0)||e.frozenTime>0;
+    const col=e.hitFlash>0?'#ffffff':(frozen?'#b7ddff':(e.color||'#7dcfff'));
+    const dark='rgba(8,11,22,.94)';
+    ctx.save(); ctx.translate(e.x,e.y);
+    const pulse=1+Math.sin(t*5.2)*0.035; ctx.scale(pulse,pulse);
+    ctx.shadowBlur=id==='archon'||id==='titan'||id==='oracle'?28:(e.elite?24:18); ctx.shadowColor=col;
+    ctx.fillStyle=col; ctx.strokeStyle='rgba(255,255,255,.88)'; ctx.lineWidth=2.2;
+
+    if(id==='chaser'){
+      ctx.beginPath(); ctx.moveTo(0,-e.r*1.15); ctx.lineTo(e.r*.95,0); ctx.lineTo(0,e.r*1.15); ctx.lineTo(-e.r*.95,0); ctx.closePath(); ctx.fill();
+      ctx.fillStyle=dark; ctx.beginPath(); ctx.moveTo(0,-e.r*.45); ctx.lineTo(e.r*.38,0); ctx.lineTo(0,e.r*.45); ctx.lineTo(-e.r*.38,0); ctx.closePath(); ctx.fill();
+      glowStroke('rgba(255,255,255,.75)',1.8,.9); ctx.beginPath(); ctx.moveTo(0,-e.r*.95); ctx.lineTo(0,e.r*.95); ctx.moveTo(-e.r*.7,0); ctx.lineTo(e.r*.7,0); ctx.stroke();
+    }
+    else if(id==='strafer'){
+      ctx.beginPath(); ctx.moveTo(e.r*1.1,0); ctx.lineTo(-e.r*.25,-e.r*.82); ctx.lineTo(-e.r*.9,0); ctx.lineTo(-e.r*.25,e.r*.82); ctx.closePath(); ctx.fill();
+      ctx.fillStyle=dark; ctx.beginPath(); ctx.moveTo(e.r*.2,0); ctx.lineTo(-e.r*.1,-e.r*.32); ctx.lineTo(-e.r*.45,0); ctx.lineTo(-e.r*.1,e.r*.32); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='rgba(255,246,221,.9)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-e.r*.8,-e.r*.52); ctx.lineTo(-e.r*.16,-e.r*.12); ctx.moveTo(-e.r*.8,e.r*.52); ctx.lineTo(-e.r*.16,e.r*.12); ctx.stroke();
+    }
+    else if(id==='bomber'){
+      ctx.beginPath(); for(let i=0;i<8;i++){const a=Math.PI*2*i/8,rr=i%2?e.r*.65:e.r*1.1; if(i===0)ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr); else ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);} ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#fff0d3'; ctx.beginPath(); ctx.arc(0,0,e.r*.28,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,242,217,.95)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,-e.r*.82); ctx.lineTo(0,-e.r*.28); ctx.moveTo(0,e.r*.34); ctx.lineTo(0,e.r*.78); ctx.stroke();
+    }
+    else if(id==='leaper'){
+      ctx.beginPath(); ctx.moveTo(0,-e.r*1.15); ctx.lineTo(e.r*.86,-e.r*.1); ctx.lineTo(e.r*.38,e.r*.98); ctx.lineTo(-e.r*.38,e.r*.98); ctx.lineTo(-e.r*.86,-e.r*.1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle=dark; ctx.beginPath(); ctx.moveTo(0,-e.r*.4); ctx.lineTo(e.r*.28,e.r*.2); ctx.lineTo(-e.r*.28,e.r*.2); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='#fff2aa'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-e.r*.38,e.r*.58); ctx.lineTo(-e.r*1.05,e.r*1.05); ctx.moveTo(e.r*.38,e.r*.58); ctx.lineTo(e.r*1.05,e.r*1.05); ctx.stroke();
+    }
+    else if(id==='swarmer'){
+      ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(0,0,e.r*.78,e.r*.62,0,0,Math.PI*2); ctx.fill();
+      for(const side of [-1,1]){
+        ctx.globalAlpha=.75; ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(side*e.r*.58,-e.r*.18,e.r*.52,e.r*.25,side*.45,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(side*e.r*.58,e.r*.18,e.r*.52,e.r*.25,-side*.45,0,Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha=1; ctx.fillStyle=dark; ctx.beginPath(); ctx.arc(0,0,e.r*.24,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=1.5; for(let i=-1;i<=1;i+=2){ctx.beginPath(); ctx.moveTo(i*e.r*.35,-e.r*.1); ctx.lineTo(i*e.r*.85,-e.r*.55); ctx.moveTo(i*e.r*.35,e.r*.1); ctx.lineTo(i*e.r*.85,e.r*.55); ctx.stroke();}
+    }
+    else if(id==='sentinel'){
+      ctx.beginPath(); for(let i=0;i<6;i++){ const a=Math.PI*2*i/6+Math.PI/6; const rr=i%2?e.r*.94:e.r; if(i===0)ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr); else ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);} ctx.closePath(); ctx.fill();
+      ctx.fillStyle=dark; ctx.beginPath(); ctx.arc(0,0,e.r*.34,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.82)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-e.r*.82,0); ctx.lineTo(e.r*.82,0); ctx.moveTo(0,-e.r*.82); ctx.lineTo(0,e.r*.82); ctx.stroke();
+    }
+    else if(id==='tank'){
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(0,0,e.r,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=3.2; ctx.beginPath(); ctx.arc(0,0,e.r*.66,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle=dark; ctx.beginPath(); ctx.arc(0,0,e.r*.34,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,e.r*.88,Math.PI*.18,Math.PI*.82); ctx.stroke();
+    }
+    else if(id==='medic' || id==='medicDrone'){
+      ctx.beginPath(); ctx.ellipse(0,0,e.r*.98,e.r*.82,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=dark; ctx.beginPath(); ctx.arc(0,0,e.r*.26,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#eafff4'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(-e.r*.45,0); ctx.lineTo(e.r*.45,0); ctx.moveTo(0,-e.r*.45); ctx.lineTo(0,e.r*.45); ctx.stroke();
+      ctx.strokeStyle='rgba(134,255,176,.7)'; ctx.lineWidth=1.7; ctx.beginPath(); ctx.arc(0,0,e.r*.95,0,Math.PI*2); ctx.stroke();
+    }
+    else if(id==='sniperDrone'){
+      rad(-e.r*.95,-e.r*.72,e.r*1.9,e.r*1.44,6);
+      ctx.fillStyle=dark; ctx.beginPath(); ctx.arc(0,0,e.r*.34,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#dff6ff'; ctx.lineWidth=2.2; ctx.beginPath(); ctx.moveTo(-e.r*1.15,0); ctx.lineTo(e.r*1.15,0); ctx.moveTo(0,-e.r*.95); ctx.lineTo(0,e.r*.95); ctx.stroke();
+      ctx.strokeStyle='rgba(143,208,255,.8)'; ctx.beginPath(); ctx.moveTo(-e.r*.7,-e.r*.5); ctx.lineTo(e.r*.7,-e.r*.5); ctx.moveTo(-e.r*.7,e.r*.5); ctx.lineTo(e.r*.7,e.r*.5); ctx.stroke();
+    }
+    else if(id==='splitter'){
+      for(let i=0;i<3;i++){
+        const a=t*1.2+i*Math.PI*2/3, ox=Math.cos(a)*e.r*.42, oy=Math.sin(a)*e.r*.42;
+        ctx.fillStyle=col; ctx.beginPath(); ctx.arc(ox,oy,e.r*.46,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle=dark; ctx.beginPath(); ctx.arc(ox,oy,e.r*.16,0,Math.PI*2); ctx.fill();
+      }
+      ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.lineWidth=1.8; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(t*1.2)*e.r*.42,Math.sin(t*1.2)*e.r*.42); ctx.stroke();
+    }
+    else if(id==='vomiter'){
+      ctx.beginPath(); ctx.ellipse(0,e.r*.12,e.r*.98,e.r*1.1,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(16,26,10,.75)'; ctx.beginPath(); ctx.arc(0,e.r*.18,e.r*.3,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(182,255,122,.85)'; ctx.beginPath(); ctx.arc(-e.r*.28,-e.r*.12,e.r*.11,0,Math.PI*2); ctx.arc(e.r*.28,-e.r*.12,e.r*.11,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(214,255,154,.9)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-e.r*.65,e.r*.45); ctx.lineTo(e.r*.65,e.r*.45); ctx.stroke();
+    }
+    else if(id==='pukeling'){
+      ctx.beginPath(); for(let i=0;i<10;i++){const a=Math.PI*2*i/10,rr=i%2?e.r*.7:e.r*1.02; if(i===0)ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr); else ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);} ctx.closePath(); ctx.fill();
+      ctx.fillStyle=dark; ctx.beginPath(); ctx.arc(0,0,e.r*.2,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(-e.r*.5,-e.r*.2); ctx.lineTo(e.r*.5,e.r*.2); ctx.moveTo(e.r*.2,-e.r*.5); ctx.lineTo(-e.r*.2,e.r*.5); ctx.stroke();
+    }
+    else if(id==='archon'){
+      ctx.beginPath(); ctx.moveTo(0,-e.r*1.12); ctx.lineTo(e.r*.94,-e.r*.18); ctx.lineTo(e.r*.5,e.r*.98); ctx.lineTo(0,e.r*.52); ctx.lineTo(-e.r*.5,e.r*.98); ctx.lineTo(-e.r*.94,-e.r*.18); ctx.closePath(); ctx.fill();
+      ctx.fillStyle=dark; ctx.beginPath(); ctx.arc(0,0,e.r*.26,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.88)'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(0,-e.r*.78); ctx.lineTo(0,e.r*.42); ctx.moveTo(-e.r*.68,0); ctx.lineTo(e.r*.68,0); ctx.stroke();
+      ctx.strokeStyle=col+'99'; ctx.lineWidth=2; for(let i=0;i<4;i++){const a=t*.5+i*Math.PI/2; ctx.beginPath(); ctx.moveTo(Math.cos(a)*(e.r*.75),Math.sin(a)*(e.r*.75)); ctx.lineTo(Math.cos(a)*(e.r*1.32),Math.sin(a)*(e.r*1.32)); ctx.stroke();}
+    }
+    else if(id==='titan'){
+      rad(-e.r*.9,-e.r*.95,e.r*1.8,e.r*1.9,12);
+      ctx.fillStyle=dark; rad(-e.r*.38,-e.r*.18,e.r*.76,e.r*.74,8);
+      ctx.fillStyle=col; ctx.globalAlpha=.25; ctx.fillRect(-e.r*.58,-e.r*.6,e.r*1.16,e.r*.18); ctx.fillRect(-e.r*.58,e.r*.28,e.r*1.16,e.r*.18); ctx.globalAlpha=1;
+      ctx.strokeStyle='rgba(255,255,255,.88)'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-e.r*.7,-e.r*.82); ctx.lineTo(-e.r*1.08,-e.r*.22); ctx.moveTo(e.r*.7,-e.r*.82); ctx.lineTo(e.r*1.08,-e.r*.22); ctx.moveTo(-e.r*.7,e.r*.82); ctx.lineTo(-e.r*1.08,e.r*.22); ctx.moveTo(e.r*.7,e.r*.82); ctx.lineTo(e.r*1.08,e.r*.22); ctx.stroke();
+    }
+    else if(id==='oracle'){
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(0,0,e.r*.5,0,Math.PI*2); ctx.fill();
+      for(let i=0;i<8;i++){
+        const a=i*Math.PI/4+t*.18;
+        ctx.save(); ctx.rotate(a);
+        ctx.beginPath(); ctx.moveTo(0,-e.r*.35); ctx.lineTo(e.r*.22,-e.r*1.12); ctx.lineTo(-e.r*.22,-e.r*1.12); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+      ctx.fillStyle='rgba(255,255,255,.88)'; ctx.beginPath(); ctx.arc(0,0,e.r*.15,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(182,255,122,.65)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,e.r*.9,0,Math.PI*2); ctx.stroke();
+    }
+
+    eliteAndMarks620(e); hpBar620(e); ctx.restore();
+  }
+  if(typeof prevDraw==='function' && !prevDraw.__monster620){
+    const wrapped=function(){
+      if(!window.game || !Array.isArray(game.enemies)) return prevDraw.apply(this,arguments);
+      const arr=game.enemies;
+      const custom=arr.filter(e=>e && TARGETS.has(e.bossType||e.type));
+      if(!custom.length) return prevDraw.apply(this,arguments);
+      game.enemies=arr.filter(e=>!(e && TARGETS.has(e.bossType||e.type)));
+      try{ prevDraw.apply(this,arguments); }
+      finally{ game.enemies=arr; }
+      for(const e of custom) drawTarget620(e);
+    };
+    wrapped.__monster620=true;
+    window.drawEnemies=wrapped; try{ drawEnemies=wrapped; }catch(_){ }
+  }
+
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<style id="chronoAug620Style">
+  .rareLoot620{position:relative;border-color:rgba(255,230,150,.82)!important;box-shadow:0 0 26px rgba(255,209,102,.38),inset 0 0 24px rgba(255,255,255,.06)!important;overflow:hidden}
+  .rareLoot620:before{content:'';position:absolute;inset:-45%;background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.75),rgba(255,209,102,.55),transparent 35%);animation:rareSweep620 2.4s linear infinite;opacity:.72;pointer-events:none}
+  .rareLoot620>*{position:relative;z-index:1}.rareLoot620 strong{color:#fff7c8!important;text-shadow:0 0 14px rgba(255,209,102,.55)}
+  @keyframes rareSweep620{to{transform:rotate(360deg)}}
+  .chronoAugBtn620{margin-top:12px;width:100%;border:1px solid rgba(117,216,255,.32);border-radius:18px;padding:12px 13px;cursor:pointer;color:#ebf8ff;background:radial-gradient(circle at 20% 30%,rgba(255,255,255,.18),transparent 28%),linear-gradient(135deg,rgba(97,218,251,.20),rgba(159,108,255,.18),rgba(255,209,102,.08));box-shadow:inset 0 0 26px rgba(255,255,255,.035),0 0 22px rgba(97,218,251,.10);display:grid;grid-template-columns:46px 1fr;gap:10px;align-items:center;text-align:left}
+  .chronoAugBtn620:hover{filter:brightness(1.08);transform:translateY(-2px)}.chronoAugIcon620{width:44px;height:44px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:radial-gradient(circle,#fff,rgba(117,216,255,.55) 32%,rgba(159,108,255,.20) 70%,transparent);box-shadow:0 0 22px rgba(117,216,255,.35)}
+  .chronoAugBtn620 b{display:block;font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.12em;color:#fff}.chronoAugBtn620 span{display:block;font-size:12px;color:#cfe5ff;line-height:1.25;margin-top:3px}
+  .augPage620{text-align:left}.augHeader620{text-align:center;margin-bottom:18px}.augHeader620 h1{font-size:30px}.augHeader620 p{max-width:760px;margin:0 auto!important;color:#cfe3ff!important}
+  .augGrid620{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.augCard620{position:relative;min-height:230px;padding:16px;border-radius:22px;background:linear-gradient(150deg,rgba(12,16,35,.96),rgba(23,15,45,.94));border:1px solid color-mix(in srgb,var(--c,#75d8ff) 42%,rgba(255,255,255,.13));box-shadow:inset 0 0 36px rgba(255,255,255,.035),0 10px 30px rgba(0,0,0,.28);color:#eaf7ff;text-align:left;overflow:hidden}.augCard620:before{content:'';position:absolute;inset:-60% -20% auto;min-height:150px;background:radial-gradient(circle,color-mix(in srgb,var(--c,#75d8ff) 38%,transparent),transparent 62%);opacity:.55;pointer-events:none}.augCard620.locked{filter:saturate(.55);opacity:.78}.augCard620.selected{border-color:#ffd166;box-shadow:0 0 28px rgba(255,209,102,.22),inset 0 0 36px rgba(255,255,255,.04)}
+  .augTop620{position:relative;display:flex;gap:12px;align-items:center}.augTop620 strong{font-family:Orbitron,sans-serif;font-size:13px;letter-spacing:.08em;color:#fff}.augTop620 small{display:block;margin-top:4px;color:#a9c7e8}.augSig620{--c:#75d8ff;position:relative;width:78px;height:78px;flex:0 0 78px;border-radius:24px;display:grid;place-items:center;font-size:34px;color:#fff;background:radial-gradient(circle at 35% 32%,#fff,color-mix(in srgb,var(--c) 60%,#fff) 16%,color-mix(in srgb,var(--c) 35%,#11192d) 44%,rgba(2,4,10,.86));box-shadow:0 0 30px color-mix(in srgb,var(--c) 45%,transparent),inset 0 0 18px rgba(255,255,255,.08)}.augSig620:before,.augSig620:after{content:'';position:absolute;border:2px solid color-mix(in srgb,var(--c) 70%,#fff);border-radius:inherit;inset:8px;opacity:.75;transform:rotate(45deg)}.augSig620:after{inset:18px;border-radius:50%;transform:rotate(0)}
+  .augDesc620{position:relative;margin:14px 0 12px;color:#cfe3ff;line-height:1.45}.augBadges620{position:relative;display:flex;gap:6px;flex-wrap:wrap}.augBadges620 span{font-size:11px;border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);color:#eaf5ff}.augActions620{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}.augDetail620{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start}.augSymbolBox620{text-align:center;padding:18px;border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.032));border:1px solid rgba(255,255,255,.14)}.augSymbolBox620 .augSig620{width:150px;height:150px;margin:0 auto 14px;font-size:66px;border-radius:40px}.augStatGrid620{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px}.augStat620{border-radius:16px;padding:11px;background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.032));border:1px solid rgba(255,255,255,.13)}.augStat620 small{display:block;font-family:Orbitron,sans-serif;font-size:10px;letter-spacing:.12em;color:#9edfff}.augStat620 b{display:block;margin-top:5px;color:#fff;font-size:17px}.augBuffBox620{margin-top:12px;border-radius:18px;padding:14px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);line-height:1.55;color:#dcecff}.augBuffBox620 h3{margin:0 0 7px;font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:.13em;color:#fff}.augSelect620[disabled]{opacity:.45;cursor:not-allowed;filter:grayscale(.8)}
+  @media(max-width:820px){.augDetail620{grid-template-columns:1fr}.augSymbolBox620 .augSig620{width:128px;height:128px;font-size:56px}}
+</style>
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Chrono Shards 6.2.0 — Ampliações Chronais
+   - 2 ampliações por personagem, desbloqueadas em baús
+   - Seleção dentro da aba de Estatísticas/Maestria
+   - Aplicação somente no personagem correto
+──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoAug620)return; window.__chronoAug620=true;
+  const META_KEY=(()=>{try{return typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta'}catch{return 'chrono_v4_meta'}})();
+  const AUG_KEY=META_KEY+'_chrono_augments_620';
+  const N=v=>Number(v||0), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/gi,'').toLowerCase();
+  const colorOf=k=>{try{return CLASSES[k]?.tagColor||CLASSES[k]?.color||'#75d8ff'}catch{return '#75d8ff'}};
+  const titleOf=k=>{try{return (CLASSES[k]?.name||k).replace(/[\u{1F300}-\u{1FAFF}]/gu,'').trim()}catch{return k}};
+  const AUGS={
+    assault:[
+      {id:'assault_arsenal',icon:'⚙️',name:'Arsenal de um Perito',tag:'BALÍSTICA',color:'#75d8ff',stats:{speed:.10,fireRate:.10},main:'Tiros principais se dividem em 2 disparos menores ao atingir um alvo. Os disparos menores causam dano reduzido e não se dividem de novo.',flags:{splitShot:true}},
+      {id:'assault_remorse',icon:'💣',name:'Sem Remorsos',tag:'EXPLOSÃO',color:'#ff9c5a',stats:{hpPct:.05,damage:.10},main:'Ao usar a chuva de granadas, cada granada tem 30% de chance de fragmentar ao cair, lançando 3 granadas menores laterais com dano reduzido.',flags:{grenadeFrag:true}}
+    ],
+    sniper:[
+      {id:'sniper_execution',icon:'🎯',name:'Linha de Execução',tag:'PRECISÃO',color:'#ffd166',stats:{damage:.12,crit:.08},main:'Disparos de precisão causam dano adicional contra inimigos feridos, aumentando conforme a vida atual do alvo estiver baixa.',flags:{missingHpShot:true}},
+      {id:'sniper_still',icon:'👁️',name:'Olho Imóvel',tag:'FOCO',color:'#ffe8a8',stats:{focusRegen:.12,bulletSpeed:.08},main:'Quando o Sniper atira quase parado, o próximo disparo recebe um pulso concentrado de dano e deixa uma pequena linha de energia.',flags:{stationaryShot:true}}
+    ],
+    engineer:[
+      {id:'engineer_maintenance',icon:'✚',name:'Núcleo de Manutenção',tag:'SUPORTE',color:'#62ff9b',stats:{focusPct:.10,armor:.06},main:'Torretas e drones emitem pulsos verdes discretos de manutenção, fortalecendo a zona de controle do Artífice.',flags:{turretHeal:true}},
+      {id:'engineer_infernal',icon:'🗼',name:'Torre Infernal Azul',tag:'CONSTRUÇÃO',color:'#61dafb',stats:{fireRate:.08},main:'Torretas recebem mais dano e ganham efeitos azuis mais agressivos, como uma torre infernal adaptada ao Chrono.',flags:{turretBlue:true,turretDamage:.14}}
+    ],
+    mage:[
+      {id:'mage_condensed_void',icon:'🌌',name:'Vazio Condensado',tag:'ARCANO',color:'#b58cff',stats:{focusPct:.08,skillDamage:.10},main:'Orbes e magias liberam mini pulsos de vazio ao acertar, causando dano em área pequena sem exagerar nos efeitos.',flags:{voidPulse:true}},
+      {id:'mage_between_doors',icon:'🚪',name:'Passos Entre Portas',tag:'MOBILIDADE',color:'#75d8ff',stats:{speed:.12,focusRegen:.10},main:'Teleportes deixam um eco dimensional no ponto de saída, ferindo e empurrando levemente inimigos próximos.',flags:{blinkEcho:true}}
+    ],
+    ronin:[
+      {id:'ronin_return_blade',icon:'🗡️',name:'Lâmina de Retorno',tag:'CORTE',color:'#e8f2ff',stats:{speed:.08,damage:.10},main:'Abates com o Ronin liberam cortes curtos ao redor do inimigo morto, ajudando a limpar grupos próximos.',flags:{killSlash:true}},
+      {id:'ronin_oath',icon:'🛡️',name:'Juramento Imóvel',tag:'DEFESA',color:'#86ffb0',stats:{hpPct:.06,armor:.08},main:'Depois do dash, o próximo impacto ofensivo recebe um brilho pesado de contra-ataque.',flags:{dashEmpower:true}}
+    ],
+    alchemist:[
+      {id:'alchemist_volatile',icon:'☣️',name:'Química Instável',tag:'VENENO',color:'#b6ff7a',stats:{skillDamage:.10,focusRegen:.10},main:'Venenos e poças químicas ficam mais perigosos, com pequenas bolhas tóxicas surgindo nos impactos.',flags:{poisonUp:true}},
+      {id:'alchemist_transmuter',icon:'⚗️',name:'Transmutador de Guerra',tag:'MISTURA',color:'#4ce0b3',stats:{hpPct:.08,damage:.06},main:'Habilidades do Alquimista têm chance de criar uma explosão química secundária no ponto mirado.',flags:{potionSplash:true}}
+    ],
+    reaper:[
+      {id:'reaper_procession',icon:'👻',name:'Procissão das Almas',tag:'ALMAS',color:'#d7d7ff',stats:{damage:.08,speed:.08},main:'Abates criam pequenas almas perseguidoras com visual limpo, que correm até outro inimigo e explodem em sombra.',flags:{soulWisps:true}},
+      {id:'reaper_eclipse',icon:'🌘',name:'Ceifador do Eclipse',tag:'SOMBRA',color:'#ff7b9c',stats:{hpPct:.10,armor:.06},main:'Habilidades do Reaper liberam um pulso sombrio que causa dano leve e reforça a presença tenebrosa do personagem.',flags:{reaperDread:true}}
+    ],
+    colonel:[
+      {id:'colonel_ghost',icon:'🛩️',name:'Esquadrão Fantasma',tag:'BOMBARDEIO',color:'#9edfff',stats:{damage:.10,fireRate:.08},main:'Ao usar habilidades pesadas, pequenas marcações de bombardeio aparecem em pontos diferentes do mapa, evitando concentrar tudo num alvo só.',flags:{colonelSquad:true}},
+      {id:'colonel_command',icon:'🎖️',name:'Comando Blindado',tag:'TÁTICO',color:'#ffd166',stats:{hpPct:.08,armor:.12},main:'Explosões do Coronel criam ondas táticas curtas que atordoam por instantes os inimigos próximos.',flags:{colonelStun:true}}
+    ],
+    bomber:[
+      {id:'bomber_napalm',icon:'🔥',name:'Reator de Napalm',tag:'FOGO',color:'#ff8b5f',stats:{damage:.10,skillDamage:.08},main:'Explosões deixam pequenos focos de fogo no chão por alguns segundos, causando dano contínuo.',flags:{napalm:true}},
+      {id:'bomber_precision',icon:'🧨',name:'Mina de Precisão',tag:'FRAGMENTO',color:'#ffd166',stats:{speed:.08,focusRegen:.10},main:'Algumas explosões soltam fragmentos laterais menores, úteis contra hordas sem virar bagunça visual.',flags:{bombFragments:true}}
+    ],
+    archer:[
+      {id:'archer_celestial_string',icon:'🏹',name:'Corda Celestial',tag:'PRECISÃO',color:'#75d8ff',stats:{speed:.08,fireRate:.10},main:'Flechas carregadas ganham um eco sônico curto, criando um risco luminoso após o acerto.',flags:{archerEcho:true}},
+      {id:'archer_judgement',icon:'🌠',name:'Flecha do Juízo',tag:'DIVINO',color:'#ffd166',stats:{damage:.10,focusPct:.08},main:'A Flecha Sônica Divina recebe uma onda extra de impacto ao ser usada, sem mudar a base do efeito que já está funcionando.',flags:{archerJudgement:true}}
+    ],
+    chronoHero:[
+      {id:'chrono_fractured_clock',icon:'⏱️',name:'Relógio Fraturado',tag:'TEMPO',color:'#9f6cff',stats:{speed:.08,focusRegen:.12},main:'Efeitos temporais deixam pequenos fragmentos de relógio no chão, causando lentidão e dano leve.',flags:{chronoTime:true}},
+      {id:'chrono_prism_core',icon:'💎',name:'Núcleo Prismático',tag:'PRISMA',color:'#75d8ff',stats:{damage:.12,focusPct:.10},main:'Rajadas prismáticas recebem pulsos extras de energia, aumentando o impacto visual e o dano de área leve.',flags:{prismPulse:true}}
+    ],
+    shadowChild:[
+      {id:'shadow_veil',icon:'🕳️',name:'Véu do Abismo',tag:'ABISMO',color:'#8f6bff',stats:{speed:.10,damage:.10},main:'Facas abissais e venenos negros deixam rastros mais definidos e poças mais agressivas.',flags:{shadowPoison:true}},
+      {id:'shadow_heir',icon:'😈',name:'Herdeiro do Fosso',tag:'DEMONÍACO',color:'#ff304f',stats:{hpPct:.08,focusPct:.08},main:'O Fosso Demoníaco fica mais brutal: suas ondas ganham dano adicional e um anel visual de ruptura.',flags:{shadowPit:true}}
+    ],
+    moonSlayer:[
+      {id:'moon_crescent',icon:'🌙',name:'Corte Lunar',tag:'LÂMINA',color:'#d7c4ff',stats:{damage:.12,speed:.08},main:'Cortes dimensionais soltam pequenos crescentes que atravessam a linha de frente.',flags:{moonCrescent:true}},
+      {id:'moon_sheath',icon:'🗡️',name:'Bainha Astral',tag:'FOCO',color:'#75d8ff',stats:{focusPct:.10,armor:.08},main:'Ao carregar golpes especiais, o Exterminador recebe um escudo astral temporário.',flags:{moonCharge:true}}
+    ],
+    rico:[
+      {id:'rico_angle',icon:'◉',name:'Ângulo Perfeito',tag:'RICOCHETE',color:'#ffd166',stats:{fireRate:.10,speed:.08},main:'Bolas de impacto ganham mais precisão e podem soltar mini estilhaços após contatos fortes.',flags:{ricoAngle:true}},
+      {id:'rico_table',icon:'🪞',name:'Mesa Impossível',tag:'REFLEXO',color:'#75d8ff',stats:{damage:.08,hpPct:.08},main:'Refletores e tiros prismáticos recebem duração e impacto visual melhores.',flags:{ricoImpossible:true}}
+    ]
+  };
+  function entries(){const out=[];for(const k of Object.keys(AUGS)){try{if(CLASSES?.[k])for(const a of AUGS[k])out.push({...a,classKey:k});}catch{}}return out;}
+  function read(){let d={};try{d=JSON.parse(localStorage.getItem(AUG_KEY)||'{}')||{}}catch{};d.unlocked=d.unlocked||{};d.selected=d.selected||{};return d;}
+  function write(d){d=d||{};d.unlocked=d.unlocked||{};d.selected=d.selected||{};try{localStorage.setItem(AUG_KEY,JSON.stringify(d))}catch{}return d;}
+  function has(id){return !!read().unlocked[id]}
+  function addRelicsFallback(n){try{if(typeof addRelics56==='function')addRelics56(n);else{const m=JSON.parse(localStorage.getItem(META_KEY)||'{}')||{};m.relicShards=N(m.relicShards)+n;localStorage.setItem(META_KEY,JSON.stringify(m));if(game?.meta)game.meta=m;}}catch{}}
+  function unlockRandom(){const d=read(),pool=entries().filter(a=>!d.unlocked[a.id]);if(!pool.length){addRelicsFallback(18);return {icon:'⧖',title:'Ampliação repetida convertida',desc:'+18 relíquias porque todas as Ampliações Chronais já estão liberadas.',kind:'augmentation',rare:true,color:'#ffd166'};}const a=pool[Math.floor(Math.random()*pool.length)];d.unlocked[a.id]=true;write(d);try{addFloatingText(game.player.x,game.player.y-52,'AMPLIAÇÃO CHRONAL!','#ffd166',18);addRing(game.player.x,game.player.y,a.color||'#ffd166',120,5)}catch{}return {icon:a.icon,title:`Ampliação: ${a.name}`,desc:`${titleOf(a.classKey)} desbloqueou uma Ampliação Chronal. Selecione-a na aba de Estatísticas/Maestria.`,kind:'augmentation',rare:true,color:a.color||'#ffd166'};}
+  function active(){try{const d=read(),k=game?.classKey,id=d.selected?.[k];return (id&&d.unlocked[id]?(AUGS[k]||[]).find(a=>a.id===id):null)}catch{return null}}
+  function activeFlag(f){const a=active();return !!a?.flags?.[f]}
+  function fmtStats(a){const s=a.stats||{},rows=[];if(s.hpPct)rows.push(['HP MÁX',`+${Math.round(s.hpPct*100)}%`]);if(s.focusPct)rows.push(['FOCO MÁX',`+${Math.round(s.focusPct*100)}%`]);if(s.shieldPct)rows.push(['ESCUDO',`+${Math.round(s.shieldPct*100)}%`]);if(s.damage)rows.push(['DANO',`+${Math.round(s.damage*100)}%`]);if(s.fireRate)rows.push(['CADÊNCIA',`+${Math.round(s.fireRate*100)}%`]);if(s.speed)rows.push(['VELOCIDADE',`+${Math.round(s.speed*100)}%`]);if(s.armor)rows.push(['ARMADURA',`+${Math.round(s.armor*100)}%`]);if(s.focusRegen)rows.push(['REGEN. FOCO',`+${Math.round(s.focusRegen*100)}%`]);if(s.crit)rows.push(['CRÍTICO',`+${Math.round(s.crit*100)}%`]);if(s.skillDamage)rows.push(['HABILIDADES',`+${Math.round(s.skillDamage*100)}%`]);if(s.bulletSpeed)rows.push(['VELOC. TIRO',`+${Math.round(s.bulletSpeed*100)}%`]);return rows;}
+  function applyStats(k){if(!game||game.__aug620Applied)return;const d=read(),id=d.selected?.[k],a=(AUGS[k]||[]).find(x=>x.id===id);if(!a||!d.unlocked[id])return;game.__aug620Applied=id;game.aug620={classKey:k,id,flags:{...(a.flags||{})}};const s=a.stats||{},p=game.player,u=game.upgrades||{};if(s.hpPct){const add=Math.round(N(p.maxHp)*s.hpPct);p.maxHp+=add;p.hp+=add;}if(s.focusPct){const add=Math.round(N(p.maxFocus)*s.focusPct);p.maxFocus+=add;p.focus+=add;}if(s.shieldPct){const add=Math.max(1,Math.round(N(p.maxShield)*s.shieldPct));p.maxShield+=add;p.shield+=add;}if(s.damage)u.damage=N(u.damage||1)+s.damage;if(s.fireRate)u.fireRate=N(u.fireRate||1)+s.fireRate;if(s.speed)u.speed=N(u.speed||1)+s.speed;if(s.armor)u.armor=N(u.armor)+s.armor;if(s.focusRegen)u.focusRegen=N(u.focusRegen||1)+s.focusRegen;if(s.crit)u.critChance=N(u.critChance)+s.crit;if(s.skillDamage)u.augSkillDamage620=N(u.augSkillDamage620)+s.skillDamage;if(s.bulletSpeed)u.augBulletSpeed620=N(u.augBulletSpeed620)+s.bulletSpeed;if(a.flags?.turretDamage)u.turretDamage548=N(u.turretDamage548)+a.flags.turretDamage;if(a.flags?.poisonUp)u.acidMastery=N(u.acidMastery)+.55;if(a.flags?.shadowPoison)u.shadowPoison620=.25;try{addFloatingText(p.x,p.y-46,a.name,a.color||'#ffd166',16);addRing(p.x,p.y,a.color||'#ffd166',90,4);updateHUD?.();}catch{}}
+  const oldReset=window.resetGame||globalThis.resetGame;if(typeof oldReset==='function'&&!oldReset.__aug620){const wrapped=function(k){const r=oldReset.apply(this,arguments);try{applyStats(k)}catch(e){console.warn('Ampliação reset',e)}return r};wrapped.__aug620=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}}
+  function guessKey(){const b=document.getElementById('statsInfo551')||document.querySelector('[data-stats551]');if(b?.dataset?.stats551)return b.dataset.stats551;const h=document.querySelector('#overlayCard h1')?.textContent||'';const nh=norm(h);try{for(const k of Object.keys(CLASSES||{})){if(nh&&norm(CLASSES[k].name).includes(nh.slice(0,8)))return k;if(nh&&nh.includes(norm(CLASSES[k].name).slice(0,8)))return k;}}catch{}return game?.classKey||'assault'}
+  function returnStats(k){try{if(window.openCharacterStats551)return window.openCharacterStats551(k);if(window.openCharacterInfo551)return window.openCharacterInfo551(k);}catch{} }
+  function injectButton(){const card=document.getElementById('overlayCard');if(!card||!document.getElementById('overlay')||document.getElementById('overlay').classList.contains('hidden'))return;if(!card.querySelector('.masterySide551')||card.querySelector('#chronoAugBtn620'))return;const k=guessKey();if(!AUGS[k])return;const d=read(),sel=d.selected?.[k],list=AUGS[k]||[],un=list.filter(a=>d.unlocked[a.id]).length;const btn=document.createElement('button');btn.id='chronoAugBtn620';btn.className='chronoAugBtn620';btn.innerHTML=`<i class="chronoAugIcon620">⧖</i><span><b>Ampliações Chronais</b><span>${un}/${list.length} liberadas${sel?` • Selecionada: ${esc((list.find(a=>a.id===sel)||{}).name||'')}`:''}</span></span>`;btn.onclick=e=>{e.preventDefault();openAugList(k)};(card.querySelector('.masterySide551 .masteryNote551')||card.querySelector('.masterySide551')).appendChild(btn);}
+  function sig(a){return `<div class="augSig620" style="--c:${esc(a.color||'#75d8ff')}">${esc(a.icon||'⧖')}</div>`}
+  function openAugList(k){const c=CLASSES?.[k];if(!c||!AUGS[k])return;const d=read(),co=colorOf(k);overlay.classList.remove('hidden');overlayCard.className='card dune461 augPage620';overlayCard.innerHTML=`<div class="augHeader620"><h1>Ampliações Chronais</h1><p>Escolha uma Ampliação exclusiva de <b>${esc(titleOf(k))}</b>. Ela só funciona quando você jogar com este personagem.</p></div><div class="augGrid620">${AUGS[k].map(a=>{const on=!!d.unlocked[a.id],sel=d.selected?.[k]===a.id;return `<button class="augCard620 ${on?'':'locked'} ${sel?'selected':''}" data-aug-detail620="${esc(a.id)}" style="--c:${esc(a.color)}"><div class="augTop620">${sig(a)}<span><strong>${esc(a.name)}</strong><small>${on?sel?'Selecionada':'Liberada':'Bloqueada nos baús'} • ${esc(a.tag)}</small></span></div><div class="augDesc620">${esc(a.main)}</div><div class="augBadges620">${fmtStats(a).map(x=>`<span>${esc(x[0])}: <b>${esc(x[1])}</b></span>`).join('')}</div></button>`}).join('')}</div><div class="augActions620"><button class="duneBtn461 dark" id="augBack620">← Voltar</button></div>`;overlayCard.querySelectorAll('[data-aug-detail620]').forEach(b=>b.onclick=()=>openAugDetail(k,b.dataset.augDetail620));document.getElementById('augBack620').onclick=()=>returnStats(k)}
+  function openAugDetail(k,id){const a=(AUGS[k]||[]).find(x=>x.id===id),c=CLASSES?.[k];if(!a||!c)return;const d=read(),on=!!d.unlocked[id],sel=d.selected?.[k]===id;overlay.classList.remove('hidden');overlayCard.className='card dune461 augPage620';overlayCard.innerHTML=`<div class="augHeader620"><h1>${esc(a.name)}</h1><p>${esc(titleOf(k))} • ${esc(a.tag)} • ${on?'Ampliação liberada':'Ainda bloqueada nos Baús Chronais'}</p></div><div class="augDetail620"><aside class="augSymbolBox620">${sig(a)}<span class="badge461" style="--co:${esc(a.color)}">${esc(a.tag)}</span><div style="margin-top:16px"><button class="duneBtn461 augSelect620" id="augSelect620" ${on?'':'disabled'}>${on?(sel?'Selecionada':'Selecionar'):'Bloqueada'}</button></div></aside><section><div class="augStatGrid620">${fmtStats(a).map(x=>`<div class="augStat620"><small>${esc(x[0])}</small><b>${esc(x[1])}</b></div>`).join('')}</div><div class="augBuffBox620"><h3>BUFF PRINCIPAL</h3>${esc(a.main)}</div><div class="augBuffBox620"><h3>REGRA DE VÍNCULO</h3>Esta Ampliação é exclusiva de <b>${esc(titleOf(k))}</b>. Mesmo selecionada, ela não será aplicada em outros personagens.</div></section></div><div class="augActions620"><button class="duneBtn461 dark" id="augListBack620">← Ampliações</button></div>`;document.getElementById('augListBack620').onclick=()=>openAugList(k);const btn=document.getElementById('augSelect620');if(on)btn.onclick=()=>{const nd=read();nd.selected[k]=id;write(nd);openAugDetail(k,id);try{addFloatingText(game?.player?.x||W/2,game?.player?.y||H/2,'AMPLIAÇÃO SELECIONADA',a.color,16)}catch{}};}
+  function dist(a,b){return Math.hypot((a.x||0)-(b.x||0),(a.y||0)-(b.y||0))}function ang(a,b){return Math.atan2((b.y||0)-(a.y||0),(b.x||0)-(a.x||0))}
+  function damageEnemy(e,dmg,stun=0){if(!game||!e)return false;const i=game.enemies.indexOf(e);if(i<0)return false;e.hp-=dmg;e.hitFlash=Math.max(e.hitFlash||0,.14);if(stun)e._microStun23=Math.max(e._microStun23||0,stun);if(e.hp<=0){enemyDeath(i,e);return true}return false}
+  function area(x,y,r,dmg,col,stun=0){if(!game)return;try{addRing(x,y,col,r,3);addParticles(x,y,col,8,.45)}catch{};for(let i=(game.enemies||[]).length-1;i>=0;i--){const e=game.enemies[i];if(Math.hypot(e.x-x,e.y-y)<r+(e.r||0))damageEnemy(e,dmg,stun)}}
+  function spawnBullet(x,y,a,dmg,col,sp=470,life=.75){game.bullets.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:3,life,damage:dmg,pierce:0,weaponKey:'aug620',_augChild620:true,color:col})}
+  const oldShoot=window.shoot||globalThis.shoot;if(typeof oldShoot==='function'&&!oldShoot.__aug620){const wrapped=function(){if(!game)return oldShoot.apply(this,arguments);const before=(game.bullets||[]).length,p=game.player,still=p&&Math.hypot(N(p.vx),N(p.vy))<18;const r=oldShoot.apply(this,arguments);const a=active();if(a){for(let i=before;i<(game.bullets||[]).length;i++){const b=game.bullets[i];if(!b)continue;if(a.flags?.splitShot)b._augSplit620=true;if(a.flags?.missingHpShot)b._augMissing620=true;if(a.flags?.stationaryShot&&still){b.damage=N(b.damage)*1.30;b._augLine620=true;}if(a.flags?.voidPulse)b._augVoid620=true;if(a.flags?.archerEcho)b._augArcherEcho620=true;if(a.flags?.ricoAngle)b._augRico620=true;if(game.upgrades?.augBulletSpeed620){b.vx*=1+N(game.upgrades.augBulletSpeed620);b.vy*=1+N(game.upgrades.augBulletSpeed620);}}}return r};wrapped.__aug620=true;window.shoot=wrapped;try{shoot=wrapped}catch{}}
+  function preBullets(){if(!game?.running)return;for(const b of game.bullets||[]){if(!b||b._augChild620)continue;for(const e of game.enemies||[]){if(!e||e.hp<=0)continue;if(Math.hypot(b.x-e.x,b.y-e.y)>(b.r||3)+(e.r||10)+7)continue;if(b._augMissing620&&!b._augMissingDone620){b._augMissingDone620=true;const missing=1-clamp(N(e.hp)/Math.max(1,N(e.maxHp)),0,1);b.damage=N(b.damage)*(1+missing*.38)}if(b._augSplit620&&!b._augSplitDone620){b._augSplitDone620=true;const base=Math.atan2(b.vy||0,b.vx||1);spawnBullet(b.x,b.y,base-.28,N(b.damage)*.42,'#75d8ff',520,.62);spawnBullet(b.x,b.y,base+.28,N(b.damage)*.42,'#75d8ff',520,.62);try{addRing(b.x,b.y,'#75d8ff',28,2)}catch{}}if(b._augVoid620&&!b._augVoidDone620){b._augVoidDone620=true;area(b.x,b.y,46,N(b.damage)*.22,'#b58cff',0)}if(b._augArcherEcho620&&!b._augEchoDone620){b._augEchoDone620=true;area(b.x,b.y,34,N(b.damage)*.18,'#75d8ff',0)}if(b._augRico620&&!b._augRicoDone620){b._augRicoDone620=true;const base=Math.atan2(b.vy||0,b.vx||1);spawnBullet(b.x,b.y,base+1.8,N(b.damage)*.35,'#ffd166',430,.55);spawnBullet(b.x,b.y,base-1.8,N(b.damage)*.35,'#ffd166',430,.55)}break;}}
+  }
+  const oldUpdateBullets=window.updateBullets||globalThis.updateBullets;if(typeof oldUpdateBullets==='function'&&!oldUpdateBullets.__aug620){const wrapped=function(dt){try{preBullets()}catch(e){console.warn('aug bullets',e)}return oldUpdateBullets.apply(this,arguments)};wrapped.__aug620=true;window.updateBullets=wrapped;try{updateBullets=wrapped}catch{}}
+  function grenadeFragments(){const p=game?.player;if(!p)return;for(let i=0;i<8;i++){if(Math.random()>.30)continue;const a=Math.PI*2*i/8,tx=p.x+Math.cos(a)*200,ty=p.y+Math.sin(a)*200;setTimeout(()=>{for(let j=-1;j<=1;j++){const aa=a+j*.72;const x=tx+Math.cos(aa)*38,y=ty+Math.sin(aa)*38;area(x,y,38,18*N(game.upgrades?.damage||1),'#ffb36b',0)}},760+i*120)}}
+  const oldUseSkill=window.useSkill||globalThis.useSkill;if(typeof oldUseSkill==='function'&&!oldUseSkill.__aug620){const wrapped=function(idx){const a=active(),p=game?.player,px=N(p?.x),py=N(p?.y),mx=N(mouse?.x),my=N(mouse?.y);const beforeCd=N(game?.skillCds?.[idx]),beforeFocus=N(p?.focus);const r=oldUseSkill.apply(this,arguments);const used=game&&p&&beforeCd<=0&&(N(game.skillCds?.[idx])>0||N(p.focus)<beforeFocus);if(used&&a){if(a.flags?.grenadeFrag&&idx===2)grenadeFragments();if(a.flags?.blinkEcho&&idx===0)setTimeout(()=>area(p.x,p.y,95,28*N(game.upgrades?.damage||1),'#75d8ff',0),70);if(a.flags?.potionSplash&&Math.random()<.55)setTimeout(()=>area(mx,my,58,26*N(game.upgrades?.damage||1),'#4ce0b3',0),140);if(a.flags?.reaperDread)setTimeout(()=>area(p.x,p.y,72,18*N(game.upgrades?.damage||1),'#ff7b9c',.35),90);if(a.flags?.colonelSquad&&idx===2){for(let n=0;n<5;n++)setTimeout(()=>{const x=60+Math.random()*(W-120),y=60+Math.random()*(H-120);area(x,y,48,28*N(game.upgrades?.damage||1),'#9edfff',0)},n*180)}if(a.flags?.colonelStun)setTimeout(()=>area(mx,my,62,14*N(game.upgrades?.damage||1),'#ffd166',.45),110);if(a.flags?.bombFragments)for(let n=0;n<3;n++)setTimeout(()=>area(mx+Math.cos(n*2.1)*50,my+Math.sin(n*2.1)*50,34,16*N(game.upgrades?.damage||1),'#ffd166',0),100+n*80);if(a.flags?.archerJudgement&&idx===2)setTimeout(()=>area(mx,my,140,42*N(game.upgrades?.damage||1),'#ffd166',.35),260);if(a.flags?.chronoTime)setTimeout(()=>area(mx,my,76,18*N(game.upgrades?.damage||1),'#9f6cff',.25),120);if(a.flags?.prismPulse&&idx===2)setTimeout(()=>area(mx,my,120,32*N(game.upgrades?.damage||1),'#75d8ff',0),260);if(a.flags?.shadowPit&&idx===2)setTimeout(()=>area(mx,my,135,34*N(game.upgrades?.damage||1),'#ff304f',.45),420);if(a.flags?.moonCharge&&idx===2){p.shield=clamp(N(p.shield)+2,0,N(p.maxShield));try{addRing(p.x,p.y,'#75d8ff',85,4)}catch{}}if(a.flags?.moonCrescent)setTimeout(()=>{const base=Math.atan2(my-py,mx-px);for(let n=-1;n<=1;n++)spawnBullet(px,py,base+n*.34,28*N(game.upgrades?.damage||1),'#d7c4ff',560,.8)},100);}return r};wrapped.__aug620=true;window.useSkill=wrapped;try{useSkill=wrapped}catch{}}
+  function spawnWisp(x,y,col='#d7d7ff'){game.augWisps620=game.augWisps620||[];game.augWisps620.push({x,y,r:6,life:2.2,spd:280,dmg:24*N(game.upgrades?.damage||1),color:col})}function spawnFire(x,y){game.augFires620=game.augFires620||[];game.augFires620.push({x,y,r:44,life:2.8,tick:.2,dmg:8*N(game.upgrades?.damage||1),color:'#ff8b5f'})}
+  const oldDeath=window.enemyDeath||globalThis.enemyDeath;if(typeof oldDeath==='function'&&!oldDeath.__aug620){const wrapped=function(index,e){const a=active(),x=N(e?.x),y=N(e?.y);const out=oldDeath.apply(this,arguments);try{if(a?.flags?.soulWisps){spawnWisp(x,y,a.color);if(Math.random()<.35)spawnWisp(x+8,y-8,a.color)}if(a?.flags?.killSlash)area(x,y,58,22*N(game.upgrades?.damage||1),'#e8f2ff',0);if(a?.flags?.napalm)spawnFire(x,y);if(a?.flags?.poisonUp&&Math.random()<.35)area(x,y,42,12*N(game.upgrades?.damage||1),'#b6ff7a',0);}catch(err){console.warn('aug death',err)}return out};wrapped.__aug620=true;window.enemyDeath=wrapped;try{enemyDeath=wrapped}catch{}}
+  function updateObjects(dt){if(!game)return;for(let i=(game.augWisps620||[]).length-1;i>=0;i--){const w=game.augWisps620[i];w.life-=dt;let target=null,bd=9999;for(const e of game.enemies||[]){const d=dist(w,e);if(d<bd){bd=d;target=e}}if(target){const a=ang(w,target);w.x+=Math.cos(a)*w.spd*dt;w.y+=Math.sin(a)*w.spd*dt;if(bd<(target.r||12)+w.r+3){area(w.x,w.y,42,w.dmg,w.color,.15);game.augWisps620.splice(i,1);continue}}if(w.life<=0)game.augWisps620.splice(i,1)}for(let i=(game.augFires620||[]).length-1;i>=0;i--){const f=game.augFires620[i];f.life-=dt;f.tick-=dt;if(f.tick<=0){f.tick=.32;area(f.x,f.y,f.r,f.dmg,f.color,0)}if(f.life<=0)game.augFires620.splice(i,1)}try{for(const t of game.miniTurrets||[]){if(activeFlag('turretHeal')&&Math.random()<dt*.8)addRing(t.x,t.y,'#62ff9b',34,1.5);if(activeFlag('turretBlue')&&Math.random()<dt*.8)addRing(t.x,t.y,'#61dafb',38,1.5)}}catch{}}
+  const oldFX=window.updateFX||globalThis.updateFX;if(typeof oldFX==='function'&&!oldFX.__aug620){const wrapped=function(dt){const r=oldFX.apply(this,arguments);try{updateObjects(Number(dt)||.016);injectButton()}catch(e){console.warn('aug fx',e)}return r};wrapped.__aug620=true;window.updateFX=wrapped;try{updateFX=wrapped}catch{}}
+  const oldRender=window.render||globalThis.render;if(typeof oldRender==='function'&&!oldRender.__aug620){const wrapped=function(){const r=oldRender.apply(this,arguments);try{const ctx2=ctx;if(game?.augWisps620){for(const w of game.augWisps620){ctx2.save();ctx2.globalAlpha=Math.max(.15,w.life/2.2);ctx2.shadowBlur=18;ctx2.shadowColor=w.color;ctx2.fillStyle=w.color;ctx2.beginPath();ctx2.ellipse(w.x,w.y,w.r*.7,w.r*1.25,0,0,Math.PI*2);ctx2.fill();ctx2.restore();}}if(game?.augFires620){for(const f of game.augFires620){ctx2.save();ctx2.globalAlpha=Math.max(.12,f.life/2.8)*.45;ctx2.fillStyle=f.color;ctx2.beginPath();ctx2.arc(f.x,f.y,f.r*(.8+Math.sin(game.time*6)*.08),0,Math.PI*2);ctx2.fill();ctx2.restore();}}}catch{}return r};wrapped.__aug620=true;window.render=wrapped;try{render=wrapped}catch{}}
+  try{new MutationObserver(()=>setTimeout(injectButton,30)).observe(document.body,{childList:true,subtree:true});setInterval(injectButton,500)}catch{}
+  ['input','change','keyup'].forEach(type=>document.addEventListener(type,e=>{if((e.target?.value||'').trim().toLowerCase()==='allin'){setTimeout(()=>{const d=read();for(const a of entries())d.unlocked[a.id]=true;write(d)},0)}},true));
+  window.ChronoAug620={AUGS,read,write,has,unlockRandom,openAugList,openAugDetail,active,activeFlag};
+  console.log('Chrono Shards 6.2.0 — Ampliações Chronais carregadas');
+})();
+</script>
+
+
+<style id="chronoAug621Style">
+  .chronoAugLock621{
+    width:100%;margin:12px 0 6px;padding:9px 10px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(255,209,102,.13),rgba(97,218,251,.06));
+    border:1px solid rgba(255,209,102,.28);
+    color:#ffe8a8;font:900 10px Orbitron,sans-serif;letter-spacing:.10em;
+    text-align:center;box-shadow:inset 0 0 18px rgba(255,255,255,.035)
+  }
+  .chronoAugBtn620.locked621{
+    opacity:.72;filter:saturate(.55) grayscale(.18);cursor:not-allowed!important;
+    border-color:rgba(255,209,102,.34)!important;
+  }
+  .chronoAugBtn620.locked621 .chronoAugIcon620{
+    background:radial-gradient(circle at 35% 35%,#fff,#ffd166 35%,#2a1900 70%)!important;
+    box-shadow:0 0 22px rgba(255,209,102,.35)!important;
+  }
+  .augGateCard621{
+    text-align:center;padding:22px;border-radius:24px;
+    background:linear-gradient(145deg,rgba(255,209,102,.12),rgba(10,14,28,.92));
+    border:1px solid rgba(255,209,102,.28);
+  }
+</style>
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Chrono Shards 6.2.1 — Correção das Ampliações Chronais
+   - Ricocheteador usa chave interna correta: ricocheteador
+   - Botão bloqueado até nível 6
+   - Allin libera todas ampliações e deixa todos os personagens lvl 10
+   - Reforça buffs específicos que estavam só parcialmente conectados
+──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoAug621)return; window.__chronoAug621=true;
+  const META_KEY=(()=>{try{return typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta'}catch{return 'chrono_v4_meta'}})();
+  const AUG_KEY=META_KEY+'_chrono_augments_620';
+  const UNLOCK_KEY=META_KEY+'_class_unlocks_v3';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/gi,'').toLowerCase();
+  const cls=()=>{try{return window.CLASSES||CLASSES||{}}catch{return {}}};
+  const titleOf=k=>{try{return (cls()[k]?.name||k).replace(/[\u{1F300}-\u{1FAFF}]/gu,'').trim()}catch{return k}};
+  const augApi=()=>window.ChronoAug620||null;
+
+  function readMeta(){let m={};try{m=JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}}catch{};m.characterMastery551=m.characterMastery551||{};return m;}
+  function writeMeta(m){try{localStorage.setItem(META_KEY,JSON.stringify(m));if(window.game?.meta)game.meta=m;}catch{}return m;}
+  function readAug(){let d={};try{d=JSON.parse(localStorage.getItem(AUG_KEY)||'{}')||{}}catch{};d.unlocked=d.unlocked||{};d.selected=d.selected||{};return d;}
+  function writeAug(d){d=d||{};d.unlocked=d.unlocked||{};d.selected=d.selected||{};try{localStorage.setItem(AUG_KEY,JSON.stringify(d));}catch{}return d;}
+
+  function ensureRicoAug(){
+    const api=augApi(), A=api?.AUGS; if(!A)return;
+    if(A.rico && !A.ricocheteador) A.ricocheteador=A.rico;
+    if(A.ricocheteador && !A.ricocheteador.__fixedKey621){
+      A.ricocheteador=A.ricocheteador.map(a=>({...a,classKey:'ricocheteador'}));
+      Object.defineProperty(A.ricocheteador,'__fixedKey621',{value:true,enumerable:false});
+    }
+  }
+  function augList(k){ensureRicoAug();return augApi()?.AUGS?.[k]||[]}
+  function allAugEntries(){
+    ensureRicoAug();
+    const A=augApi()?.AUGS||{}, C=cls(), out=[];
+    for(const k of Object.keys(A)){ if(C[k]) for(const a of A[k]||[]) out.push({...a,classKey:k}); }
+    return out;
+  }
+
+  function shieldMax(k){
+    const base=N(cls()[k]?.shield);
+    if(k==='sniper'||base<=2)return 4;
+    if(['assault','mage','reaper','alchemist','archer','ricocheteador','bomber','ronin'].includes(k))return 3;
+    return 2;
+  }
+  function maxes(k){return {hp:5,damage:10,shield:shieldMax(k),special:4};}
+  function data(k){const d=readMeta().characterMastery551?.[k]||{};return {hp:N(d.hp),damage:N(d.damage),shield:N(d.shield),special:N(d.special)};}
+  function bought(k){const d=data(k);return d.hp+d.damage+d.shield+d.special;}
+  function total(k){const m=maxes(k);return m.hp+m.damage+m.shield+m.special;}
+  function masteryLevel(k){const b=bought(k),t=Math.max(1,total(k));return b>=t?10:Math.max(1,1+Math.floor((b/t)*9));}
+  function guessKey(){
+    const el=document.querySelector('#statsInfo551,[data-stats551],[data-stats-fix610]');
+    if(el?.dataset?.stats551)return el.dataset.stats551;
+    if(el?.dataset?.statsFix610)return el.dataset.statsFix610;
+    const h=document.querySelector('#overlayCard h1')?.textContent||'';
+    const nh=norm(h);
+    for(const k of Object.keys(cls())){const nk=norm(cls()[k]?.name||k);if(nh&&nk&&(nh.includes(nk.slice(0,9))||nk.includes(nh.slice(0,9))))return k;}
+    return window.game?.classKey||'assault';
+  }
+
+  function buttonHTML(k){
+    const d=readAug(), list=augList(k), sel=d.selected?.[k], un=list.filter(a=>d.unlocked[a.id]).length, lvl=masteryLevel(k);
+    const locked=lvl<6;
+    return `${locked?`<div class="chronoAugLock621">🔒 Desbloqueado com o Nível de personagem 6</div>`:''}
+      <button id="chronoAugBtn620" class="chronoAugBtn620 ${locked?'locked621':''}" data-aug-key621="${esc(k)}" type="button">
+        <i class="chronoAugIcon620">${locked?'🔒':'⧖'}</i>
+        <span><b>Ampliações Chronais</b><span>${locked?`Nível atual: ${lvl}/10`:`${un}/${list.length} liberadas${sel?` • Selecionada: ${esc((list.find(a=>a.id===sel)||{}).name||'')}`:''}`}</span></span>
+      </button>`;
+  }
+
+  function ensureAugButton(){
+    ensureRicoAug();
+    const card=document.getElementById('overlayCard'), ov=document.getElementById('overlay');
+    if(!card||!ov||ov.classList.contains('hidden'))return;
+    const side=card.querySelector('.masterySide551'); if(!side)return;
+    const k=guessKey(); if(!augList(k).length)return;
+    let btn=document.getElementById('chronoAugBtn620');
+    const locked=masteryLevel(k)<6;
+    // Remove botão antigo ou botão de outro personagem para recriar com trava correta.
+    if(btn && (btn.dataset.augKey621!==k || btn.dataset.lockState621!==String(locked))) {
+      const prevLock=card.querySelector('.chronoAugLock621'); if(prevLock)prevLock.remove();
+      btn.remove(); btn=null;
+    }
+    if(!btn){
+      const wrap=document.createElement('div');
+      wrap.innerHTML=buttonHTML(k);
+      (side.querySelector('.masteryNote551')||side).append(...Array.from(wrap.childNodes));
+      btn=document.getElementById('chronoAugBtn620');
+    }
+    if(btn){
+      btn.dataset.augKey621=k;
+      btn.dataset.lockState621=String(locked);
+      btn.onclick=(e)=>{e.preventDefault();e.stopPropagation();openAugGate(k);};
+    }
+  }
+
+  function openAugGate(k){
+    const lvl=masteryLevel(k);
+    if(lvl<6){
+      const ov=document.getElementById('overlay'), card=document.getElementById('overlayCard');
+      if(!ov||!card)return;
+      ov.classList.remove('hidden'); card.className='card dune461 augPage620';
+      card.innerHTML=`<div class="augGateCard621"><h1>🔒 Ampliações Chronais</h1><p class="duneSub461">As Ampliações de <b>${esc(titleOf(k))}</b> serão liberadas quando este personagem chegar ao <b>Nível 6</b>.</p><div class="masteryLvl551">LVL ${masteryLevel(k)}/10</div><p class="muted">Compre compartimentos de Maestria para subir o nível do personagem.</p><div class="augActions620"><button class="duneBtn461 dark" id="augGateBack621">← Voltar</button></div></div>`;
+      const back=document.getElementById('augGateBack621'); if(back)back.onclick=()=>{try{window.openCharacterStats551?.(k)}catch{}};
+      return;
+    }
+    try{augApi()?.openAugList?.(k)}catch(e){console.warn('Abrir Ampliações 6.2.1 falhou',e)}
+  }
+
+  // Captura antes do onclick antigo, para impedir que o botão antigo abra abaixo do nível 6
+  document.addEventListener('click',e=>{
+    const b=e.target?.closest?.('#chronoAugBtn620'); if(!b)return;
+    const k=b.dataset.augKey621||guessKey();
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    openAugGate(k);
+  },true);
+
+  // Reforços para buffs específicos que estavam sem efeito próprio claro.
+  function active(){ensureRicoAug();try{return augApi()?.active?.()||null}catch{return null}}
+  function flag(f){const a=active();return !!a?.flags?.[f]}
+  function dist(a,b){return Math.hypot((a.x||0)-(b.x||0),(a.y||0)-(b.y||0))}
+  function area(x,y,r,dmg,col,stun=0){
+    try{addRing(x,y,col,r,3);addParticles(x,y,col,10,.55)}catch{}
+    const g=window.game;if(!g?.enemies)return;
+    for(let i=g.enemies.length-1;i>=0;i--){const e=g.enemies[i];if(!e)continue;if(Math.hypot(e.x-x,e.y-y)<r+(e.r||0)){e.hp-=dmg;e.hitFlash=Math.max(e.hitFlash||0,.16);if(stun)e._microStun23=Math.max(e._microStun23||0,stun);if(e.hp<=0)enemyDeath(i,e);}}
+  }
+  function spawnMini(x,y,ang,dmg,col){
+    try{game.bullets.push({x,y,vx:Math.cos(ang)*520,vy:Math.sin(ang)*520,r:3,life:.65,damage:dmg,pierce:0,weaponKey:'aug621',_augChild620:true,color:col})}catch{}
+  }
+
+  const oldDash=window.startDash||globalThis.startDash;
+  if(typeof oldDash==='function'&&!oldDash.__aug621){
+    const wrapped=function(){const before=game?.player?.dashCharge;const r=oldDash.apply(this,arguments);try{if(flag('dashEmpower')&&before>=100)game.augDashEmpower621=3.5;}catch{}return r};
+    wrapped.__aug621=true; window.startDash=wrapped; try{startDash=wrapped}catch{}
+  }
+  const oldShoot=window.shoot||globalThis.shoot;
+  if(typeof oldShoot==='function'&&!oldShoot.__aug621){
+    const wrapped=function(){const before=(game?.bullets||[]).length;const r=oldShoot.apply(this,arguments);try{const a=active();for(let i=before;i<(game.bullets||[]).length;i++){const b=game.bullets[i];if(!b)continue;if(game.augDashEmpower621>0){b.damage=N(b.damage)*1.25;b._dashEmpowered621=true;}if(a?.flags?.ricoImpossible){b.damage=N(b.damage)*1.12;b._ricoImpossible621=true;}if(a?.flags?.shadowPoison){b._shadowPoison621=true;}}if(game.augDashEmpower621>0)game.augDashEmpower621=0;}catch{}return r};
+    wrapped.__aug621=true; window.shoot=wrapped; try{shoot=wrapped}catch{}
+  }
+  const oldUpdateBullets=window.updateBullets||globalThis.updateBullets;
+  if(typeof oldUpdateBullets==='function'&&!oldUpdateBullets.__aug621){
+    const wrapped=function(dt){try{for(const b of game?.bullets||[]){if(!b||b._aug621HitScan)continue;for(const e of game.enemies||[]){if(!e||e.hp<=0)continue;if(Math.hypot(b.x-e.x,b.y-e.y)>(b.r||3)+(e.r||10)+7)continue;b._aug621HitScan=true;if(b._ricoImpossible621){const base=Math.atan2(b.vy||0,b.vx||1);for(let n=-1;n<=1;n++)spawnMini(b.x,b.y,base+n*.55,N(b.damage)*.24,'#75d8ff');try{addRing(b.x,b.y,'#75d8ff',36,2)}catch{}}if(b._shadowPoison621){area(b.x,b.y,38,N(b.damage)*.16,'#121018',0)}if(b._dashEmpowered621){try{addRing(b.x,b.y,'#86ffb0',34,2)}catch{}}break;}}}catch(e){console.warn('aug bullet 6.2.1',e)}return oldUpdateBullets.apply(this,arguments)};
+    wrapped.__aug621=true; window.updateBullets=wrapped; try{updateBullets=wrapped}catch{}
+  }
+  const oldSkill=window.useSkill||globalThis.useSkill;
+  if(typeof oldSkill==='function'&&!oldSkill.__aug621){
+    const wrapped=function(idx){const a=active(),p=game?.player,mx=N(mouse?.x,W/2),my=N(mouse?.y,H/2),beforeCd=N(game?.skillCds?.[idx]),beforeFocus=N(p?.focus);const r=oldSkill.apply(this,arguments);try{const used=game&&p&&beforeCd<=0&&(N(game.skillCds?.[idx])>0||N(p.focus)<beforeFocus);if(used&&a){const sd=N(game.upgrades?.augSkillDamage620);if(sd>0)area(mx,my,42+sd*60,18*sd*N(game.upgrades?.damage||1),'#cfe8ff',0);if(a.flags?.shadowPoison)area(mx,my,64,16*N(game.upgrades?.damage||1),'#0a0712',0);if(a.flags?.ricoImpossible&&idx===2){game.augRicoMirror621=7.5;area(mx,my,70,20*N(game.upgrades?.damage||1),'#75d8ff',0)}}}catch(e){console.warn('aug skill 6.2.1',e)}return r};
+    wrapped.__aug621=true; window.useSkill=wrapped; try{useSkill=wrapped}catch{}
+  }
+  const oldFX=window.updateFX||globalThis.updateFX;
+  if(typeof oldFX==='function'&&!oldFX.__aug621){
+    const wrapped=function(dt){const r=oldFX.apply(this,arguments);try{ensureAugButton();if(game?.augDashEmpower621>0)game.augDashEmpower621=Math.max(0,game.augDashEmpower621-(Number(dt)||.016));if(game?.augRicoMirror621>0){game.augRicoMirror621=Math.max(0,game.augRicoMirror621-(Number(dt)||.016));if(Math.random()<.12)try{addRing(game.player.x,game.player.y,'#75d8ff',54,1.5)}catch{}}}catch{}return r};
+    wrapped.__aug621=true; window.updateFX=wrapped; try{updateFX=wrapped}catch{}
+  }
+
+  function unlockAllAugAndMastery(){
+    ensureRicoAug();
+    const d=readAug();
+    for(const a of allAugEntries()) d.unlocked[a.id]=true;
+    writeAug(d);
+    const m=readMeta(), C=cls();
+    m.characterMastery551=m.characterMastery551||{};
+    for(const k of Object.keys(C)){
+      if(!C[k]||!C[k].name)continue;
+      const mx=maxes(k);
+      m.characterMastery551[k]={hp:mx.hp,damage:mx.damage,shield:mx.shield,special:mx.special};
+    }
+    // Complementa o Allin antigo: deixa classes desbloqueadas também.
+    try{
+      const prev=JSON.parse(localStorage.getItem(UNLOCK_KEY)||'[]');
+      const arr=Array.isArray(prev)?prev:[];
+      localStorage.setItem(UNLOCK_KEY,JSON.stringify(Array.from(new Set(arr.concat(Object.keys(C))))));
+    }catch{}
+    m.unlockedMoonSlayer=true;m.unlockedShadowChild=true;m.shadowChildUnlocked=true;m.allUnlocked=true;m.allInUnlocked=true;
+    writeMeta(m);
+    try{addFloatingText(game?.player?.x||W/2,game?.player?.y||H/2,'ALLIN: MAESTRIA E AMPLIAÇÕES LIBERADAS','#ffd166',16)}catch{}
+  }
+  window.unlockChronoAugAll621=unlockAllAugAndMastery;
+
+  function isAllinValue(){
+    const ids=['codeInput461','code37','codeInput27','codeInput','codeInput23','codeInput40'];
+    for(const id of ids){const el=document.getElementById(id);if((el?.value||'').trim().toLowerCase()==='allin')return true;}
+    const active=document.activeElement; return (active?.value||'').trim?.().toLowerCase?.()==='allin';
+  }
+  document.addEventListener('click',e=>{
+    const b=e.target?.closest?.('#redeem461,#redeem37,#redeem27,#redeemBtn,#redeem23,#redeem40,[data-redeem-code]');
+    if(!b||!isAllinValue())return;
+    setTimeout(()=>{unlockAllAugAndMastery();ensureAugButton();},0);
+  },true);
+  ['input','change','keyup'].forEach(ev=>document.addEventListener(ev,e=>{
+    if((e.target?.value||'').trim().toLowerCase()==='allin')setTimeout(unlockAllAugAndMastery,0);
+  },true));
+
+  // Pequena proteção: iniciar uma run não deve limpar progresso de missões/maestria/ampliações.
+  const oldReset=window.resetGame||globalThis.resetGame;
+  if(typeof oldReset==='function'&&!oldReset.__aug621ProgressSafe){
+    const wrapped=function(k){
+      const before=readMeta();
+      const beforeMastery=JSON.stringify(before.characterMastery551||{});
+      const beforeAug=JSON.stringify(readAug());
+      const r=oldReset.apply(this,arguments);
+      try{
+        const after=readMeta();
+        if(JSON.stringify(after.characterMastery551||{})==='{}' && beforeMastery!=='{}'){
+          after.characterMastery551=JSON.parse(beforeMastery);writeMeta(after);
+        }
+        const aug=readAug();
+        if(JSON.stringify(aug)==='{"unlocked":{},"selected":{}}' && beforeAug!=='{"unlocked":{},"selected":{}}'){
+          writeAug(JSON.parse(beforeAug));
+        }
+      }catch(e){console.warn('progress safe 6.2.1',e)}
+      return r;
+    };
+    wrapped.__aug621ProgressSafe=true; window.resetGame=wrapped; try{resetGame=wrapped}catch{}
+  }
+
+  try{new MutationObserver(()=>setTimeout(ensureAugButton,25)).observe(document.body,{childList:true,subtree:true});setInterval(()=>{ensureRicoAug();ensureAugButton();},350)}catch{}
+  ensureRicoAug();
+  setTimeout(ensureAugButton,100);
+  console.log('Chrono Shards 6.2.1 — correções de Ampliações, Ricocheteador, LVL 6 e Allin carregadas');
 })();
 </script>
 
