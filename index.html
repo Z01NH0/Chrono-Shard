@@ -21633,5 +21633,507 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 })();
 </script>
 
+
+<style id="chronoFix623Style">
+  .xpRow623{margin-top:0}
+  .xpRow623 span:first-child{color:#c9a7ff!important}
+  #xpBar623{background:linear-gradient(90deg,#9f6cff,#d4a0ff,#ffe08c);box-shadow:0 0 10px rgba(159,108,255,.55)}
+  .rerollBox623{
+    margin-top:16px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;
+    padding:12px;border-radius:18px;background:linear-gradient(135deg,rgba(255,209,102,.12),rgba(159,108,255,.08));
+    border:1px solid rgba(255,209,102,.22)
+  }
+  .rerollBtn623{
+    border:none;border-radius:999px;padding:12px 18px;cursor:pointer;
+    font:900 13px Orbitron,Rajdhani,sans-serif;letter-spacing:.08em;color:#1a1000;
+    background:linear-gradient(135deg,#ffd166,#fff2a8);
+    box-shadow:0 0 22px rgba(255,209,102,.24)
+  }
+  .rerollBtn623[disabled]{opacity:.45;filter:grayscale(.7);cursor:not-allowed}
+  .rerollText623{color:#cfe3ff;font-size:12px;line-height:1.35}
+  .rerollText623 b{color:#ffe08c}
+</style>
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Chrono Shards 6.2.3 — Correções: Filho das Trevas, Sorte, Reroll, XP, ouro→relíquia
+──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoFix623)return; window.__chronoFix623=true;
+  const PATCH='Chrono Shards 6.2.3';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const META_KEY=(()=>{try{return typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta'}catch{return 'chrono_v4_meta'}})();
+
+  function readMeta(){let m={};try{m=JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}}catch{};return m}
+  function writeMeta(m){try{localStorage.setItem(META_KEY,JSON.stringify(m));if(window.game?.meta)game.meta=m}catch{}return m}
+  function addRelics623(n){const m=readMeta();m.relicShards=N(m.relicShards)+N(n);writeMeta(m);return m.relicShards}
+  function removeLuckyBadge623(){try{document.querySelectorAll('.luckyBadge56,#luckyBadge56,[data-lucky-badge]').forEach(e=>e.remove())}catch{}}
+  function luckyAlive623(){
+    const g=window.game;
+    if(!g||!g.luckyPotion56||!g.running||N(g.player?.hp)<=0)return false;
+    try{if(typeof luckyRemaining56==='function' && luckyRemaining56()<=0)return false}catch{}
+    return true;
+  }
+  function syncLucky623(){
+    if(!window.game)return removeLuckyBadge623();
+    if(!luckyAlive623()){
+      try{game.luckyPotion56=null}catch{}
+      removeLuckyBadge623();
+    }
+  }
+
+  // XP visível embaixo do escudo.
+  function ensureXPBar623(){
+    const stats=document.querySelector('.stats'); if(!stats)return;
+    if(document.getElementById('xpBar623'))return;
+    const shield=document.getElementById('shieldBar')?.closest('div')?.parentElement || [...stats.children].find(x=>(x.textContent||'').toUpperCase().includes('ESCUDO'));
+    const row=document.createElement('div');
+    row.className='xpRow623';
+    row.innerHTML='<span>XP</span><div class="bar"><i id="xpBar623"></i></div>';
+    if(shield&&shield.parentElement===stats) shield.after(row); else stats.appendChild(row);
+  }
+  function syncXPBar623(){
+    ensureXPBar623();
+    const bar=document.getElementById('xpBar623'); if(!bar||!window.game)return;
+    const pct=clamp(N(game.xp)/Math.max(1,N(game.xpNext,1))*100,0,100);
+    bar.style.width=pct+'%';
+    bar.title=`XP: ${Math.floor(N(game.xp))}/${Math.floor(N(game.xpNext,1))}`;
+  }
+
+  // Limpa informações duplicadas da ultimate do Filho das Trevas.
+  function isShadowInfoOpen623(){
+    const title=(document.querySelector('#overlayCard h1')?.textContent||'').toLowerCase();
+    const all=(document.getElementById('overlayCard')?.textContent||'').toLowerCase();
+    return title.includes('filho das trevas') || (all.includes('filho das trevas') && all.includes('ira abissal'));
+  }
+  function cleanupShadowInfo623(){
+    const card=document.getElementById('overlayCard'); if(!card||!isShadowInfoOpen623())return;
+    const candidates=[...card.querySelectorAll('div,section,article')].filter(el=>{
+      const t=(el.textContent||'').toLowerCase();
+      if(!t)return false;
+      const cls=String(el.className||'').toLowerCase();
+      const looksRow=cls.includes('skill')||cls.includes('row')||cls.includes('dunepanel')||cls.includes('buff');
+      return looksRow && (t.includes('ira abissal') || t.includes('ultimate') || /^x\s*[—-]/i.test((el.textContent||'').trim()));
+    });
+    const rows=candidates.filter(el=>!candidates.some(other=>other!==el&&other.contains(el)));
+    if(rows.length){
+      const first=rows[0], cls=first.className||'skill-row-v23';
+      rows.forEach(r=>r.remove());
+      const div=document.createElement('div');
+      div.className=cls;
+      div.innerHTML='<b>X — 🩸 Ira Abissal</b><br><span>Transformação mítica temporária do Filho das Trevas, com presença abissal e ataques sombrios aprimorados.</span>';
+      const lore=[...card.querySelectorAll('h3')].find(h=>(h.textContent||'').toLowerCase().includes('lore'));
+      if(lore) lore.before(div); else card.appendChild(div);
+    }
+  }
+  ['openCharacterInfo551','openInfoOnly','openClassInfo27','openClassInfo28','openClassInfo29'].forEach(name=>{
+    const fn=window[name];
+    if(typeof fn==='function'&&!fn.__shadowInfo623){
+      const wrapped=function(){const r=fn.apply(this,arguments);setTimeout(cleanupShadowInfo623,30);setTimeout(cleanupShadowInfo623,120);return r};
+      wrapped.__shadowInfo623=true;window[name]=wrapped;try{eval(name+'=wrapped')}catch{}
+    }
+  });
+  document.addEventListener('click',()=>setTimeout(cleanupShadowInfo623,60),true);
+
+  // Modelo final simples e ameaçador para o Filho das Trevas, sem acumular efeitos antigos.
+  const oldDrawPlayer=window.drawPlayer||globalThis.drawPlayer;
+  function drawShadowChild623(){
+    const g=window.game,p=g?.player;if(!p)return;
+    const a=Math.atan2((mouse?.y||p.y)-p.y,(mouse?.x||p.x)-p.x), r=N(p.r,16), t=N(g.time);
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);
+    ctx.shadowBlur=16;ctx.shadowColor='#ff304f';
+    // Manto escuro principal.
+    ctx.fillStyle='#08050d';ctx.strokeStyle='#ff304f';ctx.lineWidth=2.6;
+    ctx.beginPath();
+    ctx.moveTo(r*1.15,0);
+    ctx.lineTo(r*.26,-r*.82);
+    ctx.lineTo(-r*.72,-r*.72);
+    ctx.lineTo(-r*1.05,0);
+    ctx.lineTo(-r*.72,r*.72);
+    ctx.lineTo(r*.26,r*.82);
+    ctx.closePath();ctx.fill();ctx.stroke();
+    // Núcleo/visor ameaçador, simples.
+    ctx.fillStyle='#ff304f';ctx.shadowBlur=20;ctx.shadowColor='#ff304f';
+    ctx.beginPath();ctx.ellipse(r*.12,0,r*.28,r*.18,0,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+    // Chifres/ombros discretos.
+    ctx.strokeStyle='rgba(255,170,190,.88)';ctx.lineWidth=2.2;
+    ctx.beginPath();
+    ctx.moveTo(-r*.28,-r*.62);ctx.lineTo(-r*.55,-r*1.05);
+    ctx.moveTo(-r*.28,r*.62);ctx.lineTo(-r*.55,r*1.05);
+    ctx.stroke();
+    // Lâmina/faca frontal simples.
+    ctx.strokeStyle='#f4e8ff';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(r*.28,0);ctx.lineTo(r*1.35,0);ctx.stroke();
+    ctx.fillStyle='#f4e8ff';ctx.beginPath();ctx.moveTo(r*1.48,0);ctx.lineTo(r*1.18,-4);ctx.lineTo(r*1.18,4);ctx.closePath();ctx.fill();
+    // Pequena sombra no chão, sem aura pesada.
+    ctx.rotate(-a);ctx.globalAlpha=.28;ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(0,r*.94,r*1.0,r*.28,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    try{if(typeof drawShieldSegmentsAround470==='function')drawShieldSegmentsAround470(p)}catch{}
+  }
+  if(typeof oldDrawPlayer==='function'&&!oldDrawPlayer.__shadowSimple623){
+    const wrapped=function(){
+      if(window.game?.classKey==='shadowChild'){drawShadowChild623();return;}
+      return oldDrawPlayer.apply(this,arguments);
+    };
+    wrapped.__shadowSimple623=true;window.drawPlayer=wrapped;try{drawPlayer=wrapped}catch{}
+  }
+
+  // Reroll de power-ups: custo 65, +35% a cada uso, reseta no resetGame.
+  function currentRerollCost623(){const g=window.game;if(!g)return 65;if(!g.powerRerollCost623)g.powerRerollCost623=65;return Math.max(1,Math.round(N(g.powerRerollCost623,65)))}
+  function resetReroll623(){if(window.game){game.powerRerollCost623=65;game.powerRerollUses623=0;}}
+  function isUpgradeOverlay623(){
+    const card=document.getElementById('overlayCard'); if(!card)return false;
+    const h=(card.querySelector('h1')?.textContent||'').toUpperCase();
+    return !!card.querySelector('.upgrade-grid,[data-up27],[data-up529],.upgrade-btn') && (h.includes('LEVEL')||h.includes('UPGRADE')||h.includes('ESCOLHA'));
+  }
+  function injectReroll623(){
+    const card=document.getElementById('overlayCard'), ov=document.getElementById('overlay');
+    if(!card||!ov||ov.classList.contains('hidden')||!isUpgradeOverlay623())return;
+    if(document.getElementById('rerollBox623'))return;
+    const cost=currentRerollCost623(), enough=N(game?.gold)>=cost;
+    const box=document.createElement('div');box.id='rerollBox623';box.className='rerollBox623';
+    box.innerHTML=`<button class="rerollBtn623" id="rerollBtn623" ${enough?'':'disabled'}>🔁 Rerollar — ${cost} ouro</button><div class="rerollText623"><b>Nova escolha de power-ups</b><br>O preço aumenta 35% a cada reroll e volta para 65 no começo da próxima partida.</div>`;
+    card.appendChild(box);
+    const btn=document.getElementById('rerollBtn623');
+    btn.onclick=e=>{
+      e.preventDefault();e.stopPropagation();
+      const c=currentRerollCost623();
+      if(N(game.gold)<c){try{addFloatingText(W/2,H/2,'OURO INSUFICIENTE','#ff9ba8',20)}catch{}return;}
+      game.gold=N(game.gold)-c;
+      game.powerRerollUses623=N(game.powerRerollUses623)+1;
+      game.powerRerollCost623=Math.ceil(c*1.35);
+      try{updateHUD?.();addFloatingText(W/2,H/2,'POWER-UPS REROLLADOS','#ffd166',18)}catch{}
+      setTimeout(()=>{try{window.openUpgradeMenu?.()}catch(e){console.warn('reroll openUpgrade',e)}},0);
+    };
+  }
+  const oldOpenUpgrade=window.openUpgradeMenu||globalThis.openUpgradeMenu;
+  if(typeof oldOpenUpgrade==='function'&&!oldOpenUpgrade.__reroll623){
+    const wrapped=function(){const r=oldOpenUpgrade.apply(this,arguments);setTimeout(injectReroll623,30);setTimeout(injectReroll623,120);return r};
+    wrapped.__reroll623=true;window.openUpgradeMenu=wrapped;try{openUpgradeMenu=wrapped}catch{}
+  }
+
+  // Reset: reroll volta para 65 e sorte não fica herdada.
+  const oldReset=window.resetGame||globalThis.resetGame;
+  if(typeof oldReset==='function'&&!oldReset.__fix623){
+    const wrapped=function(){const r=oldReset.apply(this,arguments);try{resetReroll623();syncXPBar623();syncLucky623()}catch{}return r};
+    wrapped.__fix623=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}
+  }
+
+  // Conversão final: 50 ouro = +1 relíquia. Intercepta antes do gameOver antigo de 250.
+  const oldGameOver=window.gameOver||globalThis.gameOver;
+  if(typeof oldGameOver==='function'&&!oldGameOver.__fix623){
+    const wrapped=function(){
+      let finalGold=0,converted=0;
+      try{
+        if(window.game && !game.__goldConverted623){
+          finalGold=N(game.gold);
+          converted=Math.floor(finalGold/50);
+          if(converted>0)addRelics623(converted);
+          game.__goldConverted623=true;
+          // Impede o conversor antigo de 250 de adicionar por cima.
+          game.__goldConverted56=true;
+        }
+        if(window.game)game.luckyPotion56=null;
+        removeLuckyBadge623();
+      }catch(e){console.warn('pré gameOver 6.2.3',e)}
+      const r=oldGameOver.apply(this,arguments);
+      setTimeout(()=>{
+        try{
+          removeLuckyBadge623();
+          const conv=document.querySelector('.conversion56');
+          if(conv)conv.innerHTML=`🪙 Conversão final: ${finalGold} ouro ⇒ +${converted} relíquia${converted===1?'':'s'} <span style="color:#ffe08c">/ taxa atual: 50 ouro = +1 relíquia</span>`;
+          document.querySelectorAll('.shopHint56').forEach(h=>h.textContent='O ouro que sobrar no fim da run vira relíquias: 50 ouro = +1 relíquia.');
+        }catch{}
+      },40);
+      return r;
+    };
+    wrapped.__fix623=true;window.gameOver=wrapped;try{gameOver=wrapped}catch{}
+  }
+
+  // Atualizações de HUD/finalização: XP visível e badge da sorte limpa.
+  const oldHUD=window.updateHUD||globalThis.updateHUD;
+  if(typeof oldHUD==='function'&&!oldHUD.__fix623){
+    const wrapped=function(){const r=oldHUD.apply(this,arguments);try{syncXPBar623();syncLucky623();injectReroll623()}catch{}return r};
+    wrapped.__fix623=true;window.updateHUD=wrapped;try{updateHUD=wrapped}catch{}
+  }
+  const oldFX=window.updateFX||globalThis.updateFX;
+  if(typeof oldFX==='function'&&!oldFX.__fix623){
+    const wrapped=function(dt){const r=oldFX.apply(this,arguments);try{syncXPBar623();syncLucky623();}catch{}return r};
+    wrapped.__fix623=true;window.updateFX=wrapped;try{updateFX=wrapped}catch{}
+  }
+
+  // Ajusta texto da loja e qualquer item de relíquia antigo barato para 50 se aparecer.
+  function patchShopText623(){
+    document.querySelectorAll('.shopHint56').forEach(h=>h.textContent='O ouro que sobrar no fim da run vira relíquias: 50 ouro = +1 relíquia.');
+    document.querySelectorAll('button').forEach(b=>{
+      const t=(b.textContent||'');
+      if(t.includes('Fragmento Relíquia +1')||t.includes('Relíquia +1')){
+        b.innerHTML=b.innerHTML.replace(/—\s*\d+g/g,'— 50g').replace(/—\s*\d+\s*ouro/gi,'— 50 ouro');
+        if(!b.__relic50Capture623){
+          b.__relic50Capture623=true;
+          b.addEventListener('click',ev=>{
+            // Se algum patch antigo for comprar por mais que 50, esta captura resolve por 50 e bloqueia o handler antigo.
+            if(!window.game||N(game.gold)<50)return;
+            ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+            game.gold-=50;addRelics623(1);try{game.shopCounts.relicTrade=N(game.shopCounts.relicTrade)+1;updateHUD?.();addFloatingText(W/2,H/2,'+1 RELÍQUIA','#ffb8ff',18)}catch{}
+            setTimeout(()=>{try{window.openShopMenu?.()}catch{}},0);
+          },true);
+        }
+      }
+    });
+  }
+  document.addEventListener('click',()=>setTimeout(()=>{cleanupShadowInfo623();patchShopText623();injectReroll623();syncLucky623();},50),true);
+  try{new MutationObserver(()=>setTimeout(()=>{ensureXPBar623();syncXPBar623();cleanupShadowInfo623();patchShopText623();injectReroll623();syncLucky623();},40)).observe(document.body,{childList:true,subtree:true})}catch{}
+  setInterval(()=>{ensureXPBar623();syncXPBar623();syncLucky623();injectReroll623();},500);
+  setTimeout(()=>{ensureXPBar623();syncXPBar623();patchShopText623();},80);
+  console.log(PATCH+' carregado');
+})();
+</script>
+
+
+<style id="chronoTune624Style">
+  /* Reroll limpo: só o botão, sem legenda lateral */
+  #rerollBox623{
+    margin-top:16px!important;
+    display:flex!important;
+    justify-content:center!important;
+    align-items:center!important;
+    padding:0!important;
+    background:transparent!important;
+    border:none!important;
+    box-shadow:none!important;
+  }
+  #rerollBox623 .rerollText623{display:none!important}
+  #rerollBtn623{
+    min-width:220px;
+    border-radius:999px!important;
+    padding:13px 22px!important;
+    background:linear-gradient(135deg,#ffd166,#fff0a8 58%,#ffb347)!important;
+    color:#160d00!important;
+    box-shadow:0 0 24px rgba(255,209,102,.34),0 10px 24px rgba(0,0,0,.28)!important;
+  }
+</style>
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Chrono Shards 6.2.4 — Filho das Trevas polido + Reroll 15g / +12%
+──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoTune624)return; window.__chronoTune624=true;
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+  // ── Reroll: 15 ouro inicial, +12% por compra, sem legenda ────────
+  function rerollCost624(){
+    const g=window.game;
+    if(!g)return 15;
+    if(!g.powerRerollCost623 || N(g.powerRerollCost623)===65) g.powerRerollCost623=15;
+    return Math.max(1,Math.round(N(g.powerRerollCost623,15)));
+  }
+  function resetReroll624(){
+    if(window.game){game.powerRerollCost623=15;game.powerRerollUses623=0;}
+  }
+  function patchRerollButton624(){
+    const box=document.getElementById('rerollBox623');
+    if(!box)return;
+    const btn=document.getElementById('rerollBtn623');
+    if(!btn)return;
+    [...box.querySelectorAll('.rerollText623')].forEach(e=>e.remove());
+    const cost=rerollCost624();
+    btn.disabled=!!(window.game && N(game.gold)<cost);
+    btn.textContent=`🔁 Rerollar — ${cost} ouro`;
+    btn.dataset.reroll624='1';
+    btn.title='Rerolla as opções atuais de power-up.';
+  }
+  document.addEventListener('click',ev=>{
+    const btn=ev.target?.closest?.('#rerollBtn623');
+    if(!btn)return;
+    ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+    if(!window.game)return;
+    const cost=rerollCost624();
+    if(N(game.gold)<cost){
+      try{addFloatingText(W/2,H/2,'OURO INSUFICIENTE','#ff9ba8',20)}catch{}
+      patchRerollButton624();
+      return;
+    }
+    game.gold=N(game.gold)-cost;
+    game.powerRerollUses623=N(game.powerRerollUses623)+1;
+    game.powerRerollCost623=Math.ceil(cost*1.12);
+    try{updateHUD?.();addFloatingText(W/2,H/2,'POWER-UPS REROLLADOS','#ffd166',18)}catch{}
+    setTimeout(()=>{try{window.openUpgradeMenu?.();setTimeout(patchRerollButton624,30)}catch(e){console.warn('reroll 6.2.4',e)}},0);
+  },true);
+
+  const oldReset624=window.resetGame||globalThis.resetGame;
+  if(typeof oldReset624==='function'&&!oldReset624.__reroll624){
+    const wrapped=function(){const r=oldReset624.apply(this,arguments);try{resetReroll624();patchRerollButton624();}catch{}return r};
+    wrapped.__reroll624=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}
+  }
+  const oldOpenUp624=window.openUpgradeMenu||globalThis.openUpgradeMenu;
+  if(typeof oldOpenUp624==='function'&&!oldOpenUp624.__reroll624){
+    const wrapped=function(){const r=oldOpenUp624.apply(this,arguments);setTimeout(()=>{if(window.game&&!game.powerRerollCost623)game.powerRerollCost623=15;patchRerollButton624();},40);setTimeout(patchRerollButton624,130);return r};
+    wrapped.__reroll624=true;window.openUpgradeMenu=wrapped;try{openUpgradeMenu=wrapped}catch{}
+  }
+
+  // ── Filho das Trevas: modelo com base no original, mais detalhado e limpo ──
+  const oldDrawPlayer624=window.drawPlayer||globalThis.drawPlayer;
+  function drawShadowChild624(){
+    const g=window.game,p=g?.player;if(!p)return;
+    const r=N(p.r,16), t=N(g.time), mx=N(mouse?.x,p.x+1), my=N(mouse?.y,p.y);
+    const a=Math.atan2(my-p.y,mx-p.x);
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.rotate(a);
+
+    // sombra no chão discreta
+    ctx.save();
+    ctx.rotate(-a);
+    ctx.globalAlpha=.24;
+    ctx.fillStyle='#000';
+    ctx.beginPath();
+    ctx.ellipse(0,r*.94,r*1.18,r*.30,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // manto externo inspirado no modelo original, mas sem aura exagerada
+    ctx.shadowBlur=12;
+    ctx.shadowColor='#ff304f';
+    ctx.fillStyle='#07040b';
+    ctx.strokeStyle='rgba(255,48,79,.88)';
+    ctx.lineWidth=2.5;
+    ctx.beginPath();
+    ctx.moveTo(r*1.18,0);
+    ctx.lineTo(r*.45,-r*.92);
+    ctx.lineTo(-r*.28,-r*1.05);
+    ctx.lineTo(-r*1.05,-r*.58);
+    ctx.lineTo(-r*.86,0);
+    ctx.lineTo(-r*1.05,r*.58);
+    ctx.lineTo(-r*.28,r*1.05);
+    ctx.lineTo(r*.45,r*.92);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // placas internas vermelho-escuro
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#1a0610';
+    ctx.strokeStyle='rgba(255,120,145,.45)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    ctx.moveTo(r*.78,0);
+    ctx.lineTo(r*.22,-r*.54);
+    ctx.lineTo(-r*.46,-r*.44);
+    ctx.lineTo(-r*.63,0);
+    ctx.lineTo(-r*.46,r*.44);
+    ctx.lineTo(r*.22,r*.54);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // capuz e máscara
+    ctx.fillStyle='#030207';
+    ctx.strokeStyle='rgba(255,220,230,.62)';
+    ctx.lineWidth=1.7;
+    ctx.beginPath();
+    ctx.moveTo(r*.44,0);
+    ctx.quadraticCurveTo(r*.08,-r*.46,-r*.50,-r*.38);
+    ctx.quadraticCurveTo(-r*.76,0,-r*.50,r*.38);
+    ctx.quadraticCurveTo(r*.08,r*.46,r*.44,0);
+    ctx.fill();
+    ctx.stroke();
+
+    // olho/núcleo do capuz
+    ctx.shadowBlur=10;
+    ctx.shadowColor='#ff304f';
+    ctx.fillStyle='#ff304f';
+    ctx.beginPath();
+    ctx.ellipse(-r*.12,0,r*.26,r*.14,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+
+    // chifres/espinhos do capuz
+    ctx.strokeStyle='rgba(255,170,190,.9)';
+    ctx.lineWidth=2.1;
+    ctx.beginPath();
+    ctx.moveTo(-r*.36,-r*.42);ctx.lineTo(-r*.62,-r*.95);ctx.lineTo(-r*.16,-r*.58);
+    ctx.moveTo(-r*.36,r*.42);ctx.lineTo(-r*.62,r*.95);ctx.lineTo(-r*.16,r*.58);
+    ctx.stroke();
+
+    // braços e lâminas/facas sombrias
+    ctx.strokeStyle='rgba(35,10,18,.95)';
+    ctx.lineWidth=5;
+    ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.moveTo(-r*.04,-r*.45);ctx.lineTo(r*.70,-r*.78);
+    ctx.moveTo(-r*.04,r*.45);ctx.lineTo(r*.70,r*.78);
+    ctx.stroke();
+
+    ctx.strokeStyle='#f3eaff';
+    ctx.lineWidth=2.7;
+    ctx.beginPath();
+    ctx.moveTo(r*.58,-r*.78);ctx.lineTo(r*1.45,-r*.96);
+    ctx.moveTo(r*.58,r*.78);ctx.lineTo(r*1.45,r*.96);
+    ctx.stroke();
+    ctx.fillStyle='#f3eaff';
+    for(const s of [-1,1]){
+      ctx.beginPath();
+      ctx.moveTo(r*1.55,s*r*.98);
+      ctx.lineTo(r*1.27,s*r*.86);
+      ctx.lineTo(r*1.33,s*r*1.06);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // runas pequenas no corpo, só detalhes
+    ctx.fillStyle='rgba(255,48,79,.8)';
+    ctx.shadowBlur=6;ctx.shadowColor='#ff304f';
+    for(let i=-1;i<=1;i++){
+      ctx.beginPath();
+      ctx.arc(-r*.18+i*r*.22, i===0?0:i*r*.20, r*.055, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.shadowBlur=0;
+
+    // linhas de costura do manto
+    ctx.strokeStyle='rgba(255,48,79,.35)';
+    ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(r*.25,-r*.72);ctx.quadraticCurveTo(-r*.04,-r*.25,-r*.18,0);ctx.quadraticCurveTo(-r*.04,r*.25,r*.25,r*.72);
+    ctx.moveTo(-r*.62,-r*.42);ctx.lineTo(-r*.30,-r*.18);
+    ctx.moveTo(-r*.62,r*.42);ctx.lineTo(-r*.30,r*.18);
+    ctx.stroke();
+
+    // micro-pulso somente quando estiver usando alguma forma/ult, bem contido
+    if(g.ults481?.shadow || g.shadowUltActive || g.darkUltimateActive){
+      ctx.globalAlpha=.18+.08*Math.sin(t*8);
+      ctx.strokeStyle='#ff304f';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,0,r*1.45,0,Math.PI*2);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+    try{if(typeof drawShieldSegmentsAround470==='function')drawShieldSegmentsAround470(p)}catch{}
+  }
+  if(typeof oldDrawPlayer624==='function'&&!oldDrawPlayer624.__shadow624){
+    const wrapped=function(){
+      if(window.game?.classKey==='shadowChild'){drawShadowChild624();return;}
+      return oldDrawPlayer624.apply(this,arguments);
+    };
+    wrapped.__shadow624=true;window.drawPlayer=wrapped;try{drawPlayer=wrapped}catch{}
+  }
+
+  try{
+    new MutationObserver(()=>setTimeout(patchRerollButton624,30)).observe(document.body,{childList:true,subtree:true});
+    setInterval(patchRerollButton624,450);
+  }catch{}
+  setTimeout(()=>{try{resetReroll624();patchRerollButton624()}catch{}},80);
+  console.log('Chrono Shards 6.2.4 — modelo Shadow e reroll ajustados carregados');
+})();
+</script>
+
 </body>
 </html>
