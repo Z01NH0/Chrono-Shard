@@ -23052,5 +23052,83 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 })();
 </script>
 
+
+<style id="uiClean709Style">
+  /* Mantém tudo rolável, mas esconde a barra de rolagem visual */
+  html, body, #overlay, #overlayCard, .card, .dune461, .mauroShop700, .skinPage700,
+  .classGroups461, .classGrid461, .classGroup461, .shopSection700 {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  #overlay::-webkit-scrollbar,
+  #overlayCard::-webkit-scrollbar,
+  .card::-webkit-scrollbar,
+  .dune461::-webkit-scrollbar,
+  .mauroShop700::-webkit-scrollbar,
+  .skinPage700::-webkit-scrollbar,
+  .classGroups461::-webkit-scrollbar,
+  .classGrid461::-webkit-scrollbar,
+  .classGroup461::-webkit-scrollbar,
+  .shopSection700::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+    background: transparent !important;
+  }
+
+  /* Remove seleção/acesso visual de navegador sem travar botões */
+  body, canvas, button, .card, #overlay, #overlayCard {
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input, textarea {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
+</style>
+
+<script>
+/* Chrono Shards 7.0.9 — scrollbar invisível + bloqueio do clique direito */
+(()=>{
+  if(window.__uiClean709)return; 
+  window.__uiClean709=true;
+
+  function blockBrowserMenu709(e){
+    try{
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    }catch{}
+    return false;
+  }
+
+  // Bloqueia menu do clique direito do mouse
+  window.addEventListener('contextmenu', blockBrowserMenu709, true);
+  document.addEventListener('contextmenu', blockBrowserMenu709, true);
+  document.body && document.body.addEventListener('contextmenu', blockBrowserMenu709, true);
+
+  // Bloqueia clique auxiliar/direito em navegadores que disparam auxclick
+  window.addEventListener('auxclick', e=>{
+    if(e.button===1 || e.button===2) blockBrowserMenu709(e);
+  }, true);
+
+  // Evita arrastar/selecionar elementos do jogo acidentalmente
+  window.addEventListener('dragstart', blockBrowserMenu709, true);
+
+  // Garante também por atributo direto caso algum browser ignore o listener
+  try{
+    document.oncontextmenu=blockBrowserMenu709;
+    window.oncontextmenu=blockBrowserMenu709;
+  }catch{}
+
+  console.log('Chrono Shards 7.0.9 — barra de rolagem escondida e clique direito bloqueado');
+})();
+</script>
+
 </body>
 </html>
