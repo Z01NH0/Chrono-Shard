@@ -229,6 +229,7 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
 <div class="stats">
 <div><span>HP</span><div class="bar"><i id="hpBar"></i></div></div>
 <div><span>ESCUDO</span><div class="bar"><i id="shieldBar"></i></div></div>
+<div id="xpHudRow711" class="xpHudRow711"><span>XP</span><div class="bar xpHudBar711"><i id="xpHudFill711"></i></div></div>
 
 
 
@@ -23127,6 +23128,282 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   }catch{}
 
   console.log('Chrono Shards 7.0.9 — barra de rolagem escondida e clique direito bloqueado');
+})();
+</script>
+
+
+<style id="xpHud710Style">
+  .xpHudRow710{
+    display:grid!important;
+    grid-template-columns:64px 1fr!important;
+    gap:8px!important;
+    align-items:center!important;
+    font-size:11px!important;
+    letter-spacing:.1em!important;
+    font-weight:700!important;
+  }
+  .xpHudRow710 span:first-child{
+    color:#d8b7ff!important;
+    text-shadow:0 0 10px rgba(159,108,255,.55);
+  }
+  .xpHudBar710{
+    height:8px;
+    background:rgba(255,255,255,.06);
+    border-radius:999px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:inset 0 0 12px rgba(0,0,0,.34);
+  }
+  .xpHudBar710 i{
+    display:block;
+    height:100%;
+    width:0%;
+    border-radius:inherit;
+    background:linear-gradient(90deg,#8f6cff,#d4a0ff,#ffe08c);
+    box-shadow:0 0 12px rgba(159,108,255,.65),0 0 18px rgba(255,224,140,.28);
+    transition:width .12s linear;
+  }
+  .xpHudBar710:after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+    transform:translateX(-120%);
+    animation:xpHudShine710 2.4s linear infinite;
+    opacity:.45;
+  }
+  @keyframes xpHudShine710{
+    to{transform:translateX(120%)}
+  }
+</style>
+
+<script>
+/* Chrono Shards 7.1.0 — Barra de XP fixa no HUD abaixo do Escudo */
+(()=>{
+  if(window.__xpHud710)return;
+  window.__xpHud710=true;
+
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+  function findStats710(){
+    return document.querySelector('.hud .left-panel .stats') || document.querySelector('.stats');
+  }
+
+  function findShieldRow710(stats){
+    const shield=document.getElementById('shieldBar');
+    if(shield){
+      const row=shield.closest('.stats > div') || shield.closest('div')?.parentElement;
+      if(row && stats && row.parentElement===stats) return row;
+    }
+    if(stats){
+      return [...stats.children].find(el=>(el.textContent||'').toUpperCase().includes('ESCUDO')) || null;
+    }
+    return null;
+  }
+
+  function ensureXpHud710(){
+    const stats=findStats710();
+    if(!stats)return null;
+
+    let row=document.getElementById('xpHudRow710');
+    if(row && row.parentElement!==stats){
+      row.remove();
+      row=null;
+    }
+
+    if(!row){
+      row=document.createElement('div');
+      row.id='xpHudRow710';
+      row.className='xpHudRow710';
+      row.innerHTML='<span>XP</span><div class="xpHudBar710"><i id="xpHudFill710"></i></div>';
+      const shieldRow=findShieldRow710(stats);
+      if(shieldRow) shieldRow.after(row);
+      else stats.appendChild(row);
+    }
+
+    return row;
+  }
+
+  function updateXpHud710(){
+    const row=ensureXpHud710();
+    if(!row)return;
+    const fill=document.getElementById('xpHudFill710');
+    if(!fill)return;
+
+    const g=window.game;
+    if(!g){
+      fill.style.width='0%';
+      row.style.opacity='.45';
+      return;
+    }
+
+    const xp=N(g.xp);
+    const next=Math.max(1,N(g.xpNext,1));
+    const pct=clamp((xp/next)*100,0,100);
+    fill.style.width=pct.toFixed(2)+'%';
+    row.style.opacity='1';
+    row.title=`XP: ${Math.floor(xp)} / ${Math.floor(next)}`;
+  }
+
+  function wrap710(name){
+    const fn=window[name]||globalThis[name];
+    if(typeof fn!=='function'||fn.__xpHud710)return;
+    const wrapped=function(){
+      const r=fn.apply(this,arguments);
+      try{updateXpHud710()}catch(e){console.warn('XP HUD 710',e)}
+      return r;
+    };
+    wrapped.__xpHud710=true;
+    window[name]=wrapped;
+    try{globalThis[name]=wrapped}catch{}
+    try{eval(name+'=wrapped')}catch{}
+  }
+
+  ['updateHUD','resetGame','gainXP','openUpgradeMenu','render','updatePlayer'].forEach(wrap710);
+
+  try{
+    new MutationObserver(()=>setTimeout(updateXpHud710,20)).observe(document.body,{childList:true,subtree:true});
+  }catch{}
+
+  setInterval(()=>{try{updateXpHud710()}catch{}},120);
+  setTimeout(updateXpHud710,80);
+  console.log('Chrono Shards 7.1.0 — barra de XP no HUD carregada');
+})();
+</script>
+
+
+<style id="xpBlood711Style">
+  #xpHudRow711,
+  .xpHudRow711{
+    display:grid!important;
+    grid-template-columns:64px 1fr!important;
+    gap:8px!important;
+    align-items:center!important;
+    font-size:11px!important;
+    letter-spacing:.1em!important;
+    font-weight:800!important;
+  }
+  #xpHudRow711 span:first-child,
+  .xpHudRow711 span:first-child{
+    color:#d8b7ff!important;
+    text-shadow:0 0 10px rgba(159,108,255,.6);
+  }
+  .xpHudBar711{
+    height:8px!important;
+    background:rgba(255,255,255,.06)!important;
+    border-radius:999px!important;
+    overflow:hidden!important;
+    position:relative!important;
+    box-shadow:inset 0 0 12px rgba(0,0,0,.36)!important;
+  }
+  #xpHudFill711{
+    display:block!important;
+    height:100%!important;
+    width:0%;
+    border-radius:inherit!important;
+    background:linear-gradient(90deg,#8f6cff,#d4a0ff,#ffe08c)!important;
+    box-shadow:0 0 12px rgba(159,108,255,.65),0 0 18px rgba(255,224,140,.28)!important;
+    transition:width .12s linear!important;
+  }
+  .xpHudBar711:after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+    transform:translateX(-120%);animation:xpHudShine711 2.2s linear infinite;opacity:.45;
+  }
+  @keyframes xpHudShine711{to{transform:translateX(120%)}}
+
+  #lowHpBlood623{display:none!important}
+  #lowHpBlood711{
+    position:fixed;inset:0;z-index:9997;pointer-events:none;opacity:0;
+    --bloodA:0;
+    background:
+      radial-gradient(circle at 0% 0%,rgba(255,0,36,calc(var(--bloodA)*.95)),rgba(128,0,18,calc(var(--bloodA)*.50)) 17%,transparent 40%),
+      radial-gradient(circle at 100% 0%,rgba(255,0,36,calc(var(--bloodA)*.86)),rgba(128,0,18,calc(var(--bloodA)*.42)) 16%,transparent 38%),
+      radial-gradient(circle at 0% 100%,rgba(255,0,36,calc(var(--bloodA)*.92)),rgba(128,0,18,calc(var(--bloodA)*.50)) 16%,transparent 41%),
+      radial-gradient(circle at 100% 100%,rgba(255,0,36,calc(var(--bloodA)*.90)),rgba(128,0,18,calc(var(--bloodA)*.46)) 16%,transparent 40%),
+      radial-gradient(ellipse at center,transparent 45%,rgba(80,0,12,calc(var(--bloodA)*.58)) 100%);
+    transition:opacity .18s linear;
+  }
+  #lowHpBlood711.show{opacity:1;animation:bloodPulse711 1.25s ease-in-out infinite}
+  #lowHpBlood711.critical{animation:bloodPulseCrit711 .58s ease-in-out infinite;filter:saturate(1.55) contrast(1.20)}
+  #lowHpBlood711:before,#lowHpBlood711:after{
+    content:'';position:absolute;inset:0;opacity:calc(var(--bloodA)*.85);mix-blend-mode:screen;
+    background:
+      radial-gradient(ellipse at 7% 22%,rgba(255,45,62,.52),transparent 18%),
+      radial-gradient(ellipse at 92% 29%,rgba(255,45,62,.45),transparent 19%),
+      radial-gradient(ellipse at 18% 88%,rgba(255,45,62,.42),transparent 22%),
+      radial-gradient(ellipse at 82% 84%,rgba(255,45,62,.50),transparent 21%);
+  }
+  #lowHpBlood711:after{opacity:calc(var(--bloodA)*.50);filter:blur(2px)}
+  @keyframes bloodPulse711{0%,100%{transform:scale(1);filter:saturate(1.05)}50%{transform:scale(1.010);filter:saturate(1.25)}}
+  @keyframes bloodPulseCrit711{0%,100%{transform:scale(1);filter:saturate(1.55) contrast(1.20)}50%{transform:scale(1.023);filter:saturate(2.0) contrast(1.35)}}
+</style>
+<script>
+/* Chrono Shards 7.1.1 — XP HUD fix real + sangue 35%/15% */
+(()=>{
+  if(window.__xpBlood711)return; window.__xpBlood711=true;
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function getGame711(){try{if(typeof game!=='undefined')return game}catch{};return window.game||null;}
+  // Alguns patches antigos olham window.game, mas o jogo usa variável global lexical "game".
+  // Este getter deixa os dois mundos enxergarem a mesma run.
+  try{
+    const desc=Object.getOwnPropertyDescriptor(window,'game');
+    if(!desc || desc.configurable){
+      Object.defineProperty(window,'game',{configurable:true,get(){try{return game}catch{return undefined}},set(v){try{game=v}catch{}}});
+    }
+  }catch{}
+  function stats711(){return document.querySelector('.hud .left-panel .stats')||document.querySelector('.stats');}
+  function ensureXp711(){
+    const stats=stats711(); if(!stats)return null;
+    let row=document.getElementById('xpHudRow711');
+    if(!row){
+      row=document.createElement('div');row.id='xpHudRow711';row.className='xpHudRow711';
+      row.innerHTML='<span>XP</span><div class="bar xpHudBar711"><i id="xpHudFill711"></i></div>';
+    }
+    if(row.parentElement!==stats){
+      const shield=document.getElementById('shieldBar');
+      const shieldRow=shield?.closest('.stats > div')||shield?.closest('div')?.parentElement;
+      if(shieldRow&&shieldRow.parentElement===stats)shieldRow.after(row);else stats.appendChild(row);
+    }
+    return row;
+  }
+  function updateXp711(){
+    const row=ensureXp711(); if(!row)return;
+    const fill=document.getElementById('xpHudFill711'); if(!fill)return;
+    const g=getGame711();
+    if(!g){fill.style.width='0%';row.style.opacity='.65';return;}
+    const pct=clamp(N(g.xp)/Math.max(1,N(g.xpNext,1))*100,0,100);
+    fill.style.width=pct.toFixed(2)+'%';row.style.opacity='1';
+    row.title=`XP: ${Math.floor(N(g.xp))} / ${Math.floor(Math.max(1,N(g.xpNext,1)))}`;
+  }
+  function ensureBlood711(){let el=document.getElementById('lowHpBlood711');if(!el){el=document.createElement('div');el.id='lowHpBlood711';document.body.appendChild(el)}return el;}
+  function overlayVisible711(){try{return !!overlay && !overlay.classList.contains('hidden')}catch{return false}}
+  function bloodIntensity711(pct){
+    // começa em 35%; fica crítico em 15% ou menos
+    if(pct>.35)return 0;
+    if(pct<=.15)return 1;
+    return Math.max(.16,Math.min(.78,1-((pct-.15)/.20)*.70));
+  }
+  function updateBlood711(){
+    const el=ensureBlood711(); const g=getGame711(),p=g?.player;
+    if(!g||!p||overlayVisible711()||g.pauseMenu620||g.betweenWaves||g.shopPending||N(p.hp)<=0){el.classList.remove('show','critical');el.style.setProperty('--bloodA','0');return;}
+    const pct=clamp(N(p.hp)/Math.max(1,N(p.maxHp,p.hp||1)),0,1);
+    const intensity=bloodIntensity711(pct);
+    if(intensity<=0){el.classList.remove('show','critical');el.style.setProperty('--bloodA','0');return;}
+    const pulse=1+Math.sin((N(g.time,performance.now()/1000))*7)*.08;
+    const alpha=(.18+intensity*.62)*pulse;
+    el.style.setProperty('--bloodA',String(clamp(alpha,.10,.92)));
+    el.classList.add('show');el.classList.toggle('critical',pct<=.15);
+  }
+  function tick711(){try{updateXp711();updateBlood711()}catch(e){console.warn('xp/blood 711',e)}}
+  function wrap711(name){const old=window[name]||globalThis[name];if(typeof old!=='function'||old.__xpBlood711)return;const fn=function(){const r=old.apply(this,arguments);tick711();return r};fn.__xpBlood711=true;window[name]=fn;try{globalThis[name]=fn}catch{}try{eval(name+'=fn')}catch{}}
+  ['updateHUD','gainXP','resetGame','openUpgradeMenu','updatePlayer','render','draw','updateFX'].forEach(wrap711);
+  try{new MutationObserver(()=>setTimeout(tick711,20)).observe(document.body,{childList:true,subtree:true})}catch{}
+  setInterval(tick711,70);
+  setTimeout(tick711,80);
+  console.log('Chrono Shards 7.1.1 — XP HUD e sangue 35/15 carregados');
 })();
 </script>
 
