@@ -22135,5 +22135,161 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 })();
 </script>
 
+
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Chrono Shards 6.2.5 — Filho das Trevas R: Fosso Demoníaco expandido
+   - Raio de puxão muito maior
+   - Qualquer inimigo morto pelo dano da área do R vira minion aliado
+──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__shadowPit625)return; window.__shadowPit625=true;
+  const SHADOW='shadowChild';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const dist=(a,b)=>Math.hypot((a.x||0)-(b.x||0),(a.y||0)-(b.y||0));
+  function arr(o,k){if(!o[k])o[k]=[];return o[k]}
+  function ring(x,y,c,r,w=3){try{addRing(x,y,c,r,w)}catch{}}
+  function part(x,y,c,n=10,f=.5){try{addParticles(x,y,c,n,f)}catch{}}
+  function txt(x,y,t,c='#fff',s=16){try{addFloatingText(x,y,t,c,s)}catch{}}
+  function ensure(){if(!window.game)return;arr(game,'demonicPits625');arr(game,'shadowAllies610');}
+  function damageAndConvert625(e,dmg,stun=0,source){
+    if(!window.game||!e||!Array.isArray(game.enemies))return false;
+    const i=game.enemies.indexOf(e); if(i<0)return false;
+    e.hp-=dmg; e.hitFlash=Math.max(e.hitFlash||0,.18);
+    if(stun)e._microStun23=Math.max(N(e._microStun23),stun);
+    if(e.hp<=0){
+      const x=N(e.x),y=N(e.y),rr=Math.max(11,N(e.r,12)*.72);
+      try{enemyDeath(i,e)}catch{game.enemies.splice(i,1)}
+      ensure();
+      game.shadowAllies610.push({
+        x,y,r:clamp(rr,10,18),life:5.6,spd:320,pulse:Math.random()*6.28,
+        damage:105,fromPit625:true,color:'#ff304f'
+      });
+      ring(x,y,'#ff304f',56,4);part(x,y,'#ff304f',14,.85);
+      return true;
+    }
+    return false;
+  }
+  function castPit625(idx,sk){
+    const p=game?.player;if(!p)return false;
+    const cost=N(sk?.focusCost,48), cd=N(sk?.cooldown,14);
+    if(N(game.skillCds?.[idx])>0||N(p.focus)<cost)return false;
+    ensure();
+    p.focus-=cost;game.skillCds[idx]=cd;
+    const x=clamp(N(mouse?.x,p.x),120,W-120),y=clamp(N(mouse?.y,p.y),120,H-120);
+    game.demonicPits625.push({
+      x,y,
+      pullR:330,       // raio grande de puxão
+      damageR:245,     // área que causa dano e transforma mortos
+      inner:86,        // centro mais perigoso
+      life:5.2,maxLife:5.2,
+      tick:.05,shock:.35,pulse:Math.random()*9
+    });
+    ring(x,y,'#050006',360,10);
+    ring(x,y,'#ff304f',300,7);
+    txt(x,y-42,'FOSSO DEMONÍACO','#ff304f',22);
+    try{game.shake=Math.max(N(game.shake),30);game.flash=Math.max(N(game.flash),.23);game.flashColor='#ff304f'}catch{}
+    return true;
+  }
+
+  const oldUseSkill=window.useSkill||globalThis.useSkill;
+  if(typeof oldUseSkill==='function'&&!oldUseSkill.__shadowPit625){
+    const wrapped=function(idx){
+      try{
+        if(window.game?.classKey===SHADOW&&idx===2){
+          const key=(CLASSES?.[SHADOW]?.skills||[])[idx],sk=SKILL_DEFS?.[key]||{};
+          return castPit625(idx,sk);
+        }
+      }catch(e){console.warn('Fosso 6.2.5 cast falhou',e)}
+      return oldUseSkill.apply(this,arguments);
+    };
+    wrapped.__shadowPit625=true;window.useSkill=wrapped;try{useSkill=wrapped}catch{}
+  }
+
+  function updatePits625(dt){
+    if(!window.game)return;ensure();
+    const dmgMult=N(game.upgrades?.damage,1);
+    for(let i=game.demonicPits625.length-1;i>=0;i--){
+      const pit=game.demonicPits625[i];
+      pit.life-=dt;pit.tick-=dt;pit.shock-=dt;pit.pulse+=dt*5.8;
+      if(pit.life<=0){game.demonicPits625.splice(i,1);continue;}
+      // Puxão contínuo em raio bem maior.
+      for(let j=game.enemies.length-1;j>=0;j--){
+        const e=game.enemies[j]; if(!e)continue;
+        const d=dist(pit,e);
+        if(d>pit.pullR+(e.r||0))continue;
+        const a=Math.atan2(pit.y-e.y,pit.x-e.x);
+        const force=(e.type==='boss'||e.bossType)?70:245;
+        const fall=1-clamp(d/Math.max(1,pit.pullR),0,.88);
+        e.x+=Math.cos(a)*force*(.35+fall)*dt;
+        e.y+=Math.sin(a)*force*(.35+fall)*dt;
+        e._darkSlow=Math.max(N(e._darkSlow),.22);
+      }
+      // Dano periódico da área. Se morrer aqui, vira minion.
+      if(pit.tick<=0){
+        pit.tick=.16;
+        for(let j=game.enemies.length-1;j>=0;j--){
+          const e=game.enemies[j]; if(!e)continue;
+          const d=dist(pit,e);
+          if(d>pit.damageR+(e.r||0))continue;
+          const center=d<pit.inner+(e.r||0);
+          const dmg=(center?44:18)*dmgMult;
+          damageAndConvert625(e,dmg,center?.35:0,pit);
+        }
+      }
+      // Onda de choque também conta como dano da área e transforma mortos.
+      if(pit.shock<=0){
+        pit.shock=2;
+        ring(pit.x,pit.y,'#ffffff',pit.damageR+42,6);
+        ring(pit.x,pit.y,'#ff304f',pit.damageR+18,8);
+        part(pit.x,pit.y,'#ff304f',24,1.05);
+        for(let j=game.enemies.length-1;j>=0;j--){
+          const e=game.enemies[j]; if(!e)continue;
+          if(dist(pit,e)>pit.damageR+50+(e.r||0))continue;
+          damageAndConvert625(e,30*dmgMult,1,pit);
+        }
+      }
+    }
+  }
+
+  const oldUpdateFX=window.updateFX||globalThis.updateFX;
+  if(typeof oldUpdateFX==='function'&&!oldUpdateFX.__shadowPit625){
+    const wrapped=function(dt){
+      const r=oldUpdateFX.apply(this,arguments);
+      try{if(game?.classKey===SHADOW||game?.demonicPits625?.length)updatePits625(Number(dt)||.016)}catch(e){console.warn('Fosso 6.2.5 update falhou',e)}
+      return r;
+    };
+    wrapped.__shadowPit625=true;window.updateFX=wrapped;try{updateFX=wrapped}catch{}
+  }else{
+    setInterval(()=>{try{if(game?.running)updatePits625(.016)}catch{}},16);
+  }
+
+  // Reforça minions do fosso novo para sempre explodirem com dano decente.
+  const oldDrawParticles=window.drawParticles||globalThis.drawParticles;
+  function drawPits625(){
+    if(!window.game)return;
+    ctx.save();
+    for(const pit of game.demonicPits625||[]){
+      const k=clamp(pit.life/pit.maxLife,0,1),spin=pit.pulse;
+      ctx.globalAlpha=.22*k;ctx.fillStyle='#ff304f';ctx.beginPath();ctx.arc(pit.x,pit.y,pit.pullR*(.92+.02*Math.sin(spin)),0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=.82*k;ctx.shadowBlur=44;ctx.shadowColor='#ff304f';ctx.fillStyle='rgba(0,0,0,.86)';
+      ctx.beginPath();ctx.arc(pit.x,pit.y,pit.damageR*.72*(1+.04*Math.sin(spin)),0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#ff304f';ctx.lineWidth=5;ctx.setLineDash([18,10]);ctx.beginPath();ctx.arc(pit.x,pit.y,pit.damageR,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+      ctx.globalAlpha=.35*k;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=2.5;
+      for(let q=0;q<14;q++){const a=-spin+q*Math.PI*2/14;ctx.beginPath();ctx.moveTo(pit.x+Math.cos(a)*pit.pullR*.98,pit.y+Math.sin(a)*pit.pullR*.98);ctx.lineTo(pit.x+Math.cos(a)*pit.inner,pit.y+Math.sin(a)*pit.inner);ctx.stroke();}
+      ctx.globalAlpha=.95*k;ctx.strokeStyle='rgba(255,48,79,.92)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(pit.x,pit.y,pit.pullR,0,Math.PI*2);ctx.stroke();
+    }
+    ctx.restore();
+  }
+  if(typeof oldDrawParticles==='function'&&!oldDrawParticles.__shadowPit625){
+    const wrapped=function(){const r=oldDrawParticles.apply(this,arguments);try{drawPits625()}catch{}return r};
+    wrapped.__shadowPit625=true;window.drawParticles=wrapped;try{drawParticles=wrapped}catch{}
+  }
+
+  console.log('Chrono Shards 6.2.5 — R do Filho das Trevas expandido carregado');
+})();
+</script>
+
 </body>
 </html>
