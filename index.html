@@ -21284,5 +21284,354 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 })();
 </script>
 
+
+<style id="chestSingleLoot622Style">
+  .singleLootGuard622{position:relative}
+  .rewardCard56.rareLoot620,.riftRewardCard581.rareLoot620,.rewardCard622.rareLoot620{
+    border-color:color-mix(in srgb,var(--c,#ffd166) 85%,#fff)!important;
+    box-shadow:0 0 28px color-mix(in srgb,var(--c,#ffd166) 42%,transparent), inset 0 0 24px rgba(255,255,255,.055)!important;
+    animation:rareLootPulse622 1.45s ease-in-out infinite alternate;
+  }
+  @keyframes rareLootPulse622{to{filter:brightness(1.14);transform:translateY(-2px)}}
+</style>
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Chrono Shards 6.2.2 — Baús com loot único/final
+   - Intercepta cliques antigos de baú antes dos patches anteriores
+   - Aplica somente a tabela atual de recompensas
+   - Impede múltiplos setTimeouts/handlers de concederem loots duplicados
+──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__chronoChestSingleLoot622)return; window.__chronoChestSingleLoot622=true;
+  const META_KEY=(()=>{try{return typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta'}catch{return 'chrono_v4_meta'}})();
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const q=s=>document.querySelector(s);
+  const R={
+    common:{name:'COMUM',emoji:'⚪',color:'#b7c8ef'},
+    rare:{name:'RARO',emoji:'🔵',color:'#61dafb'},
+    epic:{name:'ÉPICO',emoji:'🟣',color:'#b77cff'},
+    legendary:{name:'LENDÁRIO',emoji:'🟡',color:'#ffd166'},
+    mythic:{name:'MÍTICO',emoji:'🔴',color:'#ff4d6d'}
+  };
+  const ORDER=['common','rare','epic','legendary','mythic'];
+  const TABLE={
+    common:[['gold',75],['relic',15],['rarePower',9],['augmentation',1]],
+    rare:[['gold',65],['relic',23],['epicPower',5],['key',4],['augmentation',3]],
+    epic:[['gold',45],['relic',30],['legendaryPower',10],['key',8],['augmentation',5],['chrono',2]],
+    legendary:[['gold',30],['relic',40],['mythicPower',2],['key',15],['augmentation',9],['chrono',4]],
+    mythic:[['gold',10],['relic',45],['key',20],['chrono',12],['augmentation',11],['secret',2]]
+  };
+  const RANGES={
+    gold:{common:[5,20],rare:[25,50],epic:[55,100],legendary:[65,150],mythic:[70,300]},
+    relic:{common:[1,3],rare:[3,5],epic:[4,10],legendary:[11,25],mythic:[35,60]},
+    key:{rare:[1,1],epic:[2,3],legendary:[3,4],mythic:[4,8]},
+    chrono:{epic:[1,1],legendary:[2,4],mythic:[5,10]}
+  };
+  let current=null, suppressUntil=0;
+
+  function meta(){let m={};try{m=JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}}catch{};m.relicShards=N(m.relicShards);m.chronoFragments=N(m.chronoFragments);m.awakeningKeys=N(m.awakeningKeys);m.stats=m.stats||{};return m;}
+  function save(m){try{localStorage.setItem(META_KEY,JSON.stringify(m));if(window.game?.meta)game.meta=m;}catch{}return m;}
+  function weighted(min,max,p=2.35){min=Math.round(min);max=Math.round(max);if(max<=min)return min;const t=Math.pow(Math.random(),p);return min+Math.floor((max-min+1)*t);}
+  function rollType(rarity){const rows=TABLE[rarity]||TABLE.common;let r=Math.random()*100,acc=0;for(const [type,w] of rows){acc+=w;if(r<acc)return type;}return rows[0][0];}
+  function rollUp(){const r=Math.random()*100;if(r<1)return 'mythic';if(r<4.5)return 'legendary';if(r<19.5)return 'epic';if(r<49.5)return 'rare';return 'common';}
+  function higher(a,b){return ORDER[Math.max(ORDER.indexOf(a),ORDER.indexOf(b),0)]||a}
+  function powerLabel(type){return type==='rarePower'?'RARO':type==='epicPower'?'ÉPICO':type==='legendaryPower'?'LENDÁRIO':type==='mythicPower'?'MÍTICO':'RARO'}
+  function pickPower(label){
+    try{
+      const catalog=Array.isArray(window.CHRONO_FINAL_POWERUPS_548)?window.CHRONO_FINAL_POWERUPS_548:[];
+      let pool=catalog.filter(p=>p&&p.rarity===label);
+      if(!pool.length)pool=catalog.filter(Boolean);
+      if(!pool.length)return null;
+      const total=pool.reduce((s,p)=>s+Math.max(.001,N(p.weight,1)),0)||1;
+      let r=Math.random()*total;
+      for(const p of pool){r-=Math.max(.001,N(p.weight,1));if(r<=0)return p;}
+      return pool[pool.length-1];
+    }catch{return null}
+  }
+  function applyReward(type,rarity){
+    const m=meta();
+    if(type==='gold'){
+      const [a,b]=RANGES.gold[rarity]||[5,20],amt=weighted(a,b,2.75);
+      if(window.game)game.gold=N(game.gold)+amt;
+      return {icon:'🪙',title:`+${amt} ouro`,desc:'Adicionado ao ouro da run.',kind:'gold'};
+    }
+    if(type==='relic'){
+      const [a,b]=RANGES.relic[rarity]||[1,3],amt=weighted(a,b,2.35);
+      m.relicShards=N(m.relicShards)+amt;save(m);
+      return {icon:'🜂',title:`+${amt} relíquias`,desc:'Progresso permanente recebido.',kind:'relic'};
+    }
+    if(type==='key'){
+      const [a,b]=RANGES.key[rarity]||[1,1],amt=weighted(a,b,2.15);
+      m.awakeningKeys=N(m.awakeningKeys)+amt;save(m);
+      return {icon:'🗝️',title:`+${amt} chave${amt>1?'s':''} de Awakening`,desc:'Usada nas missões de awakening.',kind:'key'};
+    }
+    if(type==='chrono'){
+      const [a,b]=RANGES.chrono[rarity]||[1,1],amt=weighted(a,b,2.15);
+      m.chronoFragments=N(m.chronoFragments)+amt;
+      m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected)+amt;
+      save(m);
+      return {icon:'✦',title:`+${amt} Fragmento${amt>1?'s':''} Chrono`,desc:'Recurso raro da progressão.',kind:'chrono',rare:true,color:'#9f6cff'};
+    }
+    if(type==='augmentation'){
+      try{
+        if(window.ChronoAug620?.unlockRandom){
+          const r=window.ChronoAug620.unlockRandom();
+          return {...r,rare:true,color:r.color||'#ffd166'};
+        }
+      }catch(e){console.warn('Ampliação do baú 6.2.2 falhou',e)}
+      return {icon:'⧖',title:'Ampliação Chronal',desc:'Uma Ampliação Chronal aleatória foi liberada.',kind:'augmentation',rare:true,color:'#ffd166'};
+    }
+    if(type==='secret'){
+      m.secretChronalChest56=true;save(m);
+      return {icon:'❔',title:'Algo secreto...',desc:'Você ganhou algo secreto, mas ainda está em desenvolvimento.',kind:'secret',rare:true,color:'#ff4d6d'};
+    }
+    if(type.endsWith('Power')){
+      const label=powerLabel(type),p=pickPower(label);
+      if(p){
+        try{p.apply?.()}catch(e){console.warn('Power-up do baú 6.2.2 falhou',p,e)}
+        try{if(game?.upgrades?.powerPicks548)game.upgrades.powerPicks548[p.id]=N(game.upgrades.powerPicks548[p.id])+1;}catch{}
+        return {icon:'✨',title:p.name||`Power-up ${label}`,desc:`${p.desc||'Power-up recebido.'} • Catálogo ${label}.`,kind:'power',rare:label==='LENDÁRIO'||label==='MÍTICO',color:label==='MÍTICO'?'#ff4d6d':label==='LENDÁRIO'?'#ffd166':'#75d8ff'};
+      }
+      return {icon:'✨',title:`Power-up ${label}`,desc:'Power-up do catálogo recebido.',kind:'power',rare:label==='LENDÁRIO'||label==='MÍTICO',color:label==='MÍTICO'?'#ff4d6d':'#ffd166'};
+    }
+    return applyReward('gold',rarity);
+  }
+  function grantOnce(state){
+    if(!state||state.claimed)return [];
+    state.claimed=true; state.opening=true; suppressUntil=performance.now()+2500;
+    const rewards=[];
+    for(let i=0;i<3;i++)rewards.push(applyReward(rollType(state.rarity),state.rarity));
+    try{updateHUD?.()}catch{}
+    return rewards;
+  }
+  function normalChestHTML(state){
+    const meta=R[state.rarity], hidden=state.rarity==='mythic';
+    const ready=state.readyOpen||state.used>=state.maxUses||hidden;
+    const msg=ready?'Clique para abrir!':(state.lastChanged?'Raridade aumentou!':'Me Clique!');
+    return `<h1>BAÚ CHRONAL</h1>
+      <p class="shopSub56">Clique no baú para tentar aumentar a raridade.</p>
+      <div class="chestRarity56">${meta.emoji} ${meta.name}</div>
+      <div class="chestBox56 rarity-${state.rarity} ${state.lastChanged?'rarityUp56':''}" id="chestBox56" data-single622="1"><div class="chestLid56"></div><div class="chestBase56"></div><div class="chestLock56"></div></div>
+      <div class="chestPrompt56">${msg}</div>
+      <div class="orbs56">${Array.from({length:state.maxUses},(_,i)=>`<i class="orb56 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div>
+      <p class="muted">Raro 30% • Épico 15% • Lendário 3.5% • Mítico 1%</p>`;
+  }
+  function riftChestHTML(state){
+    const meta=R[state.rarity], hidden=state.rarity==='mythic';
+    const ready=state.readyOpen||state.used>=state.maxUses||hidden;
+    const msg=ready?'Clique para abrir!':(state.lastChanged?'Raridade aumentou!':'Me Clique!');
+    return `<h1>BAÚ CHRONAL DA FISSURA</h1>
+      <p class="riftChestSub581">Este baú começa Épico e tem 3 tentativas para subir de raridade. Ele nunca regride.</p>
+      <div class="riftChestRarity581">${meta.emoji} ${meta.name}</div>
+      <div class="riftChestBox581 ${state.lastChanged?'up581':''}" id="riftChestBox581" data-single622="1"><div class="riftChestLid581"></div><div class="riftChestBase581"></div><div class="riftChestLock581"></div></div>
+      <div class="riftChestPrompt581">${msg}</div>
+      <div class="riftOrbs581">${Array.from({length:state.maxUses},(_,i)=>`<i class="riftOrb581 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div>
+      <p class="muted">Raro 30% • Épico 15% • Lendário 3.5% • Mítico 1%</p>`;
+  }
+  function renderChest(state){
+    current=state; const meta=R[state.rarity];
+    overlay.classList.remove('hidden');
+    if(state.mode==='rift'){
+      overlayCard.className=`card riftChestStage581 rarity-${state.rarity} singleLootGuard622`;
+      overlayCard.style.setProperty('--c',meta.color);
+      overlayCard.innerHTML=riftChestHTML(state);
+    }else{
+      try{overlay.classList.add('chestMode56')}catch{}
+      overlayCard.className=`card chestStage56 rarity-${state.rarity} singleLootGuard622`;
+      overlayCard.style.setProperty('--c',meta.color);
+      overlayCard.innerHTML=normalChestHTML(state);
+    }
+  }
+  function openRewards(state){
+    const rewards=grantOnce(state), meta=R[state.rarity];
+    overlay.classList.remove('hidden');
+    if(state.mode==='rift'){
+      overlayCard.className=`card riftChestStage581 riftChestReward581 rarity-${state.rarity} singleLootGuard622`;
+      overlayCard.style.setProperty('--c',meta.color);
+      overlayCard.innerHTML=`<h1>BAÚ CHRONAL ABERTO</h1><p class="riftChestSub581">Raridade final: <span class="riftChestRarity581">${meta.emoji} ${meta.name}</span></p><div class="riftRewardGrid581">${rewards.map(x=>`<div class="riftRewardCard581 ${x.rare?'rareLoot620':''}" style="--c:${x.color||meta.color}"><i>${x.icon}</i><strong>${esc(x.title)}</strong><span>${esc(x.desc)}</span></div>`).join('')}</div><button class="main-btn" id="backRiftStore622">Voltar</button>`;
+      q('#backRiftStore622').onclick=()=>{try{(window.openStartMenu461||window.openStartMenu)?.()}catch{}};
+    }else{
+      overlayCard.className=`card chestStage56 chestRewardStage56 rarity-${state.rarity} singleLootGuard622`;
+      overlayCard.style.setProperty('--c',meta.color);
+      overlayCard.innerHTML=`<h1>BAÚ CHRONAL ABERTO</h1><p class="shopSub56">Raridade final: <span class="chestRarity56">${meta.emoji} ${meta.name}</span></p><div class="rewardGrid56">${rewards.map(x=>`<div class="rewardCard56 ${x.rare?'rareLoot620':''}" style="--c:${x.color||meta.color}"><i>${x.icon}</i><strong>${esc(x.title)}</strong><span>${esc(x.desc)}</span></div>`).join('')}</div><button class="main-btn continue56" id="backShop622">Voltar para loja</button>`;
+      q('#backShop622').onclick=()=>{try{overlay.classList.remove('chestMode56')}catch{};try{openShopMenu?.()}catch{}};
+    }
+  }
+  function chestClick(state){
+    if(!state||state.animating||state.claimed)return;
+    const ready=state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic';
+    if(ready){
+      state.animating=true;
+      const box=state.mode==='rift'?q('#riftChestBox581'):q('#chestBox56');
+      if(box)box.classList.add(state.mode==='rift'?'open581':'open');
+      setTimeout(()=>openRewards(state),620);
+      return;
+    }
+    state.animating=true;state.used++;
+    const before=state.rarity, rolled=rollUp();
+    state.rarity=higher(state.rarity,rolled);
+    state.lastChanged=before!==state.rarity;
+    const box=state.mode==='rift'?q('#riftChestBox581'):q('#chestBox56');
+    if(box){box.classList.remove('shake','shake581','rarityUp56','up581');void box.offsetWidth;box.classList.add(state.mode==='rift'?'shake581':'shake');}
+    const p=q(state.mode==='rift'?'.riftChestPrompt581':'.chestPrompt56'); if(p)p.textContent='...';
+    setTimeout(()=>{state.animating=false;if(state.rarity==='mythic'||state.used>=state.maxUses)state.readyOpen=true;renderChest(state);setTimeout(()=>{state.lastChanged=false;},700);},640);
+  }
+  function openNormal(){
+    if(!window.game)return;
+    game.running=false;game.betweenWaves=true;
+    renderChest({mode:'normal',rarity:'common',used:0,maxUses:5,readyOpen:false,animating:false,claimed:false,lastChanged:false});
+  }
+  function openRift(){
+    renderChest({mode:'rift',rarity:'epic',used:0,maxUses:3,readyOpen:false,animating:false,claimed:false,lastChanged:false});
+  }
+  function buyNormalChestFromShop(ev,btn){
+    ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+    if(!game)return;
+    const cost=150;
+    game.shopCounts=game.shopCounts||{}; game.shopLimits=game.shopLimits||{};
+    game.shopCounts.chronoChest=N(game.shopCounts.chronoChest);
+    game.shopLimits.chronoChest=N(game.shopLimits.chronoChest,4)||4;
+    if(game.shopCounts.chronoChest>=game.shopLimits.chronoChest)return;
+    if(N(game.gold)<cost){try{addFloatingText(W/2,H/2,'SEM OURO','#ff9ba8',20)}catch{}return;}
+    game.gold=N(game.gold)-cost; game.shopCounts.chronoChest++;
+    try{updateHUD?.()}catch{}
+    openNormal();
+  }
+  function buyRiftChest(ev){
+    ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+    const m=meta(),cost=35;
+    if(N(m.riftSparks)<cost)return;
+    m.riftSparks=N(m.riftSparks)-cost;save(m);
+    openRift();
+  }
+
+  document.addEventListener('click',ev=>{
+    const t=ev.target;
+    const normalBtn=t?.closest?.('.shopItem56[data-shop56]');
+    if(normalBtn && /Ba[uú]\s+Chronal/i.test(normalBtn.textContent||'')){
+      buyNormalChestFromShop(ev,normalBtn);return;
+    }
+    const riftBtn=t?.closest?.('[data-rift-buy581="chest"]');
+    if(riftBtn){buyRiftChest(ev);return;}
+    const normalBox=t?.closest?.('#chestBox56');
+    if(normalBox){
+      ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+      if(!current||current.mode!=='normal'||!normalBox.dataset.single622){
+        const rarity=normalBox.dataset.rarity||normalBox.className.match(/rarity-([a-z]+)/)?.[1]||'common';
+        current={mode:'normal',rarity:R[rarity]?rarity:'common',used:0,maxUses:5,readyOpen:false,animating:false,claimed:false,lastChanged:false};
+      }
+      chestClick(current);return;
+    }
+    const riftBox=t?.closest?.('#riftChestBox581');
+    if(riftBox){
+      ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+      if(!current||current.mode!=='rift'||!riftBox.dataset.single622){
+        const rarity=overlayCard?.className?.match(/rarity-([a-z]+)/)?.[1]||'epic';
+        current={mode:'rift',rarity:R[rarity]?rarity:'epic',used:0,maxUses:3,readyOpen:false,animating:false,claimed:false,lastChanged:false};
+      }
+      chestClick(current);return;
+    }
+  },true);
+
+  // Se um patch antigo ainda conseguir trocar para a tela de recompensas, bloqueia cliques duplicados seguintes.
+  new MutationObserver(()=>{
+    try{
+      const title=(overlayCard?.querySelector('h1')?.textContent||'').toUpperCase();
+      if(title.includes('BAÚ CHRONAL ABERTO')&&performance.now()<suppressUntil){
+        overlayCard.querySelectorAll('#chestBox56,#riftChestBox581').forEach(b=>b.onclick=null);
+      }
+    }catch{}
+  }).observe(document.body,{childList:true,subtree:true});
+
+  window.ChronoChestSingle622={openNormal,openRift,applyReward,rollType};
+  console.log('Chrono Shards 6.2.2 — Baús com loot único carregado');
+})();
+</script>
+
+
+<style id="lowHpBlood623Style">
+  #lowHpBlood623{
+    position:fixed;inset:0;z-index:36;pointer-events:none;opacity:0;
+    transition:opacity .28s ease, filter .25s ease;
+    --bloodA:0;--pulse:1;
+    background:
+      radial-gradient(circle at 0% 0%,rgba(255,0,36,calc(var(--bloodA)*.95)),rgba(128,0,18,calc(var(--bloodA)*.50)) 16%,transparent 38%),
+      radial-gradient(circle at 100% 0%,rgba(255,0,36,calc(var(--bloodA)*.86)),rgba(128,0,18,calc(var(--bloodA)*.42)) 15%,transparent 36%),
+      radial-gradient(circle at 0% 100%,rgba(255,0,36,calc(var(--bloodA)*.92)),rgba(128,0,18,calc(var(--bloodA)*.50)) 15%,transparent 39%),
+      radial-gradient(circle at 100% 100%,rgba(255,0,36,calc(var(--bloodA)*.90)),rgba(128,0,18,calc(var(--bloodA)*.46)) 15%,transparent 38%),
+      radial-gradient(ellipse at center,transparent 48%,rgba(80,0,12,calc(var(--bloodA)*.55)) 100%);
+    mix-blend-mode:screen;
+  }
+  #lowHpBlood623.show{opacity:1;animation:bloodPulse623 1.35s ease-in-out infinite}
+  #lowHpBlood623.critical{animation:bloodPulseCrit623 .62s ease-in-out infinite;filter:saturate(1.45) contrast(1.18)}
+  #lowHpBlood623:before,#lowHpBlood623:after{
+    content:'';position:absolute;inset:0;opacity:calc(var(--bloodA)*.9);
+    background:
+      radial-gradient(circle at 9% 20%,rgba(145,0,21,.85) 0 8px,transparent 10px),
+      radial-gradient(circle at 92% 22%,rgba(180,0,31,.78) 0 7px,transparent 9px),
+      radial-gradient(circle at 15% 86%,rgba(150,0,24,.72) 0 9px,transparent 12px),
+      radial-gradient(circle at 88% 82%,rgba(190,0,32,.68) 0 8px,transparent 11px),
+      linear-gradient(115deg,transparent 0 7%,rgba(120,0,18,.22) 9%,transparent 14% 100%);
+    filter:blur(.2px);
+  }
+  #lowHpBlood623:after{
+    opacity:calc(var(--bloodA)*.55);filter:blur(2px);
+    background:
+      radial-gradient(ellipse at 4% 50%,rgba(255,0,44,.5),transparent 22%),
+      radial-gradient(ellipse at 96% 52%,rgba(255,0,44,.5),transparent 22%),
+      radial-gradient(ellipse at 50% 2%,rgba(255,0,44,.38),transparent 20%),
+      radial-gradient(ellipse at 50% 98%,rgba(255,0,44,.42),transparent 24%);
+  }
+  @keyframes bloodPulse623{0%,100%{transform:scale(1);filter:saturate(1.05)}50%{transform:scale(1.012);filter:saturate(1.22)}}
+  @keyframes bloodPulseCrit623{0%,100%{transform:scale(1);filter:saturate(1.45) contrast(1.18)}50%{transform:scale(1.025);filter:saturate(1.95) contrast(1.35)}}
+  @media(max-width:720px){#lowHpBlood623:before{filter:blur(.5px)}#lowHpBlood623:after{filter:blur(2.5px)}}
+</style>
+<script>
+/* ────────────────────────────────────────────────────────────────
+   Chrono Shards 6.2.3 — Efeito de HP baixo
+   - 15% HP: sangue/vermelho nos cantos
+   - 5% HP: efeito crítico mais intenso
+   - 16%+: some automaticamente
+──────────────────────────────────────────────────────────────── */
+(()=>{
+  if(window.__lowHpBlood623)return; window.__lowHpBlood623=true;
+  function ensure(){
+    let el=document.getElementById('lowHpBlood623');
+    if(!el){el=document.createElement('div');el.id='lowHpBlood623';document.body.appendChild(el);}
+    return el;
+  }
+  function overlayVisible(){try{return !!window.overlay && !overlay.classList.contains('hidden')}catch{return false}}
+  function calcIntensity(pct){
+    // 15% = leve; 5% ou menos = crítico. Transição suave entre os dois.
+    if(pct>.15)return 0;
+    if(pct<=.05)return 1;
+    return Math.max(.18,Math.min(.78,1-((pct-.05)/.10)*.72));
+  }
+  function updateLowHpBlood623(){
+    const el=ensure();
+    const g=window.game,p=g?.player;
+    if(!g||!p||overlayVisible()||g.pauseMenu620||g.betweenWaves||g.shopPending){
+      el.classList.remove('show','critical');el.style.setProperty('--bloodA','0');return;
+    }
+    const max=Math.max(1,Number(p.maxHp||p.hp||1));
+    const pct=Math.max(0,Math.min(1,Number(p.hp||0)/max));
+    const intensity=calcIntensity(pct);
+    if(intensity<=0){
+      el.classList.remove('show','critical');el.style.setProperty('--bloodA','0');return;
+    }
+    const pulse=1+Math.sin((g.time||performance.now()/1000)*7)*.08;
+    const alpha=(.20+intensity*.62)*pulse;
+    el.style.setProperty('--bloodA',String(Math.max(.12,Math.min(.92,alpha))));
+    el.classList.add('show');
+    el.classList.toggle('critical',pct<=.05);
+  }
+  const wrap=(name)=>{const old=window[name]||globalThis[name];if(typeof old==='function'&&!old.__blood623){const fn=function(){const r=old.apply(this,arguments);try{updateLowHpBlood623()}catch(e){console.warn('low hp blood',e)}return r};fn.__blood623=true;window[name]=fn;try{globalThis[name]=fn}catch{}try{eval(name+'=fn')}catch{} }};
+  ['updateHUD','updateFX','render','draw'].forEach(wrap);
+  setInterval(()=>{try{updateLowHpBlood623()}catch{}},120);
+  console.log('Chrono Shards 6.2.3 — efeito de HP baixo carregado');
+})();
+</script>
+
 </body>
 </html>
