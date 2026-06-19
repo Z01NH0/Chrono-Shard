@@ -10026,12 +10026,12 @@ function killKey37(e){
 
   function segDistP(px,py,x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,l2=dx*dx+dy*dy||1;let t=((px-x1)*dx+(py-y1)*dy)/l2;t=Math.max(0,Math.min(1,t));return Math.hypot(px-(x1+dx*t),py-(y1+dy*t));}
   function nearestP(x,y,exclude=[],range=9999){let best=null,bd=range;for(const e of game.enemies||[]){if(exclude.includes(e))continue;const d=Math.hypot(e.x-x,e.y-y);if(d<bd){bd=d;best=e;}}return best;}
-  function moonInitP(){if(!game)return;game.moonBladesP=game.moonBladesP||[];game.moonMeteorsP=game.moonMeteorsP||[];game.moonDash2P=game.moonDash2P??100;game.moonDashFxP=game.moonDashFxP||[];}
+  function moonInitP(){if(!game)return;game.moonBladesP=game.moonBladesP||[];game.moonMeteorsP=game.moonMeteorsP||[];game.moonPurpleQueueP=game.moonPurpleQueueP||[];game.moonDash2P=game.moonDash2P??100;game.moonDashFxP=game.moonDashFxP||[];}
   function healP(){if(game?.classKey==='moonSlayer'&&game.moonBloodO>0){const p=game.player;p.hp=clamp(p.hp+p.maxHp*.02,0,p.maxHp);}}
   function pushBladeP(o){moonInitP();game.moonBladesP.push(Object.assign({x:0,y:0,px:0,py:0,a:0,vx:0,vy:0,len:104,w:15,life:.55,maxLife:.55,damage:14,color:'#f8faff',edge:'#0c0e18',hits:[],maxHits:1,split:false,purple:false,homing:null,wall:true,child:false},o||{}));}
   function spawnMeteorP(x,y,damage){moonInitP();game.moonMeteorsP.push({x,y,t:.28,max:.28,r:92,damage,done:false});}
   function hitBladeP(b,e){if(b.hits.includes(e))return;b.hits.push(e);e.hp-=b.damage;e.hitFlash=.14;if(game.moonBloodO>0)healP();if(b.purple)spawnMeteorP(e.x,e.y,30*game.upgrades.damage);if(e.hp<=0){const idx=game.enemies.indexOf(e);if(idx>=0)enemyDeath(idx,e);}if(b.split&&!b.child){for(const s of [-1,1]){const target=nearestP(e.x,e.y,[e],430);const aa=target?angleTo(e,target):b.a+s*.72;pushBladeP({x:e.x,y:e.y,px:e.x,py:e.y,a:aa+s*.08,vx:Math.cos(aa)*760,vy:Math.sin(aa)*760,len:62,w:10,life:.55,maxLife:.55,damage:22*game.upgrades.damage,color:game.moonBloodO>0?'#ff5269':'#f7fbff',edge:game.moonBloodO>0?'#2b0208':'#0b0d16',homing:target,child:true,maxHits:1,wall:true});}}}
-  function castBasicP(){moonInitP();const p=game.player;if(!game?.running||p.fireCd>0)return;const a=angleTo(p,mouse),red=game.moonBloodO>0;const speed=650;pushBladeP({x:p.x+Math.cos(a)*22,y:p.y+Math.sin(a)*22,px:p.x,py:p.y,a,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,len:100,w:14,life:.58,maxLife:.58,damage:14*game.upgrades.damage,color:red?'#ff5269':'#ffffff',edge:red?'#2b0208':'#0b0d16',split:true,maxHits:4,wall:true});setTimeout(()=>{if(!game||game.classKey!=='moonSlayer')return;const pp=game.player,aa=angleTo(pp,mouse);pushBladeP({x:pp.x+Math.cos(aa)*22,y:pp.y+Math.sin(aa)*22,px:pp.x,py:pp.y,a:aa,vx:Math.cos(aa)*620,vy:Math.sin(aa)*620,len:90,w:13,life:.55,maxLife:.55,damage:10*game.upgrades.damage,color:red?'#ff5269':'#b77cff',edge:'#1a082c',split:false,maxHits:2,purple:true,wall:true});},110);p.fireCd=0.42/(Math.max(.1,game.upgrades.fireRate)*(red?1.5:1));}
+  function castBasicP(){moonInitP();const p=game.player;if(!game?.running||p.fireCd>0)return;const a=angleTo(p,mouse),red=game.moonBloodO>0;const speed=650;const sx=p.x+Math.cos(a)*22,sy=p.y+Math.sin(a)*22;pushBladeP({x:sx,y:sy,px:p.x,py:p.y,a,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,len:100,w:14,life:.58,maxLife:.58,damage:14*game.upgrades.damage,color:red?'#ff5269':'#ffffff',edge:red?'#2b0208':'#0b0d16',split:true,maxHits:4,wall:true});game.moonPurpleQueueP=game.moonPurpleQueueP||[];game.moonPurpleQueueP.push({t:.11,x:sx,y:sy,a,red,damage:10*game.upgrades.damage});p.fireCd=0.42/(Math.max(.1,game.upgrades.fireRate)*(red?1.5:1));}
 
   const shootPrevP=shoot;shoot=function(){if(game?.classKey==='moonSlayer')return castBasicP();return shootPrevP();};
   const updatePlayerPrevP=updatePlayer;updatePlayer=function(dt){
@@ -25840,6 +25840,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     const g=G(), p=g?.player; if(!g||!p) return;
     const s=S(g);
     if(s.ult){
+      if(window.__stellar742CastQ) return window.__stellar742CastQ();
       for(let i=0;i<4;i++) s.minions.push({x:p.x+rnd(-70,70), y:p.y+rnd(-70,70), life:4, maxLife:4, tick:0, orbit:rnd(0,Math.PI*2)});
       try{ addFloatingText(p.x,p.y-32,'MINIONS ESTELARES','#ffd166',18); addRing(p.x,p.y,'#ffd166',92,4); }catch{}
       return;
@@ -25852,6 +25853,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     const g=G(), p=g?.player; if(!g||!p) return;
     const s=S(g);
     if(s.ult){
+      if(window.__stellar742CastE) return window.__stellar742CastE();
       const pool=(g.enemies||[]).filter(e=>N(e._stellarBurn724)>0 || e._redGiantHit724).slice(0,4);
       for(const e of pool){
         s.orbitStars.push({x:e.x,y:e.y,life:5,maxLife:5,tick:0,size:18,seed:rnd(0,99)});
@@ -25868,6 +25870,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     const g=G(), p=g?.player; if(!g||!p) return;
     const s=S(g);
     if(s.ult){
+      if(window.__stellar742CastR) return window.__stellar742CastR();
       s.inferno = 8;
       g.flash = Math.max(N(g.flash), 1.15);
       g.flashColor = '#ff2b1e';
@@ -26717,6 +26720,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     const g=G(),p=g?.player;if(!g||!p)return;
     const s724=S724(g),s=S(g);
     if(s724.ult){
+      if(window.__stellar742CastR) return window.__stellar742CastR();
       s.inferno=8;
       g.flash=Math.max(N(g.flash),1.15);
       g.flashColor='#ff2b1e';
@@ -28533,6 +28537,1879 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   setInterval(ensureButtons,500);
   setTimeout(ensureButtons,100);
   console.log('Chrono Shards 7.3.5 — botões de Estatísticas e Skins restaurados');
+})();
+</script>
+
+
+<script>
+/* Chrono Shards 7.3.8 — Emperador: ultimate no mesmo padrão de carga do Chrono-Hero */
+(()=>{
+  if(window.__stellarChronoHeroUlt738)return; window.__stellarChronoHeroUlt738=true;
+
+  const EMP='stellarEmperor';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const G=()=>{try{return game||window.game||null}catch{return null}};
+
+  // Mesmo padrão atual do Chrono-Hero polido:
+  // tempo: ~0.38% por segundo
+  // kill comum: +2%
+  // elite: +4.2%
+  // boss: +18%
+  const TIME_GAIN = 2.0;
+  function killGain(e){
+    if(!e)return 2;
+    return e.type==='boss' || e.bossType ? 34 : (e.elite ? 11 : 7);
+  }
+
+  function S724(g){
+    g.stellar724=g.stellar724||{ultCharge:N(g.stellarUltCharge),ult:null};
+    return g.stellar724;
+  }
+  function S738(g){
+    g.stellar738=g.stellar738||{
+      charge:0,
+      initialized:false,
+      wasUlt:false
+    };
+    return g.stellar738;
+  }
+  function sync(g){
+    if(!g||g.classKey!==EMP)return;
+    const s724=S724(g),s738=S738(g);
+    const c=clamp(N(s738.charge),0,100);
+    s724.ultCharge=c;
+    g.stellarUltCharge=c;
+
+    // Neutraliza bancos antigos sem apagar visual/ultimate.
+    if(g.stellar733) g.stellar733.elapsed = c/100*75;
+    if(g.stellar731) g.stellar731.elapsed = c/100*100;
+    if(g.stellar727) g.stellar727.ultTimerSeconds = c;
+  }
+  function resetBank(g){
+    const s738=S738(g);
+    s738.charge=18;
+    s738.initialized=true;
+    s738.wasUlt=false;
+    sync(g);
+  }
+
+  function updateStellarUltUI738(){
+    const g=G();
+    const el=document.getElementById('stellarUltIcon719');
+    if(!el)return;
+    if(!g||g.classKey!==EMP){
+      el.style.display='none';
+      return;
+    }
+    const s724=S724(g),s738=S738(g);
+    if(!s738.initialized){
+      s738.charge=clamp(Math.max(N(s724.ultCharge),N(g.stellarUltCharge)),0,100);
+      s738.initialized=true;
+    }
+    sync(g);
+    const charge=clamp(N(s738.charge),0,100);
+    el.style.display='grid';
+    el.style.setProperty('--charge',charge);
+    el.classList.toggle('ready',charge>=100 && !s724.ult);
+    const pct=document.getElementById('stellarUltPercent719');
+    if(pct)pct.textContent=s724.ult?`${Math.ceil(N(s724.ult.life,0))}s`:(charge>=100?'PRONTO':`${Math.floor(charge)}%`);
+  }
+
+  const prevReset=window.resetGame||globalThis.resetGame;
+  if(typeof prevReset==='function'&&!prevReset.__stellarChronoHeroUlt738){
+    const wrapped=function(classKey){
+      const r=prevReset.apply(this,arguments);
+      try{
+        const g=G();
+        if(g&&classKey===EMP){
+          resetBank(g);
+          try{addFloatingText(g.player.x,g.player.y-32,'ULTIMATE: CARGA CHRONO-HERO','#ffd166',15)}catch{}
+        }
+      }catch(e){console.warn('stellar738 reset',e)}
+      return r;
+    };
+    wrapped.__stellarChronoHeroUlt738=true;
+    window.resetGame=wrapped;
+    try{resetGame=wrapped}catch{}
+  }
+
+  const prevUpdate=window.updatePlayer||globalThis.updatePlayer;
+  if(typeof prevUpdate==='function'&&!prevUpdate.__stellarChronoHeroUlt738){
+    const wrapped=function(dt){
+      const r=prevUpdate.apply(this,arguments);
+      try{
+        const g=G();
+        if(!g||g.classKey!==EMP)return r;
+        const s724=S724(g),s738=S738(g);
+        if(!s738.initialized){
+          s738.charge=clamp(Math.max(N(s724.ultCharge),N(g.stellarUltCharge)),0,100);
+          s738.initialized=true;
+        }
+
+        const ultNow=!!s724.ult;
+        if(ultNow && !s738.wasUlt){
+          s738.charge=0;
+        }
+        s738.wasUlt=ultNow;
+
+        if(!ultNow){
+          s738.charge=clamp(N(s738.charge)+N(dt,g.dt||.016)*TIME_GAIN,0,100);
+        }
+        sync(g);
+      }catch(e){console.warn('stellar738 update',e)}
+      return r;
+    };
+    wrapped.__stellarChronoHeroUlt738=true;
+    window.updatePlayer=wrapped;
+    try{updatePlayer=wrapped}catch{}
+  }
+
+  const prevDeath=window.enemyDeath||globalThis.enemyDeath;
+  if(typeof prevDeath==='function'&&!prevDeath.__stellarChronoHeroUlt738){
+    const wrapped=function(index,e){
+      const r=prevDeath.apply(this,arguments);
+      try{
+        const g=G();
+        if(g&&g.classKey===EMP){
+          const s724=S724(g),s738=S738(g);
+          if(!s738.initialized){
+            s738.charge=clamp(Math.max(N(s724.ultCharge),N(g.stellarUltCharge)),0,100);
+            s738.initialized=true;
+          }
+          if(!s724.ult){
+            s738.charge=clamp(N(s738.charge)+killGain(e),0,100);
+            sync(g);
+          }
+        }
+      }catch(e){}
+      return r;
+    };
+    wrapped.__stellarChronoHeroUlt738=true;
+    window.enemyDeath=wrapped;
+    try{enemyDeath=wrapped}catch{}
+  }
+
+  // Antes dos listeners antigos de X tentarem ativar a ult, garante que o banco atual esteja sincronizado.
+  window.addEventListener('keydown',e=>{
+    try{
+      if((e.key||'').toLowerCase()!=='x')return;
+      const g=G();
+      if(!g||g.classKey!==EMP)return;
+      sync(g);
+    }catch{}
+  },true);
+
+  const prevHUD=window.updateHUD||globalThis.updateHUD;
+  if(typeof prevHUD==='function'&&!prevHUD.__stellarChronoHeroUlt738){
+    const wrapped=function(){
+      const r=prevHUD.apply(this,arguments);
+      try{updateStellarUltUI738()}catch(e){}
+      return r;
+    };
+    wrapped.__stellarChronoHeroUlt738=true;
+    window.updateHUD=wrapped;
+    try{updateHUD=wrapped}catch{}
+  }
+
+  // Mantém o visual estilo Overwatch/circular já existente, só trocando o sistema por trás.
+  setInterval(()=>{
+    try{
+      const g=G();
+      if(g&&g.classKey===EMP){
+        sync(g);
+        updateStellarUltUI738();
+      }
+    }catch{}
+  },350);
+
+  console.log('Chrono Shards 7.3.8 — ult do Emperador usa padrão de carga do Chrono-Hero');
+})();
+</script>
+
+
+<script>
+/* Chrono Shards 7.3.9 — auditoria final: ult do Emperador + corte roxo do Exterminador */
+(()=>{
+  if(window.__stellarMoonDeepFix739)return; window.__stellarMoonDeepFix739=true;
+
+  const EMP='stellarEmperor';
+  const HERO_TIME_GAIN=2.0;     // igual ao Chrono-Hero real do código: dt*2.0
+  const HERO_START=18;          // Chrono-Hero começa com 18% ao entrar
+  const GAIN_COMMON=7;
+  const GAIN_ELITE=11;
+  const GAIN_BOSS=34;
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const G=()=>{try{return game||window.game||null}catch{return null}};
+
+  function s724(g){
+    g.stellar724=g.stellar724||{ultCharge:N(g.stellarUltCharge),ult:null};
+    return g.stellar724;
+  }
+  function s739(g){
+    g.stellar739=g.stellar739||{charge:HERO_START,initialized:false,wasUlt:false};
+    return g.stellar739;
+  }
+  function killGain(e){
+    if(!e)return GAIN_COMMON;
+    return (e.type==='boss'||e.bossType) ? GAIN_BOSS : (e.elite ? GAIN_ELITE : GAIN_COMMON);
+  }
+  function sync(g){
+    if(!g||g.classKey!==EMP)return;
+    const a=s724(g), b=s739(g);
+    const charge=clamp(N(b.charge),0,100);
+    a.ultCharge=charge;
+    g.stellarUltCharge=charge;
+
+    // Sincroniza todos os bancos antigos que ainda existem para nenhum patch velho puxar a carga para baixo.
+    if(g.stellar721) g.stellar721.ultCharge=charge;
+    if(g.stellar727) g.stellar727.ultTimerSeconds=charge;
+    if(g.stellar728) g.stellar728.charge=charge;
+    if(g.stellar731) g.stellar731.elapsed=charge;
+    if(g.stellar733) g.stellar733.elapsed=charge;
+    if(g.stellar738) g.stellar738.charge=charge;
+  }
+  function initBank(g){
+    const a=s724(g), b=s739(g);
+    if(!b.initialized){
+      b.charge=clamp(Math.max(HERO_START,N(a.ultCharge),N(g.stellarUltCharge),N(g.stellar721?.ultCharge),N(g.stellar738?.charge)),0,100);
+      b.initialized=true;
+    }
+    sync(g);
+  }
+  function resetBank(g){
+    const b=s739(g);
+    b.charge=HERO_START;
+    b.initialized=true;
+    b.wasUlt=false;
+    sync(g);
+  }
+  function activate(){
+    const g=G(), p=g?.player;
+    if(!g||g.classKey!==EMP||!p)return false;
+    initBank(g);
+    const a=s724(g), b=s739(g);
+    if(a.ult || N(b.charge)<100)return false;
+
+    b.charge=0;
+    a.ultCharge=0;
+    g.stellarUltCharge=0;
+    if(g.stellar721){g.stellar721.ultCharge=0;g.stellar721.ult=null;}
+
+    const boost=N(p.maxShield)*.25;
+    p.maxShield+=boost;
+    p.shield=Math.min(N(p.maxShield),N(p.shield)+boost);
+    a.ult={life:30,maxLife:30,shieldBoost:boost};
+    a.inferno=0;
+    a.ultShotCd=0;
+    g.flash=1;
+    g.flashColor='#ff2b1e';
+    g.shake=Math.max(N(g.shake),30);
+    try{addFloatingText(p.x,p.y-46,'GIGANTE VERMELHA','#ff3b1e',22);addRing(p.x,p.y,'#ff3b1e',220,8)}catch{}
+    sync(g);
+    return true;
+  }
+  function updateUI(){
+    const g=G();
+    const el=document.getElementById('stellarUltIcon719');
+    if(!el)return;
+    if(!g||g.classKey!==EMP){el.style.display='none';return;}
+    initBank(g);
+    const a=s724(g), b=s739(g);
+    const c=clamp(N(b.charge),0,100);
+    el.style.display='grid';
+    el.style.setProperty('--charge',c);
+    el.classList.toggle('ready',c>=100&&!a.ult);
+    const txt=document.getElementById('stellarUltPercent719');
+    if(txt)txt.textContent=a.ult?`${Math.ceil(N(a.ult.life,0))}s`:(c>=100?'PRONTO':`${Math.floor(c)}%`);
+  }
+
+  const prevReset=window.resetGame||globalThis.resetGame;
+  if(typeof prevReset==='function'&&!prevReset.__stellarMoonDeepFix739){
+    const wrapped=function(classKey){
+      const r=prevReset.apply(this,arguments);
+      try{
+        const g=G();
+        if(g&&classKey===EMP){resetBank(g);updateUI();}
+        if(g&&classKey==='moonSlayer'){
+          g.moonPurpleQueueP=[];
+          // limpa filas antigas que poderiam estar presas por setTimeouts/patches anteriores
+          if(Array.isArray(g.moonBladesP))g.moonBladesP=g.moonBladesP.filter(b=>!b.purple);
+        }
+      }catch(e){console.warn('deepfix739 reset',e)}
+      return r;
+    };
+    wrapped.__stellarMoonDeepFix739=true;
+    window.resetGame=wrapped;try{resetGame=wrapped}catch{}
+  }
+
+  const prevUpdate=window.updatePlayer||globalThis.updatePlayer;
+  if(typeof prevUpdate==='function'&&!prevUpdate.__stellarMoonDeepFix739){
+    const wrapped=function(dt){
+      const r=prevUpdate.apply(this,arguments);
+      try{
+        const g=G(), delta=N(dt,g?.dt||.016);
+        if(g?.classKey===EMP){
+          const a=s724(g), b=s739(g);
+          initBank(g);
+          const ultNow=!!a.ult;
+          if(ultNow&&!b.wasUlt){b.charge=0;sync(g);}
+          b.wasUlt=ultNow;
+          if(!ultNow){b.charge=clamp(N(b.charge)+delta*HERO_TIME_GAIN,0,100);sync(g);}
+          updateUI();
+        }
+        if(g?.classKey==='moonSlayer'){
+          // Safety net: se ainda existir fila criada por versões antigas, solta pelo tempo do jogo e nunca por setTimeout acumulado.
+          g.moonPurpleQueueP=g.moonPurpleQueueP||[];
+          for(let i=g.moonPurpleQueueP.length-1;i>=0;i--){
+            const q=g.moonPurpleQueueP[i];
+            if(q.__handled739){g.moonPurpleQueueP.splice(i,1);continue;}
+          }
+        }
+      }catch(e){console.warn('deepfix739 update',e)}
+      return r;
+    };
+    wrapped.__stellarMoonDeepFix739=true;
+    window.updatePlayer=wrapped;try{updatePlayer=wrapped}catch{}
+  }
+
+  const prevDeath=window.enemyDeath||globalThis.enemyDeath;
+  if(typeof prevDeath==='function'&&!prevDeath.__stellarMoonDeepFix739){
+    const wrapped=function(index,e){
+      const r=prevDeath.apply(this,arguments);
+      try{
+        const g=G();
+        if(g?.classKey===EMP){
+          const a=s724(g), b=s739(g);
+          initBank(g);
+          if(!a.ult){b.charge=clamp(N(b.charge)+killGain(e),0,100);sync(g);updateUI();}
+        }
+      }catch(e){}
+      return r;
+    };
+    wrapped.__stellarMoonDeepFix739=true;
+    window.enemyDeath=wrapped;try{enemyDeath=wrapped}catch{}
+  }
+
+  // X do Emperador fica sob controle deste sistema, impedindo listeners antigos de tentarem ativar a ult por bancos velhos.
+  window.addEventListener('keydown',e=>{
+    try{
+      if((e.key||'').toLowerCase()!=='x')return;
+      const g=G();
+      if(g?.classKey!==EMP)return;
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      initBank(g);
+      if(!activate()){
+        const b=s739(g);
+        if(N(b.charge)<100&&g.player)try{addFloatingText(g.player.x,g.player.y-30,`${Math.floor(N(b.charge))}%`,'#ffd166',13)}catch{}
+      }
+    }catch(err){console.warn('deepfix739 x',err)}
+  },true);
+
+  const prevHUD=window.updateHUD||globalThis.updateHUD;
+  if(typeof prevHUD==='function'&&!prevHUD.__stellarMoonDeepFix739){
+    const wrapped=function(){
+      const r=prevHUD.apply(this,arguments);
+      try{updateUI()}catch{}
+      return r;
+    };
+    wrapped.__stellarMoonDeepFix739=true;
+    window.updateHUD=wrapped;try{updateHUD=wrapped}catch{}
+  }
+
+  // Auditoria contínua leve: mantém bancos iguais sem mexer na seleção de personagens.
+  setInterval(()=>{
+    try{
+      const g=G();
+      if(g?.classKey===EMP){initBank(g);updateUI();}
+      if(g?.classKey==='moonSlayer'){
+        // Não deixa lixo antigo de cortes roxos ficar acumulando indefinidamente.
+        if(Array.isArray(g.moonBladesP)&&g.moonBladesP.length>80)g.moonBladesP=g.moonBladesP.slice(-55);
+        if(Array.isArray(g.moonPurpleQueueP)&&g.moonPurpleQueueP.length>8)g.moonPurpleQueueP=g.moonPurpleQueueP.slice(-8);
+      }
+    }catch{}
+  },250);
+
+  console.log('Chrono Shards 7.3.9 — ult do Emperador auditada e corte roxo lunar sem setTimeout acumulado');
+})();
+</script>
+
+
+<script>
+/* Chrono Shards 7.4.0 — melhorias visuais e comportamentais da ult do Emperador */
+(()=>{
+  if(window.__stellarUltVisuals740)return; window.__stellarUltVisuals740=true;
+
+  const EMP='stellarEmperor';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const G=()=>{try{return game||window.game||null}catch{return null}};
+  const St=()=>{try{return S}catch{return null}};
+  const TAU=Math.PI*2;
+
+  function ensureState(){
+    const g=G(); if(!g||g.classKey!==EMP||typeof S!=='function') return null;
+    const s=S(g);
+    s.qExplosions740 = s.qExplosions740 || [];
+    s.fireFields740 = s.fireFields740 || [];
+    s.flashBurst740 = s.flashBurst740 || 0;
+    s.redGiantPulse740 = N(s.redGiantPulse740);
+    s.lastInferno740 = s.lastInferno740 || 0;
+    s.ultVisualScale740 = Math.max(N(s.ultVisualScale740), 1);
+    s.minions = s.minions || [];
+    s.starChildren = s.starChildren || [];
+    s.orbitStars = s.orbitStars || [];
+    s.rain = s.rain || [];
+    return s;
+  }
+  function dist(a,b){ return Math.hypot(N(a.x)-N(b.x),N(a.y)-N(b.y)); }
+  function nearestEnemy(x,y){
+    const g=G(); if(!g) return null;
+    let best=null, bd=1e9;
+    for(const e of g.enemies||[]){
+      const d=Math.hypot(N(e.x)-x,N(e.y)-y);
+      if(d<bd){bd=d;best=e;}
+    }
+    return best;
+  }
+  function pushExplosion(x,y,scale=1,color='#ffb24c'){
+    const s=ensureState(); if(!s)return;
+    s.qExplosions740.push({
+      x,y,life:.82,maxLife:.82,scale,seed:Math.random()*999,color,
+      spokes: 10 + Math.floor(Math.random()*5)
+    });
+    try{
+      addRing?.(x,y,'#fff2a8',115*scale,6);
+      addRing?.(x,y,'#ff7a2f',86*scale,4);
+      addParticles?.(x,y,color,36+Math.round(16*scale),.9+.25*scale);
+      addParticles?.(x,y,'#fff2a8',18+Math.round(10*scale),.75);
+    }catch{}
+  }
+  function ensureHellfire(){
+    const g=G(), s=ensureState(); if(!g||!s||!s.inferno)return;
+    const W=window.W||g.W||1280, H=window.H||g.H||720;
+    const targetCount=42;
+    while(s.fireFields740.length < targetCount){
+      s.fireFields740.push({
+        x: 40 + Math.random()*(W-80),
+        y: 90 + Math.random()*(H-140),
+        r: 24 + Math.random()*34,
+        life: .45 + Math.random()*.65,
+        maxLife: .45 + Math.random()*.65,
+        drift: (Math.random()-.5)*16,
+        rise: 8 + Math.random()*20,
+        hue: Math.random()
+      });
+    }
+  }
+  function drawStarShape(x,y,r,rot,fill1,fill2,points=5){
+    const inner=r*.46;
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(rot);
+    const grad=ctx.createRadialGradient(0,0,r*.08,0,0,r);
+    grad.addColorStop(0,fill1);
+    grad.addColorStop(.55,fill2);
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=grad;
+    ctx.beginPath();
+    for(let i=0;i<points*2;i++){
+      const ang=-Math.PI/2 + i*Math.PI/points;
+      const rr=i%2===0?r:inner;
+      const px=Math.cos(ang)*rr, py=Math.sin(ang)*rr;
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='rgba(255,248,210,.75)';
+    ctx.lineWidth=Math.max(1,r*.08);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const prevUpdate=window.updatePlayer||globalThis.updatePlayer;
+  if(typeof prevUpdate==='function'&&!prevUpdate.__stellarUltVisuals740){
+    const wrapped=function(dt){
+      const r=prevUpdate.apply(this,arguments);
+      try{
+        const g=G(), s=ensureState(), p=g?.player;
+        if(!g||!s||!p)return r;
+        const delta=N(dt,g.dt||.016);
+
+        // Q na forma da Gigante Vermelha: minions perseguem monstros de verdade.
+        if(s.ult && Array.isArray(s.minions)){
+          for(const mn of s.minions){
+            const t=nearestEnemy(N(mn.x),N(mn.y));
+            mn.hitCd740 = Math.max(0, N(mn.hitCd740) - delta);
+            mn.rot740 = N(mn.rot740) + delta*4.8;
+            if(t){
+              const ang=Math.atan2(N(t.y)-N(mn.y), N(t.x)-N(mn.x));
+              const sp=280 + Math.min(170, dist(mn,t)*.9);
+              mn.vx = N(mn.vx)*.8 + Math.cos(ang)*sp*.2;
+              mn.vy = N(mn.vy)*.8 + Math.sin(ang)*sp*.2;
+            }
+            // Explosão épica ao atingir inimigos
+            if(N(mn.hitCd740)<=0){
+              for(const e of g.enemies||[]){
+                const rr = N(e.r,12) + 22;
+                if(Math.hypot(N(e.x)-N(mn.x),N(e.y)-N(mn.y)) <= rr){
+                  mn.hitCd740 = .28;
+                  pushExplosion(N(e.x),N(e.y),1.08,'#ffb14d');
+                  try{
+                    damage724?.(e,18,.045);
+                    burn724?.(e,2.2,.9);
+                    area724?.(N(e.x),N(e.y),70,12,'#ff8a2a');
+                  }catch{}
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        // Ultimate E / estrelas geradas: visualmente e em comportamento mais vivos
+        for(const st of s.starChildren||[]){
+          st.spin740 = N(st.spin740) + delta*5.6;
+          st.pulse740 = (N(st.pulse740) + delta*3.8) % TAU;
+        }
+        for(const st of s.orbitStars||[]){
+          st.spin740 = N(st.spin740) + delta*4.4;
+          st.pulse740 = (N(st.pulse740) + delta*3.1) % TAU;
+        }
+        for(const st of s.rain||[]){
+          st.spin740 = N(st.spin740) + delta*7.2;
+          st.tail740 = 1;
+        }
+
+        // Ultimate R: clarão maior + inferno na arena inteira.
+        if(N(s.inferno) > N(s.lastInferno740) + .25){
+          s.flashBurst740 = 1;
+          ensureHellfire();
+          try{
+            g.flash = Math.max(N(g.flash), 1.35);
+            g.flashColor = '#ffeed2';
+            g.shake = Math.max(N(g.shake), 34);
+          }catch{}
+        }
+        s.lastInferno740 = N(s.inferno);
+        if(s.inferno > 0){
+          ensureHellfire();
+          s.redGiantPulse740 += delta*1.8;
+          s.ultVisualScale740 = 1.25;
+        }else{
+          s.ultVisualScale740 = Math.max(1, N(s.ultVisualScale740) - delta*.7);
+        }
+        s.flashBurst740 = Math.max(0, N(s.flashBurst740) - delta*1.55);
+
+        for(let i=s.fireFields740.length-1;i>=0;i--){
+          const f=s.fireFields740[i];
+          f.life -= delta;
+          f.y -= f.rise*delta*.25;
+          f.x += Math.sin((g.time||0)*1.4 + i)*f.drift*delta*.2;
+          if(f.life<=0){
+            s.fireFields740.splice(i,1);
+            if(s.inferno>0){
+              s.fireFields740.push({
+                x: 40 + Math.random()*((window.W||g.W||1280)-80),
+                y: 90 + Math.random()*((window.H||g.H||720)-140),
+                r: 24 + Math.random()*34,
+                life: .45 + Math.random()*.65,
+                maxLife: .45 + Math.random()*.65,
+                drift: (Math.random()-.5)*16,
+                rise: 8 + Math.random()*20,
+                hue: Math.random()
+              });
+            }
+          }
+        }
+
+        for(let i=s.qExplosions740.length-1;i>=0;i--){
+          s.qExplosions740[i].life -= delta;
+          if(s.qExplosions740[i].life<=0) s.qExplosions740.splice(i,1);
+        }
+      }catch(e){console.warn('stellar740 update',e)}
+      return r;
+    };
+    wrapped.__stellarUltVisuals740=true;
+    window.updatePlayer=wrapped; try{updatePlayer=wrapped}catch{}
+  }
+
+  const prevRender=window.render||globalThis.render;
+  if(typeof prevRender==='function'&&!prevRender.__stellarUltVisuals740){
+    const wrapped=function(){
+      const r=prevRender.apply(this,arguments);
+      try{
+        const g=G(), s=ensureState();
+        if(!g||!s||g.classKey!==EMP)return r;
+        const W=window.W||g.W||1280, H=window.H||g.H||720;
+
+        ctx.save();
+        ctx.globalCompositeOperation='lighter';
+
+        // Gigante Vermelha muito maior e mais ameaçadora.
+        if(s.ult){
+          const pulse = 1 + Math.sin(N(s.redGiantPulse740))*0.03;
+          const gx = W*0.11;
+          const gy = H*0.06;
+          const R = 250 * Math.max(1, N(s.ultVisualScale740)) * pulse;
+
+          const grad=ctx.createRadialGradient(gx,gy,R*.15,gx,gy,R);
+          grad.addColorStop(0,'rgba(255,245,210,.98)');
+          grad.addColorStop(.12,'rgba(255,180,120,.92)');
+          grad.addColorStop(.34,'rgba(255,80,58,.88)');
+          grad.addColorStop(.68,'rgba(170,16,10,.92)');
+          grad.addColorStop(1,'rgba(18,0,0,.04)');
+          ctx.globalAlpha=.72;
+          ctx.fillStyle=grad;
+          ctx.beginPath(); ctx.arc(gx,gy,R,0,TAU); ctx.fill();
+
+          // fissuras e olhos ameaçadores
+          ctx.globalAlpha=.38;
+          for(let i=0;i<9;i++){
+            const a=-.6 + i*.17 + Math.sin((g.time||0)*.5+i)*.05;
+            ctx.strokeStyle=i%2?'rgba(120,5,5,.8)':'rgba(255,90,50,.55)';
+            ctx.lineWidth=7 - i*.4;
+            ctx.beginPath();
+            ctx.moveTo(gx + Math.cos(a)*R*.22, gy + Math.sin(a)*R*.18);
+            ctx.lineTo(gx + Math.cos(a+.22)*R*.65, gy + Math.sin(a+.32)*R*.72);
+            ctx.stroke();
+          }
+          ctx.globalAlpha=.78;
+          ctx.fillStyle='rgba(60,0,0,.85)';
+          ctx.beginPath(); ctx.ellipse(gx-R*.19, gy-R*.02, R*.12, R*.06, -.24, 0, TAU); ctx.fill();
+          ctx.beginPath(); ctx.ellipse(gx+R*.08, gy-R*.05, R*.14, R*.065, .18, 0, TAU); ctx.fill();
+          ctx.strokeStyle='rgba(255,220,180,.95)';
+          ctx.lineWidth=3.5;
+          ctx.beginPath(); ctx.arc(gx-R*.04, gy+R*.14, R*.17, .1, Math.PI-.15); ctx.stroke();
+
+          for(let i=0;i<14;i++){
+            const a=(g.time||0)*.14 + i*TAU/14;
+            ctx.globalAlpha=.26;
+            ctx.strokeStyle=i%2?'#ff4e2e':'#ffb14a';
+            ctx.lineWidth=3;
+            ctx.beginPath();
+            ctx.moveTo(gx+Math.cos(a)*R*.82, gy+Math.sin(a)*R*.82);
+            ctx.lineTo(gx+Math.cos(a)*R*1.08, gy+Math.sin(a)*R*1.08);
+            ctx.stroke();
+          }
+        }
+
+        // R em ult: clarão gigante + fogo pela arena inteira.
+        if(s.inferno > 0 || s.flashBurst740 > 0){
+          const glow = Math.max(N(s.flashBurst740), clamp(N(s.inferno)/8,0,.9));
+          ctx.globalCompositeOperation='screen';
+          ctx.globalAlpha=.30 + glow*.38;
+          const flash=ctx.createRadialGradient(W*.5,H*.45,20,W*.5,H*.45,Math.max(W,H)*.85);
+          flash.addColorStop(0,'rgba(255,255,245,.96)');
+          flash.addColorStop(.22,'rgba(255,230,180,.68)');
+          flash.addColorStop(.55,'rgba(255,98,52,.30)');
+          flash.addColorStop(1,'rgba(255,20,10,0)');
+          ctx.fillStyle=flash;
+          ctx.fillRect(0,0,W,H);
+
+          for(const f of s.fireFields740){
+            const k=clamp(N(f.life)/Math.max(.01,N(f.maxLife)),0,1);
+            const x=N(f.x), y=N(f.y), r=N(f.r);
+            ctx.globalAlpha=.15 + .28*k;
+            const grd=ctx.createRadialGradient(x,y,r*.08,x,y,r*2.25);
+            grd.addColorStop(0,'rgba(255,246,200,.9)');
+            grd.addColorStop(.22,'rgba(255,188,90,.76)');
+            grd.addColorStop(.52,'rgba(255,86,24,.58)');
+            grd.addColorStop(1,'rgba(255,20,8,0)');
+            ctx.fillStyle=grd;
+            ctx.beginPath(); ctx.arc(x,y,r*2.25,0,TAU); ctx.fill();
+
+            ctx.globalAlpha=.38*k;
+            for(let i=0;i<3;i++){
+              ctx.fillStyle=i===0?'rgba(255,240,170,.95)':(i===1?'rgba(255,140,40,.72)':'rgba(255,60,22,.58)');
+              ctx.beginPath();
+              ctx.moveTo(x-r*.2+i*6,y+r*.7);
+              ctx.quadraticCurveTo(x-r*.45+i*4,y-r*1.3,x-r*.08+i*10,y-r*.1);
+              ctx.quadraticCurveTo(x+r*.18+i*3,y-r*1.8,x+r*.35+i*2,y+r*.4);
+              ctx.closePath(); ctx.fill();
+            }
+          }
+        }
+
+        // Explosões épicas do Q na forma da Gigante.
+        for(const ex of s.qExplosions740){
+          const t=1 - N(ex.life)/Math.max(.001,N(ex.maxLife));
+          const sc=N(ex.scale,1);
+          const rr=55*sc + t*120*sc;
+          ctx.globalAlpha=.55*(1-t);
+          const grd=ctx.createRadialGradient(ex.x,ex.y,0,ex.x,ex.y,rr);
+          grd.addColorStop(0,'rgba(255,255,240,.98)');
+          grd.addColorStop(.14,'rgba(255,226,160,.90)');
+          grd.addColorStop(.36,'rgba(255,154,54,.74)');
+          grd.addColorStop(.68,'rgba(255,65,26,.46)');
+          grd.addColorStop(1,'rgba(255,0,0,0)');
+          ctx.fillStyle=grd;
+          ctx.beginPath(); ctx.arc(ex.x,ex.y,rr,0,TAU); ctx.fill();
+          for(let i=0;i<ex.spokes;i++){
+            const a=t*2 + ex.seed + i*TAU/ex.spokes;
+            ctx.globalAlpha=.75*(1-t);
+            ctx.strokeStyle=i%2?'#ffd68a':'#ff6f2f';
+            ctx.lineWidth=2.2;
+            ctx.beginPath();
+            ctx.moveTo(ex.x+Math.cos(a)*12, ex.y+Math.sin(a)*12);
+            ctx.lineTo(ex.x+Math.cos(a)*rr*1.08, ex.y+Math.sin(a)*rr*1.08);
+            ctx.stroke();
+          }
+          drawStarShape(ex.x,ex.y,20+32*(1-t)*sc, ex.seed+t*6, 'rgba(255,250,210,.8)','rgba(255,130,40,.46)', 6);
+        }
+
+        // Detalhar minions e estrelas geradas.
+        for(const mn of s.minions||[]){
+          const rot=N(mn.rot740);
+          drawStarShape(N(mn.x), N(mn.y), 17, rot, 'rgba(255,252,200,.94)','rgba(255,126,46,.58)', 5);
+          drawStarShape(N(mn.x), N(mn.y), 9, -rot*1.35, 'rgba(255,80,40,.82)','rgba(255,32,24,.34)', 4);
+        }
+        for(const st of s.starChildren||[]){
+          const rot=N(st.spin740);
+          drawStarShape(N(st.x), N(st.y), Math.max(11,N(st.size,16)*.9), rot, 'rgba(255,248,180,.92)','rgba(255,116,42,.52)', 5);
+        }
+        for(const st of s.orbitStars||[]){
+          const rot=N(st.spin740);
+          drawStarShape(N(st.x), N(st.y), 10, rot, 'rgba(255,245,180,.88)','rgba(255,84,54,.46)', 5);
+        }
+        for(const st of s.rain||[]){
+          const rot=N(st.spin740);
+          drawStarShape(N(st.x), N(st.y), 15, rot, 'rgba(255,246,190,.90)','rgba(255,122,54,.56)', 5);
+          ctx.globalAlpha=.30;
+          ctx.strokeStyle='rgba(255,140,60,.6)';
+          ctx.lineWidth=3;
+          ctx.beginPath();
+          ctx.moveTo(N(st.x),N(st.y)-26);
+          ctx.lineTo(N(st.x)-Math.sin(rot)*18,N(st.y)-72);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }catch(e){console.warn('stellar740 render',e)}
+      return r;
+    };
+    wrapped.__stellarUltVisuals740=true;
+    window.render=wrapped; try{render=wrapped}catch{}
+  }
+
+  console.log('Chrono Shards 7.4.0 — ult do Emperador com minions perseguindo, Gigante Vermelha e inferno reforçados');
+})();
+</script>
+
+
+<script>
+/* Chrono Shards 7.4.1 — overhaul REAL do arsenal da ultimate do Emperador */
+(()=>{
+  if(window.__stellarUltimateOverhaul741)return; window.__stellarUltimateOverhaul741=true;
+
+  const EMP='stellarEmperor';
+  const TAU=Math.PI*2;
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const G=()=>{try{return game||window.game||null}catch{return null}};
+  const Sx=()=>{try{const g=G(); return (g&&typeof S==='function'&&g.classKey===EMP)?S(g):null}catch{return null}};
+  const dist=(a,b)=>Math.hypot(N(a.x)-N(b.x),N(a.y)-N(b.y));
+  const ang=(a,b)=>Math.atan2(N(b.y)-N(a.y),N(b.x)-N(a.x));
+
+  function nearestEnemy(x,y){
+    const g=G(); if(!g) return null;
+    let best=null, bd=1e9;
+    for(const e of g.enemies||[]){
+      if(N(e.hp)<=0) continue;
+      const d=Math.hypot(N(e.x)-x,N(e.y)-y);
+      if(d<bd){bd=d;best=e;}
+    }
+    return best;
+  }
+  function ensureState(){
+    const s=Sx(); if(!s) return null;
+    s.ultExplosions741=s.ultExplosions741||[];
+    s.infernoFlames741=s.infernoFlames741||[];
+    s.infernoStrikes741=s.infernoStrikes741||[];
+    s.redGiantMood741=s.redGiantMood741||0;
+    s._lastUlt741=!!s.ult;
+    return s;
+  }
+  function pushEpicExplosion(x,y,scale=1,damage=28,spawnStars=0){
+    const g=G(), s=ensureState(); if(!g||!s) return;
+    s.ultExplosions741.push({
+      x,y,life:.9,maxLife:.9,scale,seed:Math.random()*99,spokes:10+Math.floor(Math.random()*6)
+    });
+    try{
+      addRing?.(x,y,'#fff1b8',110*scale,7);
+      addRing?.(x,y,'#ff7a2f',85*scale,5);
+      addParticles?.(x,y,'#ffd166',34+Math.round(18*scale),1.05);
+      addParticles?.(x,y,'#ff6a2e',26+Math.round(10*scale),.92);
+      g.flash=Math.max(N(g.flash), .38);
+      g.flashColor='#ffb14a';
+      g.shake=Math.max(N(g.shake), 16*scale);
+    }catch{}
+    try{ area724?.(x,y,96*scale,damage,'#ff8b2f'); }catch{}
+    if(spawnStars>0){
+      const s2=Sx();
+      for(let i=0;i<spawnStars;i++){
+        const a=i*TAU/spawnStars + Math.random()*.4;
+        s2.starChildren.push({
+          x:x+Math.cos(a)*14,
+          y:y+Math.sin(a)*14,
+          vx:Math.cos(a)*(190+Math.random()*90),
+          vy:Math.sin(a)*(190+Math.random()*90),
+          life:1.9,maxLife:1.9,tick:.18,size:20,seed:Math.random()*77,
+          epic741:true, spin741:Math.random()*TAU
+        });
+      }
+    }
+  }
+  function seedInfernoArena(){
+    const g=G(), s=ensureState(); if(!g||!s) return;
+    const W=window.W||g.W||1280, H=window.H||g.H||720;
+    s.infernoFlames741=[];
+    for(let i=0;i<55;i++){
+      s.infernoFlames741.push({
+        x:50+Math.random()*(W-100),
+        y:95+Math.random()*(H-150),
+        r:24+Math.random()*36,
+        life:.45+Math.random()*.7,
+        maxLife:.45+Math.random()*.7,
+        sway:(Math.random()-.5)*18,
+        phase:Math.random()*TAU
+      });
+    }
+  }
+  function refreshInfernoArena(dt){
+    const g=G(), s=ensureState(); if(!g||!s) return;
+    const W=window.W||g.W||1280, H=window.H||720;
+    if(s.inferno > 0){
+      while(s.infernoFlames741.length<55){
+        s.infernoFlames741.push({
+          x:50+Math.random()*(W-100),
+          y:95+Math.random()*(H-150),
+          r:24+Math.random()*36,
+          life:.45+Math.random()*.7,
+          maxLife:.45+Math.random()*.7,
+          sway:(Math.random()-.5)*18,
+          phase:Math.random()*TAU
+        });
+      }
+      for(let i=s.infernoFlames741.length-1;i>=0;i--){
+        const f=s.infernoFlames741[i];
+        f.life -= dt;
+        f.phase += dt*2.2;
+        f.x += Math.sin(f.phase)*f.sway*dt*.2;
+        if(f.life<=0){
+          s.infernoFlames741.splice(i,1);
+        }
+      }
+      s._infernoSpawn741 = N(s._infernoSpawn741) - dt;
+      if(s._infernoSpawn741<=0){
+        s._infernoSpawn741 = .16;
+        s.infernoStrikes741.push({
+          x:60+Math.random()*(W-120),
+          y:90+Math.random()*(H-150),
+          life:.42,maxLife:.42,r:45+Math.random()*40
+        });
+      }
+      for(let i=s.infernoStrikes741.length-1;i>=0;i--){
+        const st=s.infernoStrikes741[i];
+        st.life -= dt;
+        if(st.life<=0){ s.infernoStrikes741.splice(i,1); continue; }
+        if(!st.hit741){
+          st.hit741=true;
+          try{
+            area724?.(st.x,st.y,st.r,14,'#ff5e22');
+            for(const e of g.enemies||[]){
+              if(Math.hypot(N(e.x)-st.x,N(e.y)-st.y) <= st.r+N(e.r,0)){
+                burn724?.(e,2.8,.95);
+                e._stellarSlow724 = Math.max(N(e._stellarSlow724), .26);
+              }
+            }
+          }catch{}
+        }
+      }
+    }
+  }
+
+  // Rework real do disparo das skills em ultimate דרך post-process do spendSkill724
+  const prevSpend = window.spendSkill724 || globalThis.spendSkill724;
+  if(typeof prevSpend==='function' && !prevSpend.__stellarUltimateOverhaul741){
+    const wrapped=function(idx){
+      const g=G(), s=ensureState();
+      const beforeUlt = !!s?.ult;
+      const minBefore = s?.minions?.length || 0;
+      const orbBefore = s?.orbitStars?.length || 0;
+      const childBefore = s?.starChildren?.length || 0;
+      const infernoBefore = N(s?.inferno);
+      const result = prevSpend.apply(this, arguments);
+      try{
+        const g2=G(), s2=ensureState(); if(!g2||!s2||!beforeUlt) return result;
+
+        // Q da ultimate: minions caçadores, maiores e mais épicos
+        if(idx===0 && s2.minions.length > minBefore){
+          for(let i=minBefore;i<s2.minions.length;i++){
+            const mn=s2.minions[i];
+            mn.ult741=true;
+            mn.life=Math.max(N(mn.life),5.2);
+            mn.maxLife=Math.max(N(mn.maxLife),5.2);
+            mn.tick=.08;
+            mn.speed741=300+Math.random()*70;
+            mn.explodeCd741=0;
+            mn.size741=18+Math.random()*4;
+            mn.rot741=Math.random()*TAU;
+            mn.trail741=[];
+          }
+          // reforça quantidade
+          while(s2.minions.length < minBefore+6){
+            s2.minions.push({
+              x:g2.player.x+(Math.random()*120-60),
+              y:g2.player.y+(Math.random()*120-60),
+              life:5.2,maxLife:5.2,tick:.08,orbit:Math.random()*TAU,
+              ult741:true,speed741:300+Math.random()*70,explodeCd741:0,size741:18+Math.random()*4,rot741:Math.random()*TAU,trail741:[]
+            });
+          }
+          try{
+            addFloatingText?.(g2.player.x,g2.player.y-36,'MINIONS ESTELARES SUPREMOS','#ffd166',19);
+            addRing?.(g2.player.x,g2.player.y,'#ffb14a',120,6);
+            g2.flash=Math.max(N(g2.flash), .45); g2.shake=Math.max(N(g2.shake), 20);
+          }catch{}
+        }
+
+        // E da ultimate: estrelas muito mais vivas/detalhadas e agressivas
+        if(idx===1 && s2.orbitStars.length > orbBefore){
+          for(let i=orbBefore;i<s2.orbitStars.length;i++){
+            const st=s2.orbitStars[i];
+            st.ult741=true;
+            st.size=Math.max(N(st.size),22);
+            st.life=Math.max(N(st.life),6.5);
+            st.maxLife=Math.max(N(st.maxLife),6.5);
+            st.tick=.16;
+            st.rot741=Math.random()*TAU;
+            st.chase741=true;
+            st.vx=0; st.vy=0;
+          }
+          try{
+            addFloatingText?.(g2.player.x,g2.player.y-36,'ASCENSÃO ESTELAR SUPREMA','#ff6e36',19);
+            addRing?.(g2.player.x,g2.player.y,'#ff6e36',150,6);
+          }catch{}
+        }
+
+        // R da ultimate: clarão maior + inferno na arena inteira
+        if(idx===2 && N(s2.inferno) > infernoBefore){
+          s2.inferno = 10.5;
+          seedInfernoArena();
+          s2.redGiantMood741 = 1;
+          try{
+            g2.flash=Math.max(N(g2.flash),1.65);
+            g2.flashColor='#fff2d4';
+            g2.shake=Math.max(N(g2.shake),42);
+            addFloatingText?.(g2.player.x,g2.player.y-44,'INFERNO CÓSMICO','#ff3b1e',23);
+            addRing?.(g2.player.x,g2.player.y,'#fff2d4',230,10);
+            addParticles?.(g2.player.x,g2.player.y,'#ff6a2e',44,1.15);
+          }catch{}
+        }
+      }catch(e){console.warn('stellar741 spend',e)}
+      return result;
+    };
+    wrapped.__stellarUltimateOverhaul741=true;
+    window.spendSkill724=wrapped; try{spendSkill724=wrapped}catch{}
+  }
+
+  const prevUpdate = window.updatePlayer || globalThis.updatePlayer;
+  if(typeof prevUpdate==='function' && !prevUpdate.__stellarUltimateOverhaul741){
+    const wrapped=function(dt){
+      const r = prevUpdate.apply(this, arguments);
+      try{
+        const g=G(), s=ensureState();
+        if(!g||!s) return r;
+
+        if(s.ult && !s._lastUlt741){
+          s.redGiantMood741 = 1;
+          seedInfernoArena();
+        }
+        s._lastUlt741 = !!s.ult;
+
+        const delta=N(dt,g.dt||.016);
+
+        // Minions do Q da ultimate agora seguem monstros e explodem.
+        for(let i=s.minions.length-1;i>=0;i--){
+          const mn=s.minions[i];
+          if(!mn.ult741) continue;
+          mn.rot741 = N(mn.rot741)+delta*5.3;
+          mn.explodeCd741 = Math.max(0,N(mn.explodeCd741)-delta);
+          const target = nearestEnemy(N(mn.x),N(mn.y));
+          if(target){
+            const a=ang(mn,target);
+            const sp=N(mn.speed741,320);
+            mn.x += Math.cos(a)*sp*delta;
+            mn.y += Math.sin(a)*sp*delta;
+            // beam solar bonito e mais agressivo
+            mn.tick -= delta;
+            if(mn.tick<=0){
+              mn.tick=.12;
+              try{ addLightning?.(mn.x,mn.y,target.x,target.y,'#ffd166'); }catch{}
+              try{
+                damage724?.(target,20,.04);
+                burn724?.(target,2.5,.9);
+                if(Math.hypot(N(target.x)-N(mn.x),N(target.y)-N(mn.y))<34+N(target.r,0)){
+                  pushEpicExplosion(N(target.x),N(target.y),1.05,30,2);
+                  mn.explodeCd741=.36;
+                }
+              }catch{}
+            }
+          }
+        }
+
+        // Estrelas do E: perseguem e disparam raios.
+        for(let i=s.orbitStars.length-1;i>=0;i--){
+          const st=s.orbitStars[i];
+          if(!st.ult741) continue;
+          st.rot741 = N(st.rot741)+delta*4.4;
+          const target = nearestEnemy(N(st.x),N(st.y));
+          if(target){
+            const a=ang(st,target);
+            const sp=170;
+            st.x += Math.cos(a)*sp*delta;
+            st.y += Math.sin(a)*sp*delta;
+            st.tick -= delta;
+            if(st.tick<=0){
+              st.tick=.16;
+              try{ addLightning?.(st.x,st.y,target.x,target.y,'#ffb14a'); }catch{}
+              try{
+                damage724?.(target,22,.035);
+                burn724?.(target,2.1,.85);
+                if(Math.hypot(N(target.x)-N(st.x),N(target.y)-N(st.y))<26+N(target.r,0)){
+                  pushEpicExplosion(N(target.x),N(target.y),.85,22,1);
+                }
+              }catch{}
+            }
+          }
+        }
+
+        // R da ultimate: inferno na arena inteira + dano/slow espalhados
+        refreshInfernoArena(delta);
+
+        // Explosões visuais
+        for(let i=s.ultExplosions741.length-1;i>=0;i--){
+          s.ultExplosions741[i].life -= delta;
+          if(s.ultExplosions741[i].life<=0) s.ultExplosions741.splice(i,1);
+        }
+
+        // ao fim da ult, limpa excessos
+        if(!s.ult && s.redGiantMood741){
+          s.redGiantMood741 = 0;
+          s.infernoFlames741 = [];
+          s.infernoStrikes741 = [];
+        }
+      }catch(e){console.warn('stellar741 update',e)}
+      return r;
+    };
+    wrapped.__stellarUltimateOverhaul741=true;
+    window.updatePlayer=wrapped; try{updatePlayer=wrapped}catch{}
+  }
+
+  const prevRender = window.render || globalThis.render;
+  if(typeof prevRender==='function' && !prevRender.__stellarUltimateOverhaul741){
+    const wrapped=function(){
+      const r = prevRender.apply(this, arguments);
+      try{
+        const g=G(), s=ensureState();
+        if(!g||!s||g.classKey!==EMP) return r;
+        const W=window.W||g.W||1280, H=window.H||g.H||720;
+
+        ctx.save();
+        ctx.globalCompositeOperation='lighter';
+
+        // Gigante Vermelha enorme e ameaçadora
+        if(s.ult || s.redGiantMood741){
+          const mood = s.ult ? 1 : Math.max(0, N(s.redGiantMood741)-.02);
+          s.redGiantMood741 = mood;
+          const gx=W*.11, gy=H*.08, R=315 + Math.sin((g.time||0)*1.2)*10;
+          ctx.globalAlpha=.84*mood;
+          const grd=ctx.createRadialGradient(gx,gy,R*.12,gx,gy,R);
+          grd.addColorStop(0,'rgba(255,244,210,.98)');
+          grd.addColorStop(.14,'rgba(255,170,110,.95)');
+          grd.addColorStop(.32,'rgba(255,76,46,.92)');
+          grd.addColorStop(.62,'rgba(145,12,10,.96)');
+          grd.addColorStop(1,'rgba(16,0,0,.04)');
+          ctx.fillStyle=grd;
+          ctx.beginPath(); ctx.arc(gx,gy,R,0,TAU); ctx.fill();
+
+          // rosto ameaçador tipo lua maligna, mas estelar
+          ctx.globalAlpha=.78*mood;
+          ctx.fillStyle='rgba(52,0,0,.92)';
+          ctx.beginPath(); ctx.ellipse(gx-R*.20, gy-R*.02, R*.12, R*.06, -.28, 0, TAU); ctx.fill();
+          ctx.beginPath(); ctx.ellipse(gx+R*.08, gy-R*.07, R*.14, R*.07, .18, 0, TAU); ctx.fill();
+          ctx.strokeStyle='rgba(255,228,180,.92)';
+          ctx.lineWidth=4.2;
+          ctx.beginPath(); ctx.arc(gx-R*.02, gy+R*.15, R*.18, .08, Math.PI-.12); ctx.stroke();
+
+          for(let i=0;i<12;i++){
+            const a=-.9+i*.16+Math.sin((g.time||0)*.55+i)*.05;
+            ctx.globalAlpha=.40*mood;
+            ctx.strokeStyle=i%2?'rgba(255,95,50,.7)':'rgba(110,5,5,.9)';
+            ctx.lineWidth=7-i*.25;
+            ctx.beginPath();
+            ctx.moveTo(gx+Math.cos(a)*R*.18, gy+Math.sin(a)*R*.2);
+            ctx.lineTo(gx+Math.cos(a+.2)*R*.75, gy+Math.sin(a+.34)*R*.78);
+            ctx.stroke();
+          }
+        }
+
+        // Clarão/Inferno na arena inteira
+        if(s.inferno>0 || s.infernoFlames741.length){
+          ctx.globalCompositeOperation='screen';
+          ctx.globalAlpha=.42 + clamp(N(s.inferno)/10,0,.3);
+          const flash=ctx.createRadialGradient(W*.5,H*.45,30,W*.5,H*.45,Math.max(W,H)*.9);
+          flash.addColorStop(0,'rgba(255,255,245,.98)');
+          flash.addColorStop(.18,'rgba(255,232,180,.82)');
+          flash.addColorStop(.48,'rgba(255,108,54,.36)');
+          flash.addColorStop(1,'rgba(255,0,0,0)');
+          ctx.fillStyle=flash;
+          ctx.fillRect(0,0,W,H);
+
+          for(const f of s.infernoFlames741){
+            const k=clamp(N(f.life)/Math.max(.01,N(f.maxLife)),0,1);
+            const x=N(f.x), y=N(f.y), r=N(f.r);
+            ctx.globalAlpha=.14 + .25*k;
+            const grd=ctx.createRadialGradient(x,y,r*.08,x,y,r*2.2);
+            grd.addColorStop(0,'rgba(255,246,190,.92)');
+            grd.addColorStop(.22,'rgba(255,188,90,.76)');
+            grd.addColorStop(.54,'rgba(255,86,24,.60)');
+            grd.addColorStop(1,'rgba(255,12,8,0)');
+            ctx.fillStyle=grd;
+            ctx.beginPath(); ctx.arc(x,y,r*2.2,0,TAU); ctx.fill();
+
+            ctx.globalAlpha=.34*k;
+            for(let i=0;i<4;i++){
+              ctx.fillStyle=i===0?'rgba(255,240,170,.96)':(i===1?'rgba(255,150,50,.78)':(i===2?'rgba(255,70,22,.64)':'rgba(170,10,0,.48)'));
+              ctx.beginPath();
+              ctx.moveTo(x-r*.28+i*5,y+r*.75);
+              ctx.quadraticCurveTo(x-r*.54+i*7,y-r*1.45,x-r*.08+i*10,y-r*.08);
+              ctx.quadraticCurveTo(x+r*.22+i*4,y-r*1.95,x+r*.40+i*2,y+r*.5);
+              ctx.closePath(); ctx.fill();
+            }
+          }
+          for(const st of s.infernoStrikes741){
+            const k=1-clamp(N(st.life)/Math.max(.01,N(st.maxLife)),0,1);
+            ctx.globalAlpha=.55*(1-k);
+            ctx.strokeStyle='rgba(255,246,190,.9)';
+            ctx.lineWidth=5;
+            ctx.beginPath();
+            ctx.moveTo(st.x,0);
+            ctx.lineTo(st.x,st.y);
+            ctx.stroke();
+            ctx.globalAlpha=.40*(1-k);
+            ctx.fillStyle='rgba(255,120,40,.55)';
+            ctx.beginPath(); ctx.arc(st.x,st.y,N(st.r)*(1+k*.5),0,TAU); ctx.fill();
+          }
+        }
+
+        // Explosões épicas
+        for(const ex of s.ultExplosions741){
+          const t=1 - N(ex.life)/Math.max(.001,N(ex.maxLife));
+          const rr=52*N(ex.scale,1) + t*126*N(ex.scale,1);
+          ctx.globalAlpha=.62*(1-t);
+          const grd=ctx.createRadialGradient(ex.x,ex.y,0,ex.x,ex.y,rr);
+          grd.addColorStop(0,'rgba(255,255,245,.98)');
+          grd.addColorStop(.14,'rgba(255,226,160,.90)');
+          grd.addColorStop(.36,'rgba(255,154,54,.78)');
+          grd.addColorStop(.68,'rgba(255,65,26,.50)');
+          grd.addColorStop(1,'rgba(255,0,0,0)');
+          ctx.fillStyle=grd;
+          ctx.beginPath(); ctx.arc(ex.x,ex.y,rr,0,TAU); ctx.fill();
+          for(let i=0;i<ex.spokes;i++){
+            const a=t*2.4 + ex.seed + i*TAU/ex.spokes;
+            ctx.globalAlpha=.78*(1-t);
+            ctx.strokeStyle=i%2?'#ffd68a':'#ff6f2f';
+            ctx.lineWidth=2.6;
+            ctx.beginPath();
+            ctx.moveTo(ex.x+Math.cos(a)*14, ex.y+Math.sin(a)*14);
+            ctx.lineTo(ex.x+Math.cos(a)*rr*1.08, ex.y+Math.sin(a)*rr*1.08);
+            ctx.stroke();
+          }
+        }
+
+        // Desenho mais bonito de minions e estrelas da ultimate
+        function drawStar(x,y,r,rot,inner=.46,c1='rgba(255,251,205,.96)',c2='rgba(255,118,38,.56)',pts=5){
+          ctx.save(); ctx.translate(x,y); ctx.rotate(rot);
+          const grad=ctx.createRadialGradient(0,0,r*.08,0,0,r);
+          grad.addColorStop(0,c1); grad.addColorStop(.55,c2); grad.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=grad; ctx.beginPath();
+          for(let i=0;i<pts*2;i++){
+            const a=-Math.PI/2 + i*Math.PI/pts;
+            const rr=i%2===0?r:r*inner;
+            const px=Math.cos(a)*rr, py=Math.sin(a)*rr;
+            if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+          }
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle='rgba(255,246,196,.85)'; ctx.lineWidth=Math.max(1.5,r*.08); ctx.stroke();
+          ctx.restore();
+        }
+
+        for(const mn of s.minions||[]){
+          if(!mn.ult741) continue;
+          drawStar(N(mn.x),N(mn.y),N(mn.size741,18),N(mn.rot741),.42,'rgba(255,251,205,.96)','rgba(255,126,46,.64)',5);
+          drawStar(N(mn.x),N(mn.y),N(mn.size741,18)*.52,-N(mn.rot741)*1.3,.42,'rgba(255,88,46,.82)','rgba(255,22,22,.20)',4);
+        }
+        for(const st of s.orbitStars||[]){
+          if(!st.ult741) continue;
+          drawStar(N(st.x),N(st.y),Math.max(12,N(st.size,20)),N(st.rot741),.45,'rgba(255,245,190,.92)','rgba(255,96,56,.58)',5);
+        }
+        for(const c of s.starChildren||[]){
+          if(!c.epic741) continue;
+          c.spin741 = N(c.spin741) + .05;
+          drawStar(N(c.x),N(c.y),Math.max(11,N(c.size,18)),N(c.spin741),.45,'rgba(255,246,180,.90)','rgba(255,118,42,.54)',5);
+        }
+
+        ctx.restore();
+      }catch(e){console.warn('stellar741 render',e)}
+      return r;
+    };
+    wrapped.__stellarUltimateOverhaul741=true;
+    window.render=wrapped; try{render=wrapped}catch{}
+  }
+
+  console.log('Chrono Shards 7.4.1 — arsenal da ultimate do Emperador refeito de verdade');
+})();
+</script>
+
+
+<script>
+/* Chrono Shards 7.4.2 — FORCE REAL: arsenal da ultimate do Emperador sempre puxa a versão nova */
+(()=>{
+  if(window.__stellar742)return; window.__stellar742=true;
+
+  const EMP='stellarEmperor';
+  const TAU=Math.PI*2;
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const G=()=>{try{return game||window.game||null}catch{return null}};
+
+  function state(){
+    const g=G(); if(!g) return null;
+    g.stellar724=g.stellar724||{};
+    const s=g.stellar724;
+    s.hold=N(s.hold); s.mirror=N(s.mirror); s.activation=N(s.activation);
+    s.beamFx=s.beamFx||[];
+    s.suns=s.suns||[];
+    s.novas=s.novas||[];
+    s.nebulas=s.nebulas||[];
+    s.rainSpawners=s.rainSpawners||[];
+    s.stars=s.stars||[];
+    s.starChildren=s.starChildren||[];
+    s.minions=s.minions||[];
+    s.orbitStars=s.orbitStars||[];
+    s.ultCharge=N(s.ultCharge,N(g.stellarUltCharge));
+    s.inferno=N(s.inferno);
+    s.ultShotCd=N(s.ultShotCd);
+    s.ultExplosions742=s.ultExplosions742||[];
+    s.ultInfernoFlames742=s.ultInfernoFlames742||[];
+    s.ultInfernoBolts742=s.ultInfernoBolts742||[];
+    s.redGiantFace742=s.redGiantFace742||0;
+    return s;
+  }
+  function nearest(x,y){
+    const g=G(); if(!g) return null;
+    let best=null,bd=Infinity;
+    for(const e of g.enemies||[]){
+      if(N(e.hp)<=0) continue;
+      const d=Math.hypot(N(e.x)-x,N(e.y)-y);
+      if(d<bd){bd=d;best=e;}
+    }
+    return best;
+  }
+  function safeDamage(e,dmg,flash=.04){
+    const g=G(); if(!g||!e||N(e.hp)<=0)return;
+    try{
+      if(typeof damageEnemy==='function'){
+        damageEnemy(e,dmg,flash);
+      }else{
+        e.hp=N(e.hp)-dmg;
+        e.hitFlash=Math.max(N(e.hitFlash),flash);
+      }
+    }catch{
+      e.hp=N(e.hp)-dmg;
+      e.hitFlash=Math.max(N(e.hitFlash),flash);
+    }
+    if(N(e.hp)<=0){
+      const i=(g.enemies||[]).indexOf(e);
+      if(i>=0){
+        try{ enemyDeath(i,e); }catch{ try{g.enemies.splice(i,1)}catch{} }
+      }
+    }
+  }
+  function safeBurn(e,time,dps){
+    try{ if(typeof burn==='function') burn(e,time,dps); }catch{}
+    e._stellarBurn724=Math.max(N(e._stellarBurn724),time);
+    e._stellarBurnDps724=Math.max(N(e._stellarBurnDps724),dps);
+    e._stellarBurn726=Math.max(N(e._stellarBurn726),time);
+    e._stellarBurnDps726=Math.max(N(e._stellarBurnDps726),dps);
+  }
+  function areaHit(x,y,r,dmg,color='#ff7a2f'){
+    const g=G(); if(!g)return;
+    try{ addRing?.(x,y,color,r,5); addParticles?.(x,y,color,18,.7); }catch{}
+    for(const e of [...(g.enemies||[])]){
+      if(N(e.hp)>0 && Math.hypot(N(e.x)-x,N(e.y)-y)<=r+N(e.r,0)){
+        safeDamage(e,dmg,.06);
+        safeBurn(e,1.6,.5);
+        e._stellarSlow724=Math.max(N(e._stellarSlow724),.20);
+      }
+    }
+  }
+  function epicExplosion(x,y,scale=1,dmg=34,stars=2){
+    const s=state(), g=G(); if(!s||!g)return;
+    s.ultExplosions742.push({x,y,life:.95,maxLife:.95,scale,seed:Math.random()*99,spokes:12+Math.floor(Math.random()*6)});
+    areaHit(x,y,95*scale,dmg,'#ff812f');
+    try{
+      addRing?.(x,y,'#fff2bd',125*scale,8);
+      addRing?.(x,y,'#ff4a22',90*scale,5);
+      addParticles?.(x,y,'#ffd166',42+Math.floor(18*scale),1.1);
+      addParticles?.(x,y,'#ff562e',30+Math.floor(12*scale),.95);
+      g.flash=Math.max(N(g.flash),.45);
+      g.flashColor='#ffcb8a';
+      g.shake=Math.max(N(g.shake),18*scale);
+    }catch{}
+    for(let i=0;i<stars;i++){
+      const a=i*TAU/stars+Math.random()*.45;
+      s.starChildren.push({
+        x:x+Math.cos(a)*16,y:y+Math.sin(a)*16,
+        vx:Math.cos(a)*(220+Math.random()*120),vy:Math.sin(a)*(220+Math.random()*120),
+        r:14+Math.random()*4,size:21+Math.random()*7,life:2.0,maxLife:2.0,seed:Math.random()*999,
+        epic742:true,spin742:Math.random()*TAU,tick:.14
+      });
+    }
+  }
+  function spend(idx){
+    const g=G(),p=g?.player; if(!g||!p||g.classKey!==EMP)return false;
+    const skills=(CLASSES?.[EMP]?.skills)||['solarTyranny','mirrorRay','stellarEruption'];
+    const sk=SKILL_DEFS?.[skills[idx]];
+    if(!sk)return false;
+    if(N(g.skillCds?.[idx])>0 || N(p.focus)<N(sk.focusCost)) return false;
+    p.focus=N(p.focus)-N(sk.focusCost);
+    g.skillCds[idx]=N(sk.cooldown)+3;
+    try{ updateHUD?.(); }catch{}
+    return true;
+  }
+  function spawnHell(){
+    const g=G(),s=state(); if(!g||!s)return;
+    const W=window.W||g.W||1280,H=window.H||g.H||720;
+    s.ultInfernoFlames742=[];
+    for(let i=0;i<70;i++){
+      s.ultInfernoFlames742.push({
+        x:45+Math.random()*(W-90),y:80+Math.random()*(H-130),
+        r:25+Math.random()*42,life:.45+Math.random()*.8,maxLife:.45+Math.random()*.8,
+        phase:Math.random()*TAU,sway:(Math.random()-.5)*22
+      });
+    }
+  }
+
+  window.__stellar742CastQ=function(){
+    const g=G(),p=g?.player,s=state(); if(!g||!p||!s?.ult)return;
+    if(!spend(0))return;
+    for(let i=0;i<8;i++){
+      const a=i*TAU/8+Math.random()*.28;
+      s.minions.push({
+        x:p.x+Math.cos(a)*72,y:p.y+Math.sin(a)*72,
+        life:7.2,maxLife:7.2,tick:.05,orbit:a,ult742:true,
+        speed742:330+Math.random()*80,size742:20+Math.random()*6,rot742:Math.random()*TAU,
+        explodeCd742:0,trail742:[]
+      });
+    }
+    try{
+      addFloatingText?.(p.x,p.y-38,'MINIONS ESTELARES SUPREMOS','#ffd166',20);
+      addRing?.(p.x,p.y,'#ffd166',145,8);
+      addParticles?.(p.x,p.y,'#ff9a3a',46,1.05);
+      g.flash=Math.max(N(g.flash),.55);
+      g.flashColor='#ffd166';
+      g.shake=Math.max(N(g.shake),20);
+    }catch{}
+  };
+
+  window.__stellar742CastE=function(){
+    const g=G(),p=g?.player,s=state(); if(!g||!p||!s?.ult)return;
+    if(!spend(1))return;
+    const enemies=[...(g.enemies||[])].filter(e=>N(e.hp)>0).sort((a,b)=>Math.hypot(N(a.x)-p.x,N(a.y)-p.y)-Math.hypot(N(b.x)-p.x,N(b.y)-p.y)).slice(0,8);
+    const count=Math.max(6,enemies.length);
+    for(let i=0;i<count;i++){
+      const target=enemies[i%Math.max(1,enemies.length)];
+      const a=i*TAU/count;
+      const x=target?N(target.x)+Math.cos(a)*42:p.x+Math.cos(a)*120;
+      const y=target?N(target.y)+Math.sin(a)*42:p.y+Math.sin(a)*120;
+      s.orbitStars.push({
+        x,y,life:7,maxLife:7,tick:.12,size:24+Math.random()*6,seed:Math.random()*999,
+        ult742:true,rot742:Math.random()*TAU,vx:0,vy:0,targetId742:target?.id||null
+      });
+      if(target){
+        safeDamage(target,38,.05);
+        safeBurn(target,3.0,1.0);
+        epicExplosion(N(target.x),N(target.y),.75,18,1);
+      }
+    }
+    try{
+      addFloatingText?.(p.x,p.y-38,'CONSTELAÇÕES CAÇADORAS','#ff7a2f',20);
+      addRing?.(p.x,p.y,'#ff7a2f',165,8);
+      addParticles?.(p.x,p.y,'#ffd166',40,.95);
+    }catch{}
+  };
+
+  window.__stellar742CastR=function(){
+    const g=G(),p=g?.player,s=state(); if(!g||!p||!s?.ult)return;
+    if(!spend(2))return;
+    s.inferno=11;
+    s.redGiantFace742=1;
+    spawnHell();
+    const W=window.W||g.W||1280,H=window.H||g.H||720;
+    for(let i=0;i<22;i++){
+      s.ultInfernoBolts742.push({
+        x:50+Math.random()*(W-100),y:80+Math.random()*(H-130),
+        life:.52,maxLife:.52,r:46+Math.random()*45,hit:false
+      });
+    }
+    try{
+      addFloatingText?.(p.x,p.y-46,'INFERNO CÓSMICO','#ff3b1e',24);
+      addRing?.(p.x,p.y,'#fff2d4',250,12);
+      addParticles?.(p.x,p.y,'#ff4a22',70,1.35);
+      g.flash=Math.max(N(g.flash),1.85);
+      g.flashColor='#fff0cf';
+      g.shake=Math.max(N(g.shake),46);
+    }catch{}
+  };
+
+  // Wrapper final: se alguém chamar useSkill, a ultimate SEMPRE usa a versão 742.
+  const prevUseSkill=window.useSkill||globalThis.useSkill;
+  if(typeof prevUseSkill==='function'&&!prevUseSkill.__stellar742){
+    const wrapped=function(idx){
+      const g=G(),s=state();
+      if(g?.classKey===EMP && s?.ult && (idx===0||idx===1||idx===2)){
+        if(idx===0) return window.__stellar742CastQ();
+        if(idx===1) return window.__stellar742CastE();
+        if(idx===2) return window.__stellar742CastR();
+      }
+      return prevUseSkill.apply(this,arguments);
+    };
+    wrapped.__stellar742=true;
+    window.useSkill=wrapped; try{useSkill=wrapped}catch{}
+  }
+
+  const prevUpdate=window.updatePlayer||globalThis.updatePlayer;
+  if(typeof prevUpdate==='function'&&!prevUpdate.__stellar742){
+    const wrapped=function(dt){
+      const r=prevUpdate.apply(this,arguments);
+      try{
+        const g=G(),p=g?.player,s=state(); if(!g||g.classKey!==EMP||!s)return r;
+        const delta=N(dt,g.dt||.016);
+
+        // Q: minions perseguem monstros de verdade e fazem explosões.
+        for(let i=s.minions.length-1;i>=0;i--){
+          const mn=s.minions[i]; if(!mn.ult742)continue;
+          mn.rot742=N(mn.rot742)+delta*6;
+          mn.explodeCd742=Math.max(0,N(mn.explodeCd742)-delta);
+          const target=nearest(N(mn.x),N(mn.y));
+          if(target){
+            const a=Math.atan2(N(target.y)-N(mn.y),N(target.x)-N(mn.x));
+            const sp=N(mn.speed742,340);
+            mn.x += Math.cos(a)*sp*delta;
+            mn.y += Math.sin(a)*sp*delta;
+            mn.tick-=delta;
+            if(mn.tick<=0){
+              mn.tick=.11;
+              try{addLightning?.(mn.x,mn.y,target.x,target.y,'#ffd166')}catch{}
+              safeDamage(target,22,.045);
+              safeBurn(target,2.4,.9);
+            }
+            if(Math.hypot(N(target.x)-N(mn.x),N(target.y)-N(mn.y)) < 32+N(target.r,0) && mn.explodeCd742<=0){
+              mn.explodeCd742=.34;
+              epicExplosion(N(target.x),N(target.y),1.08,34,3);
+            }
+          }
+        }
+
+        // E: estrelas caçadoras detalhadas
+        for(let i=s.orbitStars.length-1;i>=0;i--){
+          const st=s.orbitStars[i]; if(!st.ult742)continue;
+          st.rot742=N(st.rot742)+delta*5;
+          const target=nearest(N(st.x),N(st.y));
+          if(target){
+            const a=Math.atan2(N(target.y)-N(st.y),N(target.x)-N(st.x));
+            const sp=210;
+            st.x += Math.cos(a)*sp*delta;
+            st.y += Math.sin(a)*sp*delta;
+            st.tick-=delta;
+            if(st.tick<=0){
+              st.tick=.15;
+              try{addLightning?.(st.x,st.y,target.x,target.y,'#ffb14a')}catch{}
+              safeDamage(target,24,.04);
+              safeBurn(target,2.2,.85);
+              if(Math.hypot(N(target.x)-N(st.x),N(target.y)-N(st.y))<30+N(target.r,0)){
+                epicExplosion(N(target.x),N(target.y),.86,24,2);
+              }
+            }
+          }
+        }
+
+        // R: inferno na arena inteira com impactos.
+        if(s.inferno>0){
+          if(s.ultInfernoFlames742.length<55) spawnHell();
+          s._boltTick742=N(s._boltTick742)-delta;
+          if(s._boltTick742<=0){
+            s._boltTick742=.14;
+            const W=window.W||g.W||1280,H=window.H||g.H||720;
+            s.ultInfernoBolts742.push({
+              x:50+Math.random()*(W-100),y:80+Math.random()*(H-130),
+              life:.48,maxLife:.48,r:42+Math.random()*45,hit:false
+            });
+          }
+        }else{
+          s.ultInfernoFlames742.length=0;
+        }
+        for(let i=s.ultInfernoFlames742.length-1;i>=0;i--){
+          const f=s.ultInfernoFlames742[i];
+          f.life-=delta; f.phase=N(f.phase)+delta*2.4; f.x+=Math.sin(f.phase)*N(f.sway)*delta*.18;
+          if(f.life<=0)s.ultInfernoFlames742.splice(i,1);
+        }
+        for(let i=s.ultInfernoBolts742.length-1;i>=0;i--){
+          const b=s.ultInfernoBolts742[i];
+          b.life-=delta;
+          if(!b.hit){
+            b.hit=true;
+            areaHit(b.x,b.y,b.r,18,'#ff4a22');
+          }
+          if(b.life<=0)s.ultInfernoBolts742.splice(i,1);
+        }
+
+        for(let i=s.ultExplosions742.length-1;i>=0;i--){
+          s.ultExplosions742[i].life-=delta;
+          if(s.ultExplosions742[i].life<=0)s.ultExplosions742.splice(i,1);
+        }
+      }catch(e){console.warn('stellar742 update',e)}
+      return r;
+    };
+    wrapped.__stellar742=true;
+    window.updatePlayer=wrapped; try{updatePlayer=wrapped}catch{}
+  }
+
+  const prevRender=window.render||globalThis.render;
+  if(typeof prevRender==='function'&&!prevRender.__stellar742){
+    const wrapped=function(){
+      const r=prevRender.apply(this,arguments);
+      try{
+        const g=G(),s=state(); if(!g||g.classKey!==EMP||!s)return r;
+        const W=window.W||g.W||1280,H=window.H||g.H||720;
+        ctx.save();
+        ctx.globalCompositeOperation='lighter';
+
+        // Gigante Vermelha maior e ameaçadora, sempre visível durante ult.
+        if(s.ult){
+          const gx=W*.12, gy=H*.08, R=335+Math.sin((g.time||0)*1.1)*14;
+          ctx.globalAlpha=.88;
+          const gr=ctx.createRadialGradient(gx,gy,R*.10,gx,gy,R);
+          gr.addColorStop(0,'rgba(255,248,218,.98)');
+          gr.addColorStop(.14,'rgba(255,168,108,.96)');
+          gr.addColorStop(.34,'rgba(255,68,42,.94)');
+          gr.addColorStop(.64,'rgba(142,8,7,.98)');
+          gr.addColorStop(1,'rgba(18,0,0,.04)');
+          ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(gx,gy,R,0,TAU); ctx.fill();
+
+          ctx.globalAlpha=.82;
+          ctx.fillStyle='rgba(46,0,0,.94)';
+          ctx.beginPath(); ctx.ellipse(gx-R*.20,gy-R*.03,R*.13,R*.065,-.30,0,TAU); ctx.fill();
+          ctx.beginPath(); ctx.ellipse(gx+R*.09,gy-R*.07,R*.145,R*.07,.20,0,TAU); ctx.fill();
+          ctx.strokeStyle='rgba(255,226,180,.95)';
+          ctx.lineWidth=4.5;
+          ctx.beginPath(); ctx.arc(gx-R*.02,gy+R*.16,R*.20,.08,Math.PI-.13); ctx.stroke();
+
+          for(let i=0;i<16;i++){
+            const a=-.9+i*.14+Math.sin((g.time||0)*.5+i)*.05;
+            ctx.globalAlpha=.44;
+            ctx.strokeStyle=i%2?'rgba(255,92,45,.74)':'rgba(100,0,0,.92)';
+            ctx.lineWidth=8-i*.28;
+            ctx.beginPath();
+            ctx.moveTo(gx+Math.cos(a)*R*.18,gy+Math.sin(a)*R*.18);
+            ctx.lineTo(gx+Math.cos(a+.18)*R*.80,gy+Math.sin(a+.30)*R*.82);
+            ctx.stroke();
+          }
+        }
+
+        // R: clarão e inferno em toda a arena.
+        if(s.inferno>0 || s.ultInfernoFlames742.length || s.ultInfernoBolts742.length){
+          ctx.globalCompositeOperation='screen';
+          ctx.globalAlpha=.50+clamp(N(s.inferno)/11,0,.25);
+          const fl=ctx.createRadialGradient(W*.5,H*.43,25,W*.5,H*.43,Math.max(W,H)*.95);
+          fl.addColorStop(0,'rgba(255,255,245,.98)');
+          fl.addColorStop(.18,'rgba(255,230,180,.82)');
+          fl.addColorStop(.50,'rgba(255,96,42,.38)');
+          fl.addColorStop(1,'rgba(255,0,0,0)');
+          ctx.fillStyle=fl; ctx.fillRect(0,0,W,H);
+
+          for(const f of s.ultInfernoFlames742){
+            const k=clamp(N(f.life)/Math.max(.001,N(f.maxLife)),0,1), x=N(f.x), y=N(f.y), rr=N(f.r);
+            ctx.globalAlpha=.16+.28*k;
+            const fg=ctx.createRadialGradient(x,y,rr*.08,x,y,rr*2.25);
+            fg.addColorStop(0,'rgba(255,246,190,.92)');
+            fg.addColorStop(.25,'rgba(255,188,85,.76)');
+            fg.addColorStop(.55,'rgba(255,78,22,.60)');
+            fg.addColorStop(1,'rgba(255,10,5,0)');
+            ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(x,y,rr*2.25,0,TAU); ctx.fill();
+          }
+          for(const b of s.ultInfernoBolts742){
+            const k=clamp(N(b.life)/Math.max(.001,N(b.maxLife)),0,1);
+            ctx.globalAlpha=.65*k;
+            ctx.strokeStyle='rgba(255,246,200,.95)';
+            ctx.lineWidth=5;
+            ctx.beginPath(); ctx.moveTo(b.x,0); ctx.lineTo(b.x,b.y); ctx.stroke();
+            ctx.globalAlpha=.44*k;
+            ctx.fillStyle='rgba(255,100,35,.62)';
+            ctx.beginPath(); ctx.arc(b.x,b.y,N(b.r)*(1.4-k*.3),0,TAU); ctx.fill();
+          }
+        }
+
+        // Explosões épicas do Q.
+        for(const ex of s.ultExplosions742){
+          const t=1-N(ex.life)/Math.max(.001,N(ex.maxLife));
+          const rr=58*N(ex.scale,1)+t*150*N(ex.scale,1);
+          ctx.globalAlpha=.68*(1-t);
+          const eg=ctx.createRadialGradient(ex.x,ex.y,0,ex.x,ex.y,rr);
+          eg.addColorStop(0,'rgba(255,255,245,.98)');
+          eg.addColorStop(.16,'rgba(255,226,150,.92)');
+          eg.addColorStop(.38,'rgba(255,142,44,.78)');
+          eg.addColorStop(.70,'rgba(255,54,18,.52)');
+          eg.addColorStop(1,'rgba(255,0,0,0)');
+          ctx.fillStyle=eg; ctx.beginPath(); ctx.arc(ex.x,ex.y,rr,0,TAU); ctx.fill();
+          for(let i=0;i<ex.spokes;i++){
+            const a=ex.seed+t*2.6+i*TAU/ex.spokes;
+            ctx.globalAlpha=.82*(1-t);
+            ctx.strokeStyle=i%2?'#ffe0a0':'#ff6a2e';
+            ctx.lineWidth=3;
+            ctx.beginPath(); ctx.moveTo(ex.x+Math.cos(a)*14,ex.y+Math.sin(a)*14);
+            ctx.lineTo(ex.x+Math.cos(a)*rr*1.08,ex.y+Math.sin(a)*rr*1.08); ctx.stroke();
+          }
+        }
+
+        function star(x,y,r,rot,pts=5,c1='rgba(255,252,205,.96)',c2='rgba(255,116,40,.58)'){
+          ctx.save(); ctx.translate(x,y); ctx.rotate(rot);
+          const g=ctx.createRadialGradient(0,0,r*.05,0,0,r);
+          g.addColorStop(0,c1); g.addColorStop(.55,c2); g.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=g; ctx.beginPath();
+          for(let i=0;i<pts*2;i++){
+            const a=-Math.PI/2+i*Math.PI/pts, rr=i%2===0?r:r*.44;
+            const px=Math.cos(a)*rr, py=Math.sin(a)*rr;
+            if(i===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);
+          }
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle='rgba(255,246,196,.86)'; ctx.lineWidth=Math.max(1.6,r*.08); ctx.stroke();
+          ctx.restore();
+        }
+        for(const mn of s.minions||[]){
+          if(!mn.ult742)continue;
+          star(N(mn.x),N(mn.y),N(mn.size742,20),N(mn.rot742),5);
+          star(N(mn.x),N(mn.y),N(mn.size742,20)*.54,-N(mn.rot742)*1.3,4,'rgba(255,95,55,.82)','rgba(255,20,15,.22)');
+        }
+        for(const st of s.orbitStars||[]){
+          if(!st.ult742)continue;
+          star(N(st.x),N(st.y),N(st.size,24),N(st.rot742),5,'rgba(255,246,190,.92)','rgba(255,88,52,.60)');
+        }
+        for(const c of s.starChildren||[]){
+          if(!c.epic742)continue;
+          c.spin742=N(c.spin742)+.05;
+          star(N(c.x),N(c.y),N(c.size,20),N(c.spin742),5,'rgba(255,246,185,.90)','rgba(255,118,42,.54)');
+        }
+
+        ctx.restore();
+      }catch(e){console.warn('stellar742 render',e)}
+      return r;
+    };
+    wrapped.__stellar742=true;
+    window.render=wrapped; try{render=wrapped}catch{}
+  }
+
+  console.log('Chrono Shards 7.4.2 — arsenal ultimate do Emperador forçado para a versão mais recente');
+})();
+</script>
+
+
+<script>
+/* Chrono Shards 7.4.3 — Emperador usando o carregamento MAIS RECENTE do Chrono-Hero */
+(()=>{
+  if(window.__stellarLatestChronoCharge743)return; window.__stellarLatestChronoCharge743=true;
+
+  const EMP='stellarEmperor';
+  const CHRONO_TIME_GAIN=0.55; // copiado do patch mais recente do Chrono-Hero: _heroTimeUltBank += dt * 0.55
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const G=()=>{try{return game||window.game||null}catch{return null}};
+
+  function S724(g){
+    g.stellar724=g.stellar724||{};
+    g.stellar724.ultCharge=N(g.stellar724.ultCharge,N(g.stellarUltCharge));
+    return g.stellar724;
+  }
+  function ensureBank(g){
+    if(!g)return 0;
+    if(g._stellarTimeUltBank743===undefined) g._stellarTimeUltBank743=0;
+    g._stellarTimeUltBank743=clamp(N(g._stellarTimeUltBank743),0,100);
+    return g._stellarTimeUltBank743;
+  }
+  function syncAll(g){
+    if(!g||g.classKey!==EMP)return;
+    const s=S724(g);
+    const c=ensureBank(g);
+    s.ultCharge=c;
+    g.stellarUltCharge=c;
+
+    // neutraliza todos os bancos antigos de carga do Emperador.
+    if(g.stellar739) g.stellar739.charge=c;
+    if(g.stellar738) g.stellar738.charge=c;
+    if(g.stellar733) g.stellar733.elapsed=c;
+    if(g.stellar731) g.stellar731.elapsed=c;
+    if(g.stellar728) g.stellar728.charge=c;
+    if(g.stellar727) g.stellar727.ultTimerSeconds=c;
+    if(g.stellar721) g.stellar721.ultCharge=c;
+  }
+  function resetCharge(g){
+    if(!g)return;
+    g._stellarTimeUltBank743=0;
+    const s=S724(g);
+    s.ultCharge=0;
+    g.stellarUltCharge=0;
+    if(g.stellar739) g.stellar739.charge=0;
+    if(g.stellar738) g.stellar738.charge=0;
+    if(g.stellar733) g.stellar733.elapsed=0;
+    if(g.stellar731) g.stellar731.elapsed=0;
+    if(g.stellar728) g.stellar728.charge=0;
+    if(g.stellar727) g.stellar727.ultTimerSeconds=0;
+    if(g.stellar721) g.stellar721.ultCharge=0;
+  }
+  function updateUI(){
+    const g=G();
+    const el=document.getElementById('stellarUltIcon719');
+    if(!el)return;
+    if(!g||g.classKey!==EMP){
+      el.style.display='none';
+      return;
+    }
+    const s=S724(g);
+    syncAll(g);
+    const c=clamp(N(g._stellarTimeUltBank743),0,100);
+    el.style.display='grid';
+    el.style.setProperty('--charge',c);
+    el.classList.toggle('ready',c>=100&&!s.ult);
+    const pct=document.getElementById('stellarUltPercent719');
+    if(pct)pct.textContent=s.ult?`${Math.ceil(N(s.ult.life,0))}s`:(c>=100?'PRONTO':`${Math.floor(c)}%`);
+  }
+
+  const prevReset=window.resetGame||globalThis.resetGame;
+  if(typeof prevReset==='function'&&!prevReset.__stellarLatestChronoCharge743){
+    const wrapped=function(classKey){
+      const r=prevReset.apply(this,arguments);
+      try{
+        const g=G();
+        if(g&&classKey===EMP){
+          resetCharge(g);
+          updateUI();
+          try{addFloatingText(g.player.x,g.player.y-32,'ULTIMATE: CARGA POR TEMPO','#ffd166',15)}catch{}
+        }
+      }catch(e){console.warn('stellar743 reset',e)}
+      return r;
+    };
+    wrapped.__stellarLatestChronoCharge743=true;
+    window.resetGame=wrapped;try{resetGame=wrapped}catch{}
+  }
+
+  const prevUpdate=window.updatePlayer||globalThis.updatePlayer;
+  if(typeof prevUpdate==='function'&&!prevUpdate.__stellarLatestChronoCharge743){
+    const wrapped=function(dt){
+      const gBefore=G();
+      const wasEmp=!!(gBefore&&gBefore.classKey===EMP);
+      const wasUlt=wasEmp?!!S724(gBefore).ult:false;
+
+      const r=prevUpdate.apply(this,arguments);
+
+      try{
+        const g=G();
+        if(!g||g.classKey!==EMP)return r;
+        const s=S724(g);
+        ensureBank(g);
+
+        const ultNow=!!s.ult;
+        if(ultNow&&!wasUlt){
+          // ativou a ultimate: reinicia igual o Chrono-Hero reinicia quando usa.
+          resetCharge(g);
+        }else if(!ultNow){
+          // sistema MAIS RECENTE do Chrono-Hero: só tempo, sem kill gain.
+          g._stellarTimeUltBank743=clamp(N(g._stellarTimeUltBank743)+N(dt,g.dt||.016)*CHRONO_TIME_GAIN,0,100);
+          syncAll(g);
+        }else{
+          // durante a ultimate, banco fica zerado.
+          resetCharge(g);
+        }
+        updateUI();
+      }catch(e){console.warn('stellar743 update',e)}
+      return r;
+    };
+    wrapped.__stellarLatestChronoCharge743=true;
+    window.updatePlayer=wrapped;try{updatePlayer=wrapped}catch{}
+  }
+
+  // Sem carga por kill: preserva o banco antes/depois de qualquer enemyDeath antigo.
+  const prevDeath=window.enemyDeath||globalThis.enemyDeath;
+  if(typeof prevDeath==='function'&&!prevDeath.__stellarLatestChronoCharge743){
+    const wrapped=function(index,e){
+      const g=G();
+      const track=!!(g&&g.classKey===EMP);
+      const bank=track?ensureBank(g):undefined;
+      const r=prevDeath.apply(this,arguments);
+      try{
+        const gg=G();
+        if(track&&gg&&gg.classKey===EMP&&!S724(gg).ult){
+          gg._stellarTimeUltBank743=bank;
+          syncAll(gg);
+          updateUI();
+        }
+      }catch(e){}
+      return r;
+    };
+    wrapped.__stellarLatestChronoCharge743=true;
+    window.enemyDeath=wrapped;try{enemyDeath=wrapped}catch{}
+  }
+
+  // Antes dos listeners antigos do X, garante que todos os bancos antigos vejam a carga atual por tempo.
+  window.addEventListener('keydown',e=>{
+    try{
+      if((e.key||'').toLowerCase()!=='x')return;
+      const g=G();
+      if(!g||g.classKey!==EMP)return;
+      syncAll(g);
+      updateUI();
+    }catch{}
+  },true);
+
+  const prevHUD=window.updateHUD||globalThis.updateHUD;
+  if(typeof prevHUD==='function'&&!prevHUD.__stellarLatestChronoCharge743){
+    const wrapped=function(){
+      const r=prevHUD.apply(this,arguments);
+      try{
+        const g=G();
+        if(g&&g.classKey===EMP){
+          syncAll(g);
+          updateUI();
+        }
+      }catch{}
+      return r;
+    };
+    wrapped.__stellarLatestChronoCharge743=true;
+    window.updateHUD=wrapped;try{updateHUD=wrapped}catch{}
+  }
+
+  setInterval(()=>{
+    try{
+      const g=G();
+      if(g&&g.classKey===EMP){
+        syncAll(g);
+        updateUI();
+      }
+    }catch{}
+  },350);
+
+  console.log('Chrono Shards 7.4.3 — Emperador agora usa a carga mais recente do Chrono-Hero: tempo puro dt*0.55, sem kill gain');
 })();
 </script>
 
