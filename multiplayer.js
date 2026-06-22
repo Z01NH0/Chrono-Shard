@@ -1,27 +1,31 @@
 /* ============================================================
-   CHRONO SHARDS — MULTIPLAYER v4 (PeerJS, P2P co-op)
-   Mudanças em relação ao v3:
-     - Lobby reorganizado: tela inicial com 2 botões grandes
-       (CRIAR SALA / ENTRAR EM SALA). Entrar pede só o código.
-     - "HP dos inimigos" virou Dificuldade (Fácil/Médio/Difícil/Extremo).
-     - BUGFIX CRÍTICO: ao iniciar a partida, fechamos o #overlay
-       do menu de seleção de classes do jogo (era ele que escondia
-       o jogo e fazia parecer que "nada acontecia").
-     - Cliente: trava o avanço local de waves e spawn local; usa
-       snapshot do host como fonte da verdade dos inimigos.
-     - Host: aplica multiplicador de HP por dificuldade aos inimigos.
+   CHRONO SHARDS — MULTIPLAYER v5 (PeerJS, P2P co-op)
+   Mudanças em relação ao v4:
+     - REVIVE: 10s segurando E perto do aliado, devolve 25% HP.
+     - Morte de UM jogador NÃO encerra a partida se o outro vive
+       (wrap em gameOver → estado "down" reanimável).
+     - Seleção de personagem respeita classes desbloqueadas
+       (mesma chave de localStorage do menu original).
+     - Sync de "down" entre jogadores + mensagem youRevived dedicada
+       para realmente reerguer o downed do lado dele.
+     - Pequenas correções: bug do multiplicador de HP (host), timeout
+       de host quando PeerJS demora, replay de lobby ao reconectar.
    ============================================================ */
 (() => {
 'use strict';
 
 // ===================== CONFIG =====================
-const VERSION       = 'mp-v4';
-const TICK_HZ       = 20;
-const ENEMY_HZ      = 15;
-const REVIVE_TIME   = 3000;
-const REVIVE_RANGE  = 90;
-const CHAT_MAX      = 8;
-const PEER_PREFIX   = 'cs3-';
+const VERSION        = 'mp-v5';
+const TICK_HZ        = 20;
+const ENEMY_HZ       = 15;
+const REVIVE_TIME    = 10000;     // 10s parado em cima
+const REVIVE_RANGE   = 90;
+const REVIVE_HP_PCT  = 0.25;      // 25% do HP máximo
+const CHAT_MAX       = 8;
+const PEER_PREFIX    = 'cs3-';
+const SAVE_KEY       = 'chrono_v4_meta';
+const CLASS_UNLOCK_K = SAVE_KEY + '_class_unlocks_v3';
+const FREE_CLASSES   = ['assault','sniper'];
 
 const DIFFICULTY = {
   easy:    { label:'Fácil',   mult:1.0, color:'#4ce0b3' },
@@ -29,6 +33,14 @@ const DIFFICULTY = {
   hard:    { label:'Difícil', mult:2.4, color:'#ffd166' },
   extreme: { label:'Extremo', mult:3.5, color:'#ff4d6d' },
 };
+
+function getUnlockedSet(){
+  try {
+    const raw = localStorage.getItem(CLASS_UNLOCK_K) || '[]';
+    const arr = JSON.parse(raw);
+    return new Set([...FREE_CLASSES, ...(Array.isArray(arr)?arr:[])]);
+  } catch { return new Set(FREE_CLASSES); }
+}
 
 // ===================== ESTADO =====================
 const S = {
@@ -479,7 +491,22 @@ function handleData(conn, d){
       case 'chat': bcastChat(d.from||'?', d.msg||''); break;
       case 'revive': {
         const tgt = S.players.get(d.target);
-        if (tgt){ tgt.down=false; tgt.hp = Math.max(1, Math.floor(tgt.maxHp*0.5)); }
+        if (tgt){
+          tgt.down = false;
+          tgt.hp = Math.max(1, Math.floor(tgt.maxHp * REVIVE_HP_PCT));
+        }
+        // se o alvo for o próprio host, reanima localmente
+        if (d.target === S.myId) doLocalRevive();
+        // senão, manda mensagem dedicada pro cliente derrubado
+        else {
+          const c = S.conns.get(d.target);
+          if (c) send(c, { t:'youRevived' });
+        }
+        broadcastLobby(); break;
+      }
+      case 'down': {
+        const p = S.players.get(conn.peer);
+        if (p) p.down = !!d.down;
         broadcastLobby(); break;
       }
     }
@@ -491,6 +518,7 @@ function handleData(conn, d){
         S.riftMode = d.riftMode;
         renderLobby(); break;
       case 'start': startLocalGame(d.classByPlayer[S.myId]); break;
+      case 'youRevived': doLocalRevive(); break;
       case 'state': {
         for (const p of d.players){
           if (p.id === S.myId) continue;
@@ -499,6 +527,7 @@ function handleData(conn, d){
         }
         break;
       }
+
       case 'enemies': applyEnemySnapshot(d.list, d.wave); break;
       case 'chat': pushChat(d.from, d.msg); break;
     }
@@ -612,18 +641,32 @@ function showPick(){
       </div>`;
   } else {
     const me = S.players.get(S.myId);
+    const unlocked = getUnlockedSet();
     for (const c of classes){
-      const card = el('button', { className:'mp-class-card' + (me?.classKey===c.key?' picked':'') });
+      const isUnlocked = unlocked.has(c.key);
+      const card = el('button', {
+        className:'mp-class-card' + (me?.classKey===c.key?' picked':''),
+        disabled: !isUnlocked,
+        style: isUnlocked ? {} : { opacity:0.45, cursor:'not-allowed', filter:'grayscale(0.7)' }
+      });
       card.append(el('div', { style:{display:'flex',justifyContent:'space-between',alignItems:'center'} },
         el('span', { style:{fontSize:'26px'} }, c.icon),
-        c.tag ? el('span', { className:'mp-chip', style:{
-          background:c.tagColor+'22', color:c.tagColor, border:'1px solid '+c.tagColor+'44'
-        }}, c.tag) : ''
+        !isUnlocked
+          ? el('span', { className:'mp-chip', style:{
+              background:'rgba(255,209,102,0.15)', color:'#ffd166', border:'1px solid rgba(255,209,102,0.4)'
+            }}, '🔒 BLOQUEADO')
+          : (c.tag ? el('span', { className:'mp-chip', style:{
+              background:c.tagColor+'22', color:c.tagColor, border:'1px solid '+c.tagColor+'44'
+            }}, c.tag) : '')
       ));
       card.append(el('div', { style:{fontWeight:'700',fontSize:'15px'} }, c.name));
       if (c.desc) card.append(el('div', { style:{fontSize:'11px',opacity:.65,lineHeight:'1.35'} },
         c.desc.length>110 ? c.desc.slice(0,110)+'…' : c.desc));
-      card.onclick = () => pickClass(c.key);
+      if (!isUnlocked){
+        card.append(el('div', { style:{fontSize:'10px',opacity:.7,color:'#ffd166',marginTop:'4px'} },
+          'Desbloqueie no menu principal do jogo (fragmentos).'));
+      }
+      if (isUnlocked) card.onclick = () => pickClass(c.key);
       UI.grid.append(card);
     }
   }
@@ -631,6 +674,9 @@ function showPick(){
 }
 
 function pickClass(key){
+  if (!getUnlockedSet().has(key)){
+    log('Classe bloqueada:', key); return;
+  }
   const me = S.players.get(S.myId);
   if (me){ me.classKey = key; me.ready = true; }
   if (S.isHost) broadcastLobby();
@@ -638,6 +684,7 @@ function pickClass(key){
   showStage('lobby');
   renderLobby();
 }
+
 
 // ===================== INICIAR JOGO =====================
 function hostStart(){
@@ -691,6 +738,41 @@ function startLocalGame(classKey){
 function installEnemyPatch(){
   const g = window.game; if (!g) return;
 
+  // ---- Wrap gameOver (ambos lados): morte do solo NÃO encerra a partida
+  // se houver outro jogador vivo. Vira estado "down" reanimável.
+  if (typeof window.gameOver === 'function' && !window.gameOver.__mpWrapped){
+    const origGO = window.gameOver;
+    const wrappedGO = function(){
+      if (window.game && window.game.__mpDowned) return; // já caído
+      const others = [...S.players.values()]
+        .filter(p => p.id !== S.myId && p.classKey && !p.down);
+      if (others.length > 0){
+        // Entra em estado "down"
+        const gg = window.game;
+        if (gg){
+          gg.__mpDowned = true;
+          // No host, manter running=true para os inimigos compartilhados
+          // continuarem a ser simulados. No cliente, podemos pausar input.
+          if (!S.isHost) gg.running = false;
+          if (gg.player){ gg.player.hp = 0; gg.player.down = true; gg.player.dead = true; }
+        }
+
+        const me = S.players.get(S.myId);
+        if (me) me.down = true;
+        // Avisa o host (ou broadcast se for host)
+        if (S.isHost) broadcastLobby();
+        else {
+          const c = S.conns.get(S.roomCode);
+          if (c) send(c, { t:'down', down:true });
+        }
+        return;
+      }
+      return origGO.apply(this, arguments);
+    };
+    wrappedGO.__mpWrapped = true;
+    try { window.gameOver = wrappedGO; } catch(e){}
+  }
+
   if (S.isHost){
     const orig = window.spawnEnemy;
     if (typeof orig === 'function' && !orig.__mpWrapped){
@@ -702,9 +784,9 @@ function installEnemyPatch(){
         if (e){
           const m = hpMult();
           if (typeof e.hp === 'number' && m !== 1){
-            e.hp = e.hp * m;
-            e.maxHp = (e.maxHp || e.hp) * m / m;
-            if (typeof e.maxHp === 'number') e.maxHp = e.maxHp * m;
+            const base = e.maxHp || e.hp;
+            e.hp    = e.hp * m;
+            e.maxHp = base * m;
           }
           if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
         }
@@ -717,7 +799,6 @@ function installEnemyPatch(){
     // CLIENTE: stub spawn e congela avanço local de waves (host comanda)
     try {
       const noop = function(){
-        // ainda incrementa o contador local pra evitar travar updateWaveState
         const gg = window.game;
         if (gg) gg.enemiesSpawnedThisWave = (gg.enemiesSpawnedThisWave||0) + 1;
         return null;
@@ -726,7 +807,6 @@ function installEnemyPatch(){
       window.spawnEnemy = noop;
     } catch(e){}
 
-    // Bloqueia o avanço local de wave / abertura de loja (host controla)
     if (typeof window.updateWaveState === 'function' && !window.updateWaveState.__mpWrapped){
       const stub = function(){};
       stub.__mpWrapped = true;
@@ -741,6 +821,28 @@ function installEnemyPatch(){
     installClientBulletHook();
   }
 }
+
+function doLocalRevive(){
+  const gg = window.game; if (!gg) return;
+  gg.__mpDowned = false;
+  gg.running = true;
+  if (gg.player){
+    const max = gg.player.maxHp || 100;
+    gg.player.hp = Math.max(1, Math.floor(max * REVIVE_HP_PCT));
+    gg.player.down = false;
+    gg.player.dead = false;
+  }
+  const me = S.players.get(S.myId);
+  if (me){ me.down = false; me.hp = (gg.player && gg.player.hp) || me.hp; }
+  // Notifica o host que voltei
+  if (!S.isHost){
+    const c = S.conns.get(S.roomCode);
+    if (c) send(c, { t:'down', down:false });
+  } else {
+    broadcastLobby();
+  }
+}
+
 
 function installClientBulletHook(){
   const g = window.game; if (!g) return;
@@ -942,16 +1044,23 @@ function handleRevive(){
     const pct = Math.min(1, (Date.now()-S.reviveStart)/REVIVE_TIME);
     drawReviveBar(target, pct);
     if (pct >= 1){
-      const payload = { t:'revive', target: target.id };
       if (S.isHost){
         const tp = S.players.get(target.id);
-        if (tp){ tp.down=false; tp.hp = Math.max(1, Math.floor(tp.maxHp*0.5)); }
+        if (tp){
+          tp.down = false;
+          tp.hp = Math.max(1, Math.floor(tp.maxHp * REVIVE_HP_PCT));
+        }
+        // manda mensagem dedicada pro cliente derrubado se reerguer localmente
+        const c = S.conns.get(target.id);
+        if (c) send(c, { t:'youRevived' });
         broadcastLobby();
       } else {
-        const c = S.conns.get(S.roomCode); if (c) send(c, payload);
+        const c = S.conns.get(S.roomCode);
+        if (c) send(c, { t:'revive', target: target.id });
       }
       S.reviveTarget = null;
     }
+
   } else {
     S.reviveTarget = null;
   }
