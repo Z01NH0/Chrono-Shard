@@ -30413,15 +30413,11 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 })();
 </script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="multiplayer.js"></script>
-<script>
+<script src="multiplayer.js">
   /* ============================================================
    CHRONO SHARDS — MP BRIDGE
    COLE ESTE TRECHO NO FINAL DO <script> PRINCIPAL DO JOGO,
-   ANTES DO </script> DE FECHAMENTO.
-   Ele expõe em window.* os símbolos que estão presos no escopo
-   do script (declarados com const/let) para que o multiplayer.js
-   consiga lê-los.
+   ANTES DO 
    ============================================================ */
 (function exposeForMP(){
   try { window.CLASSES = CLASSES; } catch(e){}
@@ -30459,5 +30455,6 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 })();
 
 </script>
+
 </body>
 </html>
