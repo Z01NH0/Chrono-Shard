@@ -1,14 +1,8 @@
 /* ============================================================
-   CHRONO SHARDS — MULTIPLAYER v7 (PeerJS, P2P co-op)
-   Calibrado a partir do source completo do jogo:
-     - Canvas FIXO sem câmera (W=1360, H=780) → overlay sem offset.
-     - Dano de contato usa tabela por e.type (tank=20, boss=24,
-       elite=20, padrão=13) com hurtCd=0.55s no host por player remoto.
-     - Projéteis inimigos: game.enemyBullets (campo `damage`).
-     - Botão MULTIPLAYER injetado como CARD ao lado do "Modo das
-       Fissuras" em #openModeChoice50 (.riftModeChoice50).
-     - 2x spawn (+0.15x por nível de dificuldade).
-     - HOST re-mira inimigos no player mais próximo + homing leve.
+   CHRONO SHARDS — MULTIPLAYER v8 (PeerJS, P2P co-op)
+   v8: MP sempre destravado, UI de seleção repaginada, broadcast de
+       boss, pausa/loja sincronizada (cada um com a própria loja),
+       crédito de kills/XP/ouro para o cliente.
    ============================================================ */
 (() => {
 'use strict';
@@ -141,12 +135,16 @@ function injectCSS(){
   .mp-row.ready{ border-color:rgba(76,224,179,0.4); background:rgba(76,224,179,0.06); }
   .mp-row.host { border-color:rgba(255,209,102,0.35); }
   .mp-chip{ font-size:11px; padding:2px 8px; border-radius:999px; letter-spacing:.08em; font-weight:700; }
-  .mp-class-card{ display:flex; flex-direction:column; gap:6px; padding:12px;
-                  background:linear-gradient(180deg,rgba(20,30,55,0.7),rgba(10,15,30,0.7));
-                  border:1px solid rgba(120,200,255,0.18); border-radius:12px;
-                  cursor:pointer; transition:all .15s; text-align:left; }
-  .mp-class-card:hover{ border-color:#61dafb; transform:translateY(-2px); box-shadow:0 8px 24px rgba(97,218,251,0.25); }
-  .mp-class-card.picked{ border-color:#4ce0b3; box-shadow:0 0 0 2px rgba(76,224,179,0.3); }
+  .mp-class-card{ position:relative; display:flex; flex-direction:column; gap:8px; padding:14px;
+                  background:linear-gradient(160deg,rgba(30,40,75,0.85),rgba(8,12,25,0.92));
+                  border:1px solid rgba(120,200,255,0.18); border-radius:14px;
+                  cursor:pointer; transition:all .18s; text-align:left; min-height:148px;
+                  box-shadow:inset 0 0 24px rgba(80,140,255,0.05); }
+  .mp-class-card:hover:not(:disabled){ border-color:#61dafb; transform:translateY(-3px); box-shadow:0 10px 28px rgba(97,218,251,0.28); }
+  .mp-class-card.picked{ border-color:#4ce0b3; box-shadow:0 0 0 2px rgba(76,224,179,0.45), 0 0 24px rgba(76,224,179,0.25); background:linear-gradient(160deg,rgba(30,70,55,0.85),rgba(8,20,15,0.92)); }
+  .mp-class-card.locked{ filter:saturate(.35) grayscale(.6); opacity:.55; cursor:not-allowed; }
+  .mp-class-icon{ width:54px; height:54px; border-radius:12px; display:grid; place-items:center; font-size:30px;
+                  background:rgba(255,255,255,0.05); border:1px solid rgba(120,200,255,0.22); }
   .mp-diff{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
   .mp-diff button{ padding:10px 6px; border-radius:8px; border:1px solid rgba(120,200,255,0.18);
                    background:rgba(6,8,18,0.6); color:#eef2ff; font-family:inherit;
@@ -256,11 +254,14 @@ function buildUI(){
     </div>
 
     <div id="mp-stage-pick" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div style="font-size:16px;font-weight:700">Escolha seu personagem</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div>
+          <div style="font-size:18px;font-weight:800;letter-spacing:.02em">Escolha seu personagem</div>
+          <div style="font-size:11px;opacity:.55;margin-top:2px">Classes bloqueadas precisam ser desbloqueadas no menu principal do jogo.</div>
+        </div>
         <button id="mp-pick-back" class="mp-btn ghost" style="font-size:12px;padding:6px 10px">← voltar</button>
       </div>
-      <div id="mp-class-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px"></div>
+      <div id="mp-class-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px"></div>
     </div>
   `;
   root.append(panel);
@@ -401,13 +402,17 @@ function startMenuButtonPoller(){
       const card = rift.cloneNode(true);
       card.id = 'mpMode50';
       card.style.setProperty('--c', '#9f6cff');
-      // Substitui o conteúdo preservando classes internas
+      // MP é sempre desbloqueado: remove qualquer overlay/classe de lock
+      card.classList.remove('locked525','locked');
+      card.querySelectorAll('.riftLockLayer525,.riftLockBadge525').forEach(n=>n.remove());
+      card.querySelectorAll('h2,p').forEach(n=>{ n.style.opacity=''; });
+      card.style.filter=''; card.style.pointerEvents='auto';
       const tag = card.querySelector('.riftTag50');
       const h2  = card.querySelector('h2');
       const p   = card.querySelector('p');
-      if (tag) tag.textContent = 'NOVO · CO-OP';
-      if (h2)  h2.textContent  = 'Multiplayer 2P';
-      if (p)   p.textContent   = 'Convide um amigo e enfrente as waves em co-op P2P. Inimigos sincronizados, revive em equipe e dificuldade ajustável.';
+      if (tag){ tag.textContent = 'NOVO · CO-OP'; tag.style.color='#c8a8ff'; tag.style.borderColor='rgba(200,168,255,.45)'; }
+      if (h2){ h2.textContent  = 'Multiplayer 2P'; h2.style.color='#fff'; h2.style.opacity='1'; }
+      if (p){ p.textContent   = 'Convide um amigo e enfrente as waves em co-op. Inimigos compartilhados, lojas individuais e revive em equipe.'; p.style.opacity='1'; }
       card.onclick = (ev) => {
         ev.preventDefault(); ev.stopPropagation();
         toggleLobby(true); showStage('home');
@@ -511,7 +516,7 @@ function handleData(conn, d){
         if (p) Object.assign(p, d.s);
         break;
       }
-      case 'dmg': hostApplyDamage(d.mpId, d.amount); break;
+      case 'dmg': hostApplyDamage(d.mpId, d.amount, conn.peer); break;
       case 'chat': bcastChat(d.from||'?', d.msg||''); break;
       case 'revive': {
         const tgt = S.players.get(d.target);
@@ -552,6 +557,10 @@ function handleData(conn, d){
       }
       case 'enemies': applyEnemySnapshot(d.list, d.wave); break;
       case 'chat': pushChat(d.from, d.msg); break;
+      case 'bossSpawn': announceBoss(d.name||'BOSS', d.color||'#ff2e63'); break;
+      case 'shopOpen':  clientHandleShopOpen(); break;
+      case 'shopClose': clientHandleShopClose(); break;
+      case 'youKilled': clientApplyKill(d); break;
     }
   }
 }
@@ -662,29 +671,47 @@ function showPick(){
   } else {
     const me = S.players.get(S.myId);
     const unlocked = getUnlockedSet();
+    // ordena: desbloqueados primeiro
+    classes.sort((a,b)=> (unlocked.has(b.key)?1:0) - (unlocked.has(a.key)?1:0));
     for (const c of classes){
       const isUnlocked = unlocked.has(c.key);
+      const picked = me?.classKey===c.key;
       const card = el('button', {
-        className:'mp-class-card' + (me?.classKey===c.key?' picked':''),
+        className:'mp-class-card' + (picked?' picked':'') + (isUnlocked?'':' locked'),
         disabled: !isUnlocked,
-        style: isUnlocked ? {} : { opacity:0.45, cursor:'not-allowed', filter:'grayscale(0.7)' }
       });
-      card.append(el('div', { style:{display:'flex',justifyContent:'space-between',alignItems:'center'} },
-        el('span', { style:{fontSize:'26px'} }, c.icon),
-        !isUnlocked
-          ? el('span', { className:'mp-chip', style:{
-              background:'rgba(255,209,102,0.15)', color:'#ffd166', border:'1px solid rgba(255,209,102,0.4)'
-            }}, '🔒 BLOQUEADO')
-          : (c.tag ? el('span', { className:'mp-chip', style:{
-              background:c.tagColor+'22', color:c.tagColor, border:'1px solid '+c.tagColor+'44'
-            }}, c.tag) : '')
-      ));
-      card.append(el('div', { style:{fontWeight:'700',fontSize:'15px'} }, c.name));
-      if (c.desc) card.append(el('div', { style:{fontSize:'11px',opacity:.65,lineHeight:'1.35'} },
-        c.desc.length>110 ? c.desc.slice(0,110)+'…' : c.desc));
+      // header: icon + tag/lock
+      const header = el('div', { style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'8px'} });
+      header.append(el('div', { className:'mp-class-icon', style:{
+        borderColor:(c.tagColor||c.color||'#6cf')+'66',
+        color:(c.tagColor||c.color||'#fff')
+      }}, c.icon));
+      const badges = el('div', { style:{display:'flex',flexDirection:'column',gap:'4px',alignItems:'flex-end'} });
       if (!isUnlocked){
-        card.append(el('div', { style:{fontSize:'10px',opacity:.7,color:'#ffd166',marginTop:'4px'} },
-          'Desbloqueie no menu principal do jogo (fragmentos).'));
+        badges.append(el('span', { className:'mp-chip', style:{
+          background:'rgba(255,209,102,0.15)', color:'#ffd166',
+          border:'1px solid rgba(255,209,102,0.4)'
+        }}, '🔒 BLOQUEADO'));
+      } else if (c.tag){
+        badges.append(el('span', { className:'mp-chip', style:{
+          background:(c.tagColor||'#6cf')+'22', color:(c.tagColor||'#6cf'),
+          border:'1px solid '+(c.tagColor||'#6cf')+'55'
+        }}, c.tag));
+      }
+      if (picked) badges.append(el('span', { className:'mp-chip', style:{
+        background:'rgba(76,224,179,.18)', color:'#4ce0b3',
+        border:'1px solid rgba(76,224,179,.5)'
+      }}, '✓ ESCOLHIDA'));
+      header.append(badges);
+      card.append(header);
+      card.append(el('div', { style:{fontWeight:'800',fontSize:'16px',marginTop:'2px'} }, c.name));
+      if (c.desc) card.append(el('div', { style:{fontSize:'12px',opacity:.7,lineHeight:'1.4'} },
+        c.desc.length>120 ? c.desc.slice(0,120)+'…' : c.desc));
+      if (!isUnlocked){
+        card.append(el('div', { style:{
+          fontSize:'10px',color:'#ffd166',marginTop:'auto',
+          letterSpacing:'.05em',fontWeight:'700'
+        }}, '⛏ Desbloqueie com fragmentos no menu principal'));
       }
       if (isUnlocked) card.onclick = () => pickClass(c.key);
       UI.grid.append(card);
@@ -814,7 +841,7 @@ function installEnemyPatch(){
       try { window.spawnEnemy = wrapped; } catch(e){}
     }
   } else {
-    // CLIENTE: stub spawn local e congela avanço local de waves
+    // CLIENTE: stub spawn local; mantém openShopMenu original p/ usar loja própria
     try {
       const noop = function(){
         const gg = window.game;
@@ -828,12 +855,19 @@ function installEnemyPatch(){
       const stub = function(){}; stub.__mpWrapped = true;
       try { window.updateWaveState = stub; } catch(e){}
     }
-    if (typeof window.openShopMenu === 'function' && !window.openShopMenu.__mpWrapped){
-      const stub = function(){}; stub.__mpWrapped = true;
-      try { window.openShopMenu = stub; } catch(e){}
+    // Client: stub startNextWave (avanço é controlado pelo host via snapshot)
+    if (typeof window.startNextWave === 'function' && !window.startNextWave.__mpWrapped){
+      const stub = function(){
+        const gg = window.game; if (gg){ gg.running=true; gg.betweenWaves=false; gg.shopPending=false; }
+      };
+      stub.__mpWrapped = true;
+      try { window.startNextWave = stub; } catch(e){}
     }
     installClientBulletHook();
   }
+  installShopSync();
+  installBossWatcher();
+  if (S.isHost) installHostKillCredit();
 }
 
 function doLocalRevive(){
@@ -896,14 +930,127 @@ function installClientBulletHook(){
   requestAnimationFrame(loop);
 }
 
-function hostApplyDamage(mpId, amount){
+function hostApplyDamage(mpId, amount, fromPeer){
   const g = window.game; if (!g || !Array.isArray(g.enemies)) return;
   for (const e of g.enemies){
     if (e && e.__mpId === mpId){
       if (typeof e.hp === 'number') e.hp -= amount;
+      if (fromPeer) e.__mpLastHitter = fromPeer;
       break;
     }
   }
+}
+
+// =============== BOSS BROADCAST + ANÚNCIO ===============
+function installBossWatcher(){
+  if (S.isHost){
+    const seen = new Set();
+    setInterval(()=>{
+      const g = window.game; if (!g || !Array.isArray(g.enemies)) return;
+      for (const e of g.enemies){
+        if (!e || e.type!=='boss') continue;
+        if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
+        if (seen.has(e.__mpId)) continue;
+        seen.add(e.__mpId);
+        bcast({ t:'bossSpawn', name:(e.bossType||'BOSS').toString().toUpperCase(),
+                color:e.color||'#ff2e63', id:e.__mpId });
+        announceBoss((e.bossType||'BOSS').toString().toUpperCase(), e.color||'#ff2e63');
+      }
+    }, 250);
+  }
+}
+function announceBoss(name, color){
+  const root = document.getElementById('mp-root'); if (!root) return;
+  const n = el('div', { style:{
+    position:'absolute', top:'18%', left:'50%', transform:'translateX(-50%)',
+    fontFamily:'Orbitron,sans-serif', fontWeight:'900', fontSize:'34px',
+    letterSpacing:'.2em', color:'#fff', textShadow:`0 0 24px ${color}, 0 0 40px ${color}`,
+    pointerEvents:'none', zIndex:99999, opacity:'0', transition:'all .5s ease-out'
+  }}, `⚠ ${name} DESPERTOU ⚠`);
+  root.append(n);
+  requestAnimationFrame(()=>{ n.style.opacity='1'; n.style.transform='translate(-50%,12px)'; });
+  setTimeout(()=>{ n.style.opacity='0'; }, 2400);
+  setTimeout(()=>{ n.remove(); }, 3000);
+}
+
+// =============== SHOP / PAUSA SINCRONIZADA ===============
+// Cada player tem a PRÓPRIA loja (ouro/itens locais). Quando o host abre a
+// loja entre waves, broadcasta para o cliente abrir a sua. Quando o host
+// avança a wave (startNextWave), broadcasta resume e o cliente fecha a loja.
+function installShopSync(){
+  if (S.isHost){
+    if (typeof window.openShopMenu === 'function' && !window.openShopMenu.__mpShopWrap){
+      const orig = window.openShopMenu;
+      const wrap = function(){
+        bcast({ t:'shopOpen' });
+        return orig.apply(this, arguments);
+      };
+      wrap.__mpShopWrap = true; wrap.__mpWrapped = true;
+      try { window.openShopMenu = wrap; } catch(e){}
+    }
+    if (typeof window.startNextWave === 'function' && !window.startNextWave.__mpResumeWrap){
+      const orig = window.startNextWave;
+      const wrap = function(){
+        bcast({ t:'shopClose' });
+        return orig.apply(this, arguments);
+      };
+      wrap.__mpResumeWrap = true; wrap.__mpWrapped = true;
+      try { window.startNextWave = wrap; } catch(e){}
+    }
+  }
+}
+function clientHandleShopOpen(){
+  const gg = window.game; if (!gg) return;
+  gg.shopPending = true; gg.running = false;
+  try { if (typeof window.__origOpenShopMenu === 'function') window.__origOpenShopMenu();
+        else if (typeof window.openShopMenu === 'function') window.openShopMenu(); } catch(e){}
+}
+function clientHandleShopClose(){
+  const gg = window.game; if (!gg) return;
+  const ov = document.getElementById('overlay');
+  if (ov){ ov.classList.add('hidden'); ov.style.display='none'; }
+  gg.shopPending = false; gg.betweenWaves = false; gg.running = true;
+}
+
+// =============== CRÉDITO DE KILLS PARA O CLIENTE ===============
+// Host detecta inimigos que somem (morreram) e que tinham __mpLastHitter
+// remoto. Envia youKilled com ouro/xp para o cliente daquele peer.
+function installHostKillCredit(){
+  let prev = new Map();
+  setInterval(()=>{
+    const g = window.game; if (!g || !Array.isArray(g.enemies)) return;
+    const cur = new Map();
+    for (const e of g.enemies) if (e && e.__mpId) cur.set(e.__mpId, e);
+    for (const [id, e] of prev){
+      if (cur.has(id)) continue;
+      // sumiu — assumimos morto
+      const peer = e.__mpLastHitter;
+      if (!peer || peer === S.myId) continue;
+      const c = S.conns.get(peer); if (!c) continue;
+      const gold = Math.max(1, Math.floor((e.value||10) * 0.5));
+      const xp   = Math.max(1, Math.floor((e.value||10) * 0.4));
+      const score= e.value||10;
+      const boss = e.type === 'boss';
+      send(c, { t:'youKilled', gold, xp, score, boss, name:(boss?(e.bossType||'BOSS'):e.type||'')});
+    }
+    prev = cur;
+  }, 200);
+}
+
+function clientApplyKill(d){
+  const gg = window.game; if (!gg) return;
+  gg.gold = (gg.gold||0) + (d.gold||0);
+  gg.score = (gg.score||0) + (d.score||0);
+  if (gg.player){
+    gg.player.xp = (gg.player.xp||0) + (d.xp||0);
+    if (gg.player.xpNext && gg.player.xp >= gg.player.xpNext){
+      gg.player.xp -= gg.player.xpNext;
+      gg.player.level = (gg.player.level||1) + 1;
+      gg.player.xpNext = Math.floor(gg.player.xpNext * 1.35);
+    }
+  }
+  try { if (typeof window.updateHUD === 'function') window.updateHUD(); } catch(_){}
+  if (d.boss) announceBoss('BOSS DERROTADO', '#4ce0b3');
 }
 
 function startEnemySync(){
