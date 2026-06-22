@@ -1,31 +1,36 @@
 /* ============================================================
-   CHRONO SHARDS — MULTIPLAYER v5 (PeerJS, P2P co-op)
-   Mudanças em relação ao v4:
-     - REVIVE: 10s segurando E perto do aliado, devolve 25% HP.
-     - Morte de UM jogador NÃO encerra a partida se o outro vive
-       (wrap em gameOver → estado "down" reanimável).
-     - Seleção de personagem respeita classes desbloqueadas
-       (mesma chave de localStorage do menu original).
-     - Sync de "down" entre jogadores + mensagem youRevived dedicada
-       para realmente reerguer o downed do lado dele.
-     - Pequenas correções: bug do multiplicador de HP (host), timeout
-       de host quando PeerJS demora, replay de lobby ao reconectar.
+   CHRONO SHARDS — MULTIPLAYER v6 (PeerJS, P2P co-op)
+   Mudanças em relação ao v5:
+     - INIMIGOS perseguem AMBOS jogadores (host re-mira por enemy).
+     - HOST aplica dano de inimigos/projéteis no jogador REMOTO
+       (antes só host levava dano → ninguém morria).
+     - 2x spawn de inimigos (+0.15x por nível de dificuldade).
+     - Projéteis inimigos também são considerados contra ambos.
+     - Botão MULTIPLAYER somente no MENU PRINCIPAL (injetado como
+       irmão do botão "Fissuras", com o mesmo estilo).
+     - Overlay também desenha inimigos compartilhados como fallback.
    ============================================================ */
 (() => {
 'use strict';
 
 // ===================== CONFIG =====================
-const VERSION        = 'mp-v5';
-const TICK_HZ        = 20;
-const ENEMY_HZ       = 15;
-const REVIVE_TIME    = 10000;     // 10s parado em cima
-const REVIVE_RANGE   = 90;
-const REVIVE_HP_PCT  = 0.25;      // 25% do HP máximo
-const CHAT_MAX       = 8;
-const PEER_PREFIX    = 'cs3-';
-const SAVE_KEY       = 'chrono_v4_meta';
-const CLASS_UNLOCK_K = SAVE_KEY + '_class_unlocks_v3';
-const FREE_CLASSES   = ['assault','sniper'];
+const VERSION         = 'mp-v6';
+const TICK_HZ         = 20;
+const ENEMY_HZ        = 15;
+const HOST_DMG_HZ     = 20;          // taxa de aplicação de dano nos remotos
+const REVIVE_TIME     = 10000;
+const REVIVE_RANGE    = 90;
+const REVIVE_HP_PCT   = 0.25;
+const CHAT_MAX        = 8;
+const PEER_PREFIX     = 'cs3-';
+const SAVE_KEY        = 'chrono_v4_meta';
+const CLASS_UNLOCK_K  = SAVE_KEY + '_class_unlocks_v3';
+const FREE_CLASSES    = ['assault','sniper'];
+
+// 2x base + 0.15 por step de dificuldade
+const ENEMY_COUNT_BASE = 2.0;
+const ENEMY_COUNT_STEP = 0.15;
+const DIFFICULTY_ORDER = ['easy','medium','hard','extreme'];
 
 const DIFFICULTY = {
   easy:    { label:'Fácil',   mult:1.0, color:'#4ce0b3' },
@@ -55,6 +60,8 @@ const S = {
   chat: [],
   reviveTarget: null, reviveStart: 0,
   enemyIdCounter: 1,
+  injectedMenuBtn: null,
+  menuPollTimer: null,
 };
 
 // ===================== UTIL =====================
@@ -63,6 +70,10 @@ const log = (...a) => console.log('%c[MP]', 'color:#6cf', ...a);
 const warn = (...a) => console.warn('[MP]', ...a);
 const rid = () => Math.random().toString(36).slice(2,8).toUpperCase();
 const hpMult = () => (DIFFICULTY[S.difficulty]||DIFFICULTY.medium).mult;
+const enemyCountMult = () => {
+  const idx = Math.max(0, DIFFICULTY_ORDER.indexOf(S.difficulty));
+  return ENEMY_COUNT_BASE + ENEMY_COUNT_STEP * idx;
+};
 
 function getClasses(){
   const c = window.CLASSES || window.Classes || null;
@@ -157,8 +168,11 @@ function buildUI(){
     position:'fixed', inset:'0', zIndex:99999, pointerEvents:'none'
   }});
 
+  // Botão flutuante: SOMENTE como fallback se a injeção no menu falhar.
+  // Por padrão começa escondido; o poller decide se exibe.
   const openBtn = el('button', { className:'mp-btn primary', style:{
-    position:'absolute', top:'12px', right:'12px', pointerEvents:'auto', fontSize:'13px'
+    position:'absolute', top:'12px', right:'12px', pointerEvents:'auto',
+    fontSize:'13px', display:'none'
   }}, '🎮 Multiplayer');
   openBtn.onclick = () => { toggleLobby(true); showStage('home'); };
   root.append(openBtn);
@@ -178,66 +192,49 @@ function buildUI(){
       <button id="mp-close" class="mp-btn ghost" style="padding:6px 10px">×</button>
     </div>
 
-    <!-- STAGE HOME -->
     <div id="mp-stage-home" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
         <button id="mp-go-create" class="mp-btn primary huge">
-          <span style="font-size:30px">🛡️</span>
-          <span>CRIAR SALA</span>
+          <span style="font-size:30px">🛡️</span><span>CRIAR SALA</span>
           <span style="font-size:10px;opacity:.7;font-weight:600">Você será o host</span>
         </button>
         <button id="mp-go-join" class="mp-btn success huge">
-          <span style="font-size:30px">⚔️</span>
-          <span>ENTRAR EM SALA</span>
+          <span style="font-size:30px">⚔️</span><span>ENTRAR EM SALA</span>
           <span style="font-size:10px;opacity:.7;font-weight:600">Use o código de um amigo</span>
         </button>
       </div>
       <div style="margin-top:18px;padding:10px 12px;background:rgba(97,218,251,0.06);
                   border:1px solid rgba(97,218,251,0.18);border-radius:10px;font-size:12px;opacity:.85">
-        💡 Co-op P2P. Cada partida usa o host como autoridade dos inimigos e bosses.
+        💡 Co-op P2P. O host é autoridade dos inimigos, bosses e dano.
       </div>
       <div id="mp-home-msg" style="margin-top:10px;font-size:11px;opacity:.7;text-align:center"></div>
     </div>
 
-    <!-- STAGE CREATE -->
     <div id="mp-stage-create" style="display:none">
       <button class="mp-btn ghost" data-back style="font-size:12px;padding:6px 10px;margin-bottom:14px">← voltar</button>
       <div style="display:grid;gap:12px">
-        <div>
-          <span class="mp-label">SEU NOME</span>
-          <input id="mp-name-c" class="mp-input" maxlength="14" />
-        </div>
-        <div>
-          <span class="mp-label">DIFICULDADE</span>
-          <div id="mp-diff" class="mp-diff"></div>
-        </div>
+        <div><span class="mp-label">SEU NOME</span><input id="mp-name-c" class="mp-input" maxlength="14"/></div>
+        <div><span class="mp-label">DIFICULDADE</span><div id="mp-diff" class="mp-diff"></div></div>
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
-          <input id="mp-rift" type="checkbox"/>
-          Forçar Fissuras (modo 507)
+          <input id="mp-rift" type="checkbox"/> Forçar Fissuras (modo 507)
         </label>
         <button id="mp-host" class="mp-btn primary" style="padding:14px">🛡️ CRIAR SALA</button>
       </div>
       <div id="mp-status-c" style="margin-top:10px;font-size:11px;opacity:.7;text-align:center"></div>
     </div>
 
-    <!-- STAGE JOIN -->
     <div id="mp-stage-join" style="display:none">
       <button class="mp-btn ghost" data-back style="font-size:12px;padding:6px 10px;margin-bottom:14px">← voltar</button>
       <div style="display:grid;gap:12px">
-        <div>
-          <span class="mp-label">SEU NOME</span>
-          <input id="mp-name-j" class="mp-input" maxlength="14" />
-        </div>
-        <div>
-          <span class="mp-label">CÓDIGO DA SALA</span>
-          <input id="mp-code" class="mp-input" placeholder="ex: A1B2C3" style="text-transform:uppercase;letter-spacing:.2em;text-align:center;font-size:18px;font-weight:700"/>
-        </div>
+        <div><span class="mp-label">SEU NOME</span><input id="mp-name-j" class="mp-input" maxlength="14"/></div>
+        <div><span class="mp-label">CÓDIGO DA SALA</span>
+          <input id="mp-code" class="mp-input" placeholder="ex: A1B2C3"
+            style="text-transform:uppercase;letter-spacing:.2em;text-align:center;font-size:18px;font-weight:700"/></div>
         <button id="mp-join" class="mp-btn success" style="padding:14px">⚔️ ENTRAR NA SALA</button>
       </div>
       <div id="mp-status-j" style="margin-top:10px;font-size:11px;opacity:.7;text-align:center"></div>
     </div>
 
-    <!-- STAGE LOBBY -->
     <div id="mp-stage-lobby" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div>
@@ -258,7 +255,6 @@ function buildUI(){
       <div id="mp-lobby-msg" style="margin-top:10px;font-size:11px;opacity:.7;text-align:center"></div>
     </div>
 
-    <!-- STAGE PICK -->
     <div id="mp-stage-pick" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div style="font-size:16px;font-weight:700">Escolha seu personagem</div>
@@ -289,39 +285,21 @@ function buildUI(){
 
   UI = {
     openBtn, panel, chat, team,
-    close:     $('#mp-close', panel),
-    sHome:     $('#mp-stage-home', panel),
-    sCreate:   $('#mp-stage-create', panel),
-    sJoin:     $('#mp-stage-join', panel),
-    sLobby:    $('#mp-stage-lobby', panel),
-    sPick:     $('#mp-stage-pick', panel),
-    goCreate:  $('#mp-go-create', panel),
-    goJoin:    $('#mp-go-join', panel),
-    nameC:     $('#mp-name-c', panel),
-    nameJ:     $('#mp-name-j', panel),
-    diff:      $('#mp-diff', panel),
-    rift:      $('#mp-rift', panel),
-    host:      $('#mp-host', panel),
-    code:      $('#mp-code', panel),
-    join:      $('#mp-join', panel),
-    statusC:   $('#mp-status-c', panel),
-    statusJ:   $('#mp-status-j', panel),
-    homeMsg:   $('#mp-home-msg', panel),
-    roomLabel: $('#mp-room-label', panel),
-    copy:      $('#mp-copy', panel),
-    role:      $('#mp-role', panel),
-    plist:     $('#mp-players', panel),
-    pick:      $('#mp-pick', panel),
-    start:     $('#mp-start', panel),
-    lmsg:      $('#mp-lobby-msg', panel),
-    pickBack:  $('#mp-pick-back', panel),
-    grid:      $('#mp-class-grid', panel),
-    chatLog:   $('#mp-chat-log', chat),
-    chatInput: $('#mp-chat-input', chat),
+    close: $('#mp-close',panel),
+    sHome:$('#mp-stage-home',panel), sCreate:$('#mp-stage-create',panel),
+    sJoin:$('#mp-stage-join',panel), sLobby:$('#mp-stage-lobby',panel), sPick:$('#mp-stage-pick',panel),
+    goCreate:$('#mp-go-create',panel), goJoin:$('#mp-go-join',panel),
+    nameC:$('#mp-name-c',panel), nameJ:$('#mp-name-j',panel),
+    diff:$('#mp-diff',panel), rift:$('#mp-rift',panel), host:$('#mp-host',panel),
+    code:$('#mp-code',panel), join:$('#mp-join',panel),
+    statusC:$('#mp-status-c',panel), statusJ:$('#mp-status-j',panel), homeMsg:$('#mp-home-msg',panel),
+    roomLabel:$('#mp-room-label',panel), copy:$('#mp-copy',panel), role:$('#mp-role',panel),
+    plist:$('#mp-players',panel), pick:$('#mp-pick',panel), start:$('#mp-start',panel),
+    lmsg:$('#mp-lobby-msg',panel), pickBack:$('#mp-pick-back',panel), grid:$('#mp-class-grid',panel),
+    chatLog:$('#mp-chat-log',chat), chatInput:$('#mp-chat-input',chat),
   };
 
-  UI.nameC.value = S.myName;
-  UI.nameJ.value = S.myName;
+  UI.nameC.value = S.myName; UI.nameJ.value = S.myName;
   renderDifficulty();
 
   UI.close.onclick = () => toggleLobby(false);
@@ -357,16 +335,15 @@ function buildUI(){
   window.addEventListener('keydown', e => {
     if (!S.started) return;
     if (document.activeElement === UI.chatInput) return;
-    if (e.key === 'Enter'){
-      e.preventDefault();
-      UI.chatInput.style.display='block';
-      UI.chatInput.focus();
-    }
+    if (e.key === 'Enter'){ e.preventDefault(); UI.chatInput.style.display='block'; UI.chatInput.focus(); }
   });
 
   if (!window.__MP_BRIDGE_READY__) {
     UI.homeMsg.innerHTML = '⚠️ Bridge não detectado. Cole <code>mp-bridge.js</code> no final do &lt;script&gt; principal.';
   }
+
+  // Inicia poller para injetar/remover o botão no menu principal
+  startMenuButtonPoller();
 }
 
 function showStage(name){
@@ -390,9 +367,83 @@ function renderDifficulty(){
 
 function toggleLobby(show){ UI.panel.style.display = show ? '' : 'none'; }
 function setStatus(m, which='c'){
-  const el = which==='j' ? UI.statusJ : UI.statusC;
-  if (el) el.textContent = m;
+  const e = which==='j' ? UI.statusJ : UI.statusC;
+  if (e) e.textContent = m;
   log(m);
+}
+
+// ===================== BOTÃO NO MENU PRINCIPAL =====================
+// Heurística: procura no #overlay um botão cujo texto contenha "Fissura".
+// Se achar, clona seu className/estilo e injeta um irmão "MULTIPLAYER".
+// Caso contrário, mostra o botão flutuante de fallback (apenas no menu).
+function findFissuraButton(){
+  const overlay = document.getElementById('overlay');
+  if (!overlay) return null;
+  if (overlay.classList.contains('hidden')) return null;
+  if (getComputedStyle(overlay).display === 'none') return null;
+  const btns = overlay.querySelectorAll('button, .btn, [role="button"], a');
+  for (const b of btns){
+    const t = (b.textContent||'').toLowerCase();
+    if (t.includes('fissura') || t.includes('rift')) return b;
+  }
+  return null;
+}
+
+function isMainMenuVisible(){
+  const overlay = document.getElementById('overlay');
+  if (!overlay) return false;
+  if (overlay.classList.contains('hidden')) return false;
+  if (getComputedStyle(overlay).display === 'none') return false;
+  // se o jogo já começou, não é menu principal
+  if (S.started) return false;
+  // detectar menus específicos: presença do botão "Fissura" OU
+  // botões clássicos de menu principal (Jogar, Iniciar, Personagens)
+  const txt = (overlay.textContent||'').toLowerCase();
+  const looksMain = txt.includes('fissura') || txt.includes('rift');
+  return looksMain;
+}
+
+function startMenuButtonPoller(){
+  if (S.menuPollTimer) return;
+  S.menuPollTimer = setInterval(() => {
+    try {
+      const main = isMainMenuVisible();
+      if (!main){
+        if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected) S.injectedMenuBtn.remove();
+        S.injectedMenuBtn = null;
+        UI.openBtn.style.display = 'none';
+        return;
+      }
+      // Já injetado e ainda no DOM? nada a fazer
+      if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected){
+        UI.openBtn.style.display = 'none';
+        return;
+      }
+      const fissura = findFissuraButton();
+      if (fissura){
+        const btn = fissura.cloneNode(true);
+        btn.id = 'mp-menu-btn';
+        // Substitui ícone/texto preservando estilo
+        btn.textContent = '';
+        btn.append(document.createTextNode('🎮 MULTIPLAYER'));
+        btn.removeAttribute('onclick');
+        btn.style.marginLeft = '8px';
+        btn.addEventListener('click', (ev) => {
+          ev.preventDefault(); ev.stopPropagation();
+          toggleLobby(true); showStage('home');
+        }, true);
+        // Insere logo após o botão Fissuras
+        if (fissura.parentNode){
+          fissura.parentNode.insertBefore(btn, fissura.nextSibling);
+          S.injectedMenuBtn = btn;
+          UI.openBtn.style.display = 'none';
+          return;
+        }
+      }
+      // Fallback: botão flutuante (só no menu)
+      UI.openBtn.style.display = '';
+    } catch(e){}
+  }, 500);
 }
 
 // ===================== PEERJS =====================
@@ -495,9 +546,7 @@ function handleData(conn, d){
           tgt.down = false;
           tgt.hp = Math.max(1, Math.floor(tgt.maxHp * REVIVE_HP_PCT));
         }
-        // se o alvo for o próprio host, reanima localmente
         if (d.target === S.myId) doLocalRevive();
-        // senão, manda mensagem dedicada pro cliente derrubado
         else {
           const c = S.conns.get(d.target);
           if (c) send(c, { t:'youRevived' });
@@ -519,6 +568,7 @@ function handleData(conn, d){
         renderLobby(); break;
       case 'start': startLocalGame(d.classByPlayer[S.myId]); break;
       case 'youRevived': doLocalRevive(); break;
+      case 'youHit': clientApplyHit(d.amount||0); break;
       case 'state': {
         for (const p of d.players){
           if (p.id === S.myId) continue;
@@ -527,7 +577,6 @@ function handleData(conn, d){
         }
         break;
       }
-
       case 'enemies': applyEnemySnapshot(d.list, d.wave); break;
       case 'chat': pushChat(d.from, d.msg); break;
     }
@@ -624,9 +673,7 @@ function renderLobby(){
 }
 
 function setBtn(b, enabled, variant, text){
-  b.disabled = !enabled;
-  b.textContent = text;
-  b.className = 'mp-btn ' + variant;
+  b.disabled = !enabled; b.textContent = text; b.className = 'mp-btn ' + variant;
 }
 
 function showPick(){
@@ -674,17 +721,13 @@ function showPick(){
 }
 
 function pickClass(key){
-  if (!getUnlockedSet().has(key)){
-    log('Classe bloqueada:', key); return;
-  }
+  if (!getUnlockedSet().has(key)){ log('Classe bloqueada:', key); return; }
   const me = S.players.get(S.myId);
   if (me){ me.classKey = key; me.ready = true; }
   if (S.isHost) broadcastLobby();
   else { const c = S.conns.get(S.roomCode); if (c) send(c, { t:'pickClass', classKey:key }); }
-  showStage('lobby');
-  renderLobby();
+  showStage('lobby'); renderLobby();
 }
-
 
 // ===================== INICIAR JOGO =====================
 function hostStart(){
@@ -696,11 +739,8 @@ function hostStart(){
 }
 
 function closeGameOverlay(){
-  // BUGFIX: o jogo usa #overlay para mostrar menus (inclusive seleção
-  // inicial de classe). Se não escondermos, fica preto e "nada acontece".
   const ov = document.getElementById('overlay');
   if (ov) ov.classList.add('hidden');
-  // Algumas builds usam style.display
   if (ov && getComputedStyle(ov).display !== 'none') ov.style.display = 'none';
 }
 
@@ -710,19 +750,19 @@ function startLocalGame(classKey){
   toggleLobby(false);
   UI.chat.style.display = '';
   UI.team.style.display = '';
+  // Remove o botão do menu (não deve aparecer dentro do jogo)
+  if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected) S.injectedMenuBtn.remove();
+  S.injectedMenuBtn = null;
+  UI.openBtn.style.display = 'none';
+
   if (S.riftMode) { try { window.__forceNextRift507 = true; } catch(e){} }
   try {
     if (typeof window.resetGame === 'function') {
       window.resetGame(classKey);
-    } else {
-      warn('window.resetGame não disponível');
-      return;
-    }
+    } else { warn('window.resetGame não disponível'); return; }
   } catch(e){ console.error('[MP] erro ao iniciar:', e); return; }
 
-  // CRÍTICO: esconder o overlay do menu original do jogo
   closeGameOverlay();
-  // E garantir de novo após próximos ticks, caso o jogo reabra
   setTimeout(closeGameOverlay, 50);
   setTimeout(closeGameOverlay, 250);
 
@@ -730,6 +770,8 @@ function startLocalGame(classKey){
     installEnemyPatch();
     startTickLoop();
     startEnemySync();
+    startHostDamageLoop();
+    startHostTargetingLoop();
     startOverlay();
   }, 80);
 }
@@ -738,33 +780,23 @@ function startLocalGame(classKey){
 function installEnemyPatch(){
   const g = window.game; if (!g) return;
 
-  // ---- Wrap gameOver (ambos lados): morte do solo NÃO encerra a partida
-  // se houver outro jogador vivo. Vira estado "down" reanimável.
+  // Wrap gameOver (lados): morte não encerra se o outro vive
   if (typeof window.gameOver === 'function' && !window.gameOver.__mpWrapped){
     const origGO = window.gameOver;
     const wrappedGO = function(){
-      if (window.game && window.game.__mpDowned) return; // já caído
+      if (window.game && window.game.__mpDowned) return;
       const others = [...S.players.values()]
         .filter(p => p.id !== S.myId && p.classKey && !p.down);
       if (others.length > 0){
-        // Entra em estado "down"
         const gg = window.game;
         if (gg){
           gg.__mpDowned = true;
-          // No host, manter running=true para os inimigos compartilhados
-          // continuarem a ser simulados. No cliente, podemos pausar input.
           if (!S.isHost) gg.running = false;
           if (gg.player){ gg.player.hp = 0; gg.player.down = true; gg.player.dead = true; }
         }
-
-        const me = S.players.get(S.myId);
-        if (me) me.down = true;
-        // Avisa o host (ou broadcast se for host)
+        const me = S.players.get(S.myId); if (me) me.down = true;
         if (S.isHost) broadcastLobby();
-        else {
-          const c = S.conns.get(S.roomCode);
-          if (c) send(c, { t:'down', down:true });
-        }
+        else { const c = S.conns.get(S.roomCode); if (c) send(c, { t:'down', down:true }); }
         return;
       }
       return origGO.apply(this, arguments);
@@ -777,26 +809,39 @@ function installEnemyPatch(){
     const orig = window.spawnEnemy;
     if (typeof orig === 'function' && !orig.__mpWrapped){
       const wrapped = function(...a){
-        const before = g.enemies ? g.enemies.length : 0;
-        const r = orig.apply(this, a);
-        const e = (r && typeof r === 'object') ? r :
-                  (g.enemies && g.enemies.length > before ? g.enemies[g.enemies.length-1] : null);
-        if (e){
-          const m = hpMult();
-          if (typeof e.hp === 'number' && m !== 1){
-            const base = e.maxHp || e.hp;
-            e.hp    = e.hp * m;
-            e.maxHp = base * m;
+        // 2x+ spawn: chama o original N vezes (N depende da dificuldade)
+        const totalMult = enemyCountMult();
+        const whole = Math.floor(totalMult);
+        const frac  = totalMult - whole;
+        const N = whole + (Math.random() < frac ? 1 : 0);
+        let firstR = null;
+        for (let i=0; i<Math.max(1,N); i++){
+          const before = g.enemies ? g.enemies.length : 0;
+          const r = orig.apply(this, a);
+          const e = (r && typeof r === 'object') ? r :
+                    (g.enemies && g.enemies.length > before ? g.enemies[g.enemies.length-1] : null);
+          if (e){
+            const m = hpMult();
+            if (typeof e.hp === 'number' && m !== 1){
+              const base = e.maxHp || e.hp;
+              e.hp    = e.hp * m; e.maxHp = base * m;
+            }
+            if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
+            // Offset pequeno para spawns extras não empilharem
+            if (i > 0){
+              e.x = (e.x||0) + (Math.random()*60 - 30);
+              e.y = (e.y||0) + (Math.random()*60 - 30);
+            }
           }
-          if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
+          if (i===0) firstR = r;
         }
-        return r;
+        return firstR;
       };
       wrapped.__mpWrapped = true;
       try { window.spawnEnemy = wrapped; } catch(e){}
     }
   } else {
-    // CLIENTE: stub spawn e congela avanço local de waves (host comanda)
+    // CLIENTE: stub spawn local e congela avanço local de waves
     try {
       const noop = function(){
         const gg = window.game;
@@ -806,18 +851,14 @@ function installEnemyPatch(){
       noop.__mpWrapped = true;
       window.spawnEnemy = noop;
     } catch(e){}
-
     if (typeof window.updateWaveState === 'function' && !window.updateWaveState.__mpWrapped){
-      const stub = function(){};
-      stub.__mpWrapped = true;
+      const stub = function(){}; stub.__mpWrapped = true;
       try { window.updateWaveState = stub; } catch(e){}
     }
     if (typeof window.openShopMenu === 'function' && !window.openShopMenu.__mpWrapped){
-      const stub = function(){};
-      stub.__mpWrapped = true;
+      const stub = function(){}; stub.__mpWrapped = true;
       try { window.openShopMenu = stub; } catch(e){}
     }
-
     installClientBulletHook();
   }
 }
@@ -829,32 +870,34 @@ function doLocalRevive(){
   if (gg.player){
     const max = gg.player.maxHp || 100;
     gg.player.hp = Math.max(1, Math.floor(max * REVIVE_HP_PCT));
-    gg.player.down = false;
-    gg.player.dead = false;
+    gg.player.down = false; gg.player.dead = false;
   }
   const me = S.players.get(S.myId);
   if (me){ me.down = false; me.hp = (gg.player && gg.player.hp) || me.hp; }
-  // Notifica o host que voltei
   if (!S.isHost){
-    const c = S.conns.get(S.roomCode);
-    if (c) send(c, { t:'down', down:false });
-  } else {
-    broadcastLobby();
-  }
+    const c = S.conns.get(S.roomCode); if (c) send(c, { t:'down', down:false });
+  } else broadcastLobby();
 }
 
+function clientApplyHit(amount){
+  const gg = window.game; if (!gg || !gg.player) return;
+  if (gg.__mpDowned) return;
+  gg.player.hp = Math.max(0, (gg.player.hp||0) - amount);
+  if (gg.player.hp <= 0){
+    // dispara o gameOver wrapado (vira "down" se houver outro vivo)
+    try { if (typeof window.gameOver === 'function') window.gameOver(); } catch(e){}
+  }
+}
 
 function installClientBulletHook(){
   const g = window.game; if (!g) return;
   if (g.__mpBulletHook) return;
   g.__mpBulletHook = true;
-
   const loop = ()=>{
     if (!S.started || S.isHost) return;
     const gg = window.game;
     if (gg && Array.isArray(gg.bullets) && Array.isArray(gg.enemies)){
-      const bullets = gg.bullets;
-      const enemies = gg.enemies;
+      const bullets = gg.bullets, enemies = gg.enemies;
       for (let i=0;i<bullets.length;i++){
         const b = bullets[i];
         if (!b || b.__mpConsumed) continue;
@@ -922,9 +965,7 @@ function applyEnemySnapshot(list, wave){
     let e = existing.get(s.i);
     if (!e){ e = makeShellEnemy(s); }
     else {
-      e.x = s.x; e.y = s.y;
-      e.hp = s.h; e.maxHp = s.M;
-      e.r = s.r;
+      e.x = s.x; e.y = s.y; e.hp = s.h; e.maxHp = s.M; e.r = s.r;
     }
     next.push(e);
   }
@@ -936,14 +977,132 @@ function makeShellEnemy(s){
   return {
     __mpId: s.i, __mpShell: true,
     x: s.x, y: s.y, vx:0, vy:0,
-    hp: s.h, maxHp: s.M,
-    r: s.r||14,
-    type: s.t||'normal',
-    boss: !!s.b, elite: !!s.el,
-    color: s.c||'#ff6b9d',
-    dead: false,
+    hp: s.h, maxHp: s.M, r: s.r||14,
+    type: s.t||'normal', boss: !!s.b, elite: !!s.el,
+    color: s.c||'#ff6b9d', dead: false,
     update(){}, draw(){},
   };
+}
+
+// ============== HOST: MIRA NOS DOIS PLAYERS ==============
+// Estratégia: a cada frame, para cada inimigo, identifica o player
+// (incluindo remotos via S.players) mais próximo e:
+//  1) sobrescreve `enemy.target` (caso a IA use)
+//  2) aplica uma força homing leve direto em x/y (para garantir que
+//     enemies que só usam game.player também sigam o outro player).
+// Também antes do tick original do jogo, comuta temporariamente
+// `game.player.x/y` para o centroide entre os players, de modo que
+// IAs que leem game.player ainda mirem "entre" os dois.
+function listLivePlayers(){
+  const arr = [];
+  for (const p of S.players.values()){
+    if (!p.classKey) continue;
+    if (p.down) continue;
+    arr.push(p);
+  }
+  return arr;
+}
+function nearestPlayer(x,y){
+  let best=null, bd=Infinity;
+  for (const p of listLivePlayers()){
+    const d = (p.x-x)*(p.x-x) + (p.y-y)*(p.y-y);
+    if (d<bd){ bd=d; best=p; }
+  }
+  return best;
+}
+
+function startHostTargetingLoop(){
+  if (!S.isHost) return;
+  let last = performance.now();
+  const tick = ()=>{
+    if (!S.started) return;
+    const now = performance.now();
+    const dt = Math.min(0.05, (now-last)/1000);
+    last = now;
+    const g = window.game;
+    if (g && Array.isArray(g.enemies)){
+      const live = listLivePlayers();
+      if (live.length >= 1){
+        // Centroide só para nudgear game.player virtualmente (não persistente)
+        for (const e of g.enemies){
+          if (!e || e.__mpShell) continue;
+          const tgt = nearestPlayer(e.x||0, e.y||0);
+          if (!tgt) continue;
+          // Atualiza heurísticas comuns de IA
+          try {
+            e.target = tgt;
+            e.targetX = tgt.x; e.targetY = tgt.y;
+          } catch(_){}
+          // Homing leve adicional (pixels/segundo)
+          const dx = tgt.x - (e.x||0), dy = tgt.y - (e.y||0);
+          const d = Math.hypot(dx,dy) || 1;
+          const speed = (e.speed || e.spd || 60) * 0.35; // força extra suave
+          e.x = (e.x||0) + (dx/d) * speed * dt;
+          e.y = (e.y||0) + (dy/d) * speed * dt;
+        }
+      }
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// ============== HOST: DANO NOS DOIS PLAYERS ==============
+// Aplica dano de contato dos inimigos no player REMOTO + projéteis
+// inimigos (game.enemyBullets se existir, ou bullets com flag hostile).
+function startHostDamageLoop(){
+  if (!S.isHost) return;
+  const TICK = 1000 / HOST_DMG_HZ;
+  setInterval(()=>{
+    const g = window.game; if (!g) return;
+    const others = [...S.players.values()].filter(p => p.id !== S.myId && p.classKey && !p.down);
+    if (others.length === 0) return;
+
+    for (const rp of others){
+      let totalDmg = 0;
+
+      // Contato com inimigos
+      if (Array.isArray(g.enemies)){
+        for (const e of g.enemies){
+          if (!e || e.__mpShell || e.dead) continue;
+          const er = (e.r||14) + 12; // raio do player ~12
+          const dx = (e.x||0) - rp.x, dy = (e.y||0) - rp.y;
+          if (dx*dx + dy*dy < er*er){
+            // Dano por tick (escala com touch dmg ou padrão)
+            const td = (e.touchDmg || e.contactDmg || e.dmg || 5) * (TICK/1000);
+            totalDmg += td;
+          }
+        }
+      }
+
+      // Projéteis inimigos
+      const projArrays = [];
+      if (Array.isArray(g.enemyBullets)) projArrays.push(g.enemyBullets);
+      if (Array.isArray(g.hostileBullets)) projArrays.push(g.hostileBullets);
+      if (Array.isArray(g.bullets)) projArrays.push(g.bullets.filter(b => b && (b.hostile || b.fromEnemy || b.enemy)));
+      for (const arr of projArrays){
+        for (const b of arr){
+          if (!b || b.dead) continue;
+          const br = (b.r||4) + 12;
+          const dx = (b.x||0) - rp.x, dy = (b.y||0) - rp.y;
+          if (dx*dx + dy*dy < br*br){
+            totalDmg += (b.damage || b.dmg || 8);
+            b.dead = true; b.life = 0;
+          }
+        }
+      }
+
+      if (totalDmg > 0){
+        rp.hp = Math.max(0, (rp.hp||0) - totalDmg);
+        const c = S.conns.get(rp.id);
+        if (c) send(c, { t:'youHit', amount: totalDmg });
+        if (rp.hp <= 0 && !rp.down){
+          rp.down = true;
+          broadcastLobby();
+        }
+      }
+    }
+  }, TICK);
 }
 
 // ===================== SYNC DE JOGADORES =====================
@@ -999,10 +1158,34 @@ function startOverlay(){
     const cam = (g && (g.camera||g.cam)) || {x:0,y:0};
     const gc = document.querySelector('canvas#game') || document.querySelector('canvas');
     const scale = gc ? oc.width / gc.width : 1;
+    const W = gc?gc.width:oc.width, H = gc?gc.height:oc.height;
+
+    // No CLIENTE, desenha inimigos compartilhados (shells) como fallback
+    if (!S.isHost && g && Array.isArray(g.enemies)){
+      for (const e of g.enemies){
+        if (!e || !e.__mpShell) continue;
+        const sx = ((e.x||0)-(cam.x||0)+W/2) * scale;
+        const sy = ((e.y||0)-(cam.y||0)+H/2) * scale;
+        octx.fillStyle = e.boss ? '#ff4d6d' : (e.color || '#ff8866');
+        octx.beginPath();
+        octx.arc(sx, sy, (e.r||14)*scale, 0, Math.PI*2);
+        octx.fill();
+        // HP bar
+        if (e.maxHp){
+          const bw = (e.r||14)*2*scale;
+          octx.fillStyle='rgba(0,0,0,0.6)';
+          octx.fillRect(sx-bw/2, sy-(e.r||14)*scale-6, bw, 3);
+          octx.fillStyle='#ff4d6d';
+          octx.fillRect(sx-bw/2, sy-(e.r||14)*scale-6, bw*Math.max(0,e.hp/e.maxHp), 3);
+        }
+      }
+    }
+
+    // Outros jogadores
     for (const p of S.players.values()){
       if (p.id === S.myId) continue;
-      const sx = ((p.x||0) - (cam.x||0) + (gc?gc.width/2:oc.width/2)) * scale;
-      const sy = ((p.y||0) - (cam.y||0) + (gc?gc.height/2:oc.height/2)) * scale;
+      const sx = ((p.x||0) - (cam.x||0) + W/2) * scale;
+      const sy = ((p.y||0) - (cam.y||0) + H/2) * scale;
       octx.globalAlpha = p.down ? 0.45 : 0.85;
       octx.fillStyle = p.down ? '#ff4d6d' : '#61dafb';
       octx.beginPath(); octx.arc(sx,sy,12*scale,0,Math.PI*2); octx.fill();
@@ -1031,6 +1214,7 @@ window.addEventListener('keyup',   e => keysDown[(e.key||'').toLowerCase()] = fa
 function handleRevive(){
   if (!S.started) return;
   const me = S.players.get(S.myId); if (!me) return;
+  if (me.down) { S.reviveTarget = null; return; }
   let target=null, best=REVIVE_RANGE;
   for (const p of S.players.values()){
     if (p.id===S.myId || !p.down) continue;
@@ -1050,7 +1234,6 @@ function handleRevive(){
           tp.down = false;
           tp.hp = Math.max(1, Math.floor(tp.maxHp * REVIVE_HP_PCT));
         }
-        // manda mensagem dedicada pro cliente derrubado se reerguer localmente
         const c = S.conns.get(target.id);
         if (c) send(c, { t:'youRevived' });
         broadcastLobby();
@@ -1060,10 +1243,7 @@ function handleRevive(){
       }
       S.reviveTarget = null;
     }
-
-  } else {
-    S.reviveTarget = null;
-  }
+  } else { S.reviveTarget = null; }
 }
 
 function drawReviveBar(p, pct){
@@ -1072,8 +1252,9 @@ function drawReviveBar(p, pct){
   const cam = (g && (g.camera||g.cam)) || {x:0,y:0};
   const gc = document.querySelector('canvas#game') || document.querySelector('canvas');
   const scale = gc ? oc.width / gc.width : 1;
-  const sx = ((p.x||0) - (cam.x||0) + (gc?gc.width/2:oc.width/2)) * scale;
-  const sy = ((p.y||0) - (cam.y||0) + (gc?gc.height/2:oc.height/2)) * scale;
+  const W = gc?gc.width:oc.width, H = gc?gc.height:oc.height;
+  const sx = ((p.x||0) - (cam.x||0) + W/2) * scale;
+  const sy = ((p.y||0) - (cam.y||0) + H/2) * scale;
   octx.fillStyle='rgba(0,0,0,0.7)'; octx.fillRect(sx-24*scale, sy+32*scale, 48*scale, 6*scale);
   octx.fillStyle='#ffd166'; octx.fillRect(sx-24*scale, sy+32*scale, 48*scale*pct, 6*scale);
 }
@@ -1110,7 +1291,7 @@ function renderTeam(){
     row.append(el('span', { style:{display:'flex',alignItems:'center',gap:'4px'} },
       el('span', {}, c?c.icon:'❔'),
       el('span', { style:{fontWeight:'600'} },
-        p.name + (p.id===S.myId?' (você)':''))));
+        p.name + (p.id===S.myId?' (você)':'') + (p.down?' 💀':''))));
     row.append(el('span', { style:{fontSize:'10px',opacity:.8} },
       `W${p.wave||1} · ${Math.max(0,p.hp|0)}/${p.maxHp|0}`));
     UI.team.append(row);
