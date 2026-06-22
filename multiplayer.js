@@ -1,14 +1,14 @@
 /* ============================================================
-   CHRONO SHARDS — MULTIPLAYER v6 (PeerJS, P2P co-op)
-   Mudanças em relação ao v5:
-     - INIMIGOS perseguem AMBOS jogadores (host re-mira por enemy).
-     - HOST aplica dano de inimigos/projéteis no jogador REMOTO
-       (antes só host levava dano → ninguém morria).
-     - 2x spawn de inimigos (+0.15x por nível de dificuldade).
-     - Projéteis inimigos também são considerados contra ambos.
-     - Botão MULTIPLAYER somente no MENU PRINCIPAL (injetado como
-       irmão do botão "Fissuras", com o mesmo estilo).
-     - Overlay também desenha inimigos compartilhados como fallback.
+   CHRONO SHARDS — MULTIPLAYER v7 (PeerJS, P2P co-op)
+   Calibrado a partir do source completo do jogo:
+     - Canvas FIXO sem câmera (W=1360, H=780) → overlay sem offset.
+     - Dano de contato usa tabela por e.type (tank=20, boss=24,
+       elite=20, padrão=13) com hurtCd=0.55s no host por player remoto.
+     - Projéteis inimigos: game.enemyBullets (campo `damage`).
+     - Botão MULTIPLAYER injetado como CARD ao lado do "Modo das
+       Fissuras" em #openModeChoice50 (.riftModeChoice50).
+     - 2x spawn (+0.15x por nível de dificuldade).
+     - HOST re-mira inimigos no player mais próximo + homing leve.
    ============================================================ */
 (() => {
 'use strict';
@@ -372,78 +372,51 @@ function setStatus(m, which='c'){
   log(m);
 }
 
-// ===================== BOTÃO NO MENU PRINCIPAL =====================
-// Heurística: procura no #overlay um botão cujo texto contenha "Fissura".
-// Se achar, clona seu className/estilo e injeta um irmão "MULTIPLAYER".
-// Caso contrário, mostra o botão flutuante de fallback (apenas no menu).
-function findFissuraButton(){
-  const overlay = document.getElementById('overlay');
-  if (!overlay) return null;
-  if (overlay.classList.contains('hidden')) return null;
-  if (getComputedStyle(overlay).display === 'none') return null;
-  const btns = overlay.querySelectorAll('button, .btn, [role="button"], a');
-  for (const b of btns){
-    const t = (b.textContent||'').toLowerCase();
-    if (t.includes('fissura') || t.includes('rift')) return b;
-  }
-  return null;
-}
-
-function isMainMenuVisible(){
-  const overlay = document.getElementById('overlay');
-  if (!overlay) return false;
-  if (overlay.classList.contains('hidden')) return false;
-  if (getComputedStyle(overlay).display === 'none') return false;
-  // se o jogo já começou, não é menu principal
-  if (S.started) return false;
-  // detectar menus específicos: presença do botão "Fissura" OU
-  // botões clássicos de menu principal (Jogar, Iniciar, Personagens)
-  const txt = (overlay.textContent||'').toLowerCase();
-  const looksMain = txt.includes('fissura') || txt.includes('rift');
-  return looksMain;
-}
-
+// ===================== BOTÃO NO MENU DE MODO =====================
+// O jogo abre #overlay com .riftModeChoice50 contendo cards
+// #normalMode50 e #riftMode50 após clicar JOGAR. Injetamos um
+// terceiro card "CO-OP MULTIPLAYER" à direita do Modo das Fissuras.
 function startMenuButtonPoller(){
   if (S.menuPollTimer) return;
   S.menuPollTimer = setInterval(() => {
     try {
-      const main = isMainMenuVisible();
-      if (!main){
+      if (S.started){
         if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected) S.injectedMenuBtn.remove();
         S.injectedMenuBtn = null;
         UI.openBtn.style.display = 'none';
         return;
       }
-      // Já injetado e ainda no DOM? nada a fazer
-      if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected){
+      const rift = document.getElementById('riftMode50');
+      const choice = document.querySelector('.riftModeChoice50');
+      if (!rift || !choice){
+        // não é o menu de escolha de modo
+        if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected) S.injectedMenuBtn.remove();
+        S.injectedMenuBtn = null;
         UI.openBtn.style.display = 'none';
         return;
       }
-      const fissura = findFissuraButton();
-      if (fissura){
-        const btn = fissura.cloneNode(true);
-        btn.id = 'mp-menu-btn';
-        // Substitui ícone/texto preservando estilo
-        btn.textContent = '';
-        btn.append(document.createTextNode('🎮 MULTIPLAYER'));
-        btn.removeAttribute('onclick');
-        btn.style.marginLeft = '8px';
-        btn.addEventListener('click', (ev) => {
-          ev.preventDefault(); ev.stopPropagation();
-          toggleLobby(true); showStage('home');
-        }, true);
-        // Insere logo após o botão Fissuras
-        if (fissura.parentNode){
-          fissura.parentNode.insertBefore(btn, fissura.nextSibling);
-          S.injectedMenuBtn = btn;
-          UI.openBtn.style.display = 'none';
-          return;
-        }
-      }
-      // Fallback: botão flutuante (só no menu)
-      UI.openBtn.style.display = '';
+      if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected) return;
+
+      // Clona o card "Fissuras" para herdar 100% do estilo
+      const card = rift.cloneNode(true);
+      card.id = 'mpMode50';
+      card.style.setProperty('--c', '#9f6cff');
+      // Substitui o conteúdo preservando classes internas
+      const tag = card.querySelector('.riftTag50');
+      const h2  = card.querySelector('h2');
+      const p   = card.querySelector('p');
+      if (tag) tag.textContent = 'NOVO · CO-OP';
+      if (h2)  h2.textContent  = 'Multiplayer 2P';
+      if (p)   p.textContent   = 'Convide um amigo e enfrente as waves em co-op P2P. Inimigos sincronizados, revive em equipe e dificuldade ajustável.';
+      card.onclick = (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        toggleLobby(true); showStage('home');
+      };
+      choice.appendChild(card);
+      S.injectedMenuBtn = card;
+      UI.openBtn.style.display = 'none';
     } catch(e){}
-  }, 500);
+  }, 400);
 }
 
 // ===================== PEERJS =====================
@@ -1050,6 +1023,16 @@ function startHostTargetingLoop(){
 // ============== HOST: DANO NOS DOIS PLAYERS ==============
 // Aplica dano de contato dos inimigos no player REMOTO + projéteis
 // inimigos (game.enemyBullets se existir, ou bullets com flag hostile).
+function contactDamageFor(e){
+  // Espelha o cálculo do jogo (linha 1138 do source original):
+  // tank=20, boss=24, elite=20, padrão=13
+  if (!e) return 0;
+  if (e.type === 'tank')   return 20;
+  if (e.type === 'boss')   return 24;
+  if (e.elite)             return 20;
+  return 13;
+}
+
 function startHostDamageLoop(){
   if (!S.isHost) return;
   const TICK = 1000 / HOST_DMG_HZ;
@@ -1057,45 +1040,56 @@ function startHostDamageLoop(){
     const g = window.game; if (!g) return;
     const others = [...S.players.values()].filter(p => p.id !== S.myId && p.classKey && !p.down);
     if (others.length === 0) return;
+    const dt = TICK / 1000;
 
     for (const rp of others){
-      let totalDmg = 0;
+      // hurtCd por player remoto (espelha p.hurtCd do source)
+      if (rp.__mpHurtCd == null) rp.__mpHurtCd = 0;
+      rp.__mpHurtCd = Math.max(0, rp.__mpHurtCd - dt);
 
-      // Contato com inimigos
-      if (Array.isArray(g.enemies)){
+      let pendingHit = 0; // dano "burst" (contato/bala) — usa hurtCd
+      let dotHit = 0;     // dano contínuo (não usa hurtCd, raro aqui)
+
+      // Contato com inimigos (uma única vez por hurtCd)
+      if (rp.__mpHurtCd <= 0 && Array.isArray(g.enemies)){
         for (const e of g.enemies){
           if (!e || e.__mpShell || e.dead) continue;
-          const er = (e.r||14) + 12; // raio do player ~12
+          const er = (e.r||14) + 14;
           const dx = (e.x||0) - rp.x, dy = (e.y||0) - rp.y;
           if (dx*dx + dy*dy < er*er){
-            // Dano por tick (escala com touch dmg ou padrão)
-            const td = (e.touchDmg || e.contactDmg || e.dmg || 5) * (TICK/1000);
-            totalDmg += td;
+            pendingHit = Math.max(pendingHit, contactDamageFor(e));
+            // bomber explode no contato (espelha source)
+            if (e.type === 'bomber'){
+              pendingHit = Math.max(pendingHit, 35);
+              e.hp = 0; e.dead = true;
+            }
+            break;
           }
         }
       }
 
-      // Projéteis inimigos
-      const projArrays = [];
-      if (Array.isArray(g.enemyBullets)) projArrays.push(g.enemyBullets);
-      if (Array.isArray(g.hostileBullets)) projArrays.push(g.hostileBullets);
-      if (Array.isArray(g.bullets)) projArrays.push(g.bullets.filter(b => b && (b.hostile || b.fromEnemy || b.enemy)));
-      for (const arr of projArrays){
-        for (const b of arr){
-          if (!b || b.dead) continue;
-          const br = (b.r||4) + 12;
+      // Projéteis inimigos (cada um aplica e some)
+      if (Array.isArray(g.enemyBullets)){
+        for (let i = g.enemyBullets.length - 1; i >= 0; i--){
+          const b = g.enemyBullets[i];
+          if (!b) continue;
+          const br = (b.r||5) + 14;
           const dx = (b.x||0) - rp.x, dy = (b.y||0) - rp.y;
           if (dx*dx + dy*dy < br*br){
-            totalDmg += (b.damage || b.dmg || 8);
-            b.dead = true; b.life = 0;
+            if (rp.__mpHurtCd <= 0){
+              pendingHit = Math.max(pendingHit, (b.damage || 10));
+              g.enemyBullets.splice(i, 1);
+            }
           }
         }
       }
 
-      if (totalDmg > 0){
-        rp.hp = Math.max(0, (rp.hp||0) - totalDmg);
+      const total = pendingHit + dotHit;
+      if (total > 0){
+        rp.hp = Math.max(0, (rp.hp||0) - total);
+        if (pendingHit > 0) rp.__mpHurtCd = 0.55;
         const c = S.conns.get(rp.id);
-        if (c) send(c, { t:'youHit', amount: totalDmg });
+        if (c) send(c, { t:'youHit', amount: total });
         if (rp.hp <= 0 && !rp.down){
           rp.down = true;
           broadcastLobby();
@@ -1104,6 +1098,7 @@ function startHostDamageLoop(){
     }
   }, TICK);
 }
+
 
 // ===================== SYNC DE JOGADORES =====================
 function startTickLoop(){
@@ -1155,22 +1150,20 @@ function startOverlay(){
     if (!octx) return;
     octx.clearRect(0,0,oc.width,oc.height);
     const g = window.game;
-    const cam = (g && (g.camera||g.cam)) || {x:0,y:0};
     const gc = document.querySelector('canvas#game') || document.querySelector('canvas');
+    // Canvas FIXO sem câmera: coords do mundo == coords do canvas
     const scale = gc ? oc.width / gc.width : 1;
-    const W = gc?gc.width:oc.width, H = gc?gc.height:oc.height;
 
-    // No CLIENTE, desenha inimigos compartilhados (shells) como fallback
+    // CLIENTE: desenha inimigos compartilhados (shells)
     if (!S.isHost && g && Array.isArray(g.enemies)){
       for (const e of g.enemies){
         if (!e || !e.__mpShell) continue;
-        const sx = ((e.x||0)-(cam.x||0)+W/2) * scale;
-        const sy = ((e.y||0)-(cam.y||0)+H/2) * scale;
+        const sx = (e.x||0) * scale;
+        const sy = (e.y||0) * scale;
         octx.fillStyle = e.boss ? '#ff4d6d' : (e.color || '#ff8866');
         octx.beginPath();
         octx.arc(sx, sy, (e.r||14)*scale, 0, Math.PI*2);
         octx.fill();
-        // HP bar
         if (e.maxHp){
           const bw = (e.r||14)*2*scale;
           octx.fillStyle='rgba(0,0,0,0.6)';
@@ -1184,20 +1177,21 @@ function startOverlay(){
     // Outros jogadores
     for (const p of S.players.values()){
       if (p.id === S.myId) continue;
-      const sx = ((p.x||0) - (cam.x||0) + W/2) * scale;
-      const sy = ((p.y||0) - (cam.y||0) + H/2) * scale;
-      octx.globalAlpha = p.down ? 0.45 : 0.85;
+      const sx = (p.x||0) * scale;
+      const sy = (p.y||0) * scale;
+      octx.globalAlpha = p.down ? 0.45 : 0.9;
       octx.fillStyle = p.down ? '#ff4d6d' : '#61dafb';
-      octx.beginPath(); octx.arc(sx,sy,12*scale,0,Math.PI*2); octx.fill();
+      octx.beginPath(); octx.arc(sx,sy,14*scale,0,Math.PI*2); octx.fill();
+      octx.strokeStyle = '#fff'; octx.lineWidth = 2; octx.stroke();
       octx.globalAlpha = 1;
-      octx.fillStyle='#fff'; octx.font=`${12*scale|0}px 'Rajdhani',sans-serif`; octx.textAlign='center';
-      octx.fillText(p.name, sx, sy - 18*scale);
-      octx.fillStyle='rgba(0,0,0,0.6)'; octx.fillRect(sx-18*scale, sy-30*scale, 36*scale, 4*scale);
+      octx.fillStyle='#fff'; octx.font=`bold ${13*scale|0}px 'Rajdhani',sans-serif`; octx.textAlign='center';
+      octx.fillText(p.name, sx, sy - 22*scale);
+      octx.fillStyle='rgba(0,0,0,0.6)'; octx.fillRect(sx-20*scale, sy-34*scale, 40*scale, 4*scale);
       octx.fillStyle='#4ce0b3';
-      octx.fillRect(sx-18*scale, sy-30*scale, 36*scale*Math.max(0,(p.hp||0)/(p.maxHp||1)), 4*scale);
+      octx.fillRect(sx-20*scale, sy-34*scale, 40*scale*Math.max(0,(p.hp||0)/(p.maxHp||1)), 4*scale);
       if (p.down){
         octx.fillStyle='#ffd166';
-        octx.fillText('Segure E para reviver', sx, sy + 26*scale);
+        octx.fillText('Segure E para reviver', sx, sy + 30*scale);
       }
     }
     handleRevive();
@@ -1248,15 +1242,12 @@ function handleRevive(){
 
 function drawReviveBar(p, pct){
   if (!octx) return;
-  const g = window.game;
-  const cam = (g && (g.camera||g.cam)) || {x:0,y:0};
   const gc = document.querySelector('canvas#game') || document.querySelector('canvas');
   const scale = gc ? oc.width / gc.width : 1;
-  const W = gc?gc.width:oc.width, H = gc?gc.height:oc.height;
-  const sx = ((p.x||0) - (cam.x||0) + W/2) * scale;
-  const sy = ((p.y||0) - (cam.y||0) + H/2) * scale;
-  octx.fillStyle='rgba(0,0,0,0.7)'; octx.fillRect(sx-24*scale, sy+32*scale, 48*scale, 6*scale);
-  octx.fillStyle='#ffd166'; octx.fillRect(sx-24*scale, sy+32*scale, 48*scale*pct, 6*scale);
+  const sx = (p.x||0) * scale;
+  const sy = (p.y||0) * scale;
+  octx.fillStyle='rgba(0,0,0,0.7)'; octx.fillRect(sx-24*scale, sy+36*scale, 48*scale, 6*scale);
+  octx.fillStyle='#ffd166'; octx.fillRect(sx-24*scale, sy+36*scale, 48*scale*pct, 6*scale);
 }
 
 // ===================== RENDER CHAT/TEAM =====================
