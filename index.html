@@ -30414,6 +30414,50 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 </script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="multiplayer.js"></script>
+<script>
+  /* ============================================================
+   CHRONO SHARDS — MP BRIDGE
+   COLE ESTE TRECHO NO FINAL DO <script> PRINCIPAL DO JOGO,
+   ANTES DO </script> DE FECHAMENTO.
+   Ele expõe em window.* os símbolos que estão presos no escopo
+   do script (declarados com const/let) para que o multiplayer.js
+   consiga lê-los.
+   ============================================================ */
+(function exposeForMP(){
+  try { window.CLASSES = CLASSES; } catch(e){}
+  try { window.WEAPONS = WEAPONS; } catch(e){}
+  try { window.SKILL_DEFS = SKILL_DEFS; } catch(e){}
+  try { window.mouse = mouse; } catch(e){}
+  try { window.keys = keys; } catch(e){}
+  // game é reatribuído em resetGame -> usamos getter/setter
+  try {
+    Object.defineProperty(window, 'game', {
+      configurable: true,
+      get(){ return game; },
+      set(v){ game = v; }
+    });
+  } catch(e){}
+  // resetGame e spawnEnemy são funções de topo, mas são reatribuídas
+  // várias vezes. Garantimos que window.* sempre aponta para a versão atual.
+  try {
+    Object.defineProperty(window, 'resetGame', {
+      configurable: true,
+      get(){ return resetGame; },
+      set(v){ resetGame = v; }
+    });
+  } catch(e){}
+  try {
+    Object.defineProperty(window, 'spawnEnemy', {
+      configurable: true,
+      get(){ return spawnEnemy; },
+      set(v){ spawnEnemy = v; }
+    });
+  } catch(e){}
+  window.__MP_BRIDGE_READY__ = true;
+  console.log('[MP-BRIDGE] symbols exposed:',
+    Object.keys(window.CLASSES||{}).length, 'classes');
+})();
 
+</script>
 </body>
 </html>
