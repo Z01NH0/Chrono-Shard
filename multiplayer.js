@@ -19,31 +19,10 @@
 
 // ===================== CONFIG =====================
 const VERSION         = 'mp-v13';
-/* v13 — fixes principais sobre v12:
-   - Wave infinita / "Esperando jogadores" persistente: o wrap de
-     startNextWave agora SÓ intercepta quando uma loja está aberta
-     (S.inShop). Auto-advances de wave (rift, sem shop) passam direto
-     pro original.
-   - applyEnemySnapshot: muta g.enemies in-place em vez de substituir a
-     referência (impede o jogo de continuar simulando inimigos "fantasma"
-     do client e mantém a lista visível pelo render do próprio jogo).
-   - Cliente agora limpa loops locais de spawn de inimigo do jogo (set
-     g.spawnCd alto + zera arrays de spawn-queue se existir) para evitar
-     hordas locais paralelas às do host.
-   - Pause sync robusta: escuta keydown direto (P/Esc) e força gg.paused
-     em ambos os lados, sem depender de polling frágil de gg.paused.
-   - Revive: tecla mudou de E para F. Reset correto de progresso quando
-     o alvo morre/sai do raio.
-   - Render de jogadores remotos: usa proxy pra chamar
-     window.drawPlayer/window.drawBullets do jogo (skin/classe/efeitos
-     corretos por personagem) trocando temporariamente game.player,
-     game.classKey, mouse e game.bullets para o estado do peer.
-   - Status replication: sincroniza shield, ult ativa, cloak, dash e
-     hurt cooldown junto com o tick de jogadores.
-   - "Esperando jogadores" só aparece dentro de S.inShop.            */
+const REVIVE_KEY      = 'f';   // tecla usada para reviver (era 'e')
 const TICK_HZ         = 20;
-const ENEMY_HZ        = 15;
-const BULLET_HZ       = 10;
+const ENEMY_HZ        = 20;
+const BULLET_HZ       = 18;
 const HOST_DMG_HZ     = 20;
 const GOLD_SYNC_HZ    = 4;          // sincronização de pool de ouro
 const GOLD_DROP_MULT  = 1.5;        // online: 1.5x ouro nas mortes
@@ -116,6 +95,8 @@ const S = {
   // handles para limpar intervalos no restart:
   _enemyTimer:null, _hostDmgTimer:null, _killCreditTimer:null,
   _bossWatchTimer:null, _pauseTimer:null, _tickTimer:null,
+  _enemyReaper:null, _waveAdvance:0,
+  localPaused:false,
   _bulletHookGen:0, // gera novo "ID" para invalidar loops antigos de bullet hook
 };
 
@@ -475,6 +456,49 @@ function buildUI(){
     if (e.key === 'Enter'){ e.preventDefault(); UI.chatInput.style.display='block'; UI.chatInput.focus(); }
   });
 
+
+  // ===== PAUSE CO-OP (autoritativo via tecla P) =====
+  window.addEventListener('keydown', e => {
+    if (!S.started) return;
+    if (document.activeElement === UI.chatInput) return;
+    const k = (e.key||'').toLowerCase();
+    if (k !== 'p') return;
+    // não pausar se outro player pausou (eles é que liberam)
+    if (S.pausedRemoteBy && S.pausedRemoteBy !== S.myId) return;
+    e.preventDefault(); e.stopPropagation();
+    const gg = window.game; if (!gg) return;
+    if (S.localPaused){
+      // RESUME
+      S.localPaused = false;
+      gg.paused = false;
+      if (!S.inShop && !gg.__mpDowned) gg.running = true;
+      hidePauseOverlay();
+      S.lastPausedFlag = false;
+      if (S.isHost){
+        S.pausedRemoteBy = null;
+        bcast({ t:'resumeRemote' });
+      } else {
+        const c = S.conns.get(S.roomCode);
+        if (c) send(c, { t:'unpaused' });
+      }
+    } else {
+      // PAUSE
+      S.localPaused = true;
+      gg.paused = true;
+      gg.running = false;
+      showPauseOverlay(S.myName + ' (você)');
+      S.lastPausedFlag = true;
+      hideLocalPauseMenu();
+      if (S.isHost){
+        S.pausedRemoteBy = S.myId;
+        bcast({ t:'pauseRemote', by:S.myId, byName:S.myName });
+      } else {
+        const c = S.conns.get(S.roomCode);
+        if (c) send(c, { t:'paused' });
+      }
+    }
+  }, true);
+
   if (!window.__MP_BRIDGE_READY__) {
     UI.homeMsg.innerHTML = '⚠️ Bridge não detectado. Cole <code>mp-bridge.js</code> no final do &lt;script&gt; principal.';
   }
@@ -638,7 +662,7 @@ function ensurePeer(id){
 function clearAllLoops(){
   for (const k of ['_enemyTimer','_hostDmgTimer','_killCreditTimer',
                    '_bossWatchTimer','_pauseTimer','_tickTimer',
-                   'bulletTimer','goldTimer']){
+                   '_enemyReaper','bulletTimer','goldTimer']){
     if (S[k]) { try{ clearInterval(S[k]); }catch(_){ } S[k] = null; }
   }
   S._bulletHookGen++; // invalida qualquer client bullet hook antigo
@@ -656,6 +680,7 @@ function resetMpRuntime(){
   S.inShop = false; S.myShopReady = false;
   S.goldPool = 0; S.lastSyncedGold = 0;
   S.started = false; S.lastBulletHash = 0;
+  S.localPaused = false;
   hidePauseOverlay(); hideShopWait();
   if (S.peer && !S.peer.destroyed) { try{ S.peer.destroy(); }catch(_){ } }
   S.peer = null; S.myId = null;
@@ -1255,14 +1280,38 @@ function installEnemyPatch(){
       };
       noop.__mpWrapped = true;
       window.spawnEnemy = noop;
+      try { globalThis.spawnEnemy = noop; } catch(_){}
     } catch(e){}
     if (typeof window.updateWaveState === 'function' && !window.updateWaveState.__mpWrapped){
       const stub = function(){}; stub.__mpWrapped = true;
       try { window.updateWaveState = stub; } catch(e){}
+      try { globalThis.updateWaveState = stub; } catch(_){}
     }
-    // NÃO substituímos startNextWave por stub aqui: o installShopSync vai
-    // envolvê-lo para enviar 'shopReady' ao host quando o cliente clicar em
-    // continuar. clientHandleShopResume chama o original quando o host libera.
+    // REAPER: o jogo possui múltiplos wraps de spawnEnemy (Eclipse, Rift,
+    // Rebalance, Dune...) que guardam refs LOCAIS para a função original.
+    // Nossas reescritas em window não atingem essas closures, então usamos
+    // um reaper que limpa periodicamente qualquer inimigo que não veio do
+    // snapshot do host. Isso resolve "monstros aparecem separados".
+    if (S._enemyReaper) clearInterval(S._enemyReaper);
+    S._enemyReaper = setInterval(()=>{
+      const gg = window.game;
+      if (!gg) return;
+      if (Array.isArray(gg.enemies) && gg.enemies.length){
+        let dirty = false;
+        for (let i=gg.enemies.length-1; i>=0; i--){
+          const e = gg.enemies[i];
+          if (!e || !e.__mpShell){ gg.enemies.splice(i,1); dirty = true; }
+        }
+        if (dirty) { /* host vai sobrescrever no próximo snapshot */ }
+      }
+      // enemyBullets são autoridade do host (que aplica dano via youHit).
+      // Cliente apenas mantém visual leve — limpa se acumular sem fim.
+      if (Array.isArray(gg.enemyBullets) && gg.enemyBullets.length > 60){
+        gg.enemyBullets.length = 0;
+      }
+      // Também limpa loot/hazards spawnados localmente em modos especiais
+      // que não são compartilhados ainda (visual-only).
+    }, 90);
     installClientBulletHook();
   }
   installShopSync();
@@ -1350,7 +1399,7 @@ function snapshotMyBullets(){
   if (!gg || !Array.isArray(gg.bullets)) return [];
   const out = [];
   const bs = gg.bullets;
-  const N = Math.min(bs.length, 80); // cap pra evitar pacote gigante
+  const N = Math.min(bs.length, 120); // cap pra evitar pacote gigante
   for (let i=0;i<N;i++){
     const b = bs[i];
     if (!b || b.dead || b.life<=0) continue;
@@ -1432,18 +1481,30 @@ function installShopSync(){
     wrap.__mpShopWrap = true; wrap.__mpWrapped = true;
     try { window.openShopMenu = wrap; } catch(e){}
   }
-  // Wrap startNextWave — v13: SÓ intercepta se uma loja estiver realmente
-  // aberta. Caso contrário (auto-advance entre waves, rift loop, etc.) o
-  // original roda normalmente em ambos os lados. Isso elimina o loop de
-  // "Esperando jogadores" travado e o contador de waves disparando sozinho.
+  // Wrap startNextWave em AMBOS host e cliente:
+  // - cliente: nunca chama a função original (host é autoridade). Marca ready e envia.
+  // - host: quando o próprio host clica, marca ready e só chama o original quando todos prontos.
   if (typeof window.startNextWave === 'function' && !window.startNextWave.__mpReadyWrap){
     const orig = window.startNextWave;
     const wrap = function(){
-      // single-player, antes da partida, ou sem loja aberta -> passa direto
-      if (!S.started || S.conns.size === 0 || !S.inShop){
-        S.inShop = false; S.myShopReady = false; S.shopReadySet = new Set(); hideShopWait();
+      // single-player / pré-start: comportamento original
+      if (!S.started || S.conns.size === 0){
+        S.inShop = false; S.myShopReady = false; hideShopWait();
         return orig.apply(this, arguments);
       }
+      // Auto-advance entre waves normais (sem loja) — NUNCA bloquear.
+      // O host roda a wave de verdade; o cliente só recebe enemies via snapshot.
+      if (!S.inShop){
+        S.myShopReady = false; S.shopReadySet = new Set(); hideShopWait();
+        if (S.isHost){
+          S._waveAdvance = (S._waveAdvance||0) + 1;
+          // host sempre executa o avanço; cliente nunca executa o original aqui.
+          return orig.apply(this, arguments);
+        }
+        // cliente em auto-advance: ignora (host já está rodando a próxima wave)
+        return;
+      }
+      // Estamos numa LOJA — gate por shop-ready
       if (!S.myShopReady){
         S.myShopReady = true;
         if (S.isHost){
@@ -1686,28 +1747,9 @@ function startPauseWatcher(){
       S.lastPausedFlag = true;
       return;
     }
-    // local: se pausou agora e não há pause remoto, anuncia
-    if (isPaused && !S.lastPausedFlag && !S.pausedRemoteBy){
-      S.iAmPauser = true;
-      if (S.isHost){
-        S.pausedRemoteBy = S.myId;
-        const pName = S.myName;
-        bcast({ t:'pauseRemote', by:S.myId, byName:pName });
-      } else {
-        const c = S.conns.get(S.roomCode);
-        if (c) send(c, { t:'paused' });
-      }
-    } else if (!isPaused && S.lastPausedFlag && S.iAmPauser){
-      S.iAmPauser = false;
-      if (S.isHost){
-        S.pausedRemoteBy = null;
-        bcast({ t:'resumeRemote' });
-      } else {
-        const c = S.conns.get(S.roomCode);
-        if (c) send(c, { t:'unpaused' });
-      }
-    }
-    S.lastPausedFlag = isPaused;
+    // Auto-detect local DESABILITADO em v13: o handler de tecla P já
+    // anuncia o pause autoritativamente. Aqui só sincronizamos o flag.
+    S.lastPausedFlag = isPaused || S.localPaused;
   }, 120);
 }
 
@@ -1720,6 +1762,8 @@ function applyRemotePause(byId, byName){
 }
 function applyRemoteResume(){
   hidePauseOverlay();
+  S.lastPausedFlag = false;
+  S.localPaused = false;
   const gg = window.game;
   if (gg){
     gg.paused = false;
@@ -1786,33 +1830,19 @@ function startEnemySync(){
 function applyEnemySnapshot(list, wave){
   const g = window.game; if (!g) return;
   if (!Array.isArray(g.enemies)) g.enemies = [];
-  // v13: muta in-place. Substituir g.enemies = next quebrava referências
-  // mantidas por sub-sistemas patched do jogo (drones, AoE, contagem da wave).
   const existing = new Map();
   for (const e of g.enemies) if (e && e.__mpId) existing.set(e.__mpId, e);
-  const incoming = new Set();
   const next = [];
   for (const s of list){
-    incoming.add(s.i);
     let e = existing.get(s.i);
     if (!e){ e = makeShellEnemy(s); }
     else {
       e.x = s.x; e.y = s.y; e.hp = s.h; e.maxHp = s.M; e.r = s.r;
-      e.type = s.t || e.type; e.boss = !!s.b; e.elite = !!s.el;
-      if (s.c) e.color = s.c;
-      e.dead = false;
     }
     next.push(e);
   }
-  g.enemies.length = 0;
-  for (const e of next) g.enemies.push(e);
+  g.enemies = next;
   if (wave) { g.wave = wave; g.currentWave = wave; }
-  // suprime spawner local do cliente (algumas waves agendam timers internos)
-  if (!S.isHost){
-    g.spawnCd = 9999;
-    g.spawnQueue = []; g.pendingSpawns = []; g.toSpawn = 0;
-    g.enemiesSpawnedThisWave = (g.waveEnemyCount||g.toSpawnTotal||list.length);
-  }
 }
 
 function makeShellEnemy(s){
@@ -1974,18 +2004,6 @@ function startTickLoop(){
       me.x = pl.x||0; me.y = pl.y||0;
       me.hp = pl.hp||0; me.maxHp = pl.maxHp||100;
       me.down = !!(pl.dead || pl.down || me.hp<=0);
-      // v13: status replicado p/ render proxy
-      me.shield    = pl.shield||0;
-      me.maxShield = pl.maxShield||0;
-      me.cloak     = pl.cloakActive||0;
-      me.hurt      = pl.hurtCd||0;
-      me.rail      = pl.railPierceMode||0;
-      me.r         = pl.r||14;
-      try {
-        const m = window.mouse;
-        if (m && typeof m.x === 'number')
-          me.aim = Math.atan2((m.y||pl.y)-pl.y, (m.x||pl.x)-pl.x);
-      } catch(_){}
     }
     me.wave = g.wave || g.currentWave || me.wave;
     me.score = g.score || me.score;
@@ -2069,33 +2087,57 @@ function startOverlay(){
     }
     octx.globalAlpha = 1;
 
-    // Outros jogadores — v13: tenta render proxy (sprite/skin do jogo) e
-    // cai pra bolinha simples se algo falhar.
+    // Outros jogadores (com classe — cor + ícone)
+    const _classMap = (typeof window.CLASSES==='object' && window.CLASSES) ? window.CLASSES : null;
     for (const p of S.players.values()){
       if (p.id === S.myId) continue;
       const sx = (p.x||0) * scale;
       const sy = (p.y||0) * scale;
-      let drawnViaProxy = false;
-      if (!p.down) drawnViaProxy = tryProxyDrawPeer(p);
-      if (!drawnViaProxy){
-        octx.globalAlpha = p.down ? 0.45 : 0.9;
-        octx.fillStyle = p.down ? '#ff4d6d' : (p.color || '#61dafb');
-        octx.beginPath(); octx.arc(sx,sy,14*scale,0,Math.PI*2); octx.fill();
-        octx.strokeStyle = '#fff'; octx.lineWidth = 2; octx.stroke();
-        octx.globalAlpha = 1;
-      }
-      octx.fillStyle='#fff'; octx.font=`bold ${13*scale|0}px 'Rajdhani',sans-serif`; octx.textAlign='center';
-      octx.fillText(p.name, sx, sy - 22*scale);
-      octx.fillStyle='rgba(0,0,0,0.6)'; octx.fillRect(sx-20*scale, sy-34*scale, 40*scale, 4*scale);
-      octx.fillStyle='#4ce0b3';
-      octx.fillRect(sx-20*scale, sy-34*scale, 40*scale*Math.max(0,(p.hp||0)/(p.maxHp||1)), 4*scale);
+      const cdef = _classMap && p.classKey ? _classMap[p.classKey] : null;
+      const cColor = (cdef && (cdef.color || cdef.tagColor)) || '#61dafb';
+      const cIcon  = (cdef && (cdef.icon || cdef.emoji)) || '◈';
+      const R = 16*scale;
+      // sombra de chão
+      octx.globalAlpha = 0.35; octx.fillStyle='#000';
+      octx.beginPath(); octx.ellipse(sx, sy+R*0.95, R*0.85, R*0.32, 0, 0, Math.PI*2); octx.fill();
+      // corpo
+      octx.globalAlpha = p.down ? 0.45 : 0.95;
+      const grad = octx.createRadialGradient(sx, sy-R*0.3, R*0.15, sx, sy, R);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.4, cColor);
+      grad.addColorStop(1, p.down ? '#400' : 'rgba(0,0,0,0.4)');
+      octx.fillStyle = grad;
+      octx.beginPath(); octx.arc(sx, sy, R, 0, Math.PI*2); octx.fill();
+      // ring outline cor da classe
+      octx.lineWidth = 2.5; octx.strokeStyle = p.down ? '#ff4d6d' : cColor;
+      octx.shadowColor = cColor; octx.shadowBlur = 12*scale;
+      octx.stroke();
+      octx.shadowBlur = 0;
+      // ícone central
+      octx.globalAlpha = 1;
+      octx.fillStyle = '#fff';
+      octx.font = `bold ${(R*1.1)|0}px 'Rajdhani',sans-serif`;
+      octx.textAlign = 'center'; octx.textBaseline = 'middle';
+      octx.fillText(cIcon, sx, sy + 1);
+      octx.textBaseline = 'alphabetic';
+      // nameplate
+      octx.fillStyle = '#fff';
+      octx.font = `bold ${13*scale|0}px 'Rajdhani',sans-serif`;
+      octx.fillText(p.name, sx, sy - R - 12*scale);
+      // hp bar
+      const bw = 44*scale;
+      octx.fillStyle = 'rgba(0,0,0,0.65)';
+      octx.fillRect(sx-bw/2, sy-R-7*scale, bw, 4*scale);
+      const pct = Math.max(0, Math.min(1, (p.hp||0)/(p.maxHp||1)));
+      octx.fillStyle = pct>0.5 ? '#4ce0b3' : (pct>0.25 ? '#ffd166' : '#ff4d6d');
+      octx.fillRect(sx-bw/2, sy-R-7*scale, bw*pct, 4*scale);
+      // estado down
       if (p.down){
-        octx.fillStyle='#ffd166';
-        octx.fillText('Segure F para reviver', sx, sy + 30*scale);
+        octx.fillStyle = '#ffd166';
+        octx.font = `bold ${12*scale|0}px 'Rajdhani',sans-serif`;
+        octx.fillText('Segure '+REVIVE_KEY.toUpperCase()+' para reviver', sx, sy + R + 18*scale);
       }
     }
-    // bullets remotas agora também tentam usar o renderer do jogo (skin/cor por classe)
-    tryProxyDrawPeerBullets();
     handleRevive();
     requestAnimationFrame(draw);
   };
@@ -2117,7 +2159,7 @@ function handleRevive(){
     const d = Math.hypot((p.x||0)-(me.x||0), (p.y||0)-(me.y||0));
     if (d<best){ best=d; target=p; }
   }
-  if (target && keysDown['f']){
+  if (target && keysDown[REVIVE_KEY]){
     if (S.reviveTarget !== target.id){
       S.reviveTarget = target.id; S.reviveStart = Date.now();
     }
@@ -2191,129 +2233,7 @@ function renderTeam(){
   }
 }
 
-// ===================== v13: PROXY RENDER DE PEERS =====================
-// Reaproveita window.drawPlayer / window.drawBullets do jogo (que foi
-// monkey-patched várias vezes pelos updates Eclipse/Hero/Skin/etc.) trocando
-// temporariamente game.player, game.classKey, game.bullets, game.mouse para
-// o estado do peer. Assim cada jogador remoto aparece com o sprite, skin,
-// shield, dash trail e efeitos da SUA classe — sem reimplementar nada.
-//
-// Render acontece no canvas#game (mesmo do jogo) ANTES de cada frame do
-// overlay; isso significa que efeitos do peer ficam atrás do HUD, igual aos
-// do jogador local.
-
-function _gameCanvasCtx(){
-  const c = document.querySelector('canvas#game') || document.querySelector('canvas');
-  if (!c) return null;
-  return { c, ctx: c.getContext('2d') };
-}
-
-function tryProxyDrawPeer(p){
-  try {
-    const g = window.game; if (!g || !g.player) return false;
-    const fn = window.drawPlayer; if (typeof fn !== 'function') return false;
-    const cc = _gameCanvasCtx(); if (!cc) return false;
-
-    // monta um "player virtual" reaproveitando defaults seguros do meu player
-    const peerPlayer = Object.assign({}, g.player, {
-      x: p.x||0, y: p.y||0,
-      hp: p.hp||1, maxHp: p.maxHp||1,
-      shield: p.shield||0, maxShield: p.maxShield|| (p.shield? p.shield: 1),
-      cloakActive: p.cloak||0,
-      hurtCd: p.hurt||0,
-      railPierceMode: p.rail||0,
-      trail: [], // evita usar trail do meu player
-      r: p.r || g.player.r || 14,
-      down: !!p.down, dead: false,
-    });
-
-    // mouse fake apontando para a direção do peer (ângulo enviado no tick)
-    const fakeMouse = (typeof p.aim === 'number')
-      ? { x: peerPlayer.x + Math.cos(p.aim)*40, y: peerPlayer.y + Math.sin(p.aim)*40 }
-      : { x: peerPlayer.x + 40, y: peerPlayer.y };
-
-    const savedPlayer = g.player;
-    const savedClass  = g.classKey;
-    const savedMouse  = window.mouse;
-    g.player    = peerPlayer;
-    g.classKey  = p.classKey || savedClass;
-    window.mouse = fakeMouse;
-    try { fn(); }
-    finally {
-      g.player = savedPlayer;
-      g.classKey = savedClass;
-      window.mouse = savedMouse;
-    }
-    return true;
-  } catch(_){ return false; }
-}
-
-function tryProxyDrawPeerBullets(){
-  try {
-    const g = window.game; if (!g) return false;
-    const fn = window.drawBullets; if (typeof fn !== 'function') return false;
-    if (S.remoteBullets.size === 0) return false;
-    const savedBullets = g.bullets;
-    const savedClass   = g.classKey;
-    // junta tudo num array efêmero — drawBullets do jogo só itera g.bullets
-    const all = [];
-    for (const [pid, arr] of S.remoteBullets){
-      const peer = S.players.get(pid);
-      const cls  = peer?.classKey || savedClass;
-      if (!Array.isArray(arr)) continue;
-      for (const b of arr){
-        all.push({
-          x: b.x||0, y: b.y||0,
-          r: b.r||3,
-          color: b.c || null,
-          damage: 0, dmg: 0,
-          dead: false, life: 1,
-          __mpRemote: true, __classKey: cls,
-        });
-      }
-    }
-    g.bullets = all;
-    try { fn(); } finally { g.bullets = savedBullets; }
-    return true;
-  } catch(_){ return false; }
-}
-
-// ===================== v13: PAUSE EXPLÍCITO POR TECLA =====================
-// O polling de gg.paused era frágil (alguns updates do jogo ignoram a flag
-// ou usam outra). Aqui interceptamos P/Escape diretamente e propagamos.
-window.addEventListener('keydown', (e)=>{
-  if (!S.started) return;
-  const k = (e.key||'').toLowerCase();
-  if (k !== 'p' && k !== 'escape') return;
-  // se outro player já pausou, só permite ao próprio pauser despausar
-  if (S.pausedRemoteBy && S.pausedRemoteBy !== S.myId) return;
-  const gg = window.game; if (!gg) return;
-  const willPause = !gg.paused;
-  gg.paused = willPause;
-  gg.running = !willPause && !gg.__mpDowned && !S.inShop;
-  if (willPause){
-    S.iAmPauser = true;
-    S.pausedRemoteBy = S.myId;
-    if (S.isHost) bcast({ t:'pauseRemote', by:S.myId, byName:S.myName });
-    else { const c = S.conns.get(S.roomCode); if (c) send(c, { t:'paused' }); }
-  } else {
-    S.iAmPauser = false;
-    S.pausedRemoteBy = null;
-    hidePauseOverlay();
-    if (S.isHost) bcast({ t:'resumeRemote' });
-    else { const c = S.conns.get(S.roomCode); if (c) send(c, { t:'unpaused' }); }
-  }
-}, true);
-
-// ===================== v13: GUARDA "ESPERANDO JOGADORES" =====================
-// só permite o overlay aparecer quando uma loja está realmente aberta.
-const _origShowShopWait = showShopWaitForMe;
-showShopWaitForMe = function(){
-  if (!S.inShop) { hideShopWait(); return; }
-  return _origShowShopWait.apply(this, arguments);
-};
-
-
+// ===================== BOOT =====================
 function boot(){
   if (!window.Peer){
     warn('PeerJS ainda não disponível, retentando...');
