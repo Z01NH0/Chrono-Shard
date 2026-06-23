@@ -1,24 +1,24 @@
 /* ============================================================
-   CHRONO SHARDS — MULTIPLAYER v10 (PeerJS, P2P co-op)
-   v10 (patch sobre v9):
-     - OURO COMPARTILHADO: pool único; quando um gasta, gasta dos dois.
-     - DROP DE OURO 1.5x no modo online (aplicado no host, source-of-truth).
-     - LOJA/LOOT/UPGRADES INDIVIDUAIS por jogador (cada um compra o seu).
-     - CONTINUAR SINCRONIZADO: clique em "continuar" marca READY;
-       overlay "Esperando jogadores (x/y)"; só avança a wave quando TODOS
-       confirmam. Cancela locks antigos onde 1 jogador fechava p/ os dois.
-     - PAUSE COMPARTILHADO: quem pausa vê menu normal; o(s) outro(s) veem
-       overlay "Jogo pausado por <Nome>" e o jogo é congelado nos dois.
-     - Fix de duplicação de ouro no cliente (kill credit + pool).
-     - Cleanup ao desconectar peer (remoteBullets, pausedBy, shopReady).
-     - Boss announce guard (não duplica no host).
-     - Bullet snapshot com hash p/ evitar pacote redundante.
+   CHRONO SHARDS — MULTIPLAYER v11 (PeerJS, P2P co-op)
+   v11 (auditoria sobre v10):
+     - FIX ouro host duplicado: kill credit é a única fonte de income;
+       startGoldPoolSync só aplica DELTAS NEGATIVOS (gastos) no host.
+     - FIX race de gasto no cliente: ao chegar goldSync, preserva gasto
+       local ainda não reportado e envia delta na hora.
+     - FIX duplicação de hooks após restart: guardas em S.* (não no
+       objeto game) + clearInterval para todos os loops de host.
+     - FIX vazamento de loops: clearInterval em todos os start*Loop
+       (enemy, dmg, targeting, bossWatcher, kill credit).
+     - FIX shopResume no host: limpa shopPending/betweenWaves local.
+     - FIX onHost/onJoin: reseta estado antes de criar nova sala.
+     - FIX tryJoinOnce: trava dupla agenda quando error + timeout.
+     - FIX startBulletBroadcast: skip de hash agora funciona sempre.
    ============================================================ */
 (() => {
 'use strict';
 
 // ===================== CONFIG =====================
-const VERSION         = 'mp-v10';
+const VERSION         = 'mp-v11';
 const TICK_HZ         = 20;
 const ENEMY_HZ        = 15;
 const BULLET_HZ       = 10;
@@ -91,6 +91,10 @@ const S = {
   pauseOverlayEl: null,
   lastPausedFlag: false,
   bossAnnounced: new Set(),
+  // handles para limpar intervalos no restart:
+  _enemyTimer:null, _hostDmgTimer:null, _killCreditTimer:null,
+  _bossWatchTimer:null, _pauseTimer:null, _tickTimer:null,
+  _bulletHookGen:0, // gera novo "ID" para invalidar loops antigos de bullet hook
 };
 
 
@@ -513,7 +517,34 @@ function ensurePeer(id){
   });
 }
 
+function clearAllLoops(){
+  for (const k of ['_enemyTimer','_hostDmgTimer','_killCreditTimer',
+                   '_bossWatchTimer','_pauseTimer','_tickTimer',
+                   'bulletTimer','goldTimer']){
+    if (S[k]) { try{ clearInterval(S[k]); }catch(_){ } S[k] = null; }
+  }
+  S._bulletHookGen++; // invalida qualquer client bullet hook antigo
+}
+
+function resetMpRuntime(){
+  // chamado antes de criar/entrar em nova sala — limpa resíduo da partida anterior
+  clearAllLoops();
+  S.players = new Map();
+  S.conns   = new Map();
+  S.remoteBullets = new Map();
+  S.shopReadySet  = new Set();
+  S.bossAnnounced = new Set();
+  S.pausedRemoteBy = null; S.iAmPauser = false; S.lastPausedFlag = false;
+  S.inShop = false; S.myShopReady = false;
+  S.goldPool = 0; S.lastSyncedGold = 0;
+  S.started = false; S.lastBulletHash = 0;
+  hidePauseOverlay(); hideShopWait();
+  if (S.peer && !S.peer.destroyed) { try{ S.peer.destroy(); }catch(_){ } }
+  S.peer = null; S.myId = null;
+}
+
 function onHost(){
+  resetMpRuntime();
   S.myName  = (UI.nameC.value||S.myName).slice(0,14);
   S.riftMode= UI.rift.checked;
   S.isHost  = true;
@@ -544,6 +575,7 @@ function tryHostOnce(){
 function onJoin(){
   const raw = (UI.code.value||'').trim().toUpperCase();
   if (!raw) return setStatus('Digite o código.', 'j');
+  resetMpRuntime();
   S.myName = (UI.nameJ.value||S.myName).slice(0,14);
   S.isHost = false;
   S.roomCode = raw.toLowerCase().startsWith(PEER_PREFIX) ? raw.toLowerCase() : (PEER_PREFIX+raw.toLowerCase());
@@ -561,21 +593,26 @@ function tryJoinOnce(attempt){
   }
   setStatus('Conectando... ('+(attempt+1)+'/3)', 'j');
   const conn = S.peer.connect(S.roomCode, { reliable:true });
-  let opened=false;
+  let opened=false, settled=false;
+  const scheduleRetry = (label) => {
+    if (settled) return; settled = true;
+    clearTimeout(timeout);
+    if (attempt < 2){
+      const delay = 800 * (attempt+1);
+      setStatus(label+' Retentando em '+(delay/1000)+'s...', 'j');
+      setTimeout(()=>tryJoinOnce(attempt+1), delay);
+    } else {
+      setStatus(label+' Verifique o código.', 'j');
+      netToast('Não foi possível conectar', 'err', 4000);
+    }
+  };
   const timeout = setTimeout(()=>{
     if (opened) return;
     try { conn.close(); } catch(_) {}
-    if (attempt < 2){
-      const delay = 800 * (attempt+1);
-      setStatus('Sem resposta, tentando de novo em '+(delay/1000)+'s...', 'j');
-      setTimeout(()=>tryJoinOnce(attempt+1), delay);
-    } else {
-      setStatus('Timeout. Verifique o código.', 'j');
-      netToast('Não foi possível conectar', 'err', 4000);
-    }
+    scheduleRetry('Sem resposta.');
   }, 6000);
   conn.on('open', ()=>{
-    opened=true; clearTimeout(timeout);
+    opened=true; settled=true; clearTimeout(timeout);
     S.conns.set(S.roomCode, conn);
     conn.send({ t:'hello', name:S.myName, v:VERSION });
     S.players.set(S.myId, mkLocalEntry());
@@ -588,16 +625,7 @@ function tryJoinOnce(attempt){
     netToast('Conexão fechada', 'err', 3000);
   });
   conn.on('error', e => {
-    if (!opened) {
-      clearTimeout(timeout);
-      if (attempt < 2){
-        const delay = 800 * (attempt+1);
-        setTimeout(()=>tryJoinOnce(attempt+1), delay);
-      } else {
-        setStatus('Erro: '+(e.message||e.type||'?'), 'j');
-        netToast('Erro de conexão', 'err', 3000);
-      }
-    }
+    if (!opened) scheduleRetry('Erro: '+(e.message||e.type||'?')+'.');
   });
 }
 
@@ -766,9 +794,21 @@ function handleData(conn, d){
       // v10:
       case 'goldSync': {
         const gg = window.game;
-        S.goldPool = Number(d.pool)||0;
-        if (gg){ gg.gold = S.goldPool; }
-        S.lastSyncedGold = S.goldPool;
+        const pool = Number(d.pool)||0;
+        if (gg){
+          // Preserva gasto local ainda não reportado (evita race onde
+          // o sync sobrescreve uma compra recém-feita).
+          const localDelta = (gg.gold||0) - S.lastSyncedGold;
+          if (localDelta < 0){
+            const c = S.conns.get(S.roomCode);
+            if (c) send(c, { t:'goldDelta', delta: localDelta });
+            gg.gold = Math.max(0, pool + localDelta);
+          } else {
+            gg.gold = pool;
+          }
+          S.lastSyncedGold = gg.gold;
+        }
+        S.goldPool = pool;
         try { if (typeof window.updateHUD === 'function') window.updateHUD(); } catch(_){}
         break;
       }
@@ -1105,12 +1145,12 @@ function clientApplyHit(amount){
 }
 
 function installClientBulletHook(){
-  const g = window.game; if (!g) return;
-  if (g.__mpBulletHook) return;
-  g.__mpBulletHook = true;
+  // Usa S._bulletHookGen p/ invalidar loops antigos quando a partida reinicia.
+  const myGen = ++S._bulletHookGen;
   const loop = ()=>{
-    if (!S.started) { g.__mpBulletHook = false; return; }
-    if (S.isHost)   { return; }
+    if (myGen !== S._bulletHookGen) return; // outro hook tomou o lugar
+    if (!S.started) return;
+    if (S.isHost)   return;
     const gg = window.game;
     if (gg && Array.isArray(gg.bullets) && Array.isArray(gg.enemies)){
       const bullets = gg.bullets, enemies = gg.enemies;
@@ -1181,7 +1221,7 @@ function startBulletBroadcast(){
     // hash leve para evitar reenviar quando nada mudou
     let h = snap.length;
     for (let i=0;i<snap.length;i+=4){ h = (h*131 + snap[i].x + snap[i].y*7)|0; }
-    if (h === S.lastBulletHash && snap.length === 0) return;
+    if (h === S.lastBulletHash) return; // nada mudou desde último envio
     S.lastBulletHash = h;
     if (S.isHost){
       bcast({ t:'bullets', b:snap });
@@ -1194,21 +1234,21 @@ function startBulletBroadcast(){
 
 // =============== BOSS BROADCAST + ANÚNCIO ===============
 function installBossWatcher(){
-  if (S.isHost){
-    setInterval(()=>{
-      const g = window.game; if (!g || !Array.isArray(g.enemies)) return;
-      for (const e of g.enemies){
-        if (!e || e.type!=='boss') continue;
-        if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
-        if (S.bossAnnounced.has(e.__mpId)) continue;
-        S.bossAnnounced.add(e.__mpId);
-        const name = (e.bossType||'BOSS').toString().toUpperCase();
-        const color = e.color||'#ff2e63';
-        bcast({ t:'bossSpawn', name, color, id:e.__mpId });
-        announceBoss(name, color);
-      }
-    }, 250);
-  }
+  if (!S.isHost) return;
+  if (S._bossWatchTimer) clearInterval(S._bossWatchTimer);
+  S._bossWatchTimer = setInterval(()=>{
+    const g = window.game; if (!g || !Array.isArray(g.enemies)) return;
+    for (const e of g.enemies){
+      if (!e || e.type!=='boss') continue;
+      if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
+      if (S.bossAnnounced.has(e.__mpId)) continue;
+      S.bossAnnounced.add(e.__mpId);
+      const name = (e.bossType||'BOSS').toString().toUpperCase();
+      const color = e.color||'#ff2e63';
+      bcast({ t:'bossSpawn', name, color, id:e.__mpId });
+      announceBoss(name, color);
+    }
+  }, 250);
 }
 function announceBoss(name, color){
   const root = document.getElementById('mp-root'); if (!root) return;
@@ -1294,6 +1334,11 @@ function evaluateShopReady(){
     hideShopWait();
     bcast({ t:'shopResume' });
     try {
+      // limpa flags locais do host antes (jogo original pode ter setado)
+      const gg = window.game;
+      if (gg){ gg.shopPending = false; gg.betweenWaves = false; gg.running = true; }
+      const ov = document.getElementById('overlay');
+      if (ov){ ov.classList.add('hidden'); ov.style.display='none'; }
       if (typeof window.__mpOrigStartNextWave === 'function') {
         window.__mpOrigStartNextWave();
       }
@@ -1362,18 +1407,28 @@ function clientHandleShopResume(){
 // =============== CRÉDITO DE KILLS PARA O CLIENTE (XP/Score apenas) ===============
 // OURO agora é POOL COMPARTILHADO (vê startGoldPoolSync). Aqui só XP/score.
 function installHostKillCredit(){
+  if (S._killCreditTimer) clearInterval(S._killCreditTimer);
   let prev = new Map();
-  setInterval(()=>{
+  S._killCreditTimer = setInterval(()=>{
     const g = window.game; if (!g || !Array.isArray(g.enemies)) return;
     const cur = new Map();
     for (const e of g.enemies) if (e && e.__mpId) cur.set(e.__mpId, e);
     for (const [id, e] of prev){
       if (cur.has(id)) continue;
-      // ouro vai pro pool com multiplicador 1.5x (online), independente de quem matou
-      const baseGold = Math.max(1, Math.floor((e.value||10) * 0.5 * GOLD_DROP_MULT));
-      S.goldPool += baseGold;
-      // crédito de XP/score para o cliente que deu o último hit
       const peer = e.__mpLastHitter;
+      // Ouro vai pro pool com 1.5x, MAS:
+      // - se foi o host quem matou, o jogo original já creditou gg.gold;
+      //   nesse caso só aplicamos o BÔNUS de 0.5x (1.5x - 1.0x) para evitar dobrar.
+      // - se foi cliente, adicionamos o valor cheio (cliente não toca em gg.gold).
+      const baseGold = Math.max(1, Math.floor((e.value||10) * 0.5));
+      if (!peer || peer === S.myId){
+        // host matou — bônus apenas; startGoldPoolSync vai pegar o ganho base via delta
+        const bonus = Math.max(0, Math.floor(baseGold * (GOLD_DROP_MULT - 1)));
+        S.goldPool += bonus;
+      } else {
+        S.goldPool += Math.floor(baseGold * GOLD_DROP_MULT);
+      }
+      // XP/score para o cliente que deu o último hit
       if (peer && peer !== S.myId){
         const c = S.conns.get(peer); if (c){
           const xp   = Math.max(1, Math.floor((e.value||10) * 0.4));
@@ -1423,31 +1478,31 @@ function startGoldPoolSync(){
     const cur = gg.gold || 0;
     const delta = cur - S.lastSyncedGold;
     if (S.isHost){
-      if (delta !== 0){
-        // host: positivo = kill loot do próprio host (já 1.5x? NÃO — kills do host caem
-        // direto em gg.gold via lógica do jogo original, então aplicamos o bônus aqui).
-        if (delta > 0){
-          const bonus = Math.floor(delta * (GOLD_DROP_MULT - 1));
-          S.goldPool += delta + bonus;
-        } else {
-          // gasto local (loja/upgrade do host) afeta o pool
-          S.goldPool = Math.max(0, S.goldPool + delta);
-        }
-        S.lastSyncedGold = cur;
+      // POSITIVOS: host matou um inimigo — o ganho-base (delta) entra no
+      // pool aqui; o BÔNUS de 1.5x é aplicado em installHostKillCredit.
+      // NEGATIVOS: host comprou algo — debita do pool compartilhado.
+      if (delta > 0){
+        S.goldPool += delta;
+      } else if (delta < 0){
+        S.goldPool = Math.max(0, S.goldPool + delta);
       }
       // mantém gg.gold do host alinhado ao pool e propaga
       if (gg.gold !== S.goldPool){
         gg.gold = S.goldPool;
-        S.lastSyncedGold = S.goldPool;
         try { if (typeof window.updateHUD === 'function') window.updateHUD(); } catch(_){}
       }
+      S.lastSyncedGold = gg.gold;
       broadcastGoldPool();
     } else {
-      // cliente: reporta delta (gasto) ao host
-      if (delta !== 0){
+      // cliente: só reporta GASTOS (delta negativo); ganhos vêm via goldSync
+      if (delta < 0){
         const c = S.conns.get(S.roomCode);
         if (c) send(c, { t:'goldDelta', delta });
         S.lastSyncedGold = cur;
+      } else if (delta > 0){
+        // cliente nunca deveria ganhar gold local (kills via host); se ganhou,
+        // desfaz para evitar pool fantasma
+        gg.gold = S.lastSyncedGold;
       }
     }
   }, 1000/GOLD_SYNC_HZ);
@@ -1461,8 +1516,8 @@ function broadcastGoldPool(){
 // =============== PAUSE SINCRONIZADO ===============
 function startPauseWatcher(){
   // Monitora gg.paused; quando o JOGADOR LOCAL pausa (não-remoto), envia evento.
-  // Hooks de teclado também detectam tentativa de pause.
-  setInterval(()=>{
+  if (S._pauseTimer) clearInterval(S._pauseTimer);
+  S._pauseTimer = setInterval(()=>{
     if (!S.started) return;
     const gg = window.game; if (!gg) return;
     const isPaused = !!gg.paused;
@@ -1556,7 +1611,8 @@ function hideLocalPauseMenu(){
 
 function startEnemySync(){
   if (!S.isHost) return;
-  setInterval(()=>{
+  if (S._enemyTimer) clearInterval(S._enemyTimer);
+  S._enemyTimer = setInterval(()=>{
     const g = window.game; if (!g || !Array.isArray(g.enemies)) return;
     const list = [];
     for (const e of g.enemies){
@@ -1631,8 +1687,10 @@ function pickAggroTarget(x,y){
 
 function startHostTargetingLoop(){
   if (!S.isHost) return;
+  const myGen = ++S._bulletHookGen; // reusa gen p/ invalidar loops antigos
   let last = performance.now();
   const tick = ()=>{
+    if (myGen !== S._bulletHookGen) return;
     if (!S.started) return;
     const now = performance.now();
     const dt = Math.min(0.05, (now-last)/1000);
@@ -1679,7 +1737,8 @@ function contactDamageFor(e){
 function startHostDamageLoop(){
   if (!S.isHost) return;
   const TICK = 1000 / HOST_DMG_HZ;
-  setInterval(()=>{
+  if (S._hostDmgTimer) clearInterval(S._hostDmgTimer);
+  S._hostDmgTimer = setInterval(()=>{
     const g = window.game; if (!g) return;
     const others = [...S.players.values()].filter(p => p.id !== S.myId && p.classKey && !p.down);
     if (others.length === 0) return;
@@ -1741,7 +1800,8 @@ function startHostDamageLoop(){
 
 // ===================== SYNC DE JOGADORES =====================
 function startTickLoop(){
-  setInterval(()=>{
+  if (S._tickTimer) clearInterval(S._tickTimer);
+  S._tickTimer = setInterval(()=>{
     const g = window.game; if (!g) return;
     const me = S.players.get(S.myId); if (!me) return;
     const pl = g.player || (g.players && g.players[0]) || null;
