@@ -1,32 +1,30 @@
 /* ============================================================
-   CHRONO SHARDS — MULTIPLAYER v9 (PeerJS, P2P co-op)
-   v9 (patch sobre v8):
-     - Conexão robusta: retry em unavailable-id / peer-unavailable
-       (host troca código, cliente tenta 3x com backoff exponencial).
-     - peer.on('disconnected') -> peer.reconnect() + toast de status.
-     - Broadcast leve de projéteis (10 Hz) para os jogadores VEREM
-       os tiros/ultimates uns dos outros (visual-only no overlay).
-     - Render de bullets remotas no overlay (com cor/raio).
-     - Toast genérico de status de rede (canto superior direito).
-     - Mantém: aggro nos 2 players, dano de contato/projéteis remotos,
-       lojas/pause separados, crédito de XP/ouro pro cliente, revive,
-       chat, bloqueio de classes não desbloqueadas.
-
-   Requer o mesmo mp-bridge.js da v8 expondo:
-     window.CLASSES (ou Classes), window.game, window.resetGame,
-     window.spawnEnemy, window.openShopMenu, window.startNextWave,
-     window.updateWaveState, window.gameOver, window.updateHUD,
-     window.__MP_BRIDGE_READY__.
+   CHRONO SHARDS — MULTIPLAYER v10 (PeerJS, P2P co-op)
+   v10 (patch sobre v9):
+     - OURO COMPARTILHADO: pool único; quando um gasta, gasta dos dois.
+     - DROP DE OURO 1.5x no modo online (aplicado no host, source-of-truth).
+     - LOJA/LOOT/UPGRADES INDIVIDUAIS por jogador (cada um compra o seu).
+     - CONTINUAR SINCRONIZADO: clique em "continuar" marca READY;
+       overlay "Esperando jogadores (x/y)"; só avança a wave quando TODOS
+       confirmam. Cancela locks antigos onde 1 jogador fechava p/ os dois.
+     - PAUSE COMPARTILHADO: quem pausa vê menu normal; o(s) outro(s) veem
+       overlay "Jogo pausado por <Nome>" e o jogo é congelado nos dois.
+     - Fix de duplicação de ouro no cliente (kill credit + pool).
+     - Cleanup ao desconectar peer (remoteBullets, pausedBy, shopReady).
+     - Boss announce guard (não duplica no host).
+     - Bullet snapshot com hash p/ evitar pacote redundante.
    ============================================================ */
 (() => {
 'use strict';
 
 // ===================== CONFIG =====================
-const VERSION         = 'mp-v9';
+const VERSION         = 'mp-v10';
 const TICK_HZ         = 20;
 const ENEMY_HZ        = 15;
-const BULLET_HZ       = 10;         // taxa de broadcast de projéteis (visual)
+const BULLET_HZ       = 10;
 const HOST_DMG_HZ     = 20;
+const GOLD_SYNC_HZ    = 4;          // sincronização de pool de ouro
+const GOLD_DROP_MULT  = 1.5;        // online: 1.5x ouro nas mortes
 const REVIVE_TIME     = 10000;
 const REVIVE_RANGE    = 90;
 const REVIVE_HP_PCT   = 0.25;
@@ -70,13 +68,32 @@ const S = {
   enemyIdCounter: 1,
   injectedMenuBtn: null,
   menuPollTimer: null,
-  // novos:
+  // visuais/redes:
   remoteBullets: new Map(), // peerId -> array de bullets snapshot {x,y,r,c}
   bulletTimer: null,
+  lastBulletHash: 0,
   reconnectAttempts: 0,
   netToastTimer: null,
   hostRetries: 0,
+  // ouro compartilhado:
+  goldPool: 0,
+  lastSyncedGold: 0,
+  goldTimer: null,
+  goldReady: false,
+  // shop sincronizado:
+  inShop: false,
+  myShopReady: false,
+  shopReadySet: new Set(),
+  shopWaitEl: null,
+  // pause sincronizado:
+  pausedRemoteBy: null,
+  iAmPauser: false,
+  pauseOverlayEl: null,
+  lastPausedFlag: false,
+  bossAnnounced: new Set(),
 };
+
+
 
 // ===================== UTIL =====================
 const $ = (s, r=document) => r.querySelector(s);
@@ -596,6 +613,16 @@ function onIncoming(conn){
     S.conns.delete(conn.peer);
     S.players.delete(conn.peer);
     S.remoteBullets.delete(conn.peer);
+    S.shopReadySet.delete(conn.peer);
+    // se quem caiu era quem pausou, libera todos
+    if (S.pausedRemoteBy === conn.peer){
+      S.pausedRemoteBy = null;
+      hidePauseOverlay();
+      const gg = window.game; if (gg){ gg.paused = false; gg.running = true; }
+      bcast({ t:'resumeRemote' });
+    }
+    // se quem caiu travava o shop, re-avalia
+    if (S.inShop && S.isHost) evaluateShopReady();
     netToast('Jogador saiu', 'warn');
     broadcastLobby(); renderLobby();
   });
@@ -661,6 +688,49 @@ function handleData(conn, d){
         if (p) p.down = !!d.down;
         broadcastLobby(); break;
       }
+      // ---- v10: ouro compartilhado ----
+      case 'goldDelta': {
+        // cliente reporta delta local (gasto negativo). Host aplica sem multiplicador.
+        const dlt = Number(d.delta)||0;
+        S.goldPool = Math.max(0, S.goldPool + dlt);
+        broadcastGoldPool();
+        break;
+      }
+      case 'goldEarn': {
+        // cliente matou inimigo (creditado via host kill credit já; este é fallback)
+        const amt = Math.max(0, Math.floor((Number(d.amount)||0) * GOLD_DROP_MULT));
+        S.goldPool += amt;
+        broadcastGoldPool();
+        break;
+      }
+      // ---- v10: shop sincronizado ----
+      case 'shopReady': {
+        S.shopReadySet.add(conn.peer);
+        evaluateShopReady();
+        break;
+      }
+      case 'shopUnready': {
+        S.shopReadySet.delete(conn.peer);
+        broadcastShopWait();
+        break;
+      }
+      // ---- v10: pause sincronizado ----
+      case 'paused': {
+        if (S.pausedRemoteBy) break; // já tem alguém pausado
+        S.pausedRemoteBy = conn.peer;
+        const pName = (S.players.get(conn.peer)||{}).name || 'Player';
+        bcast({ t:'pauseRemote', by: conn.peer, byName: pName });
+        // host também congela (mas não mostra overlay próprio se foi o host que pausou)
+        applyRemotePause(conn.peer, pName);
+        break;
+      }
+      case 'unpaused': {
+        if (S.pausedRemoteBy !== conn.peer) break;
+        S.pausedRemoteBy = null;
+        bcast({ t:'resumeRemote' });
+        applyRemoteResume();
+        break;
+      }
     }
   } else {
     switch(d.t){
@@ -680,18 +750,30 @@ function handleData(conn, d){
         }
         break;
       }
-      case 'bullets': // host -> cliente (bullets do host)
+      case 'bullets':
         S.remoteBullets.set('__host__', Array.isArray(d.b) ? d.b : []);
         break;
-      case 'bulletsRemote': // bullets de outro cliente, repassadas pelo host
+      case 'bulletsRemote':
         S.remoteBullets.set(d.from || '__other__', Array.isArray(d.b) ? d.b : []);
         break;
       case 'enemies': applyEnemySnapshot(d.list, d.wave); break;
       case 'chat': pushChat(d.from, d.msg); break;
       case 'bossSpawn': announceBoss(d.name||'BOSS', d.color||'#ff2e63'); break;
       case 'shopOpen':  clientHandleShopOpen(); break;
-      case 'shopClose': clientHandleShopClose(); break;
+      case 'shopResume': clientHandleShopResume(); break;
+      case 'shopWait':  renderShopWait(d.ready||0, d.total||1); break;
       case 'youKilled': clientApplyKill(d); break;
+      // v10:
+      case 'goldSync': {
+        const gg = window.game;
+        S.goldPool = Number(d.pool)||0;
+        if (gg){ gg.gold = S.goldPool; }
+        S.lastSyncedGold = S.goldPool;
+        try { if (typeof window.updateHUD === 'function') window.updateHUD(); } catch(_){}
+        break;
+      }
+      case 'pauseRemote': applyRemotePause(d.by, d.byName||'Player'); break;
+      case 'resumeRemote': applyRemoteResume(); break;
     }
   }
 }
@@ -904,6 +986,8 @@ function startLocalGame(classKey){
     startHostDamageLoop();
     startHostTargetingLoop();
     startBulletBroadcast();
+    startGoldPoolSync();
+    startPauseWatcher();
     startOverlay();
     netToast('Partida iniciada · '+ (DIFFICULTY[S.difficulty]?.label||''), 'ok', 2500);
   }, 80);
@@ -984,13 +1068,9 @@ function installEnemyPatch(){
       const stub = function(){}; stub.__mpWrapped = true;
       try { window.updateWaveState = stub; } catch(e){}
     }
-    if (typeof window.startNextWave === 'function' && !window.startNextWave.__mpWrapped){
-      const stub = function(){
-        const gg = window.game; if (gg){ gg.running=true; gg.betweenWaves=false; gg.shopPending=false; }
-      };
-      stub.__mpWrapped = true;
-      try { window.startNextWave = stub; } catch(e){}
-    }
+    // NÃO substituímos startNextWave por stub aqui: o installShopSync vai
+    // envolvê-lo para enviar 'shopReady' ao host quando o cliente clicar em
+    // continuar. clientHandleShopResume chama o original quando o host libera.
     installClientBulletHook();
   }
   installShopSync();
@@ -1098,11 +1178,14 @@ function startBulletBroadcast(){
     if (!S.started) return;
     if (S.conns.size === 0) return;
     const snap = snapshotMyBullets();
+    // hash leve para evitar reenviar quando nada mudou
+    let h = snap.length;
+    for (let i=0;i<snap.length;i+=4){ h = (h*131 + snap[i].x + snap[i].y*7)|0; }
+    if (h === S.lastBulletHash && snap.length === 0) return;
+    S.lastBulletHash = h;
     if (S.isHost){
-      // host -> todos clientes: snapshot do host
       bcast({ t:'bullets', b:snap });
     } else {
-      // cliente -> host (que repassa para outros clientes)
       const c = S.conns.get(S.roomCode);
       if (c) send(c, { t:'bullets', b:snap });
     }
@@ -1112,17 +1195,17 @@ function startBulletBroadcast(){
 // =============== BOSS BROADCAST + ANÚNCIO ===============
 function installBossWatcher(){
   if (S.isHost){
-    const seen = new Set();
     setInterval(()=>{
       const g = window.game; if (!g || !Array.isArray(g.enemies)) return;
       for (const e of g.enemies){
         if (!e || e.type!=='boss') continue;
         if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
-        if (seen.has(e.__mpId)) continue;
-        seen.add(e.__mpId);
-        bcast({ t:'bossSpawn', name:(e.bossType||'BOSS').toString().toUpperCase(),
-                color:e.color||'#ff2e63', id:e.__mpId });
-        announceBoss((e.bossType||'BOSS').toString().toUpperCase(), e.color||'#ff2e63');
+        if (S.bossAnnounced.has(e.__mpId)) continue;
+        S.bossAnnounced.add(e.__mpId);
+        const name = (e.bossType||'BOSS').toString().toUpperCase();
+        const color = e.color||'#ff2e63';
+        bcast({ t:'bossSpawn', name, color, id:e.__mpId });
+        announceBoss(name, color);
       }
     }, 250);
   }
@@ -1141,43 +1224,143 @@ function announceBoss(name, color){
   setTimeout(()=>{ n.remove(); }, 3000);
 }
 
-// =============== SHOP / PAUSA SINCRONIZADA ===============
+// =============== SHOP SINCRONIZADA (continue compartilhado) ===============
+// Lojas, loot e upgrades são LOCAIS (cada jogador compra o seu).
+// Mas o "continuar" só avança a wave quando TODOS clicarem.
 function installShopSync(){
-  if (S.isHost){
-    if (typeof window.openShopMenu === 'function' && !window.openShopMenu.__mpShopWrap){
-      const orig = window.openShopMenu;
-      const wrap = function(){
-        bcast({ t:'shopOpen' });
+  // Wrap openShopMenu (host) para anunciar abertura para todos
+  if (S.isHost && typeof window.openShopMenu === 'function' && !window.openShopMenu.__mpShopWrap){
+    const orig = window.openShopMenu;
+    const wrap = function(){
+      S.inShop = true; S.myShopReady = false; S.shopReadySet = new Set();
+      bcast({ t:'shopOpen' });
+      showShopWaitForMe();
+      return orig.apply(this, arguments);
+    };
+    wrap.__mpShopWrap = true; wrap.__mpWrapped = true;
+    try { window.openShopMenu = wrap; } catch(e){}
+  }
+  // Wrap startNextWave em AMBOS host e cliente:
+  // - cliente: nunca chama a função original (host é autoridade). Marca ready e envia.
+  // - host: quando o próprio host clica, marca ready e só chama o original quando todos prontos.
+  if (typeof window.startNextWave === 'function' && !window.startNextWave.__mpReadyWrap){
+    const orig = window.startNextWave;
+    const wrap = function(){
+      if (!S.started || S.conns.size === 0) {
+        // single-player ou ainda não started: comportamento normal
+        S.inShop = false; hideShopWait();
         return orig.apply(this, arguments);
-      };
-      wrap.__mpShopWrap = true; wrap.__mpWrapped = true;
-      try { window.openShopMenu = wrap; } catch(e){}
-    }
-    if (typeof window.startNextWave === 'function' && !window.startNextWave.__mpResumeWrap){
-      const orig = window.startNextWave;
-      const wrap = function(){
-        bcast({ t:'shopClose' });
-        return orig.apply(this, arguments);
-      };
-      wrap.__mpResumeWrap = true; wrap.__mpWrapped = true;
-      try { window.startNextWave = wrap; } catch(e){}
-    }
+      }
+      // marca-me como pronto
+      if (!S.myShopReady){
+        S.myShopReady = true;
+        if (S.isHost){
+          S.shopReadySet.add(S.myId);
+          evaluateShopReady();
+        } else {
+          const c = S.conns.get(S.roomCode);
+          if (c) send(c, { t:'shopReady' });
+          showShopWaitForMe();
+        }
+      }
+      // NÃO chama o original aqui — só o host vai chamar quando todos estiverem prontos
+      return;
+    };
+    wrap.__mpReadyWrap = true; wrap.__mpWrapped = true;
+    try {
+      window.__mpOrigStartNextWave = orig;
+      window.startNextWave = wrap;
+    } catch(e){}
   }
 }
+
+function totalActivePlayers(){
+  let n = 0;
+  for (const p of S.players.values()){ if (p.classKey) n++; }
+  return Math.max(1, n);
+}
+
+function evaluateShopReady(){
+  if (!S.isHost) return;
+  const total = totalActivePlayers();
+  const ready = S.shopReadySet.size;
+  // re-render overlay próprio se o host estiver pronto
+  if (S.myShopReady) showShopWaitForMe();
+  // broadcast progresso pros clientes
+  bcast({ t:'shopWait', ready, total });
+  if (ready >= total){
+    // todos prontos! avança a wave de verdade
+    S.inShop = false; S.myShopReady = false; S.shopReadySet = new Set();
+    hideShopWait();
+    bcast({ t:'shopResume' });
+    try {
+      if (typeof window.__mpOrigStartNextWave === 'function') {
+        window.__mpOrigStartNextWave();
+      }
+    } catch(e){ warn('startNextWave erro:', e); }
+  }
+}
+
+function broadcastShopWait(){
+  if (!S.isHost) return;
+  bcast({ t:'shopWait', ready: S.shopReadySet.size, total: totalActivePlayers() });
+}
+
+function showShopWaitForMe(){
+  const total = totalActivePlayers();
+  const ready = S.isHost ? S.shopReadySet.size : 1; // cliente: pelo menos ele
+  renderShopWait(ready, total);
+}
+
+function renderShopWait(ready, total){
+  if (!S.myShopReady) return; // só mostra para quem já clicou em continuar
+  if (!S.shopWaitEl){
+    S.shopWaitEl = el('div', { id:'mp-shop-wait', style:{
+      position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
+      zIndex: 100001, pointerEvents:'none',
+      background:'rgba(6,8,18,0.92)', border:'1px solid rgba(120,200,255,0.4)',
+      borderRadius:'14px', padding:'18px 26px', textAlign:'center',
+      fontFamily:"'Orbitron','Rajdhani',sans-serif", color:'#eef2ff',
+      boxShadow:'0 12px 48px rgba(0,0,0,0.7), 0 0 32px rgba(97,218,251,0.25)'
+    }});
+    document.body.append(S.shopWaitEl);
+  }
+  S.shopWaitEl.innerHTML = `
+    <div style="font-size:11px;letter-spacing:.25em;opacity:.6;margin-bottom:6px">CO-OP</div>
+    <div style="font-size:18px;font-weight:800;letter-spacing:.1em">⏳ Esperando jogadores</div>
+    <div style="font-size:28px;font-weight:900;color:#61dafb;margin-top:6px">${ready}/${total}</div>
+    <div style="font-size:11px;opacity:.6;margin-top:8px">A próxima wave começa quando todos confirmarem.</div>
+  `;
+  S.shopWaitEl.style.display = '';
+}
+function hideShopWait(){
+  if (S.shopWaitEl) S.shopWaitEl.style.display = 'none';
+}
+
 function clientHandleShopOpen(){
   const gg = window.game; if (!gg) return;
+  S.inShop = true; S.myShopReady = false;
   gg.shopPending = true; gg.running = false;
   try { if (typeof window.__origOpenShopMenu === 'function') window.__origOpenShopMenu();
         else if (typeof window.openShopMenu === 'function') window.openShopMenu(); } catch(e){}
 }
-function clientHandleShopClose(){
+function clientHandleShopResume(){
   const gg = window.game; if (!gg) return;
+  S.inShop = false; S.myShopReady = false;
+  hideShopWait();
   const ov = document.getElementById('overlay');
   if (ov){ ov.classList.add('hidden'); ov.style.display='none'; }
   gg.shopPending = false; gg.betweenWaves = false; gg.running = true;
+  // chama startNextWave ORIGINAL no cliente para configurar estado local da nova wave
+  try {
+    if (typeof window.__mpOrigStartNextWave === 'function'){
+      window.__mpOrigStartNextWave();
+    }
+  } catch(e){}
 }
 
-// =============== CRÉDITO DE KILLS PARA O CLIENTE ===============
+// =============== CRÉDITO DE KILLS PARA O CLIENTE (XP/Score apenas) ===============
+// OURO agora é POOL COMPARTILHADO (vê startGoldPoolSync). Aqui só XP/score.
 function installHostKillCredit(){
   let prev = new Map();
   setInterval(()=>{
@@ -1186,14 +1369,19 @@ function installHostKillCredit(){
     for (const e of g.enemies) if (e && e.__mpId) cur.set(e.__mpId, e);
     for (const [id, e] of prev){
       if (cur.has(id)) continue;
+      // ouro vai pro pool com multiplicador 1.5x (online), independente de quem matou
+      const baseGold = Math.max(1, Math.floor((e.value||10) * 0.5 * GOLD_DROP_MULT));
+      S.goldPool += baseGold;
+      // crédito de XP/score para o cliente que deu o último hit
       const peer = e.__mpLastHitter;
-      if (!peer || peer === S.myId) continue;
-      const c = S.conns.get(peer); if (!c) continue;
-      const gold = Math.max(1, Math.floor((e.value||10) * 0.5));
-      const xp   = Math.max(1, Math.floor((e.value||10) * 0.4));
-      const score= e.value||10;
-      const boss = e.type === 'boss';
-      send(c, { t:'youKilled', gold, xp, score, boss, name:(boss?(e.bossType||'BOSS'):e.type||'')});
+      if (peer && peer !== S.myId){
+        const c = S.conns.get(peer); if (c){
+          const xp   = Math.max(1, Math.floor((e.value||10) * 0.4));
+          const score= e.value||10;
+          const boss = e.type === 'boss';
+          send(c, { t:'youKilled', xp, score, boss, name:(boss?(e.bossType||'BOSS'):e.type||'')});
+        }
+      }
     }
     prev = cur;
   }, 200);
@@ -1201,7 +1389,7 @@ function installHostKillCredit(){
 
 function clientApplyKill(d){
   const gg = window.game; if (!gg) return;
-  gg.gold = (gg.gold||0) + (d.gold||0);
+  // OURO não aqui (vem por goldSync)
   gg.score = (gg.score||0) + (d.score||0);
   if (gg.player){
     gg.player.xp = (gg.player.xp||0) + (d.xp||0);
@@ -1213,6 +1401,157 @@ function clientApplyKill(d){
   }
   try { if (typeof window.updateHUD === 'function') window.updateHUD(); } catch(_){}
   if (d.boss) announceBoss('BOSS DERROTADO', '#4ce0b3');
+}
+
+// =============== OURO COMPARTILHADO (pool) ===============
+// Host é source-of-truth. Mantém S.goldPool. Detecta delta local
+// (host ganha por kill = já contabilizado em installHostKillCredit;
+// gastos locais detectados via delta negativo). Clientes só reportam DELTAS.
+function startGoldPoolSync(){
+  // inicializa pool com gold local
+  const gg = window.game;
+  if (S.isHost && gg){
+    S.goldPool = gg.gold || 0;
+    S.lastSyncedGold = S.goldPool;
+  } else if (gg){
+    S.lastSyncedGold = gg.gold || 0;
+  }
+  if (S.goldTimer) clearInterval(S.goldTimer);
+  S.goldTimer = setInterval(()=>{
+    if (!S.started) return;
+    const gg = window.game; if (!gg) return;
+    const cur = gg.gold || 0;
+    const delta = cur - S.lastSyncedGold;
+    if (S.isHost){
+      if (delta !== 0){
+        // host: positivo = kill loot do próprio host (já 1.5x? NÃO — kills do host caem
+        // direto em gg.gold via lógica do jogo original, então aplicamos o bônus aqui).
+        if (delta > 0){
+          const bonus = Math.floor(delta * (GOLD_DROP_MULT - 1));
+          S.goldPool += delta + bonus;
+        } else {
+          // gasto local (loja/upgrade do host) afeta o pool
+          S.goldPool = Math.max(0, S.goldPool + delta);
+        }
+        S.lastSyncedGold = cur;
+      }
+      // mantém gg.gold do host alinhado ao pool e propaga
+      if (gg.gold !== S.goldPool){
+        gg.gold = S.goldPool;
+        S.lastSyncedGold = S.goldPool;
+        try { if (typeof window.updateHUD === 'function') window.updateHUD(); } catch(_){}
+      }
+      broadcastGoldPool();
+    } else {
+      // cliente: reporta delta (gasto) ao host
+      if (delta !== 0){
+        const c = S.conns.get(S.roomCode);
+        if (c) send(c, { t:'goldDelta', delta });
+        S.lastSyncedGold = cur;
+      }
+    }
+  }, 1000/GOLD_SYNC_HZ);
+}
+
+function broadcastGoldPool(){
+  if (!S.isHost) return;
+  bcast({ t:'goldSync', pool: S.goldPool });
+}
+
+// =============== PAUSE SINCRONIZADO ===============
+function startPauseWatcher(){
+  // Monitora gg.paused; quando o JOGADOR LOCAL pausa (não-remoto), envia evento.
+  // Hooks de teclado também detectam tentativa de pause.
+  setInterval(()=>{
+    if (!S.started) return;
+    const gg = window.game; if (!gg) return;
+    const isPaused = !!gg.paused;
+    // Se outro player pausou, força local
+    if (S.pausedRemoteBy && S.pausedRemoteBy !== S.myId){
+      if (!isPaused){ gg.paused = true; }
+      gg.running = false;
+      // garante overlay visível
+      if (!S.pauseOverlayEl || S.pauseOverlayEl.style.display === 'none'){
+        const pName = (S.players.get(S.pausedRemoteBy)||{}).name || 'Player';
+        showPauseOverlay(pName);
+      }
+      // esconde menu de pause local do jogo (se aparecer)
+      hideLocalPauseMenu();
+      S.lastPausedFlag = true;
+      return;
+    }
+    // local: se pausou agora e não há pause remoto, anuncia
+    if (isPaused && !S.lastPausedFlag && !S.pausedRemoteBy){
+      S.iAmPauser = true;
+      if (S.isHost){
+        S.pausedRemoteBy = S.myId;
+        const pName = S.myName;
+        bcast({ t:'pauseRemote', by:S.myId, byName:pName });
+      } else {
+        const c = S.conns.get(S.roomCode);
+        if (c) send(c, { t:'paused' });
+      }
+    } else if (!isPaused && S.lastPausedFlag && S.iAmPauser){
+      S.iAmPauser = false;
+      if (S.isHost){
+        S.pausedRemoteBy = null;
+        bcast({ t:'resumeRemote' });
+      } else {
+        const c = S.conns.get(S.roomCode);
+        if (c) send(c, { t:'unpaused' });
+      }
+    }
+    S.lastPausedFlag = isPaused;
+  }, 120);
+}
+
+function applyRemotePause(byId, byName){
+  if (byId === S.myId) return; // sou eu mesmo, não preciso de overlay
+  const gg = window.game;
+  if (gg){ gg.paused = true; gg.running = false; }
+  showPauseOverlay(byName||'Player');
+  hideLocalPauseMenu();
+}
+function applyRemoteResume(){
+  hidePauseOverlay();
+  const gg = window.game;
+  if (gg){
+    gg.paused = false;
+    if (!S.inShop && !gg.__mpDowned) gg.running = true;
+  }
+}
+
+function showPauseOverlay(name){
+  if (!S.pauseOverlayEl){
+    S.pauseOverlayEl = el('div', { id:'mp-pause-overlay', style:{
+      position:'fixed', inset:'0', zIndex: 100002, pointerEvents:'none',
+      display:'flex', alignItems:'center', justifyContent:'center',
+      background:'rgba(2,4,12,0.55)', backdropFilter:'blur(6px)'
+    }});
+    document.body.append(S.pauseOverlayEl);
+  }
+  S.pauseOverlayEl.innerHTML = `
+    <div style="text-align:center;font-family:'Orbitron','Rajdhani',sans-serif;color:#eef2ff">
+      <div style="font-size:13px;letter-spacing:.3em;opacity:.7;margin-bottom:10px">CO-OP</div>
+      <div style="font-size:44px;font-weight:900;letter-spacing:.15em;
+                  background:linear-gradient(90deg,#61dafb,#9f6cff);
+                  -webkit-background-clip:text;-webkit-text-fill-color:transparent">JOGO PAUSADO</div>
+      <div style="font-size:18px;margin-top:14px;opacity:.9">por <b style="color:#ffd166">${name}</b></div>
+      <div style="font-size:11px;opacity:.55;margin-top:18px;letter-spacing:.15em">aguardando retomada...</div>
+    </div>
+  `;
+  S.pauseOverlayEl.style.display = 'flex';
+}
+function hidePauseOverlay(){
+  if (S.pauseOverlayEl) S.pauseOverlayEl.style.display = 'none';
+}
+function hideLocalPauseMenu(){
+  // tenta esconder menus de pause comuns do jogo (best-effort, IDs/classes comuns)
+  const sels = ['#pauseMenu','#pauseOverlay','.pauseMenu','.pause-menu','#pause'];
+  for (const s of sels){
+    const n = document.querySelector(s);
+    if (n){ n.style.display = 'none'; }
+  }
 }
 
 function startEnemySync(){
