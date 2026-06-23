@@ -18,7 +18,7 @@
 'use strict';
 
 // ===================== CONFIG =====================
-const VERSION         = 'mp-v11';
+const VERSION         = 'mp-v12';
 const TICK_HZ         = 20;
 const ENEMY_HZ        = 15;
 const BULLET_HZ       = 10;
@@ -103,7 +103,17 @@ const S = {
 const $ = (s, r=document) => r.querySelector(s);
 const log = (...a) => console.log('%c[MP]', 'color:#6cf', ...a);
 const warn = (...a) => console.warn('[MP]', ...a);
-const rid = () => Math.random().toString(36).slice(2,8).toUpperCase();
+// IMPORTANTE: PeerJS IDs são case-sensitive. Usamos sempre minúsculas internamente
+// e mostramos MAIÚSCULAS apenas na UI (mais legível). Caracteres permitidos: [a-z0-9].
+const rid = () => Math.random().toString(36).slice(2,8).toLowerCase().replace(/[^a-z0-9]/g,'a');
+const normalizeCode = (raw) => {
+  // Aceita "ABC123", "abc123", "cs3-abc123", "CS3-ABC123", com espaços/traços extras.
+  let s = String(raw||'').toLowerCase().trim().replace(/\s+/g,'');
+  if (s.startsWith(PEER_PREFIX)) s = s.slice(PEER_PREFIX.length);
+  s = s.replace(/[^a-z0-9]/g,'');
+  return s ? (PEER_PREFIX + s) : '';
+};
+const prettyCode = (full) => (full||'').replace(PEER_PREFIX,'').toUpperCase();
 const hpMult = () => (DIFFICULTY[S.difficulty]||DIFFICULTY.medium).mult;
 const enemyCountMult = () => {
   const idx = Math.max(0, DIFFICULTY_ORDER.indexOf(S.difficulty));
@@ -194,15 +204,48 @@ function injectCSS(){
   .mp-fade-in{ animation:mpFade .2s ease-out; }
   @keyframes mpFade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
   #mp-net-toast{
-    position:fixed; top:12px; right:12px; z-index:100000; pointer-events:none;
-    background:rgba(6,8,18,0.92); border:1px solid rgba(120,200,255,0.3);
-    color:#eef2ff; padding:8px 14px; border-radius:10px; font-size:12px;
-    font-weight:700; letter-spacing:.08em; display:none;
-    box-shadow:0 8px 32px rgba(0,0,0,0.5);
+    position:fixed; top:14px; left:50%; transform:translateX(-50%) translateY(-12px);
+    z-index:100000; pointer-events:none; opacity:0;
+    background:linear-gradient(180deg,rgba(12,18,38,0.96),rgba(6,10,22,0.96));
+    border:1px solid rgba(120,200,255,0.3); backdrop-filter:blur(12px);
+    color:#eef2ff; padding:10px 18px; border-radius:999px; font-size:12px;
+    font-weight:700; letter-spacing:.1em;
+    box-shadow:0 12px 40px rgba(0,0,0,0.55), 0 0 24px rgba(97,218,251,0.18);
+    transition:opacity .25s ease, transform .25s ease;
   }
-  #mp-net-toast.ok   { border-color:rgba(76,224,179,0.5); color:#4ce0b3; }
-  #mp-net-toast.warn { border-color:rgba(255,209,102,0.5); color:#ffd166; }
-  #mp-net-toast.err  { border-color:rgba(255,77,109,0.5); color:#ff8fa3; }
+  #mp-net-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  #mp-net-toast.ok   { border-color:rgba(76,224,179,0.55); color:#7ff0c8;
+                       box-shadow:0 12px 40px rgba(0,0,0,0.55), 0 0 28px rgba(76,224,179,0.35); }
+  #mp-net-toast.warn { border-color:rgba(255,209,102,0.55); color:#ffd166;
+                       box-shadow:0 12px 40px rgba(0,0,0,0.55), 0 0 28px rgba(255,209,102,0.3); }
+  #mp-net-toast.err  { border-color:rgba(255,77,109,0.6); color:#ff8fa3;
+                       box-shadow:0 12px 40px rgba(0,0,0,0.55), 0 0 30px rgba(255,77,109,0.4); }
+  .mp-code-display{
+    font-family:'Orbitron','Rajdhani',sans-serif; font-size:30px; font-weight:900;
+    letter-spacing:.32em; text-align:center; padding:14px 18px; border-radius:14px;
+    background:linear-gradient(180deg,rgba(20,30,60,0.7),rgba(6,10,22,0.7));
+    border:1px solid rgba(97,218,251,0.35);
+    color:#9bedff; text-shadow:0 0 18px rgba(97,218,251,0.55);
+    box-shadow:inset 0 0 30px rgba(97,218,251,0.12), 0 8px 28px rgba(0,0,0,0.5);
+    animation:codePulse 2.6s ease-in-out infinite;
+  }
+  @keyframes codePulse{
+    0%,100%{ box-shadow:inset 0 0 30px rgba(97,218,251,0.12), 0 8px 28px rgba(0,0,0,0.5), 0 0 0 rgba(97,218,251,0); }
+    50%   { box-shadow:inset 0 0 30px rgba(97,218,251,0.22), 0 8px 28px rgba(0,0,0,0.5), 0 0 28px rgba(97,218,251,0.35); }
+  }
+  .mp-input.code{
+    text-transform:uppercase; letter-spacing:.32em; text-align:center;
+    font-family:'Orbitron','Rajdhani',sans-serif; font-size:22px; font-weight:900;
+    padding:16px 12px; color:#9bedff;
+  }
+  .mp-input.code.invalid{ border-color:rgba(255,77,109,0.6); box-shadow:0 0 0 2px rgba(255,77,109,0.25); }
+  .mp-input.code.valid  { border-color:rgba(76,224,179,0.6); box-shadow:0 0 0 2px rgba(76,224,179,0.25); }
+  .mp-spinner{
+    display:inline-block; width:12px; height:12px; border-radius:50%;
+    border:2px solid rgba(155,237,255,0.25); border-top-color:#9bedff;
+    animation:mpSpin .8s linear infinite; vertical-align:middle; margin-right:8px;
+  }
+  @keyframes mpSpin{ to { transform:rotate(360deg); } }
   `;
   document.head.append(el('style', { id:'mp-style', textContent: css }));
 }
@@ -211,10 +254,9 @@ function netToast(msg, kind='ok', ms=2200){
   let t = document.getElementById('mp-net-toast');
   if (!t){ t = el('div', { id:'mp-net-toast' }); document.body.append(t); }
   t.textContent = msg;
-  t.className = kind;
-  t.style.display = 'block';
+  t.className = kind + ' show';
   if (S.netToastTimer) clearTimeout(S.netToastTimer);
-  S.netToastTimer = setTimeout(()=>{ t.style.display = 'none'; }, ms);
+  S.netToastTimer = setTimeout(()=>{ t.className = kind; }, ms);
 }
 
 // ===================== UI =====================
@@ -285,18 +327,19 @@ function buildUI(){
       <div style="display:grid;gap:12px">
         <div><span class="mp-label">SEU NOME</span><input id="mp-name-j" class="mp-input" maxlength="14"/></div>
         <div><span class="mp-label">CÓDIGO DA SALA</span>
-          <input id="mp-code" class="mp-input" placeholder="ex: A1B2C3"
-            style="text-transform:uppercase;letter-spacing:.2em;text-align:center;font-size:18px;font-weight:700"/></div>
+          <input id="mp-code" class="mp-input code" placeholder="A1B2C3" maxlength="14" autocomplete="off" spellcheck="false"/>
+          <div id="mp-code-hint" style="margin-top:6px;font-size:11px;opacity:.55;text-align:center">Cole ou digite o código que o host te passou</div>
+        </div>
         <button id="mp-join" class="mp-btn success" style="padding:14px">⚔️ ENTRAR NA SALA</button>
       </div>
       <div id="mp-status-j" style="margin-top:10px;font-size:11px;opacity:.7;text-align:center"></div>
     </div>
 
     <div id="mp-stage-lobby" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div>
-          <div class="mp-label" style="margin:0">CÓDIGO DA SALA</div>
-          <div id="mp-room-label" style="font-family:Orbitron,sans-serif;font-size:24px;font-weight:900;letter-spacing:.2em;color:#61dafb">------</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px">
+        <div style="flex:1">
+          <div class="mp-label" style="margin:0 0 6px">CÓDIGO DA SALA · COMPARTILHE COM SEU AMIGO</div>
+          <div id="mp-room-label" class="mp-code-display">------</div>
         </div>
         <div style="display:flex;gap:6px">
           <span id="mp-role" class="mp-chip" style="padding:4px 10px">HOST</span>
@@ -371,8 +414,8 @@ function buildUI(){
   UI.join.onclick = onJoin;
   UI.copy.onclick = () => {
     if (!S.roomCode) return;
-    const short = S.roomCode.replace(PEER_PREFIX,'').toUpperCase();
-    navigator.clipboard?.writeText(short);
+    const short = prettyCode(S.roomCode);
+    try { navigator.clipboard?.writeText(short); } catch(_) {}
     UI.copy.textContent='✓ copiado!';
     setTimeout(()=>UI.copy.textContent='📋 copiar', 1200);
   };
@@ -380,7 +423,19 @@ function buildUI(){
   UI.start.onclick = () => { if (!UI.start.disabled) hostStart(); };
   UI.pickBack.onclick = () => showStage('lobby');
 
-  UI.code.addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
+  // Input do código: sanitização ao vivo + feedback visual + Enter para entrar
+  UI.code.addEventListener('input', e => {
+    const cleaned = String(e.target.value||'').toUpperCase().replace(/[^A-Z0-9-]/g,'');
+    if (cleaned !== e.target.value) e.target.value = cleaned;
+    const norm = normalizeCode(cleaned);
+    e.target.classList.remove('valid','invalid');
+    if (!cleaned) { /* neutro */ }
+    else if (norm && norm.length > PEER_PREFIX.length) e.target.classList.add('valid');
+    else e.target.classList.add('invalid');
+  });
+  UI.code.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !UI.join.disabled) { e.preventDefault(); onJoin(); }
+  });
 
   UI.chatInput.addEventListener('keydown', e => {
     e.stopPropagation();
@@ -488,29 +543,70 @@ function attachPeerCommonHandlers(p, which){
   });
 }
 
+// Tradução de tipos de erro do PeerJS para mensagens em PT amigáveis
+const PEER_ERR_PT = {
+  'invalid-id'        : 'Código inválido (use só letras/números).',
+  'invalid-key'       : 'Servidor de signalling indisponível.',
+  'unavailable-id'    : 'Esse código já está em uso, gerando outro...',
+  'peer-unavailable'  : 'Sala não encontrada. Confira o código com seu amigo.',
+  'network'           : 'Sem internet ou servidor offline.',
+  'disconnected'      : 'Desconectado do servidor de signalling.',
+  'server-error'      : 'Servidor de signalling com erro. Tente novamente.',
+  'socket-error'      : 'Falha de socket — tentando reconectar...',
+  'socket-closed'     : 'Conexão com signalling encerrada.',
+  'ssl-unavailable'   : 'SSL indisponível neste ambiente.',
+  'webrtc'            : 'Seu navegador bloqueou WebRTC.',
+  'browser-incompatible': 'Navegador incompatível com WebRTC.',
+};
+const peerErrMsg = (err) => {
+  const t = err && err.type;
+  return (t && PEER_ERR_PT[t]) || (err && (err.message || t)) || 'Erro desconhecido';
+};
+
+// Config padrão do PeerJS Cloud (público) + STUN do Google.
+// `secure:true` é necessário quando a página roda em HTTPS (lovableproject.com).
+function peerConfig(){
+  const httpsPage = (typeof location !== 'undefined' && location.protocol === 'https:');
+  return {
+    debug: 1,
+    secure: httpsPage,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' },
+      ],
+    },
+  };
+}
+
 function ensurePeer(id){
   return new Promise((resolve,reject)=>{
     if (!window.Peer) return reject(new Error('PeerJS não carregado'));
     let p;
-    try { p = id ? new Peer(id) : new Peer(); }
+    try { p = id ? new Peer(id, peerConfig()) : new Peer(peerConfig()); }
     catch(e){ return reject(e); }
 
-    let opened = false;
+    let opened = false, settled = false;
+    // timeout de abertura — se o servidor de signalling não responder em 12s, falha
+    const openTimeout = setTimeout(()=>{
+      if (settled) return; settled = true;
+      try { p.destroy(); } catch(_) {}
+      reject(new Error('Sem resposta do servidor de signalling (timeout 12s)'));
+    }, 12000);
+
     p.on('open', pid => {
+      if (settled) return; settled = true; clearTimeout(openTimeout);
       opened=true; S.peer=p; S.myId=pid;
       attachPeerCommonHandlers(p);
       resolve(p);
     });
     p.on('error', err => {
-      warn('peer error', err);
-      if (!opened) reject(err);
-      else {
-        // erros pós-open: peer-unavailable em connect, etc.
-        if (err && err.type === 'peer-unavailable'){
-          netToast('Par indisponível', 'err', 3000);
-        } else {
-          netToast('Erro de rede: '+(err.type||err.message||'?'), 'warn', 3500);
-        }
+      warn('peer error', err && (err.type||err.message), err);
+      if (!opened){
+        if (!settled){ settled = true; clearTimeout(openTimeout); reject(err); }
+      } else {
+        // erros pós-open: peer-unavailable em connect, network, etc.
+        netToast(peerErrMsg(err), err && err.type === 'peer-unavailable' ? 'err' : 'warn', 3500);
       }
     });
     p.on('connection', onIncoming);
@@ -554,78 +650,112 @@ function onHost(){
 
 function tryHostOnce(){
   S.roomCode = PEER_PREFIX + rid();
-  setStatus('Criando sala... ('+(S.hostRetries+1)+')', 'c');
+  setStatus('Criando sala... (tentativa '+(S.hostRetries+1)+'/5)', 'c');
   ensurePeer(S.roomCode).then(()=>{
-    netToast('Sala criada', 'ok');
+    netToast('Sala criada · ' + prettyCode(S.roomCode), 'ok', 2500);
     S.players.set(S.myId, mkLocalEntry());
     enterLobby();
   }).catch(e => {
     const t = e && e.type;
-    if ((t === 'unavailable-id' || t === 'id-taken') && S.hostRetries < 4){
+    // Retentativa para colisão de ID OU erro transitório de signalling
+    const retriable = (t === 'unavailable-id' || t === 'id-taken' ||
+                      t === 'network' || t === 'socket-error' || t === 'server-error');
+    if (retriable && S.hostRetries < 4){
       S.hostRetries++;
-      log('ID em uso, gerando novo código...');
-      setTimeout(tryHostOnce, 250);
+      const delay = 350 + 250*S.hostRetries;
+      log('Retentando criar sala em '+delay+'ms ('+t+')');
+      setTimeout(tryHostOnce, delay);
     } else {
-      setStatus('Falhou: '+(e.message||t||'?'), 'c');
-      netToast('Falha ao criar sala', 'err', 3500);
+      setStatus('Falhou: '+peerErrMsg(e), 'c');
+      netToast(peerErrMsg(e), 'err', 4000);
     }
   });
 }
 
 function onJoin(){
-  const raw = (UI.code.value||'').trim().toUpperCase();
-  if (!raw) return setStatus('Digite o código.', 'j');
+  const rawInput = (UI.code.value||'').trim();
+  if (!rawInput) return setStatus('Digite o código da sala.', 'j');
+  const full = normalizeCode(rawInput);
+  if (!full || full.length <= PEER_PREFIX.length){
+    setStatus('Código inválido. Use só letras/números.', 'j');
+    netToast('Código inválido', 'err', 3000);
+    return;
+  }
   resetMpRuntime();
   S.myName = (UI.nameJ.value||S.myName).slice(0,14);
   S.isHost = false;
-  S.roomCode = raw.toLowerCase().startsWith(PEER_PREFIX) ? raw.toLowerCase() : (PEER_PREFIX+raw.toLowerCase());
-  setStatus('Conectando...', 'j');
+  S.roomCode = full;
+  setStatus('Conectando em '+prettyCode(full)+'...', 'j');
   ensurePeer().then(()=>tryJoinOnce(0)).catch(e => {
-    setStatus('Falhou: '+(e.message||e.type||'?'), 'j');
-    netToast('Falha PeerJS', 'err', 3500);
+    setStatus('Falhou: '+peerErrMsg(e), 'j');
+    netToast(peerErrMsg(e), 'err', 4000);
   });
 }
 
 function tryJoinOnce(attempt){
   if (!S.peer || S.peer.destroyed){
-    setStatus('Peer destruído. Recarregue.', 'j');
+    setStatus('Peer destruído. Recarregue a página.', 'j');
+    netToast('Peer perdido — recarregue', 'err', 4000);
     return;
   }
-  setStatus('Conectando... ('+(attempt+1)+'/3)', 'j');
-  const conn = S.peer.connect(S.roomCode, { reliable:true });
-  let opened=false, settled=false;
-  const scheduleRetry = (label) => {
+  setStatus('Conectando ao host '+prettyCode(S.roomCode)+'... ('+(attempt+1)+'/3)', 'j');
+
+  const conn = S.peer.connect(S.roomCode, { reliable:true, serialization:'json' });
+  let opened=false, settled=false, fatal=false;
+
+  const finish = () => {
     if (settled) return; settled = true;
     clearTimeout(timeout);
+    try { S.peer.off && S.peer.off('error', onPeerErr); } catch(_) {}
+  };
+
+  // Captura peer-unavailable (sala não existe) que vem pelo objeto peer, NÃO pela conn
+  const onPeerErr = (err) => {
+    if (opened || settled) return;
+    if (err && err.type === 'peer-unavailable'){
+      fatal = true;
+      finish();
+      setStatus('Sala não encontrada. Confira o código com seu amigo.', 'j');
+      netToast('Sala "'+prettyCode(S.roomCode)+'" não existe', 'err', 5000);
+    }
+  };
+  try { S.peer.on('error', onPeerErr); } catch(_) {}
+
+  const scheduleRetry = (label) => {
+    if (settled || fatal) return;
+    finish();
     if (attempt < 2){
       const delay = 800 * (attempt+1);
       setStatus(label+' Retentando em '+(delay/1000)+'s...', 'j');
       setTimeout(()=>tryJoinOnce(attempt+1), delay);
     } else {
-      setStatus(label+' Verifique o código.', 'j');
-      netToast('Não foi possível conectar', 'err', 4000);
+      setStatus(label+' Verifique o código com o host.', 'j');
+      netToast('Falha ao conectar', 'err', 4500);
     }
   };
+
   const timeout = setTimeout(()=>{
     if (opened) return;
     try { conn.close(); } catch(_) {}
-    scheduleRetry('Sem resposta.');
-  }, 6000);
+    scheduleRetry('Sem resposta do host.');
+  }, 8000);
+
   conn.on('open', ()=>{
-    opened=true; settled=true; clearTimeout(timeout);
+    opened=true; finish();
     S.conns.set(S.roomCode, conn);
     conn.send({ t:'hello', name:S.myName, v:VERSION });
     S.players.set(S.myId, mkLocalEntry());
-    netToast('Conectado ao host', 'ok');
+    netToast('Conectado ao host ✓', 'ok', 2500);
     enterLobby();
   });
   conn.on('data', d => handleData(conn, d));
   conn.on('close', ()=>{
-    setStatus('Conexão fechada.', 'j');
-    netToast('Conexão fechada', 'err', 3000);
+    if (!opened) return; // close pré-open já tratado
+    setStatus('Conexão fechada pelo host.', 'j');
+    netToast('Conexão encerrada', 'err', 3500);
   });
   conn.on('error', e => {
-    if (!opened) scheduleRetry('Erro: '+(e.message||e.type||'?')+'.');
+    if (!opened) scheduleRetry('Erro: '+peerErrMsg(e)+'.');
   });
 }
 
@@ -852,7 +982,7 @@ function pushChat(from, msg){
 // ===================== LOBBY RENDER =====================
 function enterLobby(){
   showStage('lobby');
-  UI.roomLabel.textContent = S.roomCode.replace(PEER_PREFIX,'').toUpperCase();
+  UI.roomLabel.textContent = prettyCode(S.roomCode);
   UI.role.textContent = S.isHost ? 'HOST' : 'CLIENTE';
   UI.role.style.background = S.isHost ? 'rgba(255,209,102,0.15)' : 'rgba(97,218,251,0.15)';
   UI.role.style.color = S.isHost ? '#ffd166' : '#61dafb';
