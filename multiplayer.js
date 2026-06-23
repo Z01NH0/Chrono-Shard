@@ -18,7 +18,29 @@
 'use strict';
 
 // ===================== CONFIG =====================
-const VERSION         = 'mp-v12';
+const VERSION         = 'mp-v13';
+/* v13 — fixes principais sobre v12:
+   - Wave infinita / "Esperando jogadores" persistente: o wrap de
+     startNextWave agora SÓ intercepta quando uma loja está aberta
+     (S.inShop). Auto-advances de wave (rift, sem shop) passam direto
+     pro original.
+   - applyEnemySnapshot: muta g.enemies in-place em vez de substituir a
+     referência (impede o jogo de continuar simulando inimigos "fantasma"
+     do client e mantém a lista visível pelo render do próprio jogo).
+   - Cliente agora limpa loops locais de spawn de inimigo do jogo (set
+     g.spawnCd alto + zera arrays de spawn-queue se existir) para evitar
+     hordas locais paralelas às do host.
+   - Pause sync robusta: escuta keydown direto (P/Esc) e força gg.paused
+     em ambos os lados, sem depender de polling frágil de gg.paused.
+   - Revive: tecla mudou de E para F. Reset correto de progresso quando
+     o alvo morre/sai do raio.
+   - Render de jogadores remotos: usa proxy pra chamar
+     window.drawPlayer/window.drawBullets do jogo (skin/classe/efeitos
+     corretos por personagem) trocando temporariamente game.player,
+     game.classKey, mouse e game.bullets para o estado do peer.
+   - Status replication: sincroniza shield, ult ativa, cloak, dash e
+     hurt cooldown junto com o tick de jogadores.
+   - "Esperando jogadores" só aparece dentro de S.inShop.            */
 const TICK_HZ         = 20;
 const ENEMY_HZ        = 15;
 const BULLET_HZ       = 10;
@@ -1410,18 +1432,18 @@ function installShopSync(){
     wrap.__mpShopWrap = true; wrap.__mpWrapped = true;
     try { window.openShopMenu = wrap; } catch(e){}
   }
-  // Wrap startNextWave em AMBOS host e cliente:
-  // - cliente: nunca chama a função original (host é autoridade). Marca ready e envia.
-  // - host: quando o próprio host clica, marca ready e só chama o original quando todos prontos.
+  // Wrap startNextWave — v13: SÓ intercepta se uma loja estiver realmente
+  // aberta. Caso contrário (auto-advance entre waves, rift loop, etc.) o
+  // original roda normalmente em ambos os lados. Isso elimina o loop de
+  // "Esperando jogadores" travado e o contador de waves disparando sozinho.
   if (typeof window.startNextWave === 'function' && !window.startNextWave.__mpReadyWrap){
     const orig = window.startNextWave;
     const wrap = function(){
-      if (!S.started || S.conns.size === 0) {
-        // single-player ou ainda não started: comportamento normal
-        S.inShop = false; hideShopWait();
+      // single-player, antes da partida, ou sem loja aberta -> passa direto
+      if (!S.started || S.conns.size === 0 || !S.inShop){
+        S.inShop = false; S.myShopReady = false; S.shopReadySet = new Set(); hideShopWait();
         return orig.apply(this, arguments);
       }
-      // marca-me como pronto
       if (!S.myShopReady){
         S.myShopReady = true;
         if (S.isHost){
@@ -1433,7 +1455,6 @@ function installShopSync(){
           showShopWaitForMe();
         }
       }
-      // NÃO chama o original aqui — só o host vai chamar quando todos estiverem prontos
       return;
     };
     wrap.__mpReadyWrap = true; wrap.__mpWrapped = true;
@@ -1765,19 +1786,33 @@ function startEnemySync(){
 function applyEnemySnapshot(list, wave){
   const g = window.game; if (!g) return;
   if (!Array.isArray(g.enemies)) g.enemies = [];
+  // v13: muta in-place. Substituir g.enemies = next quebrava referências
+  // mantidas por sub-sistemas patched do jogo (drones, AoE, contagem da wave).
   const existing = new Map();
   for (const e of g.enemies) if (e && e.__mpId) existing.set(e.__mpId, e);
+  const incoming = new Set();
   const next = [];
   for (const s of list){
+    incoming.add(s.i);
     let e = existing.get(s.i);
     if (!e){ e = makeShellEnemy(s); }
     else {
       e.x = s.x; e.y = s.y; e.hp = s.h; e.maxHp = s.M; e.r = s.r;
+      e.type = s.t || e.type; e.boss = !!s.b; e.elite = !!s.el;
+      if (s.c) e.color = s.c;
+      e.dead = false;
     }
     next.push(e);
   }
-  g.enemies = next;
+  g.enemies.length = 0;
+  for (const e of next) g.enemies.push(e);
   if (wave) { g.wave = wave; g.currentWave = wave; }
+  // suprime spawner local do cliente (algumas waves agendam timers internos)
+  if (!S.isHost){
+    g.spawnCd = 9999;
+    g.spawnQueue = []; g.pendingSpawns = []; g.toSpawn = 0;
+    g.enemiesSpawnedThisWave = (g.waveEnemyCount||g.toSpawnTotal||list.length);
+  }
 }
 
 function makeShellEnemy(s){
@@ -1939,6 +1974,18 @@ function startTickLoop(){
       me.x = pl.x||0; me.y = pl.y||0;
       me.hp = pl.hp||0; me.maxHp = pl.maxHp||100;
       me.down = !!(pl.dead || pl.down || me.hp<=0);
+      // v13: status replicado p/ render proxy
+      me.shield    = pl.shield||0;
+      me.maxShield = pl.maxShield||0;
+      me.cloak     = pl.cloakActive||0;
+      me.hurt      = pl.hurtCd||0;
+      me.rail      = pl.railPierceMode||0;
+      me.r         = pl.r||14;
+      try {
+        const m = window.mouse;
+        if (m && typeof m.x === 'number')
+          me.aim = Math.atan2((m.y||pl.y)-pl.y, (m.x||pl.x)-pl.x);
+      } catch(_){}
     }
     me.wave = g.wave || g.currentWave || me.wave;
     me.score = g.score || me.score;
@@ -2022,16 +2069,21 @@ function startOverlay(){
     }
     octx.globalAlpha = 1;
 
-    // Outros jogadores
+    // Outros jogadores — v13: tenta render proxy (sprite/skin do jogo) e
+    // cai pra bolinha simples se algo falhar.
     for (const p of S.players.values()){
       if (p.id === S.myId) continue;
       const sx = (p.x||0) * scale;
       const sy = (p.y||0) * scale;
-      octx.globalAlpha = p.down ? 0.45 : 0.9;
-      octx.fillStyle = p.down ? '#ff4d6d' : '#61dafb';
-      octx.beginPath(); octx.arc(sx,sy,14*scale,0,Math.PI*2); octx.fill();
-      octx.strokeStyle = '#fff'; octx.lineWidth = 2; octx.stroke();
-      octx.globalAlpha = 1;
+      let drawnViaProxy = false;
+      if (!p.down) drawnViaProxy = tryProxyDrawPeer(p);
+      if (!drawnViaProxy){
+        octx.globalAlpha = p.down ? 0.45 : 0.9;
+        octx.fillStyle = p.down ? '#ff4d6d' : (p.color || '#61dafb');
+        octx.beginPath(); octx.arc(sx,sy,14*scale,0,Math.PI*2); octx.fill();
+        octx.strokeStyle = '#fff'; octx.lineWidth = 2; octx.stroke();
+        octx.globalAlpha = 1;
+      }
       octx.fillStyle='#fff'; octx.font=`bold ${13*scale|0}px 'Rajdhani',sans-serif`; octx.textAlign='center';
       octx.fillText(p.name, sx, sy - 22*scale);
       octx.fillStyle='rgba(0,0,0,0.6)'; octx.fillRect(sx-20*scale, sy-34*scale, 40*scale, 4*scale);
@@ -2039,9 +2091,11 @@ function startOverlay(){
       octx.fillRect(sx-20*scale, sy-34*scale, 40*scale*Math.max(0,(p.hp||0)/(p.maxHp||1)), 4*scale);
       if (p.down){
         octx.fillStyle='#ffd166';
-        octx.fillText('Segure E para reviver', sx, sy + 30*scale);
+        octx.fillText('Segure F para reviver', sx, sy + 30*scale);
       }
     }
+    // bullets remotas agora também tentam usar o renderer do jogo (skin/cor por classe)
+    tryProxyDrawPeerBullets();
     handleRevive();
     requestAnimationFrame(draw);
   };
@@ -2063,7 +2117,7 @@ function handleRevive(){
     const d = Math.hypot((p.x||0)-(me.x||0), (p.y||0)-(me.y||0));
     if (d<best){ best=d; target=p; }
   }
-  if (target && keysDown['e']){
+  if (target && keysDown['f']){
     if (S.reviveTarget !== target.id){
       S.reviveTarget = target.id; S.reviveStart = Date.now();
     }
@@ -2137,7 +2191,129 @@ function renderTeam(){
   }
 }
 
-// ===================== BOOT =====================
+// ===================== v13: PROXY RENDER DE PEERS =====================
+// Reaproveita window.drawPlayer / window.drawBullets do jogo (que foi
+// monkey-patched várias vezes pelos updates Eclipse/Hero/Skin/etc.) trocando
+// temporariamente game.player, game.classKey, game.bullets, game.mouse para
+// o estado do peer. Assim cada jogador remoto aparece com o sprite, skin,
+// shield, dash trail e efeitos da SUA classe — sem reimplementar nada.
+//
+// Render acontece no canvas#game (mesmo do jogo) ANTES de cada frame do
+// overlay; isso significa que efeitos do peer ficam atrás do HUD, igual aos
+// do jogador local.
+
+function _gameCanvasCtx(){
+  const c = document.querySelector('canvas#game') || document.querySelector('canvas');
+  if (!c) return null;
+  return { c, ctx: c.getContext('2d') };
+}
+
+function tryProxyDrawPeer(p){
+  try {
+    const g = window.game; if (!g || !g.player) return false;
+    const fn = window.drawPlayer; if (typeof fn !== 'function') return false;
+    const cc = _gameCanvasCtx(); if (!cc) return false;
+
+    // monta um "player virtual" reaproveitando defaults seguros do meu player
+    const peerPlayer = Object.assign({}, g.player, {
+      x: p.x||0, y: p.y||0,
+      hp: p.hp||1, maxHp: p.maxHp||1,
+      shield: p.shield||0, maxShield: p.maxShield|| (p.shield? p.shield: 1),
+      cloakActive: p.cloak||0,
+      hurtCd: p.hurt||0,
+      railPierceMode: p.rail||0,
+      trail: [], // evita usar trail do meu player
+      r: p.r || g.player.r || 14,
+      down: !!p.down, dead: false,
+    });
+
+    // mouse fake apontando para a direção do peer (ângulo enviado no tick)
+    const fakeMouse = (typeof p.aim === 'number')
+      ? { x: peerPlayer.x + Math.cos(p.aim)*40, y: peerPlayer.y + Math.sin(p.aim)*40 }
+      : { x: peerPlayer.x + 40, y: peerPlayer.y };
+
+    const savedPlayer = g.player;
+    const savedClass  = g.classKey;
+    const savedMouse  = window.mouse;
+    g.player    = peerPlayer;
+    g.classKey  = p.classKey || savedClass;
+    window.mouse = fakeMouse;
+    try { fn(); }
+    finally {
+      g.player = savedPlayer;
+      g.classKey = savedClass;
+      window.mouse = savedMouse;
+    }
+    return true;
+  } catch(_){ return false; }
+}
+
+function tryProxyDrawPeerBullets(){
+  try {
+    const g = window.game; if (!g) return false;
+    const fn = window.drawBullets; if (typeof fn !== 'function') return false;
+    if (S.remoteBullets.size === 0) return false;
+    const savedBullets = g.bullets;
+    const savedClass   = g.classKey;
+    // junta tudo num array efêmero — drawBullets do jogo só itera g.bullets
+    const all = [];
+    for (const [pid, arr] of S.remoteBullets){
+      const peer = S.players.get(pid);
+      const cls  = peer?.classKey || savedClass;
+      if (!Array.isArray(arr)) continue;
+      for (const b of arr){
+        all.push({
+          x: b.x||0, y: b.y||0,
+          r: b.r||3,
+          color: b.c || null,
+          damage: 0, dmg: 0,
+          dead: false, life: 1,
+          __mpRemote: true, __classKey: cls,
+        });
+      }
+    }
+    g.bullets = all;
+    try { fn(); } finally { g.bullets = savedBullets; }
+    return true;
+  } catch(_){ return false; }
+}
+
+// ===================== v13: PAUSE EXPLÍCITO POR TECLA =====================
+// O polling de gg.paused era frágil (alguns updates do jogo ignoram a flag
+// ou usam outra). Aqui interceptamos P/Escape diretamente e propagamos.
+window.addEventListener('keydown', (e)=>{
+  if (!S.started) return;
+  const k = (e.key||'').toLowerCase();
+  if (k !== 'p' && k !== 'escape') return;
+  // se outro player já pausou, só permite ao próprio pauser despausar
+  if (S.pausedRemoteBy && S.pausedRemoteBy !== S.myId) return;
+  const gg = window.game; if (!gg) return;
+  const willPause = !gg.paused;
+  gg.paused = willPause;
+  gg.running = !willPause && !gg.__mpDowned && !S.inShop;
+  if (willPause){
+    S.iAmPauser = true;
+    S.pausedRemoteBy = S.myId;
+    if (S.isHost) bcast({ t:'pauseRemote', by:S.myId, byName:S.myName });
+    else { const c = S.conns.get(S.roomCode); if (c) send(c, { t:'paused' }); }
+  } else {
+    S.iAmPauser = false;
+    S.pausedRemoteBy = null;
+    hidePauseOverlay();
+    if (S.isHost) bcast({ t:'resumeRemote' });
+    else { const c = S.conns.get(S.roomCode); if (c) send(c, { t:'unpaused' }); }
+  }
+}, true);
+
+// ===================== v13: GUARDA "ESPERANDO JOGADORES" =====================
+// só permite o overlay aparecer quando uma loja está realmente aberta.
+const _origShowShopWait = showShopWaitForMe;
+showShopWaitForMe = function(){
+  if (!S.inShop) { hideShopWait(); return; }
+  return _origShowShopWait.apply(this, arguments);
+};
+
+
 function boot(){
   if (!window.Peer){
     warn('PeerJS ainda não disponível, retentando...');
