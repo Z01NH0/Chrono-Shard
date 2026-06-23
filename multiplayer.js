@@ -1,17 +1,32 @@
 /* ============================================================
-   CHRONO SHARDS — MULTIPLAYER v8 (PeerJS, P2P co-op)
-   v8: MP sempre destravado, UI de seleção repaginada, broadcast de
-       boss, pausa/loja sincronizada (cada um com a própria loja),
-       crédito de kills/XP/ouro para o cliente.
+   CHRONO SHARDS — MULTIPLAYER v9 (PeerJS, P2P co-op)
+   v9 (patch sobre v8):
+     - Conexão robusta: retry em unavailable-id / peer-unavailable
+       (host troca código, cliente tenta 3x com backoff exponencial).
+     - peer.on('disconnected') -> peer.reconnect() + toast de status.
+     - Broadcast leve de projéteis (10 Hz) para os jogadores VEREM
+       os tiros/ultimates uns dos outros (visual-only no overlay).
+     - Render de bullets remotas no overlay (com cor/raio).
+     - Toast genérico de status de rede (canto superior direito).
+     - Mantém: aggro nos 2 players, dano de contato/projéteis remotos,
+       lojas/pause separados, crédito de XP/ouro pro cliente, revive,
+       chat, bloqueio de classes não desbloqueadas.
+
+   Requer o mesmo mp-bridge.js da v8 expondo:
+     window.CLASSES (ou Classes), window.game, window.resetGame,
+     window.spawnEnemy, window.openShopMenu, window.startNextWave,
+     window.updateWaveState, window.gameOver, window.updateHUD,
+     window.__MP_BRIDGE_READY__.
    ============================================================ */
 (() => {
 'use strict';
 
 // ===================== CONFIG =====================
-const VERSION         = 'mp-v6';
+const VERSION         = 'mp-v9';
 const TICK_HZ         = 20;
 const ENEMY_HZ        = 15;
-const HOST_DMG_HZ     = 20;          // taxa de aplicação de dano nos remotos
+const BULLET_HZ       = 10;         // taxa de broadcast de projéteis (visual)
+const HOST_DMG_HZ     = 20;
 const REVIVE_TIME     = 10000;
 const REVIVE_RANGE    = 90;
 const REVIVE_HP_PCT   = 0.25;
@@ -21,7 +36,6 @@ const SAVE_KEY        = 'chrono_v4_meta';
 const CLASS_UNLOCK_K  = SAVE_KEY + '_class_unlocks_v3';
 const FREE_CLASSES    = ['assault','sniper'];
 
-// 2x base + 0.15 por step de dificuldade
 const ENEMY_COUNT_BASE = 2.0;
 const ENEMY_COUNT_STEP = 0.15;
 const DIFFICULTY_ORDER = ['easy','medium','hard','extreme'];
@@ -56,6 +70,12 @@ const S = {
   enemyIdCounter: 1,
   injectedMenuBtn: null,
   menuPollTimer: null,
+  // novos:
+  remoteBullets: new Map(), // peerId -> array de bullets snapshot {x,y,r,c}
+  bulletTimer: null,
+  reconnectAttempts: 0,
+  netToastTimer: null,
+  hostRetries: 0,
 };
 
 // ===================== UTIL =====================
@@ -152,8 +172,28 @@ function injectCSS(){
   .mp-diff button.on{ border-color: currentColor; box-shadow:0 0 0 2px currentColor inset; }
   .mp-fade-in{ animation:mpFade .2s ease-out; }
   @keyframes mpFade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+  #mp-net-toast{
+    position:fixed; top:12px; right:12px; z-index:100000; pointer-events:none;
+    background:rgba(6,8,18,0.92); border:1px solid rgba(120,200,255,0.3);
+    color:#eef2ff; padding:8px 14px; border-radius:10px; font-size:12px;
+    font-weight:700; letter-spacing:.08em; display:none;
+    box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  }
+  #mp-net-toast.ok   { border-color:rgba(76,224,179,0.5); color:#4ce0b3; }
+  #mp-net-toast.warn { border-color:rgba(255,209,102,0.5); color:#ffd166; }
+  #mp-net-toast.err  { border-color:rgba(255,77,109,0.5); color:#ff8fa3; }
   `;
   document.head.append(el('style', { id:'mp-style', textContent: css }));
+}
+
+function netToast(msg, kind='ok', ms=2200){
+  let t = document.getElementById('mp-net-toast');
+  if (!t){ t = el('div', { id:'mp-net-toast' }); document.body.append(t); }
+  t.textContent = msg;
+  t.className = kind;
+  t.style.display = 'block';
+  if (S.netToastTimer) clearTimeout(S.netToastTimer);
+  S.netToastTimer = setTimeout(()=>{ t.style.display = 'none'; }, ms);
 }
 
 // ===================== UI =====================
@@ -166,8 +206,6 @@ function buildUI(){
     position:'fixed', inset:'0', zIndex:99999, pointerEvents:'none'
   }});
 
-  // Botão flutuante: SOMENTE como fallback se a injeção no menu falhar.
-  // Por padrão começa escondido; o poller decide se exibe.
   const openBtn = el('button', { className:'mp-btn primary', style:{
     position:'absolute', top:'12px', right:'12px', pointerEvents:'auto',
     fontSize:'13px', display:'none'
@@ -185,7 +223,7 @@ function buildUI(){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
       <div>
         <div class="mp-title" style="font-size:22px">CHRONO SHARDS</div>
-        <div style="font-size:11px;opacity:.6;letter-spacing:.2em;margin-top:2px">MULTIPLAYER CO-OP</div>
+        <div style="font-size:11px;opacity:.6;letter-spacing:.2em;margin-top:2px">MULTIPLAYER CO-OP · ${VERSION}</div>
       </div>
       <button id="mp-close" class="mp-btn ghost" style="padding:6px 10px">×</button>
     </div>
@@ -343,7 +381,6 @@ function buildUI(){
     UI.homeMsg.innerHTML = '⚠️ Bridge não detectado. Cole <code>mp-bridge.js</code> no final do &lt;script&gt; principal.';
   }
 
-  // Inicia poller para injetar/remover o botão no menu principal
   startMenuButtonPoller();
 }
 
@@ -373,10 +410,6 @@ function setStatus(m, which='c'){
   log(m);
 }
 
-// ===================== BOTÃO NO MENU DE MODO =====================
-// O jogo abre #overlay com .riftModeChoice50 contendo cards
-// #normalMode50 e #riftMode50 após clicar JOGAR. Injetamos um
-// terceiro card "CO-OP MULTIPLAYER" à direita do Modo das Fissuras.
 function startMenuButtonPoller(){
   if (S.menuPollTimer) return;
   S.menuPollTimer = setInterval(() => {
@@ -390,7 +423,6 @@ function startMenuButtonPoller(){
       const rift = document.getElementById('riftMode50');
       const choice = document.querySelector('.riftModeChoice50');
       if (!rift || !choice){
-        // não é o menu de escolha de modo
         if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected) S.injectedMenuBtn.remove();
         S.injectedMenuBtn = null;
         UI.openBtn.style.display = 'none';
@@ -398,11 +430,9 @@ function startMenuButtonPoller(){
       }
       if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected) return;
 
-      // Clona o card "Fissuras" para herdar 100% do estilo
       const card = rift.cloneNode(true);
       card.id = 'mpMode50';
       card.style.setProperty('--c', '#9f6cff');
-      // MP é sempre desbloqueado: remove qualquer overlay/classe de lock
       card.classList.remove('locked525','locked');
       card.querySelectorAll('.riftLockLayer525,.riftLockBadge525').forEach(n=>n.remove());
       card.querySelectorAll('h2,p').forEach(n=>{ n.style.opacity=''; });
@@ -424,17 +454,43 @@ function startMenuButtonPoller(){
   }, 400);
 }
 
-// ===================== PEERJS =====================
+// ===================== PEERJS (com retry + reconnect) =====================
+function attachPeerCommonHandlers(p, which){
+  p.on('disconnected', () => {
+    warn('peer disconnected, tentando reconectar...');
+    netToast('Reconectando...', 'warn', 4000);
+    try { p.reconnect(); } catch(_) {}
+  });
+  p.on('close', () => {
+    warn('peer closed');
+    netToast('Conexão encerrada', 'err', 4000);
+  });
+}
+
 function ensurePeer(id){
   return new Promise((resolve,reject)=>{
     if (!window.Peer) return reject(new Error('PeerJS não carregado'));
-    const p = id ? new Peer(id) : new Peer();
+    let p;
+    try { p = id ? new Peer(id) : new Peer(); }
+    catch(e){ return reject(e); }
+
     let opened = false;
-    p.on('open', pid => { opened=true; S.peer=p; S.myId=pid; resolve(p); });
+    p.on('open', pid => {
+      opened=true; S.peer=p; S.myId=pid;
+      attachPeerCommonHandlers(p);
+      resolve(p);
+    });
     p.on('error', err => {
       warn('peer error', err);
       if (!opened) reject(err);
-      else log('Erro de rede:', err.type||err.message);
+      else {
+        // erros pós-open: peer-unavailable em connect, etc.
+        if (err && err.type === 'peer-unavailable'){
+          netToast('Par indisponível', 'err', 3000);
+        } else {
+          netToast('Erro de rede: '+(err.type||err.message||'?'), 'warn', 3500);
+        }
+      }
     });
     p.on('connection', onIncoming);
   });
@@ -444,12 +500,28 @@ function onHost(){
   S.myName  = (UI.nameC.value||S.myName).slice(0,14);
   S.riftMode= UI.rift.checked;
   S.isHost  = true;
-  S.roomCode= PEER_PREFIX + rid();
-  setStatus('Criando sala...', 'c');
+  S.hostRetries = 0;
+  tryHostOnce();
+}
+
+function tryHostOnce(){
+  S.roomCode = PEER_PREFIX + rid();
+  setStatus('Criando sala... ('+(S.hostRetries+1)+')', 'c');
   ensurePeer(S.roomCode).then(()=>{
+    netToast('Sala criada', 'ok');
     S.players.set(S.myId, mkLocalEntry());
     enterLobby();
-  }).catch(e => setStatus('Falhou: '+e.message, 'c'));
+  }).catch(e => {
+    const t = e && e.type;
+    if ((t === 'unavailable-id' || t === 'id-taken') && S.hostRetries < 4){
+      S.hostRetries++;
+      log('ID em uso, gerando novo código...');
+      setTimeout(tryHostOnce, 250);
+    } else {
+      setStatus('Falhou: '+(e.message||t||'?'), 'c');
+      netToast('Falha ao criar sala', 'err', 3500);
+    }
+  });
 }
 
 function onJoin(){
@@ -459,31 +531,75 @@ function onJoin(){
   S.isHost = false;
   S.roomCode = raw.toLowerCase().startsWith(PEER_PREFIX) ? raw.toLowerCase() : (PEER_PREFIX+raw.toLowerCase());
   setStatus('Conectando...', 'j');
-  ensurePeer().then(()=>{
-    const conn = S.peer.connect(S.roomCode, { reliable:true });
-    let opened=false;
-    const timeout = setTimeout(()=>{ if(!opened) setStatus('Timeout. Verifique o código.', 'j'); }, 8000);
-    conn.on('open', ()=>{
-      opened=true; clearTimeout(timeout);
-      S.conns.set(S.roomCode, conn);
-      conn.send({ t:'hello', name:S.myName, v:VERSION });
-      S.players.set(S.myId, mkLocalEntry());
-      enterLobby();
-    });
-    conn.on('data', d => handleData(conn, d));
-    conn.on('close', ()=> setStatus('Conexão fechada.', 'j'));
-    conn.on('error', e => setStatus('Erro: '+e.message, 'j'));
-  }).catch(e => setStatus('Falhou: '+e.message, 'j'));
+  ensurePeer().then(()=>tryJoinOnce(0)).catch(e => {
+    setStatus('Falhou: '+(e.message||e.type||'?'), 'j');
+    netToast('Falha PeerJS', 'err', 3500);
+  });
+}
+
+function tryJoinOnce(attempt){
+  if (!S.peer || S.peer.destroyed){
+    setStatus('Peer destruído. Recarregue.', 'j');
+    return;
+  }
+  setStatus('Conectando... ('+(attempt+1)+'/3)', 'j');
+  const conn = S.peer.connect(S.roomCode, { reliable:true });
+  let opened=false;
+  const timeout = setTimeout(()=>{
+    if (opened) return;
+    try { conn.close(); } catch(_) {}
+    if (attempt < 2){
+      const delay = 800 * (attempt+1);
+      setStatus('Sem resposta, tentando de novo em '+(delay/1000)+'s...', 'j');
+      setTimeout(()=>tryJoinOnce(attempt+1), delay);
+    } else {
+      setStatus('Timeout. Verifique o código.', 'j');
+      netToast('Não foi possível conectar', 'err', 4000);
+    }
+  }, 6000);
+  conn.on('open', ()=>{
+    opened=true; clearTimeout(timeout);
+    S.conns.set(S.roomCode, conn);
+    conn.send({ t:'hello', name:S.myName, v:VERSION });
+    S.players.set(S.myId, mkLocalEntry());
+    netToast('Conectado ao host', 'ok');
+    enterLobby();
+  });
+  conn.on('data', d => handleData(conn, d));
+  conn.on('close', ()=>{
+    setStatus('Conexão fechada.', 'j');
+    netToast('Conexão fechada', 'err', 3000);
+  });
+  conn.on('error', e => {
+    if (!opened) {
+      clearTimeout(timeout);
+      if (attempt < 2){
+        const delay = 800 * (attempt+1);
+        setTimeout(()=>tryJoinOnce(attempt+1), delay);
+      } else {
+        setStatus('Erro: '+(e.message||e.type||'?'), 'j');
+        netToast('Erro de conexão', 'err', 3000);
+      }
+    }
+  });
 }
 
 function onIncoming(conn){
   if (!S.isHost) return;
-  conn.on('open', ()=>{ S.conns.set(conn.peer, conn); log('peer joined', conn.peer); });
+  conn.on('open', ()=>{
+    S.conns.set(conn.peer, conn);
+    log('peer joined', conn.peer);
+    netToast('Jogador entrou', 'ok');
+  });
   conn.on('data', d => handleData(conn, d));
   conn.on('close', ()=>{
-    S.conns.delete(conn.peer); S.players.delete(conn.peer);
+    S.conns.delete(conn.peer);
+    S.players.delete(conn.peer);
+    S.remoteBullets.delete(conn.peer);
+    netToast('Jogador saiu', 'warn');
     broadcastLobby(); renderLobby();
   });
+  conn.on('error', e => warn('conn err', e));
 }
 
 function mkLocalEntry(){
@@ -514,6 +630,15 @@ function handleData(conn, d){
       case 'state': {
         const p = S.players.get(conn.peer);
         if (p) Object.assign(p, d.s);
+        break;
+      }
+      case 'bullets': {
+        S.remoteBullets.set(conn.peer, Array.isArray(d.b) ? d.b : []);
+        // host repassa para os outros peers (não para o emissor)
+        for (const [pid, c] of S.conns){
+          if (pid === conn.peer) continue;
+          send(c, { t:'bulletsRemote', from:conn.peer, b:d.b });
+        }
         break;
       }
       case 'dmg': hostApplyDamage(d.mpId, d.amount, conn.peer); break;
@@ -555,6 +680,12 @@ function handleData(conn, d){
         }
         break;
       }
+      case 'bullets': // host -> cliente (bullets do host)
+        S.remoteBullets.set('__host__', Array.isArray(d.b) ? d.b : []);
+        break;
+      case 'bulletsRemote': // bullets de outro cliente, repassadas pelo host
+        S.remoteBullets.set(d.from || '__other__', Array.isArray(d.b) ? d.b : []);
+        break;
       case 'enemies': applyEnemySnapshot(d.list, d.wave); break;
       case 'chat': pushChat(d.from, d.msg); break;
       case 'bossSpawn': announceBoss(d.name||'BOSS', d.color||'#ff2e63'); break;
@@ -671,7 +802,6 @@ function showPick(){
   } else {
     const me = S.players.get(S.myId);
     const unlocked = getUnlockedSet();
-    // ordena: desbloqueados primeiro
     classes.sort((a,b)=> (unlocked.has(b.key)?1:0) - (unlocked.has(a.key)?1:0));
     for (const c of classes){
       const isUnlocked = unlocked.has(c.key);
@@ -680,7 +810,6 @@ function showPick(){
         className:'mp-class-card' + (picked?' picked':'') + (isUnlocked?'':' locked'),
         disabled: !isUnlocked,
       });
-      // header: icon + tag/lock
       const header = el('div', { style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'8px'} });
       header.append(el('div', { className:'mp-class-icon', style:{
         borderColor:(c.tagColor||c.color||'#6cf')+'66',
@@ -733,7 +862,10 @@ function pickClass(key){
 function hostStart(){
   if (!S.isHost) return;
   const classByPlayer = {};
-  for (const p of S.players.values()) classByPlayer[p.id] = p.classKey;
+  for (const p of S.players.values()){
+    if (!p.classKey) { netToast('Aguardando todos escolherem classe', 'warn'); return; }
+    classByPlayer[p.id] = p.classKey;
+  }
   bcast({ t:'start', classByPlayer });
   startLocalGame(classByPlayer[S.myId]);
 }
@@ -750,7 +882,6 @@ function startLocalGame(classKey){
   toggleLobby(false);
   UI.chat.style.display = '';
   UI.team.style.display = '';
-  // Remove o botão do menu (não deve aparecer dentro do jogo)
   if (S.injectedMenuBtn && S.injectedMenuBtn.isConnected) S.injectedMenuBtn.remove();
   S.injectedMenuBtn = null;
   UI.openBtn.style.display = 'none';
@@ -772,7 +903,9 @@ function startLocalGame(classKey){
     startEnemySync();
     startHostDamageLoop();
     startHostTargetingLoop();
+    startBulletBroadcast();
     startOverlay();
+    netToast('Partida iniciada · '+ (DIFFICULTY[S.difficulty]?.label||''), 'ok', 2500);
   }, 80);
 }
 
@@ -780,7 +913,6 @@ function startLocalGame(classKey){
 function installEnemyPatch(){
   const g = window.game; if (!g) return;
 
-  // Wrap gameOver (lados): morte não encerra se o outro vive
   if (typeof window.gameOver === 'function' && !window.gameOver.__mpWrapped){
     const origGO = window.gameOver;
     const wrappedGO = function(){
@@ -809,7 +941,6 @@ function installEnemyPatch(){
     const orig = window.spawnEnemy;
     if (typeof orig === 'function' && !orig.__mpWrapped){
       const wrapped = function(...a){
-        // 2x+ spawn: chama o original N vezes (N depende da dificuldade)
         const totalMult = enemyCountMult();
         const whole = Math.floor(totalMult);
         const frac  = totalMult - whole;
@@ -827,7 +958,6 @@ function installEnemyPatch(){
               e.hp    = e.hp * m; e.maxHp = base * m;
             }
             if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
-            // Offset pequeno para spawns extras não empilharem
             if (i > 0){
               e.x = (e.x||0) + (Math.random()*60 - 30);
               e.y = (e.y||0) + (Math.random()*60 - 30);
@@ -841,7 +971,6 @@ function installEnemyPatch(){
       try { window.spawnEnemy = wrapped; } catch(e){}
     }
   } else {
-    // CLIENTE: stub spawn local; mantém openShopMenu original p/ usar loja própria
     try {
       const noop = function(){
         const gg = window.game;
@@ -855,7 +984,6 @@ function installEnemyPatch(){
       const stub = function(){}; stub.__mpWrapped = true;
       try { window.updateWaveState = stub; } catch(e){}
     }
-    // Client: stub startNextWave (avanço é controlado pelo host via snapshot)
     if (typeof window.startNextWave === 'function' && !window.startNextWave.__mpWrapped){
       const stub = function(){
         const gg = window.game; if (gg){ gg.running=true; gg.betweenWaves=false; gg.shopPending=false; }
@@ -884,6 +1012,7 @@ function doLocalRevive(){
   if (!S.isHost){
     const c = S.conns.get(S.roomCode); if (c) send(c, { t:'down', down:false });
   } else broadcastLobby();
+  netToast('Você foi revivido!', 'ok');
 }
 
 function clientApplyHit(amount){
@@ -891,7 +1020,6 @@ function clientApplyHit(amount){
   if (gg.__mpDowned) return;
   gg.player.hp = Math.max(0, (gg.player.hp||0) - amount);
   if (gg.player.hp <= 0){
-    // dispara o gameOver wrapado (vira "down" se houver outro vivo)
     try { if (typeof window.gameOver === 'function') window.gameOver(); } catch(e){}
   }
 }
@@ -901,7 +1029,8 @@ function installClientBulletHook(){
   if (g.__mpBulletHook) return;
   g.__mpBulletHook = true;
   const loop = ()=>{
-    if (!S.started || S.isHost) return;
+    if (!S.started) { g.__mpBulletHook = false; return; }
+    if (S.isHost)   { return; }
     const gg = window.game;
     if (gg && Array.isArray(gg.bullets) && Array.isArray(gg.enemies)){
       const bullets = gg.bullets, enemies = gg.enemies;
@@ -941,6 +1070,45 @@ function hostApplyDamage(mpId, amount, fromPeer){
   }
 }
 
+// =============== BULLET BROADCAST (visual) ===============
+// Cada peer manda um snapshot leve de SUAS bullets para os outros
+// verem os tiros/ultimates (overlay-only, sem dano remoto).
+function snapshotMyBullets(){
+  const gg = window.game;
+  if (!gg || !Array.isArray(gg.bullets)) return [];
+  const out = [];
+  const bs = gg.bullets;
+  const N = Math.min(bs.length, 80); // cap pra evitar pacote gigante
+  for (let i=0;i<N;i++){
+    const b = bs[i];
+    if (!b || b.dead || b.life<=0) continue;
+    out.push({
+      x: Math.round(b.x||0),
+      y: Math.round(b.y||0),
+      r: b.r||3,
+      c: b.color || b.col || null
+    });
+  }
+  return out;
+}
+
+function startBulletBroadcast(){
+  if (S.bulletTimer) clearInterval(S.bulletTimer);
+  S.bulletTimer = setInterval(()=>{
+    if (!S.started) return;
+    if (S.conns.size === 0) return;
+    const snap = snapshotMyBullets();
+    if (S.isHost){
+      // host -> todos clientes: snapshot do host
+      bcast({ t:'bullets', b:snap });
+    } else {
+      // cliente -> host (que repassa para outros clientes)
+      const c = S.conns.get(S.roomCode);
+      if (c) send(c, { t:'bullets', b:snap });
+    }
+  }, 1000/BULLET_HZ);
+}
+
 // =============== BOSS BROADCAST + ANÚNCIO ===============
 function installBossWatcher(){
   if (S.isHost){
@@ -974,9 +1142,6 @@ function announceBoss(name, color){
 }
 
 // =============== SHOP / PAUSA SINCRONIZADA ===============
-// Cada player tem a PRÓPRIA loja (ouro/itens locais). Quando o host abre a
-// loja entre waves, broadcasta para o cliente abrir a sua. Quando o host
-// avança a wave (startNextWave), broadcasta resume e o cliente fecha a loja.
 function installShopSync(){
   if (S.isHost){
     if (typeof window.openShopMenu === 'function' && !window.openShopMenu.__mpShopWrap){
@@ -1013,8 +1178,6 @@ function clientHandleShopClose(){
 }
 
 // =============== CRÉDITO DE KILLS PARA O CLIENTE ===============
-// Host detecta inimigos que somem (morreram) e que tinham __mpLastHitter
-// remoto. Envia youKilled com ouro/xp para o cliente daquele peer.
 function installHostKillCredit(){
   let prev = new Map();
   setInterval(()=>{
@@ -1023,7 +1186,6 @@ function installHostKillCredit(){
     for (const e of g.enemies) if (e && e.__mpId) cur.set(e.__mpId, e);
     for (const [id, e] of prev){
       if (cur.has(id)) continue;
-      // sumiu — assumimos morto
       const peer = e.__mpLastHitter;
       if (!peer || peer === S.myId) continue;
       const c = S.conns.get(peer); if (!c) continue;
@@ -1105,14 +1267,6 @@ function makeShellEnemy(s){
 }
 
 // ============== HOST: MIRA NOS DOIS PLAYERS ==============
-// Estratégia: a cada frame, para cada inimigo, identifica o player
-// (incluindo remotos via S.players) mais próximo e:
-//  1) sobrescreve `enemy.target` (caso a IA use)
-//  2) aplica uma força homing leve direto em x/y (para garantir que
-//     enemies que só usam game.player também sigam o outro player).
-// Também antes do tick original do jogo, comuta temporariamente
-// `game.player.x/y` para o centroide entre os players, de modo que
-// IAs que leem game.player ainda mirem "entre" os dois.
 function listLivePlayers(){
   const arr = [];
   for (const p of S.players.values()){
@@ -1122,9 +1276,14 @@ function listLivePlayers(){
   }
   return arr;
 }
-function nearestPlayer(x,y){
+function pickAggroTarget(x,y){
+  // 70% mais próximo, 30% aleatório entre vivos — evita stacking total no host.
+  const live = listLivePlayers();
+  if (live.length === 0) return null;
+  if (live.length === 1) return live[0];
+  if (Math.random() < 0.30) return live[Math.floor(Math.random()*live.length)];
   let best=null, bd=Infinity;
-  for (const p of listLivePlayers()){
+  for (const p of live){
     const d = (p.x-x)*(p.x-x) + (p.y-y)*(p.y-y);
     if (d<bd){ bd=d; best=p; }
   }
@@ -1143,20 +1302,22 @@ function startHostTargetingLoop(){
     if (g && Array.isArray(g.enemies)){
       const live = listLivePlayers();
       if (live.length >= 1){
-        // Centroide só para nudgear game.player virtualmente (não persistente)
         for (const e of g.enemies){
           if (!e || e.__mpShell) continue;
-          const tgt = nearestPlayer(e.x||0, e.y||0);
+          // sticky target: troca alvo a cada ~1.5s para parecer natural
+          if (!e.__mpAggroT || now - e.__mpAggroT > 1500){
+            e.__mpAggro = pickAggroTarget(e.x||0, e.y||0);
+            e.__mpAggroT = now;
+          }
+          const tgt = e.__mpAggro || pickAggroTarget(e.x||0, e.y||0);
           if (!tgt) continue;
-          // Atualiza heurísticas comuns de IA
           try {
             e.target = tgt;
             e.targetX = tgt.x; e.targetY = tgt.y;
           } catch(_){}
-          // Homing leve adicional (pixels/segundo)
           const dx = tgt.x - (e.x||0), dy = tgt.y - (e.y||0);
           const d = Math.hypot(dx,dy) || 1;
-          const speed = (e.speed || e.spd || 60) * 0.35; // força extra suave
+          const speed = (e.speed || e.spd || 60) * 0.35;
           e.x = (e.x||0) + (dx/d) * speed * dt;
           e.y = (e.y||0) + (dy/d) * speed * dt;
         }
@@ -1168,11 +1329,7 @@ function startHostTargetingLoop(){
 }
 
 // ============== HOST: DANO NOS DOIS PLAYERS ==============
-// Aplica dano de contato dos inimigos no player REMOTO + projéteis
-// inimigos (game.enemyBullets se existir, ou bullets com flag hostile).
 function contactDamageFor(e){
-  // Espelha o cálculo do jogo (linha 1138 do source original):
-  // tank=20, boss=24, elite=20, padrão=13
   if (!e) return 0;
   if (e.type === 'tank')   return 20;
   if (e.type === 'boss')   return 24;
@@ -1190,14 +1347,12 @@ function startHostDamageLoop(){
     const dt = TICK / 1000;
 
     for (const rp of others){
-      // hurtCd por player remoto (espelha p.hurtCd do source)
       if (rp.__mpHurtCd == null) rp.__mpHurtCd = 0;
       rp.__mpHurtCd = Math.max(0, rp.__mpHurtCd - dt);
 
-      let pendingHit = 0; // dano "burst" (contato/bala) — usa hurtCd
-      let dotHit = 0;     // dano contínuo (não usa hurtCd, raro aqui)
+      let pendingHit = 0;
+      let dotHit = 0;
 
-      // Contato com inimigos (uma única vez por hurtCd)
       if (rp.__mpHurtCd <= 0 && Array.isArray(g.enemies)){
         for (const e of g.enemies){
           if (!e || e.__mpShell || e.dead) continue;
@@ -1205,7 +1360,6 @@ function startHostDamageLoop(){
           const dx = (e.x||0) - rp.x, dy = (e.y||0) - rp.y;
           if (dx*dx + dy*dy < er*er){
             pendingHit = Math.max(pendingHit, contactDamageFor(e));
-            // bomber explode no contato (espelha source)
             if (e.type === 'bomber'){
               pendingHit = Math.max(pendingHit, 35);
               e.hp = 0; e.dead = true;
@@ -1215,7 +1369,6 @@ function startHostDamageLoop(){
         }
       }
 
-      // Projéteis inimigos (cada um aplica e some)
       if (Array.isArray(g.enemyBullets)){
         for (let i = g.enemyBullets.length - 1; i >= 0; i--){
           const b = g.enemyBullets[i];
@@ -1298,7 +1451,6 @@ function startOverlay(){
     octx.clearRect(0,0,oc.width,oc.height);
     const g = window.game;
     const gc = document.querySelector('canvas#game') || document.querySelector('canvas');
-    // Canvas FIXO sem câmera: coords do mundo == coords do canvas
     const scale = gc ? oc.width / gc.width : 1;
 
     // CLIENTE: desenha inimigos compartilhados (shells)
@@ -1320,6 +1472,26 @@ function startOverlay(){
         }
       }
     }
+
+    // BULLETS REMOTAS (visual-only)
+    octx.globalAlpha = 0.85;
+    for (const [pid, arr] of S.remoteBullets){
+      if (!Array.isArray(arr)) continue;
+      for (const b of arr){
+        const sx = (b.x||0) * scale;
+        const sy = (b.y||0) * scale;
+        const r  = Math.max(1.5, (b.r||3) * scale);
+        octx.fillStyle = b.c || '#9bedff';
+        octx.beginPath();
+        octx.arc(sx, sy, r, 0, Math.PI*2);
+        octx.fill();
+        // glow leve
+        octx.strokeStyle = 'rgba(255,255,255,0.5)';
+        octx.lineWidth = 1;
+        octx.stroke();
+      }
+    }
+    octx.globalAlpha = 1;
 
     // Outros jogadores
     for (const p of S.players.values()){
