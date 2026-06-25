@@ -66,7 +66,7 @@ const S = {
   _tickTimer: null, _enemyTimer: null, _hostDmgTimer: null,
   _killTimer: null,  _bossTimer: null,  _bulletTimer: null,
   _goldTimer: null,  _shopTimer: null,  _hurtCdTimer: null,
-  _dmgFlushTimer: null, _pauseTimer: null, _menuTimer: null,
+  _dmgFlushTimer: null, _pauseTimer: null, _menuTimer: null, _aggroTimer: null,
   // gold compartilhado
   goldPool: 0, lastSyncedGold: 0,
   // shop
@@ -138,7 +138,7 @@ function el(tag, props = {}, ...kids) {
 function clearAllLoops() {
   const keys = ['_tickTimer','_enemyTimer','_hostDmgTimer','_killTimer','_bossTimer',
     '_bulletTimer','_goldTimer','_shopTimer','_hurtCdTimer','_dmgFlushTimer',
-    '_pauseTimer','_menuTimer'];
+    '_pauseTimer','_menuTimer','_aggroTimer'];
   for (const k of keys) {
     if (S[k]) { try { clearInterval(S[k]); } catch (_) {} S[k] = null; }
   }
@@ -846,6 +846,25 @@ function clientHandleData(conn, d) {
     }
     case 'pauseRemote':  applyRemotePause(d.by, d.byName || 'Player'); break;
     case 'resumeRemote': applyRemoteResume(); break;
+    // Host pausou internamente (menu de upgrade, etc.)
+    case 'hostPaused': {
+      if (d.reason === 'shop') break; // shop já é tratado por shopOpen
+      const gg = window.game;
+      if (gg && !S.inShop && !S.localPaused) {
+        gg.running = false;
+        S.__hostMenuPaused = true;
+      }
+      break;
+    }
+    case 'hostResumed': {
+      const gg = window.game;
+      if (gg && S.__hostMenuPaused) {
+        S.__hostMenuPaused = false;
+        if (!S.inShop && !S.pausedBy && !S.localPaused && !gg.__mpDowned)
+          gg.running = true;
+      }
+      break;
+    }
   }
 }
 
@@ -1013,6 +1032,9 @@ function startLocalGame(classKey) {
     } else {
       startClientDmgFlush();
       startHurtCdLock();
+      // Garante enemiesToSpawn alto imediatamente após resetGame
+      const gg = window.game;
+      if (gg) { gg.enemiesToSpawn = 99999; gg.enemiesSpawnedThisWave = 0; }
     }
     startBulletBroadcast();
     startGoldSync();
@@ -1069,6 +1091,17 @@ function installEnemyPatch() {
               e.hp = e.hp * m; e.maxHp = base * m;
             }
             if (i > 0) { e.x = (e.x || 0) + (Math.random() * 60 - 30); e.y = (e.y || 0) + (Math.random() * 60 - 30); }
+            // 40% de chance de nascer perto do cliente (aggro distribution)
+            if (e.type !== 'boss' && !e.elite && Math.random() < 0.40) {
+              const clients = [...S.players.values()].filter(p => p.id !== S.myId && p.classKey && !p.down);
+              if (clients.length > 0) {
+                const target = clients[Math.floor(Math.random() * clients.length)];
+                const a = Math.random() * Math.PI * 2;
+                const d = 80 + Math.random() * 80;
+                e.x = Math.max(10, Math.min(1350, target.x + Math.cos(a) * d));
+                e.y = Math.max(10, Math.min(770, target.y + Math.sin(a) * d));
+              }
+            }
           }
           if (i === 0) firstR = r;
         }
@@ -1078,13 +1111,34 @@ function installEnemyPatch() {
       try { window.spawnEnemy = wrapped; } catch (_) {}
     }
   } else {
-    // Cliente: spawnEnemy é noop — inimigos vêm do host via snapshot
-    const noop = function () {
-      const gg = window.game;
-      if (gg) gg.enemiesSpawnedThisWave = (gg.enemiesSpawnedThisWave || 0) + 1;
-    };
+    // Cliente: spawnEnemy é noop puro — inimigos vêm do host via snapshot.
+    // NÃO incrementa enemiesSpawnedThisWave para evitar que updateWaveState
+    // avance a wave de forma independente do host.
+    const noop = function () {};
     noop.__mpWrap = true;
     try { window.spawnEnemy = noop; } catch (_) {}
+
+    // Stub de updateWaveState no cliente — impede que o cliente avance wave
+    // ou abra shop por conta própria (funções top-level são window.* no browser).
+    if (typeof window.updateWaveState === 'function' && !window.updateWaveState.__mpWrap) {
+      const origUWS = window.updateWaveState;
+      const clientUWS = function () {
+        // Se o host sinalizou que a loja deve abrir (via clientShopOpen),
+        // game.shopPending já está true — deixa openShopMenu chamar se necessário.
+        // Mas nunca avança wave por conta própria.
+        const gg = window.game; if (!gg) return;
+        if (gg.shopPending && gg.enemies.length === 0 && (gg.enemyBullets||[]).length === 0) {
+          origUWS.apply(this, arguments); // só abre shop (host já sinalizou)
+        }
+        // Nunca chama o branch de wave advance
+      };
+      clientUWS.__mpWrap = true;
+      try { window.updateWaveState = clientUWS; } catch (_) {}
+    }
+
+    // Trava enemiesToSpawn alto para que a condição de fim de wave nunca seja
+    // satisfeita localmente (host controla wave timing via mensagens)
+    if (g) g.enemiesToSpawn = 99999;
   }
 }
 
@@ -1146,6 +1200,9 @@ function applyEnemySnapshot(list, wave, gtime) {
   // Sincroniza game.time para movimento de boss consistente
   if (gtime !== undefined && typeof g.time === 'number') g.time = gtime;
   if (wave)  { g.wave = wave; g.currentWave = wave; }
+  // Mantém enemiesToSpawn alto — impede que updateWaveState avance wave no cliente
+  g.enemiesToSpawn = 99999;
+  g.enemiesSpawnedThisWave = 0;
 
   const existing = new Map();
   for (const e of g.enemies) if (e?.__mpId) existing.set(e.__mpId, e);
@@ -1238,38 +1295,67 @@ function hostApplyDmg(mpId, amount, fromPeer) {
 }
 
 // ========================= HOST: TARGETING LOOP =========================
+/*
+  AGGRO: O game engine (updateEnemies) SEMPRE mira em game.player (host player)
+  e aplica e.x += e.vx*dt NO MESMO frame — não há janela para interceptar.
+
+  Solução prática: redistribuímos o SPAWN dos inimigos para que ~40% comecem
+  próximos ao jogador cliente. Como partem de perto do cliente, são uma ameaça
+  imediata para ele mesmo que depois sigam em direção ao host.
+
+  Além disso, a cada 2s fazemos um "redirect check": inimigos que estão
+  excessivamente longe do cliente recebem um nudge de posição (sem ser boss/elite).
+*/
 function startHostTargetingLoop() {
   if (!S.isHost) return;
-  let active = true;
-  const tick = () => {
-    if (!active || !S.started) return;
-    const now = performance.now();
-    const g = window.game;
-    if (g && Array.isArray(g.enemies)) {
-      const live = getLivePlayers();
-      // Só redireciona inimigos quando há 2+ jogadores vivos
-      if (live.length >= 2) {
-        for (const e of g.enemies) {
-          if (!e || e.__mpShell || e.dead) continue;
-          // Alterna alvo a cada ~1.8s — 65% mais próximo, 35% aleatório
-          if (!e.__mpAggroT || now - e.__mpAggroT > 1800) {
-            e.__mpAggro  = pickTarget(e.x || 0, e.y || 0);
-            e.__mpAggroT = now;
-          }
-          const tgt = e.__mpAggro;
-          if (!tgt) continue;
-          // Sobrescreve vx/vy para apontar ao alvo escolhido
-          const dx   = tgt.x - (e.x || 0), dy = tgt.y - (e.y || 0);
-          const dist = Math.hypot(dx, dy) || 1;
-          const spd  = e.speed || 80;
-          e.vx = (dx / dist) * spd;
-          e.vy = (dy / dist) * spd;
-        }
-      }
+
+  // Fase 1: spawn distribution — hookeado em installEnemyPatch já configura posição
+  // Fase 2: redirect periódico
+  if (S._aggroTimer) clearInterval(S._aggroTimer);
+  S._aggroTimer = setInterval(() => {
+    if (!S.started) return;
+    const g = window.game; if (!g || !Array.isArray(g.enemies)) return;
+    const live = getLivePlayers(); if (live.length < 2) return;
+    const client = live.find(p => p.id !== S.myId);
+    if (!client || client.down) return;
+    const host = S.players.get(S.myId);
+    if (!host) return;
+    const W = 1360, H = 780;
+
+    // Conta inimigos "próximos" a cada jogador
+    let nearHost = 0, nearClient = 0;
+    for (const e of g.enemies) {
+      if (!e || e.dead || e.type === 'boss') continue;
+      const dh = Math.hypot(e.x - host.x,   e.y - host.y);
+      const dc = Math.hypot(e.x - client.x, e.y - client.y);
+      if (dh < dc) nearHost++; else nearClient++;
     }
-    requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
+
+    // Se host tem ≥70% do total, redireciona alguns para perto do cliente
+    const total = nearHost + nearClient;
+    if (total === 0 || nearHost / total < 0.65) return;
+
+    // Redireciona ~30% dos inimigos mais longe do cliente
+    const sorted = g.enemies
+      .filter(e => e && !e.dead && e.type !== 'boss' && !e.elite)
+      .sort((a, b) => Math.hypot(b.x - client.x, b.y - client.y) -
+                      Math.hypot(a.x - client.x, a.y - client.y));
+
+    const toRedirect = Math.ceil(sorted.length * 0.30);
+    for (let i = 0; i < toRedirect; i++) {
+      const e = sorted[i]; if (!e) continue;
+      // Teleporta para a borda mais próxima da posição do cliente
+      const angle = Math.random() * Math.PI * 2;
+      const spawnDist = 90 + Math.random() * 60; // fora de vista imediata
+      let nx = client.x + Math.cos(angle) * spawnDist;
+      let ny = client.y + Math.sin(angle) * spawnDist;
+      // Clamp dentro do canvas
+      e.x = Math.max(10, Math.min(W - 10, nx));
+      e.y = Math.max(10, Math.min(H - 10, ny));
+      // Garante mpId
+      if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
+    }
+  }, 2000);
 }
 
 function getLivePlayers() {
@@ -1432,10 +1518,23 @@ function clientApplyKill(d) {
   g.score = (g.score || 0) + (d.score || 0);
   if (g.player) {
     g.player.xp = (g.player.xp || 0) + (d.xp || 0);
-    while (g.player.xp >= g.xpNext) {
-      g.player.xp -= g.xpNext; g.level = (g.level || 1) + 1;
-      g.xpNext = Math.floor(g.xpNext * 1.35);
-      try { if (typeof window.openUpgradeMenu === 'function') window.openUpgradeMenu(); } catch (_) {}
+    // Verifica level-up mas usa gainXP se disponível, sem pausar o jogo.
+    // openUpgradeMenu é chamado apenas se exposto via window (não-module);
+    // usamos gainXP para permitir o fluxo normal do jogo sem travar.
+    if (typeof window.gainXP === 'function') {
+      // gainXP já foi creditado acima via xp+=; só faz o loop de level-up interno
+      // sem re-adicionar XP — checamos manualmente:
+      while (g.player.xp >= (g.xpNext || 100)) {
+        g.player.xp   -= (g.xpNext || 100);
+        g.level        = (g.level || 1) + 1;
+        g.xpNext       = Math.floor((g.xpNext || 100) * 1.35);
+        // Mostra texto flutuante de level-up sem pausar
+        try {
+          if (typeof addFloatingText === 'function')
+            addFloatingText(680, 390, '⬆ LEVEL UP!', '#ffd166', 22);
+        } catch (_) {}
+        // Notifica HUD mas NÃO pausa com openUpgradeMenu
+      }
     }
   }
   try { if (typeof window.updateHUD === 'function') window.updateHUD(); } catch (_) {}
@@ -1568,7 +1667,10 @@ function clientShopResume() {
   S.inShop = false; S.myShopReady = false;
   hideShopWait(); closeOverlay();
   g.shopPending = false; g.betweenWaves = false; g.running = true;
-  try { if (typeof window.__mpOrigSNW === 'function') window.__mpOrigSNW(); } catch (_) {}
+  // Não chamamos startNextWave() — o host controla o timing da wave.
+  // Apenas retrancamos enemiesToSpawn para evitar auto-advance local.
+  g.enemiesToSpawn = 99999;
+  g.enemiesSpawnedThisWave = 0;
 }
 
 function showShopWaitForMe() {
@@ -1660,6 +1762,7 @@ function startBulletBroadcast() {
 // ========================= TICK LOOP (estado do jogador) =========================
 function startTickLoop() {
   if (S._tickTimer) clearInterval(S._tickTimer);
+  let _lastRunning = true;
   S._tickTimer = setInterval(() => {
     const g = window.game; if (!g) return;
     const me = S.players.get(S.myId); if (!me) return;
@@ -1671,8 +1774,22 @@ function startTickLoop() {
     }
     me.wave  = g.wave || g.currentWave || me.wave;
     me.score = g.score || me.score;
-    if (S.isHost) broadcastState();
-    else {
+
+    if (S.isHost) {
+      broadcastState();
+      // Sincroniza estado de running (upgrade menu, game over, etc.)
+      // para que clientes pausem/retomem junto com o host
+      const nowRunning = !!g.running;
+      if (nowRunning !== _lastRunning) {
+        _lastRunning = nowRunning;
+        if (!nowRunning) {
+          // Host pausou por algum motivo interno (upgrade menu, etc.)
+          bcast({ t: 'hostPaused', reason: g.shopPending ? 'shop' : 'menu' });
+        } else if (!S.inShop && !S.localPaused) {
+          bcast({ t: 'hostResumed' });
+        }
+      }
+    } else {
       const c = S.conns.get(S.roomCode);
       if (c) send(c, { t: 'state', s: {
         x: me.x, y: me.y, hp: me.hp, maxHp: me.maxHp,
@@ -1797,60 +1914,168 @@ function startOverlay() {
     }
     octx.globalAlpha = 1; octx.shadowBlur = 0;
 
-    // ── Jogadores remotos ──
+    // ── Jogadores remotos — modelagem baseada no código original do jogo ──
     const classes = cmap();
     for (const p of S.players.values()) {
       if (p.id === S.myId) continue;
-      const sx = (p.x || 0) * scaleX, sy = (p.y || 0) * scaleY;
-      const cls   = classes[p.classKey] || null;
-      const clr   = (cls?.color || cls?.tagColor) || '#61dafb';
-      const icon  = (cls?.icon  || cls?.emoji)    || '◈';
-      const R     = 16 * ((scaleX + scaleY) / 2);
+      const sx   = (p.x || 0) * scaleX, sy = (p.y || 0) * scaleY;
+      const cls  = classes[p.classKey] || null;
+      const clr  = cls?.color || '#61dafb';
+      const sc   = (scaleX + scaleY) / 2;
+      const R    = 14 * sc;
+      const alpha = p.down ? 0.40 : 0.97;
 
-      // Sombra de chão
-      octx.globalAlpha = 0.3;
-      octx.fillStyle = '#000';
-      octx.beginPath(); octx.ellipse(sx, sy + R * 0.9, R * 0.8, R * 0.28, 0, 0, Math.PI * 2); octx.fill();
+      octx.save();
+      octx.translate(sx, sy);
+      octx.globalAlpha = alpha;
 
-      // Corpo
-      octx.globalAlpha = p.down ? 0.45 : 0.95;
-      const grad = octx.createRadialGradient(sx, sy - R * 0.3, R * 0.1, sx, sy, R);
-      grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.45, clr); grad.addColorStop(1, p.down ? '#400' : 'rgba(0,0,0,.35)');
-      octx.fillStyle = grad;
-      octx.beginPath(); octx.arc(sx, sy, R, 0, Math.PI * 2); octx.fill();
+      // Glow / shadow (igual ao original)
+      octx.shadowColor = clr;
+      octx.shadowBlur  = p.down ? 0 : 22 * sc;
 
-      // Ring
-      octx.lineWidth = 2.5; octx.strokeStyle = p.down ? '#ff4d6d' : clr;
-      octx.shadowColor = clr; octx.shadowBlur = 14;
-      octx.stroke(); octx.shadowBlur = 0;
+      // Trail simples (3 pontos decrescentes)
+      if (!p.down) {
+        for (let t = 1; t <= 3; t++) {
+          octx.globalAlpha = alpha * (0.08 * t);
+          octx.fillStyle = clr;
+          octx.beginPath();
+          octx.arc(0, t * 5 * sc, R * (0.5 - t * 0.1), 0, Math.PI * 2);
+          octx.fill();
+        }
+        octx.globalAlpha = alpha;
+      }
 
-      // Ícone
-      octx.globalAlpha = 1;
-      octx.fillStyle = '#fff';
-      octx.font = `bold ${(R * 1.1) | 0}px 'Rajdhani',sans-serif`;
-      octx.textAlign = 'center'; octx.textBaseline = 'middle';
-      octx.fillText(icon, sx, sy + 1);
+      // Desenho do corpo baseado na classe (replica o jogo original)
+      const key = (p.classKey || '').toLowerCase();
+      octx.fillStyle = clr;
+      octx.strokeStyle = '#fff';
+      octx.lineWidth = 1.2 * sc;
+
+      if (key === 'assault' || key === 'colonel') {
+        // Triângulo (seta) apontando para cima
+        octx.beginPath();
+        octx.moveTo(0, -R * 1.3);
+        octx.lineTo(-R * 0.85, R * 0.7);
+        octx.lineTo(R * 0.85, R * 0.7);
+        octx.closePath();
+        octx.fill(); octx.stroke();
+        // Detalhe lateral
+        octx.globalAlpha = alpha * 0.6;
+        octx.fillStyle = '#fff';
+        octx.beginPath(); octx.arc(0, -R * 0.2, R * 0.22, 0, Math.PI * 2); octx.fill();
+
+      } else if (key === 'sniper') {
+        // Retângulo estreito + mira
+        octx.globalAlpha = alpha;
+        octx.fillStyle = clr;
+        const rw = R * 0.55, rh = R * 1.3;
+        octx.beginPath();
+        octx.roundRect(-rw, -rh, rw * 2, rh * 2, rw * 0.4);
+        octx.fill(); octx.stroke();
+        // Cano
+        octx.fillStyle = '#fff';
+        octx.globalAlpha = alpha * 0.9;
+        octx.fillRect(-rw * 0.2, -rh * 1.4, rw * 0.4, rh * 0.6);
+
+      } else if (key === 'mage' || key === 'chronomancer') {
+        // Estrela de 6 pontas
+        octx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a0 = (i / 6) * Math.PI * 2 - Math.PI / 2;
+          const a1 = ((i + 0.5) / 6) * Math.PI * 2 - Math.PI / 2;
+          if (i === 0) octx.moveTo(Math.cos(a0) * R, Math.sin(a0) * R);
+          else         octx.lineTo(Math.cos(a0) * R, Math.sin(a0) * R);
+          octx.lineTo(Math.cos(a1) * R * 0.48, Math.sin(a1) * R * 0.48);
+        }
+        octx.closePath();
+        octx.fill(); octx.stroke();
+
+      } else if (key === 'reaper' || key === 'spectre') {
+        // Cruz / foice
+        octx.beginPath();
+        octx.rect(-R * 0.28, -R * 1.2, R * 0.56, R * 2.4);
+        octx.fill();
+        octx.beginPath();
+        octx.rect(-R * 0.95, -R * 0.2, R * 1.9, R * 0.56);
+        octx.fill();
+        octx.strokeStyle = '#fff'; octx.lineWidth = 0.8 * sc;
+        octx.beginPath();
+        octx.rect(-R * 0.28, -R * 1.2, R * 0.56, R * 2.4); octx.stroke();
+        octx.beginPath();
+        octx.rect(-R * 0.95, -R * 0.2, R * 1.9, R * 0.56); octx.stroke();
+
+      } else if (key === 'warden' || key === 'tank') {
+        // Hexágono (guardião)
+        octx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+          if (i === 0) octx.moveTo(Math.cos(a) * R, Math.sin(a) * R);
+          else         octx.lineTo(Math.cos(a) * R, Math.sin(a) * R);
+        }
+        octx.closePath();
+        octx.fill(); octx.stroke();
+        octx.globalAlpha = alpha * 0.5;
+        octx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+          if (i === 0) octx.moveTo(Math.cos(a) * R * 0.55, Math.sin(a) * R * 0.55);
+          else         octx.lineTo(Math.cos(a) * R * 0.55, Math.sin(a) * R * 0.55);
+        }
+        octx.closePath(); octx.fillStyle = '#fff'; octx.fill();
+
+      } else {
+        // Fallback — losango (diamond) genérico
+        octx.beginPath();
+        octx.moveTo(0, -R * 1.2); octx.lineTo(R * 0.8, 0);
+        octx.lineTo(0, R * 1.2);  octx.lineTo(-R * 0.8, 0);
+        octx.closePath();
+        octx.fill(); octx.stroke();
+      }
+
+      // Ring colorido ao redor (igual ao original)
+      octx.globalAlpha = p.down ? 0.25 : 0.75;
+      octx.shadowBlur  = 0;
+      octx.strokeStyle = p.down ? '#ff4d6d' : clr;
+      octx.lineWidth   = 2 * sc;
+      octx.beginPath(); octx.arc(0, 0, R * 1.25, 0, Math.PI * 2); octx.stroke();
+
+      octx.restore();
+
+      // Nome (acima do jogador)
+      octx.globalAlpha = p.down ? 0.55 : 1;
+      octx.shadowBlur  = 0;
+      octx.fillStyle   = '#fff';
+      octx.textShadow  = '0 1px 3px #000';
+      octx.font = `bold ${(12 * sc) | 0}px 'Rajdhani',sans-serif`;
+      octx.textAlign = 'center'; octx.textBaseline = 'alphabetic';
+      octx.fillText(p.name, sx, sy - R * 1.45);
       octx.textBaseline = 'alphabetic';
 
-      // Nome
-      octx.fillStyle = '#fff';
-      octx.font = `bold ${(12 * ((scaleX + scaleY) / 2)) | 0}px 'Rajdhani',sans-serif`;
-      octx.fillText(p.name, sx, sy - R - 10 * ((scaleX + scaleY) / 2));
+      // Barra de HP
+      const bw = 50 * scaleX;
+      const barY = sy - R * 1.65;
+      octx.fillStyle = 'rgba(0,0,0,.7)';
+      octx.fillRect(sx - bw / 2, barY, bw, 4 * scaleY);
+      const hpPct = Math.max(0, Math.min(1, (p.hp || 0) / Math.max(1, p.maxHp || 100)));
+      octx.fillStyle = hpPct > 0.5 ? '#4ce0b3' : hpPct > 0.25 ? '#ffd166' : '#ff4d6d';
+      octx.fillRect(sx - bw / 2, barY, bw * hpPct, 4 * scaleY);
 
-      // HP bar
-      const bw = 46 * scaleX;
-      octx.fillStyle = 'rgba(0,0,0,.65)';
-      octx.fillRect(sx - bw / 2, sy - R - 6 * scaleY, bw, 3.5 * scaleY);
-      const pct = Math.max(0, Math.min(1, (p.hp || 0) / (p.maxHp || 1)));
-      octx.fillStyle = pct > 0.5 ? '#4ce0b3' : pct > 0.25 ? '#ffd166' : '#ff4d6d';
-      octx.fillRect(sx - bw / 2, sy - R - 6 * scaleY, bw * pct, 3.5 * scaleY);
-
-      // Down indicator
-      if (p.down) {
-        octx.fillStyle = '#ffd166';
-        octx.font = `bold ${(11 * ((scaleX + scaleY) / 2)) | 0}px 'Rajdhani',sans-serif`;
-        octx.fillText('⬆ F para reviver', sx, sy + R + 16 * scaleY);
+      // Ícone de classe (pequeno, canto direito do nome)
+      if (cls?.icon) {
+        octx.font = `${(10 * sc) | 0}px sans-serif`;
+        octx.textAlign = 'left';
+        octx.fillText(cls.icon, sx + bw / 2 + 3 * scaleX, barY + 4 * scaleY);
       }
+
+      // Indicador de downed
+      if (p.down) {
+        octx.globalAlpha = 0.9;
+        octx.fillStyle = '#ffd166';
+        octx.font = `bold ${(10 * sc) | 0}px 'Rajdhani',sans-serif`;
+        octx.textAlign = 'center';
+        octx.fillText('⬆ F REVIVER', sx, sy + R * 1.55);
+      }
+      octx.globalAlpha = 1;
     }
 
     handleRevive(scaleX, scaleY);
