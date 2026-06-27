@@ -30,7 +30,7 @@ const BULLET_HZ     = 20;
 const DMG_FLUSH_HZ  = 30;
 const HOST_DMG_HZ   = 20;
 const GOLD_HZ       = 5;
-const REVIVE_TIME   = 8000;
+const REVIVE_TIME   = 5000;
 const REVIVE_RANGE  = 110;
 const REVIVE_HP_PCT = 0.25;
 const HURTCD_LOCK   = 9999;  // mantém cliente imune a dano local
@@ -754,6 +754,15 @@ function hostHandleData(conn, d) {
       }
       break;
     }
+    // Replica visualmente uma habilidade usada por um cliente: mostra no
+    // host e encaminha para os demais peers (caso haja mais de 1 cliente)
+    case 'skillFx': {
+      for (const [pid, c] of S.conns) {
+        if (pid !== conn.peer) send(c, d);
+      }
+      playSkillFx(d);
+      break;
+    }
     // Dano de bala do cliente num inimigo (shell no cliente, real no host)
     case 'dmg': {
       hostApplyDmg(d.mpId, d.amount, conn.peer); break;
@@ -821,6 +830,7 @@ function clientHandleData(conn, d) {
       S.remoteBullets.set('__host__', Array.isArray(d.b) ? d.b : []); break;
     case 'bulletsRemote':
       S.remoteBullets.set(d.from || '__other__', Array.isArray(d.b) ? d.b : []); break;
+    case 'skillFx': playSkillFx(d); break;
     case 'enemies': applyEnemySnapshot(d.list, d.wave, d.gtime); break;
     case 'chat':    pushChat(d.from, d.msg); break;
     case 'bossSpawn': announceBoss(d.name || 'BOSS', d.color || '#ff2e63'); break;
@@ -1021,6 +1031,7 @@ function startLocalGame(classKey) {
   setTimeout(() => {
     installEnemyPatch();
     wrapStartNextWave();
+    installSkillFxSync();
     startTickLoop();
     if (S.isHost) {
       startEnemySync();
@@ -1044,9 +1055,155 @@ function startLocalGame(classKey) {
   }, 100);
 }
 
+// ========================= SKILL FX SYNC =========================
+/*
+  Bug relatado: quando um jogador usa uma habilidade, ela aparece
+  corretamente para quem usou, mas nunca aparece para o outro jogador.
+
+  Causa raiz: o jogo tem dezenas de classes, cada uma com sua própria
+  implementação de habilidade (algumas usam game.bullets, mas a maioria
+  desenha efeitos próprios — anéis, partículas, relâmpagos, projéteis
+  customizados por classe) e o sync original só transmite game.bullets.
+  Replicar o efeito visual EXATO de cada uma das dezenas de habilidades
+  exigiria reescrever cada uma individualmente, o que está fora do escopo
+  de uma correção pontual.
+
+  Solução: useSkill(idx) é o ponto de entrada ÚNICO e final de TODAS as
+  classes (confirmado: cada patch de classe encadeia sua própria versão
+  por cima da anterior, mas todas afunilam para essa mesma função). Ao
+  envolvê-la mais uma vez aqui — no mesmo padrão de wrap usado no resto
+  do jogo — conseguimos detectar QUALQUER uso de habilidade de QUALQUER
+  classe em um único lugar e transmitir um evento leve (posição, ângulo,
+  cor da classe). O outro lado reproduz um efeito visual genérico (anel +
+  partículas + relâmpago) usando as funções nativas addRing/addParticles/
+  addLightning — que são puramente visuais (só empurram para arrays de
+  partículas/anéis do jogo) e não alteram HP, ouro, inimigos ou qualquer
+  outro estado, então é seguro chamá-las para representar a habilidade de
+  quem não a usou, sem risco de dano duplicado ou desync.
+*/
+function installSkillFxSync() {
+  const orig = window.useSkill;
+  if (typeof orig !== 'function' || orig.__mpFxWrap) return;
+  const wrapped = function (idx) {
+    const g = window.game;
+    const p = g && g.player;
+    const beforeCd = (g && Array.isArray(g.skillCds)) ? (g.skillCds[idx] || 0) : 0;
+    const beforeFocus = p ? p.focus : undefined;
+    const classKey = g && g.classKey;
+    const r = orig.apply(this, arguments);
+    try {
+      if (S.started && g && p) {
+        const afterCd = Array.isArray(g.skillCds) ? (g.skillCds[idx] || 0) : 0;
+        const used = afterCd > beforeCd || p.focus !== beforeFocus;
+        if (used) {
+          const mp = window.mouse || { x: p.x, y: p.y };
+          const ang = Math.atan2(mp.y - p.y, mp.x - p.x);
+          const cls = (window.CLASSES || {})[classKey];
+          const color = (cls && cls.color) || '#9bedff';
+          const payload = { t: 'skillFx', x: Math.round(p.x), y: Math.round(p.y), ang: +ang.toFixed(2), color };
+          if (S.isHost) bcast(payload);
+          else { const c = S.conns.get(S.roomCode); if (c) send(c, payload); }
+        }
+      }
+    } catch (_) {}
+    return r;
+  };
+  wrapped.__mpFxWrap = true;
+  try { window.useSkill = wrapped; } catch (_) {}
+}
+
+function playSkillFx(d) {
+  try {
+    const x = d.x || 0, y = d.y || 0, color = d.color || '#9bedff', ang = d.ang || 0;
+    if (typeof window.addRing === 'function') window.addRing(x, y, color, 70, 4);
+    if (typeof window.addParticles === 'function') window.addParticles(x, y, color, 14, 0.8);
+    if (typeof window.addLightning === 'function') {
+      window.addLightning(x, y, x + Math.cos(ang) * 70, y + Math.sin(ang) * 70, color);
+    }
+  } catch (_) {}
+}
+
 // ========================= ENEMY PATCH =========================
+function isLocalDown() {
+  const g = window.game;
+  return !!(g && (g.__mpDowned || (g.player && (g.player.down || g.player.dead))));
+}
+
+/*
+  Corrige o bug de "downed" quebrado: o jogador derrubado continuava se
+  movendo, atirando e usando habilidades normalmente (acontecia tanto com
+  o host quanto com o 2º jogador), em vez de ficar parado e indefeso.
+
+  Causa raiz: nada no jogo verificava player.down/dead dentro de
+  updatePlayer/shoot/useSkill/startDash — esse estado só existia para fins
+  de UI (placar/painel de equipe). Resolvido envolvendo essas funções
+  (mesmo padrão de wrap já usado no resto do jogo) para não executarem
+  enquanto isLocalDown() for verdadeiro, mais uma camada extra que
+  intercepta eventos de teclado/mouse de combate/movimento como segurança
+  adicional para mecânicas especiais de classes que não passam por
+  useSkill/shoot.
+*/
+function installDownGates() {
+  if (window.__mpDownGatesInstalled) return;
+  window.__mpDownGatesInstalled = true;
+
+  const wrapNoop = (name) => {
+    const orig = window[name];
+    if (typeof orig !== 'function' || orig.__mpDownGate) return;
+    const wrapped = function (...a) {
+      if (isLocalDown()) return;
+      return orig.apply(this, a);
+    };
+    wrapped.__mpDownGate = true;
+    try { window[name] = wrapped; } catch (_) {}
+  };
+  ['updatePlayer', 'shoot', 'useSkill', 'startDash', 'dealDamageToPlayer'].forEach(wrapNoop);
+
+  // Camada extra: bloqueia eventos de combate/movimento (capture phase,
+  // dispara antes de qualquer listener do jogo) enquanto o jogador local
+  // estiver derrubado. Não bloqueia se o foco estiver num campo de texto
+  // (chat) nem teclas neutras (pausa, etc.).
+  const BLOCKED_KEYS = new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',
+    'shift',' ','q','e','r','x','1','2','3','4','5']);
+  const isTypingTarget = t => !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA');
+  const swallowMouse = e => {
+    if (!S.started || !isLocalDown() || isTypingTarget(e.target)) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+  };
+  const swallowKey = e => {
+    if (!S.started || !isLocalDown() || isTypingTarget(e.target)) return;
+    if (!BLOCKED_KEYS.has((e.key || '').toLowerCase())) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+  };
+  window.addEventListener('keydown', swallowKey, true);
+  window.addEventListener('keyup', swallowKey, true);
+  window.addEventListener('mousedown', swallowMouse, true);
+  window.addEventListener('mouseup', swallowMouse, true);
+  window.addEventListener('click', swallowMouse, true);
+  window.addEventListener('contextmenu', swallowMouse, true);
+}
+
+// Calcula um ponto FORA da tela (mesma margem usada pelo spawn original do
+// jogo, 40px), na borda mais próxima de (tx,ty). Usado para "redistribuir"
+// inimigos para perto de um jogador sem teleportá-los para dentro da área
+// visível (o que causava o efeito de monstros aparecendo/piscando do nada).
+function edgeNear(tx, ty) {
+  const W = 1360, H = 780, M = 40;
+  const dl = tx, dr = W - tx, dt = ty, db = H - ty;
+  const m = Math.min(dl, dr, dt, db);
+  const jitter = () => Math.random() * 160 - 80;
+  if (m === dl) return { x: -M,    y: Math.max(-M, Math.min(H + M, ty + jitter())) };
+  if (m === dr) return { x: W + M, y: Math.max(-M, Math.min(H + M, ty + jitter())) };
+  if (m === dt) return { x: Math.max(-M, Math.min(W + M, tx + jitter())), y: -M };
+  return            { x: Math.max(-M, Math.min(W + M, tx + jitter())), y: H + M };
+}
+
 function installEnemyPatch() {
   const g = window.game; if (!g) return;
+
+  // Trava de gameplay enquanto o jogador está "derrubado" (ver função abaixo).
+  // Precisa ser instalada para host E cliente, por isso fica fora do if/else.
+  installDownGates();
 
   // Wrapper de gameOver — permite modo "downed" em co-op
   if (typeof window.gameOver === 'function' && !window.gameOver.__mpWrap) {
@@ -1056,9 +1213,22 @@ function installEnemyPatch() {
       const others = [...S.players.values()].filter(p => p.id !== S.myId && p.classKey && !p.down);
       if (others.length > 0) {
         g.__mpDowned = true;
-        if (!S.isHost) g.running = false;
+        // IMPORTANTE: não zeramos g.running aqui (nem para host, nem para
+        // cliente). Zerar running travava TODA a simulação local (inimigos,
+        // partículas, sync) — para o host isso já não acontecia, mas o
+        // jogador derrubado continuava se movendo e atirando, pois nada
+        // verificava o estado "down" dentro de updatePlayer/shoot/useSkill.
+        // Agora installDownGates() bloqueia especificamente o input/ação do
+        // jogador caído, e o resto da simulação continua normalmente para
+        // os dois lados (necessário para o host manter ondas/inimigos
+        // rodando enquanto o time espera a reanimação).
         if (g.player) { g.player.hp = 0; g.player.down = true; g.player.dead = true; }
         const me = S.players.get(S.myId); if (me) me.down = true;
+        // Zera input residual (tecla/mouse já pressionados no instante da
+        // morte) para o personagem parar imediatamente, sem esperar o
+        // próximo keyup.
+        try { const k = window.keys; if (k) for (const key in k) k[key] = false; } catch (_) {}
+        try { if (window.mouse) window.mouse.down = false; } catch (_) {}
         if (S.isHost) broadcastLobby();
         else { const c = S.conns.get(S.roomCode); if (c) send(c, { t: 'down', down: true }); }
         return;
@@ -1091,15 +1261,18 @@ function installEnemyPatch() {
               e.hp = e.hp * m; e.maxHp = base * m;
             }
             if (i > 0) { e.x = (e.x || 0) + (Math.random() * 60 - 30); e.y = (e.y || 0) + (Math.random() * 60 - 30); }
-            // 40% de chance de nascer perto do cliente (aggro distribution)
+            // 40% de chance de nascer mais perto do cliente (aggro distribution).
+            // Importante: o ponto escolhido fica FORA da tela, na borda mais
+            // próxima do jogador-alvo (igual ao spawn original do jogo), em
+            // vez de teleportar o inimigo para dentro da área visível — era
+            // isso que fazia parecer que o monstro "aparecia do nada" no
+            // meio do mapa em vez de entrar pela borda.
             if (e.type !== 'boss' && !e.elite && Math.random() < 0.40) {
               const clients = [...S.players.values()].filter(p => p.id !== S.myId && p.classKey && !p.down);
               if (clients.length > 0) {
                 const target = clients[Math.floor(Math.random() * clients.length)];
-                const a = Math.random() * Math.PI * 2;
-                const d = 80 + Math.random() * 80;
-                e.x = Math.max(10, Math.min(1350, target.x + Math.cos(a) * d));
-                e.y = Math.max(10, Math.min(770, target.y + Math.sin(a) * d));
+                const pt = edgeNear(target.x, target.y);
+                e.x = pt.x; e.y = pt.y;
               }
             }
           }
@@ -1303,8 +1476,12 @@ function hostApplyDmg(mpId, amount, fromPeer) {
   próximos ao jogador cliente. Como partem de perto do cliente, são uma ameaça
   imediata para ele mesmo que depois sigam em direção ao host.
 
-  Além disso, a cada 2s fazemos um "redirect check": inimigos que estão
-  excessivamente longe do cliente recebem um nudge de posição (sem ser boss/elite).
+  Além disso, a cada poucos segundos fazemos um "redirect check": inimigos
+  que estão excessivamente concentrados perto do host são reposicionados
+  para a borda do mapa mais próxima do cliente (igual a um respawn pela
+  borda), e não soltos diretamente na área visível — fazer isso DENTRO da
+  área visível era a causa do bug em que monstros pareciam "piscar"
+  (desaparecer de um lugar e reaparecer do nada em outro).
 */
 function startHostTargetingLoop() {
   if (!S.isHost) return;
@@ -1320,7 +1497,6 @@ function startHostTargetingLoop() {
     if (!client || client.down) return;
     const host = S.players.get(S.myId);
     if (!host) return;
-    const W = 1360, H = 780;
 
     // Conta inimigos "próximos" a cada jogador
     let nearHost = 0, nearClient = 0;
@@ -1335,27 +1511,21 @@ function startHostTargetingLoop() {
     const total = nearHost + nearClient;
     if (total === 0 || nearHost / total < 0.65) return;
 
-    // Redireciona ~30% dos inimigos mais longe do cliente
+    // Redireciona uma fração pequena dos inimigos mais longe do cliente,
+    // reposicionando-os para fora da tela (borda mais próxima do cliente)
     const sorted = g.enemies
       .filter(e => e && !e.dead && e.type !== 'boss' && !e.elite)
       .sort((a, b) => Math.hypot(b.x - client.x, b.y - client.y) -
                       Math.hypot(a.x - client.x, a.y - client.y));
 
-    const toRedirect = Math.ceil(sorted.length * 0.30);
+    const toRedirect = Math.ceil(sorted.length * 0.12);
     for (let i = 0; i < toRedirect; i++) {
       const e = sorted[i]; if (!e) continue;
-      // Teleporta para a borda mais próxima da posição do cliente
-      const angle = Math.random() * Math.PI * 2;
-      const spawnDist = 90 + Math.random() * 60; // fora de vista imediata
-      let nx = client.x + Math.cos(angle) * spawnDist;
-      let ny = client.y + Math.sin(angle) * spawnDist;
-      // Clamp dentro do canvas
-      e.x = Math.max(10, Math.min(W - 10, nx));
-      e.y = Math.max(10, Math.min(H - 10, ny));
-      // Garante mpId
+      const pt = edgeNear(client.x, client.y);
+      e.x = pt.x; e.y = pt.y;
       if (!e.__mpId) e.__mpId = S.enemyIdCounter++;
     }
-  }, 2000);
+  }, 4000);
 }
 
 function getLivePlayers() {
@@ -2076,6 +2246,26 @@ function startOverlay() {
         octx.fillText('⬆ F REVIVER', sx, sy + R * 1.55);
       }
       octx.globalAlpha = 1;
+    }
+
+    // Indicador de "derrubado" para o jogador LOCAL (host ou cliente).
+    // Antes não existia nenhum feedback visual no personagem do próprio
+    // jogador ao morrer — apenas o painel de equipe mostrava um 💀.
+    const meEntry = S.players.get(S.myId);
+    if (meEntry && meEntry.down) {
+      const sc = (scaleX + scaleY) / 2;
+      const sx = (meEntry.x || 0) * scaleX, sy = (meEntry.y || 0) * scaleY;
+      octx.save();
+      octx.globalAlpha = 0.95;
+      octx.shadowColor = '#ff4d6d'; octx.shadowBlur = 16 * sc;
+      octx.font = `${(30 * sc) | 0}px sans-serif`;
+      octx.textAlign = 'center'; octx.textBaseline = 'middle';
+      octx.fillText('💀', sx, sy);
+      octx.shadowBlur = 0;
+      octx.font = `bold ${(13 * sc) | 0}px 'Rajdhani',sans-serif`;
+      octx.fillStyle = '#ffd166';
+      octx.fillText('DERRUBADO — aguardando reanimação', sx, sy + 42 * sc);
+      octx.restore();
     }
 
     handleRevive(scaleX, scaleY);
