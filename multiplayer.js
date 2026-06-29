@@ -102,6 +102,58 @@ const enemyMult  = () => ENEMY_COUNT_BASE + ENEMY_COUNT_STEP * Math.max(0, DIFF_
 const send  = (conn, obj) => { try { conn.send(obj); } catch (_) {} };
 const bcast = obj => { for (const c of S.conns.values()) send(c, obj); };
 
+// ========================= RESILIÊNCIA (CRASH GUARD) =========================
+/*
+  CAUSA RAIZ DOS "TRAVAMENTOS DO NADA": o jogo principal (index.html) tem
+  dezenas de patches encadeados por classe/habilidade/inimigo, acumulados
+  ao longo do tempo. Uma exceção não tratada em QUALQUER camada desses
+  patches, ao acontecer dentro do loop principal (requestAnimationFrame)
+  ou de um setInterval, interrompe a função exatamente naquele ponto —
+  tudo que vem depois NAQUELE frame (inclusive o render() que desenha a
+  tela) deixa de executar. Se a condição que causou o erro persistir
+  (ex.: um tipo de inimigo específico com um campo que algum código
+  assume existir mas não existe naquele caso), isso se repete em TODO
+  frame seguinte: a tela simplesmente para de atualizar — parece travado,
+  mas na verdade está girando em loop silencioso de erro (visível só no
+  console do navegador).
+
+  Isso é endurecido em duas camadas complementares:
+  1) Aqui: setInterval/setTimeout/requestAnimationFrame nativos passam a
+     capturar exceções do callback (loga no console, sem deixar o erro se
+     propagar) — protege QUALQUER timer do jogo inteiro, incluindo todos
+     os timers de sincronização do multiplayer.
+  2) installCrashGuards() (mais abaixo): envolve individualmente as
+     funções chamadas a cada frame pelo loop principal (updateEnemies,
+     updateBullets, render, etc.) em try/catch — assim, se UMA falhar num
+     frame, as OUTRAS (principalmente render()) ainda executam e a tela
+     não congela.
+*/
+(function hardenTimers() {
+  if (window.__mpTimersHardened) return;
+  window.__mpTimersHardened = true;
+  const nativeSetInterval = window.setInterval.bind(window);
+  const nativeSetTimeout  = window.setTimeout.bind(window);
+  const nativeRAF         = window.requestAnimationFrame.bind(window);
+
+  const guard = (fn, label) => function (...a) {
+    try { return fn.apply(this, a); }
+    catch (err) { console.error('[MP] erro capturado em ' + label + ' (partida continua):', err); }
+  };
+
+  window.setInterval = function (fn, ms, ...rest) {
+    if (typeof fn !== 'function') return nativeSetInterval(fn, ms, ...rest);
+    return nativeSetInterval(guard(fn, 'setInterval'), ms, ...rest);
+  };
+  window.setTimeout = function (fn, ms, ...rest) {
+    if (typeof fn !== 'function') return nativeSetTimeout(fn, ms, ...rest);
+    return nativeSetTimeout(guard(fn, 'setTimeout'), ms, ...rest);
+  };
+  window.requestAnimationFrame = function (fn) {
+    if (typeof fn !== 'function') return nativeRAF(fn);
+    return nativeRAF(guard(fn, 'requestAnimationFrame'));
+  };
+})();
+
 function getClasses() {
   const raw = window.CLASSES || null;
   if (!raw) return [];
@@ -452,18 +504,26 @@ function buildUI() {
     if (e.key === 'Enter') { e.preventDefault(); UI.chatInput.style.display = 'block'; UI.chatInput.focus(); }
   });
 
-  // Pause (tecla P)
+  // Pause (tecla P) — qualquer um dos dois jogadores pode pausar OU
+  // retomar, mesmo que tenha sido o OUTRO jogador quem pausou. Antes, só
+  // quem iniciou a pausa conseguia despausar (checava S.pausedBy!==S.myId
+  // e saía); se esse jogador travasse, perdesse o foco da janela, ou
+  // simplesmente esquecesse, o outro ficava PRESO no overlay de pausa sem
+  // nenhuma forma de continuar a partida — o pause "não funcionava para
+  // os dois", só para quem o controlava.
   window.addEventListener('keydown', e => {
     if (!S.started || document.activeElement === UI.chatInput) return;
     if ((e.key || '').toLowerCase() !== 'p') return;
-    if (S.pausedBy && S.pausedBy !== S.myId) return; // outro pausou
     e.preventDefault(); e.stopPropagation();
     const g = window.game; if (!g) return;
-    if (S.localPaused) {
-      // RESUME
+    const currentlyPaused = !!S.pausedBy || S.localPaused;
+    if (currentlyPaused) {
+      // RESUME (por QUALQUER jogador, independente de quem pausou)
       S.localPaused = false;
       g.paused = false;
-      if (!S.inShop && !g.__mpDowned) g.running = true;
+      if (!S.inShop && !g.shopPending && !g.betweenWaves && !g.__mpDowned) {
+        g.running = true; S._lastRunningSeen = true;
+      }
       hidePauseOverlay();
       if (S.isHost) {
         S.pausedBy = null;
@@ -475,7 +535,7 @@ function buildUI() {
     } else {
       // PAUSE
       S.localPaused = true;
-      g.paused = true; g.running = false;
+      g.paused = true; g.running = false; S._lastRunningSeen = false;
       showPauseOverlay(S.myName + ' (você)');
       if (S.isHost) {
         S.pausedBy = S.myId;
@@ -705,7 +765,11 @@ function onIncoming(conn) {
     S.remoteBullets.delete(conn.peer); S.shopReadySet.delete(conn.peer);
     if (S.pausedBy === conn.peer) {
       S.pausedBy = null; hidePauseOverlay();
-      const g = window.game; if (g) { g.paused = false; g.running = true; }
+      const g = window.game;
+      if (g) {
+        g.paused = false;
+        if (!S.inShop && !g.shopPending && !g.betweenWaves && !g.__mpDowned) setRunningFromNetwork(true);
+      }
       bcast({ t: 'resumeRemote' });
     }
     if (S.inShop) evaluateShopReady();
@@ -744,7 +808,28 @@ function hostHandleData(conn, d) {
     }
     case 'state': {
       const p = S.players.get(conn.peer);
-      if (p) Object.assign(p, d.s); break;
+      if (p) {
+        /*
+          Não fazemos Object.assign direto do hp/down: o cliente reporta
+          seu próprio estado a cada ~50ms, mas o HOST é quem calcula dano
+          de contato/balas (startHostDamageLoop) e quem decide quando o
+          jogador remoto está "down". Um pacote de 'state' que saiu do
+          cliente ANTES de processar um 'youHit' recente pode chegar
+          DEPOIS do host já ter aplicado aquele dano localmente — se
+          aceitássemos o valor cru, isso "revivia" o hp (e até o down)
+          de volta bem na hora em que o host está tentando detectar a
+          morte, atrasando (ou em casos raros, perdendo) a transição.
+          Só aceitamos aumentos de hp (cura/regen/escudo locais do
+          cliente, ou a própria reanimação) e down:true (nunca false,
+          que só pode vir de uma reanimação explícita).
+        */
+        const { hp, maxHp, down, ...rest } = d.s || {};
+        Object.assign(p, rest);
+        if (typeof maxHp === 'number') p.maxHp = maxHp;
+        if (typeof hp === 'number' && (p.hp == null || hp > p.hp)) p.hp = hp;
+        if (down === true) p.down = true;
+      }
+      break;
     }
     case 'bullets': {
       S.remoteBullets.set(conn.peer, Array.isArray(d.b) ? d.b : []);
@@ -801,10 +886,32 @@ function hostHandleData(conn, d) {
       applyRemotePause(conn.peer, S.pausedByName); break;
     }
     case 'unpaused': {
-      if (S.pausedBy !== conn.peer) break;
+      // Aceita de QUALQUER peer conectado, não só de quem pausou
+      // originalmente — ver comentário no listener da tecla P.
+      if (!S.pausedBy) break;
       S.pausedBy = null; S.pausedByName = null;
       bcast({ t: 'resumeRemote' });
       applyRemoteResume(); break;
+    }
+    // Cliente entrou/saiu de um menu interno (upgrade, cutscene, etc. — não
+    // é o pause explícito da tecla P, esse já é tratado acima). Espelha o
+    // host para os dois lados pausarem juntos, e relay para outros peers
+    // (caso existam mais de 2 jogadores).
+    case 'clientPaused': {
+      const g = window.game;
+      if (g && !S.inShop && !g.shopPending && !g.betweenWaves && !S.localPaused && !g.__mpDowned) {
+        setRunningFromNetwork(false);
+      }
+      for (const [pid, c] of S.conns) if (pid !== conn.peer) send(c, { t: 'hostPaused', reason: 'menu' });
+      break;
+    }
+    case 'clientResumed': {
+      const g = window.game;
+      if (g && !S.inShop && !g.shopPending && !g.betweenWaves && !S.pausedBy && !S.localPaused && !g.__mpDowned) {
+        setRunningFromNetwork(true);
+      }
+      for (const [pid, c] of S.conns) if (pid !== conn.peer) send(c, { t: 'hostResumed' });
+      break;
     }
   }
 }
@@ -860,8 +967,8 @@ function clientHandleData(conn, d) {
     case 'hostPaused': {
       if (d.reason === 'shop') break; // shop já é tratado por shopOpen
       const gg = window.game;
-      if (gg && !S.inShop && !S.localPaused) {
-        gg.running = false;
+      if (gg && !S.inShop && !gg.shopPending && !gg.betweenWaves && !S.localPaused) {
+        setRunningFromNetwork(false);
         S.__hostMenuPaused = true;
       }
       break;
@@ -871,7 +978,7 @@ function clientHandleData(conn, d) {
       if (gg && S.__hostMenuPaused) {
         S.__hostMenuPaused = false;
         if (!S.inShop && !S.pausedBy && !S.localPaused && !gg.__mpDowned)
-          gg.running = true;
+          setRunningFromNetwork(true);
       }
       break;
     }
@@ -1032,6 +1139,9 @@ function startLocalGame(classKey) {
     installEnemyPatch();
     wrapStartNextWave();
     installSkillFxSync();
+    // Chamada por último de propósito — ver comentário na definição da
+    // função, mais acima.
+    installCrashGuards();
     startTickLoop();
     if (S.isHost) {
       startEnemySync();
@@ -1159,19 +1269,34 @@ function installDownGates() {
   };
   ['updatePlayer', 'shoot', 'useSkill', 'startDash', 'dealDamageToPlayer'].forEach(wrapNoop);
 
-  // Camada extra: bloqueia eventos de combate/movimento (capture phase,
-  // dispara antes de qualquer listener do jogo) enquanto o jogador local
-  // estiver derrubado. Não bloqueia se o foco estiver num campo de texto
-  // (chat) nem teclas neutras (pausa, etc.).
+  /*
+    Camada extra: bloqueia eventos de combate/movimento (capture phase,
+    dispara antes de qualquer listener do jogo) enquanto o jogador local
+    estiver derrubado.
+
+    Importante (corrige regressão): NÃO bloqueia cliques/teclas
+    indiscriminadamente em toda a página — isso travaria também botões de
+    UI legítimos (loja, menu de upgrade, configurações, chat). O bloqueio
+    de mouse só vale para cliques DENTRO DO CANVAS do jogo (onde o "clique
+    para atirar" funciona); o bloqueio de teclado só vale para um
+    conjunto específico de teclas de combate/movimento, e nunca quando
+    algum menu/overlay estiver visível ou o foco estiver em um campo de
+    texto (chat).
+  */
   const BLOCKED_KEYS = new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',
     'shift',' ','q','e','r','x','1','2','3','4','5']);
   const isTypingTarget = t => !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA');
+  const isOverlayOpen = () => {
+    const ov = document.getElementById('overlay');
+    return !!ov && !ov.classList.contains('hidden');
+  };
+  const isGameCanvas = t => !!t && t.id === 'game';
   const swallowMouse = e => {
-    if (!S.started || !isLocalDown() || isTypingTarget(e.target)) return;
+    if (!S.started || !isLocalDown() || isOverlayOpen() || !isGameCanvas(e.target)) return;
     e.preventDefault(); e.stopImmediatePropagation();
   };
   const swallowKey = e => {
-    if (!S.started || !isLocalDown() || isTypingTarget(e.target)) return;
+    if (!S.started || !isLocalDown() || isOverlayOpen() || isTypingTarget(e.target)) return;
     if (!BLOCKED_KEYS.has((e.key || '').toLowerCase())) return;
     e.preventDefault(); e.stopImmediatePropagation();
   };
@@ -1196,6 +1321,65 @@ function edgeNear(tx, ty) {
   if (m === dr) return { x: W + M, y: Math.max(-M, Math.min(H + M, ty + jitter())) };
   if (m === dt) return { x: Math.max(-M, Math.min(W + M, tx + jitter())), y: -M };
   return            { x: Math.max(-M, Math.min(W + M, tx + jitter())), y: H + M };
+}
+
+/*
+  Envolve individualmente cada função-chave chamada por frame dentro de
+  loop() (updatePlayer, updateBullets, updateEnemies, ..., render), além
+  de outras muito sensíveis chamadas fora do loop principal mas com a
+  mesma fragilidade (gameOver, openUpgradeMenu — chamada a cada level up,
+  openShopMenu, startNextWave).
+
+  Por que individualmente e não só em volta do requestAnimationFrame
+  (já endurecido em hardenTimers acima): loop() chama render() *depois*
+  de todas as updates, na MESMA chamada de função. Se updateEnemies()
+  lançar uma exceção e eu só capturar no nível externo (em volta de
+  loop() inteiro), o restante do corpo de loop() — incluindo render() —
+  ainda não executaria NAQUELE frame (a exceção interrompe o resto da
+  função de qualquer forma, não tem como "pular" para o render() a partir
+  de fora). Envolvendo cada função individualmente, se updateEnemies()
+  falhar nesse frame, updateLoot/updateHazards/updateFX/render ainda
+  executam normalmente — a tela continua atualizando (no pior caso,
+  aquele inimigo específico fica com posição/efeito levemente
+  desatualizado por 1 frame, em vez do jogo inteiro parar de desenhar).
+
+  Importante: esta função é chamada por ÚLTIMO em startLocalGame (depois
+  de installEnemyPatch, wrapStartNextWave e installSkillFxSync), de
+  propósito — assim ela embrulha a versão JÁ FINAL de cada função
+  (incluindo os próprios wraps deste arquivo: down gates, gameOver de
+  "downed", spawnEnemy de host/cliente, shop-gate do startNextWave,
+  skillFx do useSkill) como a camada mais externa, capturando exceções
+  vindas de qualquer nível — inclusive de eventuais bugs no próprio
+  multiplayer.js.
+*/
+function installCrashGuards() {
+  if (window.__mpCrashGuardsInstalled) return;
+  window.__mpCrashGuardsInstalled = true;
+  const targets = [
+    'updatePlayer', 'updateBullets', 'updateEnemyBullets', 'updateEnemies',
+    'updateLoot', 'updateHazards', 'updateDrones', 'updateWaveState',
+    'updateFX', 'updateHUD', 'render',
+    'shoot', 'useSkill', 'startDash', 'dealDamageToPlayer',
+    'spawnEnemy', 'enemyDeath', 'gameOver',
+    'openUpgradeMenu', 'openShopMenu', 'startNextWave',
+  ];
+  for (const name of targets) {
+    const orig = window[name];
+    if (typeof orig !== 'function' || orig.__mpCrashGuard) continue;
+    const wrapped = function (...a) {
+      try {
+        return orig.apply(this, a);
+      } catch (err) {
+        if (!S.__lastCrashLogAt || Date.now() - S.__lastCrashLogAt > 1000) {
+          console.error('[MP] erro capturado em ' + name + '() — partida continua:', err);
+          S.__lastCrashLogAt = Date.now();
+        }
+        return undefined;
+      }
+    };
+    wrapped.__mpCrashGuard = true;
+    try { window[name] = wrapped; } catch (_) {}
+  }
 }
 
 function installEnemyPatch() {
@@ -1631,7 +1815,7 @@ function clientApplyHit(amount) {
 
 function doLocalRevive() {
   const g = window.game; if (!g) return;
-  g.__mpDowned = false; g.running = true;
+  g.__mpDowned = false; setRunningFromNetwork(true);
   if (g.player) {
     g.player.hp = Math.max(1, Math.floor((g.player.maxHp || 100) * REVIVE_HP_PCT));
     g.player.down = false; g.player.dead = false;
@@ -1930,9 +2114,19 @@ function startBulletBroadcast() {
 }
 
 // ========================= TICK LOOP (estado do jogador) =========================
+// Define game.running já marcando a mudança como "vista" pelo observador
+// do tick loop abaixo — usado por todo handler que reage a uma mensagem
+// de pause/resume/revive recebida da rede, para que essa mudança não seja
+// interpretada como uma NOVA pausa local e reenviada de volta.
+function setRunningFromNetwork(value) {
+  const g = window.game; if (!g) return;
+  g.running = !!value;
+  S._lastRunningSeen = !!value;
+}
+
 function startTickLoop() {
   if (S._tickTimer) clearInterval(S._tickTimer);
-  let _lastRunning = true;
+  S._lastRunningSeen = true;
   S._tickTimer = setInterval(() => {
     const g = window.game; if (!g) return;
     const me = S.players.get(S.myId); if (!me) return;
@@ -1945,20 +2139,41 @@ function startTickLoop() {
     me.wave  = g.wave || g.currentWave || me.wave;
     me.score = g.score || me.score;
 
-    if (S.isHost) {
-      broadcastState();
-      // Sincroniza estado de running (upgrade menu, game over, etc.)
-      // para que clientes pausem/retomem junto com o host
-      const nowRunning = !!g.running;
-      if (nowRunning !== _lastRunning) {
-        _lastRunning = nowRunning;
-        if (!nowRunning) {
-          // Host pausou por algum motivo interno (upgrade menu, etc.)
-          bcast({ t: 'hostPaused', reason: g.shopPending ? 'shop' : 'menu' });
-        } else if (!S.inShop && !S.localPaused) {
-          bcast({ t: 'hostResumed' });
+    /*
+      Sincroniza o estado de "running" (menu de upgrade ao subir de nível,
+      cutscenes, modo de construção, etc.) com o outro jogador.
+
+      BUG ANTERIOR ("pause não funciona simultaneamente"): só o HOST
+      detectava e avisava quando isso acontecia com ele mesmo (via
+      hostPaused/hostResumed). Se o CLIENTE entrasse em um desses menus —
+      o mais comum sendo a tela de upgrade ao subir de nível, que acontece
+      o tempo todo — o jogo dele pausava mas o do host continuava rodando
+      sozinho (e vice-versa nunca era um problema, só essa direção).
+      Agora os dois lados detectam e avisam, com mensagens simétricas
+      (hostPaused/hostResumed do host, clientPaused/clientResumed do
+      cliente).
+    */
+    const nowRunning = !!g.running;
+    if (nowRunning !== S._lastRunningSeen) {
+      S._lastRunningSeen = nowRunning;
+      // Não reage a transições já cobertas por outros fluxos explícitos
+      // (pause manual via tecla P, loja, estado de derrubado) — verificando
+      // os campos crus do jogo (não só S.inShop) para evitar a janela de
+      // corrida entre o watcher da loja (100ms) e este tick (50ms).
+      const internal = !S.inShop && !g.shopPending && !g.betweenWaves &&
+                        !S.localPaused && !g.__mpDowned;
+      if (internal) {
+        if (S.isHost) {
+          bcast({ t: nowRunning ? 'hostResumed' : 'hostPaused', reason: 'menu' });
+        } else {
+          const c = S.conns.get(S.roomCode);
+          if (c) send(c, { t: nowRunning ? 'clientResumed' : 'clientPaused' });
         }
       }
+    }
+
+    if (S.isHost) {
+      broadcastState();
     } else {
       const c = S.conns.get(S.roomCode);
       if (c) send(c, { t: 'state', s: {
@@ -1986,7 +2201,7 @@ function startPauseWatcher() {
 
 function applyRemotePause(byId, byName) {
   if (byId === S.myId) return;
-  const g = window.game; if (g) { g.paused = true; g.running = false; }
+  const g = window.game; if (g) { g.paused = true; setRunningFromNetwork(false); }
   S.pausedBy = byId; S.pausedByName = byName;
   showPauseOverlay(byName || 'Player');
   hideLocalPauseMenu();
@@ -1995,7 +2210,7 @@ function applyRemoteResume() {
   S.pausedBy = null; S.pausedByName = null; S.localPaused = false;
   hidePauseOverlay();
   const g = window.game;
-  if (g) { g.paused = false; if (!S.inShop && !g.__mpDowned) g.running = true; }
+  if (g) { g.paused = false; if (!S.inShop && !g.shopPending && !g.betweenWaves && !g.__mpDowned) setRunningFromNetwork(true); }
 }
 
 function showPauseOverlay(name) {
