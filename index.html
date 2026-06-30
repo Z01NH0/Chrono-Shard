@@ -30452,123 +30452,222 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="multiplayer.js"></script>
 <script>
-    (() => {
-      if (window.__chronoManualSaveSystem) return;
-      window.__chronoManualSaveSystem = true;
-
-      const SAVE_KEY = typeof SAVE_KEY !== 'undefined' ? SAVE_KEY : 'chrono_v4_meta';
-      const META_KEY = typeof META_KEY !== 'undefined' ? META_KEY : 'chrono_v4_meta';
-      const FILE_VERSION = '1.0';
-      const STATUS_EL = () => document.getElementById('chronoSaveStatus');
-
-      function setStatus(msg, type = '') {
-        const el = STATUS_EL();
-        if (el) { el.textContent = msg; el.className = `chrono-status ${type}`; }
-      }
-
-      // Exportar save para JSON
-      function exportSave() {
-        try {
-          const gameData = localStorage.getItem(SAVE_KEY) || '{}';
-          const metaData = localStorage.getItem(META_KEY) || '{}';
-          const payload = {
-            v: FILE_VERSION,
-            exportedAt: new Date().toISOString(),
-            save: JSON.parse(gameData),
-            meta: JSON.parse(metaData)
-          };
-          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `chrono_shards_save_${Date.now()}.json`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-          setStatus('💾 Save exportado com sucesso!', 'success');
-          setTimeout(() => setStatus(''), 2000);
-        } catch (e) {
-          console.error('Erro ao exportar save:', e);
-          setStatus('❌ Falha ao criar arquivo.', 'error');
+/* ────────────────────────────────────────────────────────────────
+CHRONO SHARDS 7.4.4 — Save/Load corrigido: só nas configurações + criptografia básica
+──────────────────────────────────────────────────────────────── */
+(()=>{
+if(window.__chronoSaveLoad744)return; window.__chronoSaveLoad744=true;
+const SAVE_KEY_744=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+const SAVE_KEYS_744=[
+  SAVE_KEY_744,
+  SAVE_KEY_744+'_class_unlocks_v3',
+  SAVE_KEY_744+'_secret_rift_v1',
+  SAVE_KEY_744+'_redeemed_codes_v1',
+  SAVE_KEY_744+'_chrono_augments_620',
+  SAVE_KEY_744+'_skins_clean_702',
+  SAVE_KEY_744+'_power_catalog_unlocks_544',
+  SAVE_KEY_744+'_mauro_shop_clean_702',
+  'chrono_rift_tutorial_skip_v1'
+];
+// Chave de ofuscação (salt) - muda a cada reload para dificultar edição manual
+const SALT_744='chrono_shards_v744_'+Math.floor(Math.random()*999999);
+function isConfigScreen744(){
+  const card=document.getElementById('overlayCard');
+  if(!card)return false;
+  const title=(card.querySelector('h1')?.textContent||'').toUpperCase();
+  return title.includes('CONFIGURAÇÕES');
+}
+function removeSaveCard744(){
+  document.querySelectorAll('#saveLoadSection501, .saveLoadSection501, #saveLoadSection744, .saveLoadSection744').forEach(el=>el.remove());
+}
+function injectSaveCard744(){
+  if(!isConfigScreen744())return;
+  removeSaveCard744();
+  const card=document.getElementById('overlayCard');
+  if(!card)return;
+  const section=document.createElement('div');
+  section.id='saveLoadSection744';
+  section.className='saveLoadSection744';
+  section.innerHTML=`
+    <div class="dunePanel461 settingsLow462" style="padding:20px 22px">
+      <span class="badge461" style="--co:#ffd166">SALVAR/CARREGAR</span>
+      <strong>Gerenciar Save do Jogo</strong>
+      <span>Exporte seu progresso para um arquivo ou importe um save anterior. Os dados são codificados para evitar edições manuais.</span>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="duneBtn461" id="saveGame744" style="background:linear-gradient(135deg,#62ff9b,#4ce0b3);color:#051a10">💾 Salvar Jogo</button>
+        <button class="duneBtn461" id="loadGame744" style="background:linear-gradient(135deg,#75d8ff,#9f6cff);color:#05101d">📂 Carregar Save</button>
+      </div>
+      <div id="saveMsg744" style="margin-top:12px;color:#bcd6ff;font-size:12px"></div>
+    </div>`;
+  card.appendChild(section);
+  document.getElementById('saveGame744').onclick=saveGame744;
+  document.getElementById('loadGame744').onclick=loadGame744;
+}
+function obfuscateData744(data){
+  // Ofuscação: troca nomes de campos e reordena
+  const obf={};
+  const fieldMap={
+    'relicShards':'_rs',
+    'chronoFragments':'_cf',
+    'awakeningKeys':'_ak',
+    'highScore':'_hs',
+    'unlockedRelics':'_ur',
+    'stats':'_st',
+    'bestiaryKills':'_bk',
+    'missions39':'_m39',
+    'unlockedMoonSlayer':'_ums',
+    'moonMissionClaimed':'_mmc',
+    'allUnlocked':'_au',
+    'allInUnlocked':'_aiu',
+    'riftModeUnlocked':'_rmu',
+    'stellarEmperorRevealed':'_ser',
+    'stellarEmperorSecretUnlocked':'_sesu'
+  };
+  for(const [key,value] of Object.entries(data)){
+    const newKey=fieldMap[key]||('_'+key.replace(/[^a-zA-Z0-9]/g,'').slice(0,8));
+    obf[newKey]=value;
+  }
+  return obf;
+}
+function deobfuscateData744(obf){
+  const fieldMap={
+    '_rs':'relicShards',
+    '_cf':'chronoFragments',
+    '_ak':'awakeningKeys',
+    '_hs':'highScore',
+    '_ur':'unlockedRelics',
+    '_st':'stats',
+    '_bk':'bestiaryKills',
+    '_m39':'missions39',
+    '_ums':'unlockedMoonSlayer',
+    '_mmc':'moonMissionClaimed',
+    '_au':'allUnlocked',
+    '_aiu':'allInUnlocked',
+    '_rmu':'riftModeUnlocked',
+    '_ser':'stellarEmperorRevealed',
+    '_sesu':'stellarEmperorSecretUnlocked'
+  };
+  const data={};
+  for(const [key,value] of Object.entries(obf)){
+    const newKey=fieldMap[key]||key.replace(/^_/,'');
+    data[newKey]=value;
+  }
+  return data;
+}
+async function generateHash744(text){
+  const encoder=new TextEncoder();
+  const data=encoder.encode(text+SALT_744);
+  const hashBuffer=await crypto.subtle.digest('SHA-256',data);
+  const hashArray=Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function encryptSave744(data){
+  const json=JSON.stringify(data);
+  const obfuscated=obfuscateData744(data);
+  const obfJson=JSON.stringify(obfuscated);
+  const hash=await generateHash744(obfJson);
+  const payload={
+    v:'744',
+    d:obfJson,
+    h:hash,
+    s:SALT_744.slice(0,8)
+  };
+  const encoded=btoa(JSON.stringify(payload));
+  return encoded;
+}
+async function decryptSave744(encoded){
+  try{
+    const payload=JSON.parse(atob(encoded));
+    if(payload.v!=='744')throw new Error('Versão incompatível');
+    const hash=await generateHash744(payload.d);
+    if(hash!==payload.h)throw new Error('Hash inválido - dados corrompidos ou modificados');
+    const obf=JSON.parse(payload.d);
+    const data=deobfuscateData744(obf);
+    return data;
+  }catch(e){
+    throw new Error('Falha ao decodificar: '+e.message);
+  }
+}
+async function saveGame744(){
+  const msg=document.getElementById('saveMsg744');
+  try{
+    const allData={};
+    for(const key of SAVE_KEYS_744){
+      const raw=localStorage.getItem(key);
+      if(raw){
+        try{
+          allData[key]=JSON.parse(raw);
+        }catch{
+          allData[key]=raw;
         }
       }
-
-      // Importar save de JSON
-      function importSave(file) {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            const data = JSON.parse(e.target.result);
-            if (!data.v || data.v !== FILE_VERSION || !data.save || !data.meta) {
-              throw new Error('Formato inválido');
-            }
-            if (!confirm('⚠️ Isso vai substituir seu progresso atual. Continuar?')) {
-              setStatus('❌ Cancelado pelo usuário.', 'error');
-              return;
-            }
-            localStorage.setItem(SAVE_KEY, JSON.stringify(data.save));
-            localStorage.setItem(META_KEY, JSON.stringify(data.meta));
-            setStatus('🔄 Save carregado! Recarregando...', 'success');
-            // Força recarregamento limpo para sincronizar estado do jogo
-            setTimeout(() => location.reload(), 800);
-          } catch (err) {
-            console.error('Erro ao importar:', err);
-            setStatus('❌ Arquivo corrompido ou inválido.', 'error');
-          }
-        };
-        reader.readAsText(file);
-      }
-
-      // Injetar UI nas configurações
-      function injectSaveUI() {
-        if (document.getElementById('chronoManualSavePanel')) return;
-        
-        // Tenta encontrar container de configurações existentes
-        const target = document.querySelector('.settings-panel, #settingsMenu, .config-container, .overlay-card') || document.body;
-        
-        const panel = document.createElement('div');
-        panel.id = 'chronoManualSavePanel';
-        panel.innerHTML = `
-          <h3>📁 Salvar / Carregar Manual</h3>
-          <button class="chrono-save-btn export" id="chronoExportBtn">💾 Salvar Jogo (.json)</button>
-          <button class="chrono-save-btn import" id="chronoImportBtn">📂 Carregar State</button>
-          <input type="file" class="chrono-file-input" id="chronoFileInput" accept=".json,application/json">
-          <div class="chrono-status" id="chronoSaveStatus"></div>
-        `;
-        
-        // Insere no final do container ou no body se não encontrar
-        if (target.id === 'chronoManualSavePanel') return; // Evita duplicação
-        target.appendChild(panel);
-
-        // Bind events
-        document.getElementById('chronoExportBtn').onclick = exportSave;
-        document.getElementById('chronoImportBtn').onclick = () => document.getElementById('chronoFileInput').click();
-        document.getElementById('chronoFileInput').onchange = (e) => {
-          if (e.target.files.length) importSave(e.target.files[0]);
-          e.target.value = ''; // Reset input
-        };
-      }
-
-      // Observa mudanças no DOM para injetar quando as configs abrirem
-      const observer = new MutationObserver((mutations) => {
-        for (const m of mutations) {
-          if (m.addedNodes.length) {
-            injectSaveUI();
-            // Se já injetou, para de observar
-            if (document.getElementById('chronoManualSavePanel')) {
-              observer.disconnect();
-              break;
-            }
-          }
+    }
+    const encrypted=await encryptSave744(allData);
+    const blob=new Blob([encrypted],{type:'text/plain'});
+    const url=URL.createObjectURL(blob);
+    const now=new Date();
+    const pad=n=>String(n).padStart(2,'0');
+    const stamp=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
+    const filename=`ChronoShards_Save_${stamp}.csav`;
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    msg.style.color='#86ffb0';
+    msg.textContent=`✅ Jogo salvo como "${filename}" (criptografado)`;
+  }catch(e){
+    console.error('[Save744]',e);
+    msg.style.color='#ff8fa3';
+    msg.textContent='❌ Erro ao salvar: '+e.message;
+  }
+}
+async function loadGame744(){
+  const msg=document.getElementById('saveMsg744');
+  const input=document.createElement('input');
+  input.type='file';
+  input.accept='.csav,.txt';
+  input.onchange=async(e)=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    try{
+      const text=await file.text();
+      const data=await decryptSave744(text);
+      for(const key of SAVE_KEYS_744){
+        if(data[key]!==undefined){
+          localStorage.setItem(key,JSON.stringify(data[key]));
         }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-
-      // Tenta injetar imediatamente caso configs já estejam na tela
-      setTimeout(injectSaveUI, 500);
-    })();
-  </script>
+      }
+      msg.style.color='#86ffb0';
+      msg.textContent='✅ Save carregado com sucesso! Recarregando...';
+      setTimeout(()=>location.reload(),1500);
+    }catch(e){
+      console.error('[Load744]',e);
+      msg.style.color='#ff8fa3';
+      msg.textContent='❌ Erro ao carregar: '+e.message;
+    }
+  };
+  input.click();
+}
+// Observer: só injeta o card se estiver na tela de configurações
+const mo744=new MutationObserver(()=>{
+  setTimeout(()=>{
+    if(isConfigScreen744()){
+      injectSaveCard744();
+    }else{
+      removeSaveCard744();
+    }
+  },50);
+});
+mo744.observe(document.body,{childList:true,subtree:true});
+// Remove imediatamente se não estiver em configurações
+if(!isConfigScreen744()){
+  removeSaveCard744();
+}
+console.log('Chrono Shards 7.4.4 — Save/Load corrigido: só nas configurações + criptografia');
+})();
+</script>
 </body>
 </html>
