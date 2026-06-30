@@ -2458,29 +2458,28 @@ function openUpgradeMenu(){
 
 function openShopMenu(){
   game.running=false; game.betweenWaves=true; ensureEclipseState();
-  const discount=1-Math.min(game.upgrades.shopDiscount,0.45);
-  const cost=n=>Math.max(1,Math.floor(n*discount));
+  // Mostra preços SEM desconto na legenda - desconto só é aplicado na compra
   const items=[
-    {key:'shotgun',name:'Comprar Shotgun',desc:'5 projéteis simultâneos de sofrimento.',cost:cost(34),available:game.weaponKey!=='shotgun'&&game.shopCounts.shotgun<game.shopLimits.shotgun,effect:()=>{game.weaponKey='shotgun';game.shopCounts.shotgun++}},
-    {key:'plasma',name:'Comprar Plasma',desc:'2 projéteis com alto dano.',cost:cost(38),available:game.weaponKey!=='plasma'&&game.shopCounts.plasma<game.shopLimits.plasma,effect:()=>{game.weaponKey='plasma';game.shopCounts.plasma++}},
-    {key:'cannon',name:'Comprar Cannon',desc:'Explosivo pesado, ótimo contra elite.',cost:cost(55),available:game.weaponKey!=='cannon'&&game.shopCounts.cannon<game.shopLimits.cannon,effect:()=>{game.weaponKey='cannon';game.shopCounts.cannon++}},
-    {key:'minigun',name:'Comprar Minigun',desc:'Cadência insana, pouca precisão.',cost:cost(58),available:game.weaponKey!=='minigun'&&game.shopCounts.minigun<game.shopLimits.minigun,effect:()=>{game.weaponKey='minigun';game.shopCounts.minigun++}},
-    {key:'tesla',name:'Comprar Tesla Coil',desc:'Arcos elétricos extras.',cost:cost(64),available:game.weaponKey!=='tesla'&&game.shopCounts.tesla<game.shopLimits.tesla,effect:()=>{game.weaponKey='tesla';game.shopCounts.tesla++}},
-    {key:'acid',name:'Comprar Acid Spitter',desc:'Tiros criam nuvens tóxicas.',cost:cost(50),available:game.weaponKey!=='acid'&&game.shopCounts.acid<game.shopLimits.acid,effect:()=>{game.weaponKey='acid';game.shopCounts.acid++}},
-    {key:'katana',name:'Comprar Katana Chrono',desc:'Curto alcance, dano alto e perfurante.',cost:cost(48),available:game.weaponKey!=='katana'&&game.shopCounts.katana<game.shopLimits.katana,effect:()=>{game.weaponKey='katana';game.shopCounts.katana++}},
-    {key:'hpMax',name:'HP máximo +24',cost:cost(44*Math.pow(1.35,game.shopCounts.hpMax)),desc:'Mais resistência.',available:game.shopCounts.hpMax<game.shopLimits.hpMax,effect:()=>{game.player.maxHp+=24;game.player.hp+=24;game.shopCounts.hpMax++}},
-    {key:'focusMax',name:'Foco máximo +30',cost:cost(38*Math.pow(1.30,game.shopCounts.focusMax)),desc:'Mais slow e skills.',available:game.shopCounts.focusMax<game.shopLimits.focusMax,effect:()=>{game.player.maxFocus+=30;game.player.focus+=30;game.shopCounts.focusMax++}},
-    {key:'damageBoost',name:'Dano +18%',cost:cost(48*Math.pow(1.45,game.shopCounts.damageBoost)),desc:'Escala tudo.',available:game.shopCounts.damageBoost<game.shopLimits.damageBoost,effect:()=>{game.upgrades.damage+=0.18;game.shopCounts.damageBoost++}},
-    {key:'armorBoost',name:'Armadura +8%',cost:cost(42*Math.pow(1.40,game.shopCounts.armorBoost)),desc:'Sofre menos.',available:game.shopCounts.armorBoost<game.shopLimits.armorBoost,effect:()=>{game.upgrades.armor+=0.08;game.shopCounts.armorBoost++}},
-    {key:'dashServo',name:'Servo de Dash +20%',cost:cost(40*Math.pow(1.33,game.shopCounts.dashServo)),desc:'Dash volta mais rápido.',available:game.shopCounts.dashServo<game.shopLimits.dashServo,effect:()=>{game.upgrades.dashRegen+=0.20;game.shopCounts.dashServo++}},
-    {key:'magnet',name:'Ímã de Loot +50',cost:cost(36*Math.pow(1.3,game.shopCounts.magnet)),desc:'Puxa loot de longe.',available:game.shopCounts.magnet<game.shopLimits.magnet,effect:()=>{game.upgrades.magnet+=50;game.shopCounts.magnet++}},
-    {key:'turretPack',name:'Kit de Torreta',cost:cost(58*Math.pow(1.45,game.shopCounts.turretPack)),desc:'Instala uma torreta extra permanente na wave.',available:game.shopCounts.turretPack<game.shopLimits.turretPack,effect:()=>{game.turrets.push({x:game.player.x+rand(-90,90),y:game.player.y+rand(-70,70),r:13,life:12*game.upgrades.turretDuration,fireCd:0,pulse:0});game.shopCounts.turretPack++}},
-    {key:'relicTrade',name:'Fragmento Relíquia +1',cost:cost(90*Math.pow(1.5,game.shopCounts.relicTrade)),desc:'Compra progresso permanente.',available:game.shopCounts.relicTrade<game.shopLimits.relicTrade,effect:()=>{game.meta.relicShards+=1;saveMeta();game.shopCounts.relicTrade++}}
+    {key:'shotgun',name:'Comprar Shotgun',desc:'5 projéteis simultâneos de sofrimento.',baseCost:34,cost:34,available:game.weaponKey!=='shotgun'&&game.shopCounts.shotgun<game.shopLimits.shotgun,effect:()=>{game.weaponKey='shotgun';game.shopCounts.shotgun++}},
+    {key:'plasma',name:'Comprar Plasma',desc:'2 projéteis com alto dano.',baseCost:38,cost:38,available:game.weaponKey!=='plasma'&&game.shopCounts.plasma<game.shopLimits.plasma,effect:()=>{game.weaponKey='plasma';game.shopCounts.plasma++}},
+    {key:'cannon',name:'Comprar Cannon',desc:'Explosivo pesado, ótimo contra elite.',baseCost:55,cost:55,available:game.weaponKey!=='cannon'&&game.shopCounts.cannon<game.shopLimits.cannon,effect:()=>{game.weaponKey='cannon';game.shopCounts.cannon++}},
+    {key:'minigun',name:'Comprar Minigun',desc:'Cadência insana, pouca precisão.',baseCost:58,cost:58,available:game.weaponKey!=='minigun'&&game.shopCounts.minigun<game.shopLimits.minigun,effect:()=>{game.weaponKey='minigun';game.shopCounts.minigun++}},
+    {key:'tesla',name:'Comprar Tesla Coil',desc:'Arcos elétricos extras.',baseCost:64,cost:64,available:game.weaponKey!=='tesla'&&game.shopCounts.tesla<game.shopLimits.tesla,effect:()=>{game.weaponKey='tesla';game.shopCounts.tesla++}},
+    {key:'acid',name:'Comprar Acid Spitter',desc:'Tiros criam nuvens tóxicas.',baseCost:50,cost:50,available:game.weaponKey!=='acid'&&game.shopCounts.acid<game.shopLimits.acid,effect:()=>{game.weaponKey='acid';game.shopCounts.acid++}},
+    {key:'katana',name:'Comprar Katana Chrono',desc:'Curto alcance, dano alto e perfurante.',baseCost:48,cost:48,available:game.weaponKey!=='katana'&&game.shopCounts.katana<game.shopLimits.katana,effect:()=>{game.weaponKey='katana';game.shopCounts.katana++}},
+    {key:'hpMax',name:'HP máximo +24',baseCost:Math.floor(44*Math.pow(1.35,game.shopCounts.hpMax)),cost:Math.floor(44*Math.pow(1.35,game.shopCounts.hpMax)),desc:'Mais resistência.',available:game.shopCounts.hpMax<game.shopLimits.hpMax,effect:()=>{game.player.maxHp+=24;game.player.hp+=24;game.shopCounts.hpMax++}},
+    {key:'focusMax',name:'Foco máximo +30',baseCost:Math.floor(38*Math.pow(1.30,game.shopCounts.focusMax)),cost:Math.floor(38*Math.pow(1.30,game.shopCounts.focusMax)),desc:'Mais slow e skills.',available:game.shopCounts.focusMax<game.shopLimits.focusMax,effect:()=>{game.player.maxFocus+=30;game.player.focus+=30;game.shopCounts.focusMax++}},
+    {key:'damageBoost',name:'Dano +18%',baseCost:Math.floor(48*Math.pow(1.45,game.shopCounts.damageBoost)),cost:Math.floor(48*Math.pow(1.45,game.shopCounts.damageBoost)),desc:'Escala tudo.',available:game.shopCounts.damageBoost<game.shopLimits.damageBoost,effect:()=>{game.upgrades.damage+=0.18;game.shopCounts.damageBoost++}},
+    {key:'armorBoost',name:'Armadura +8%',baseCost:Math.floor(42*Math.pow(1.40,game.shopCounts.armorBoost)),cost:Math.floor(42*Math.pow(1.40,game.shopCounts.armorBoost)),desc:'Sofre menos.',available:game.shopCounts.armorBoost<game.shopLimits.armorBoost,effect:()=>{game.upgrades.armor+=0.08;game.shopCounts.armorBoost++}},
+    {key:'dashServo',name:'Servo de Dash +20%',baseCost:Math.floor(40*Math.pow(1.33,game.shopCounts.dashServo)),cost:Math.floor(40*Math.pow(1.33,game.shopCounts.dashServo)),desc:'Dash volta mais rápido.',available:game.shopCounts.dashServo<game.shopLimits.dashServo,effect:()=>{game.upgrades.dashRegen+=0.20;game.shopCounts.dashServo++}},
+    {key:'magnet',name:'Ímã de Loot +50',baseCost:Math.floor(36*Math.pow(1.3,game.shopCounts.magnet)),cost:Math.floor(36*Math.pow(1.3,game.shopCounts.magnet)),desc:'Puxa loot de longe.',available:game.shopCounts.magnet<game.shopLimits.magnet,effect:()=>{game.upgrades.magnet+=50;game.shopCounts.magnet++}},
+    {key:'turretPack',name:'Kit de Torreta',baseCost:Math.floor(58*Math.pow(1.45,game.shopCounts.turretPack)),cost:Math.floor(58*Math.pow(1.45,game.shopCounts.turretPack)),desc:'Instala uma torreta extra permanente na wave.',available:game.shopCounts.turretPack<game.shopLimits.turretPack,effect:()=>{game.turrets.push({x:game.player.x+rand(-90,90),y:game.player.y+rand(-70,70),r:13,life:12*game.upgrades.turretDuration,fireCd:0,pulse:0});game.shopCounts.turretPack++}},
+    {key:'relicTrade',name:'Fragmento Relíquia +1',baseCost:Math.floor(90*Math.pow(1.5,game.shopCounts.relicTrade)),cost:Math.floor(90*Math.pow(1.5,game.shopCounts.relicTrade)),desc:'Compra progresso permanente.',available:game.shopCounts.relicTrade<game.shopLimits.relicTrade,effect:()=>{game.meta.relicShards+=1;saveMeta();game.shopCounts.relicTrade++}}
   ];
   overlay.classList.remove('hidden');
   overlayCard.innerHTML=`
     <h1>LOJA ECLIPSE 🛒</h1>
-    <p>Boss derrubado. Ouro: <strong>${game.gold}</strong> &bull; Fragmentos permanentes: <strong>${game.meta.relicShards}</strong><br>${game.upgrades.shopDiscount?'Contrato ativo: desconto aplicado.':''}</p>
+    <p>Boss derrubado. Ouro: <strong>${game.gold}</strong> &bull; Fragmentos permanentes: <strong>${game.meta.relicShards}</strong></p>
     <div class="shop-grid">
       ${items.map((item,i)=>`<button class="shop-btn" data-shop="${i}" ${item.available?'':'disabled'} style="${item.available?'':'opacity:.35;cursor:not-allowed'}"><strong>${item.name} — ${item.cost}g</strong><span>${item.desc}</span></button>`).join('')}
     </div>
@@ -2488,7 +2487,13 @@ function openShopMenu(){
     <div class="tipline">Novas armas e upgrades aparecem aqui após bosses.</div>`;
   [...overlayCard.querySelectorAll('[data-shop]')].forEach(btn=>{
     const item=items[Number(btn.dataset.shop)]; if(!item.available) return;
-    btn.addEventListener('click',()=>{if(game.gold<item.cost){addFloatingText(W/2,H/2,'SEM OURO','#ff9ba8',20);return}game.gold-=item.cost;item.effect();updateHUD();openShopMenu();});
+    btn.addEventListener('click',()=>{
+      // Aplica desconto APENAS na hora da compra se tiver o powerup
+      const discountRate = Math.min(game.upgrades.shopDiscount||0, 0.45);
+      const finalCost = Math.max(1, Math.floor(item.cost * (1 - discountRate)));
+      if(game.gold<finalCost){addFloatingText(W/2,H/2,'SEM OURO','#ff9ba8',20);return}
+      game.gold-=finalCost;item.effect();updateHUD();openShopMenu();
+    });
   });
   document.getElementById('continueBtn').addEventListener('click',()=>{overlay.classList.add('hidden');game.running=true;game.betweenWaves=false;game.shopPending=false;game.wave++;startNextWave();});
 }
@@ -18360,7 +18365,14 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     function click(){
       if(state.animating)return;
       if(state.readyOpen||state.used>=5||state.rarity==='mythic'){
-        const box=$('#chestBox56');if(box)box.classList.add('open');setTimeout(()=>openChestRewards56(state),660);return;
+        const box=$('#chestBox56');
+        if(box){
+          box.classList.remove('shake','rarityUp56');
+          void box.offsetWidth;
+          box.classList.add('open');
+        }
+        setTimeout(()=>openChestRewards56(state),660);
+        return;
       }
       state.animating=true;state.used++;
       const before=state.rarity;
@@ -18382,7 +18394,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
         if(before!==state.rarity){
           try{addFloatingText(W/2,H/2-90,RARITIES56[state.rarity].name,RARITIES56[state.rarity].color,22)}catch{}
         }
-      },640);
+      },580);
     }
     render();
   }
@@ -30505,56 +30517,63 @@ function injectSaveCard(){
   const saveCard = document.createElement('div');
   saveCard.id = 'chronoSaveCard20';
   saveCard.style.cssText = `
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 20px;
-    background: linear-gradient(145deg, rgba(255,209,102,.12), rgba(159,108,255,.08));
-    border: 1px solid rgba(255,209,102,.30);
-    box-shadow: 0 0 30px rgba(255,209,102,.15), inset 0 0 20px rgba(255,255,255,.04);
+    margin-top: 24px;
+    padding: 24px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(97,218,251,.08), rgba(159,108,255,.06));
+    border: 1px solid rgba(97,218,251,.25);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 0 24px rgba(97,218,251,.05);
+    backdrop-filter: blur(14px);
   `;
   
   saveCard.innerHTML = `
     <h3 style="
       font-family: Orbitron, sans-serif;
-      font-size: 16px;
-      letter-spacing: .12em;
-      color: #ffd166;
-      margin: 0 0 12px 0;
-      text-shadow: 0 0 12px rgba(255,209,102,.4);
-    ">💾 SALVAR JOGO</h3>
+      font-size: 15px;
+      letter-spacing: .14em;
+      color: #61dafb;
+      margin: 0 0 14px 0;
+      text-shadow: 0 0 14px rgba(97,218,251,.4);
+      text-align: center;
+    ">💾 GERENCIAR SAVE</h3>
     <p style="
-      color: #b9c8ee;
+      color: #bcd6ff;
       font-size: 13px;
-      line-height: 1.5;
-      margin: 0 0 16px 0;
-    ">Exporte seu progresso completo em um arquivo ou importe um save anterior.</p>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      line-height: 1.6;
+      margin: 0 0 18px 0;
+      text-align: center;
+    ">Exporte seu progresso completo ou importe um save anterior.</p>
+    <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;">
       <button id="chronoSaveBtn20" style="
         flex: 1;
-        min-width: 140px;
-        padding: 12px 18px;
+        min-width: 150px;
+        max-width: 200px;
+        padding: 14px 20px;
         border: none;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #62ff9b, #4ce0b3);
+        border-radius: 12px;
+        background: linear-gradient(135deg, #61dafb, #4ce0b3);
         color: #051a10;
         font: 700 13px Orbitron, sans-serif;
         letter-spacing: .08em;
         cursor: pointer;
-        box-shadow: 0 0 20px rgba(98,255,155,.25);
-      ">💾 Salvar</button>
+        box-shadow: 0 0 24px rgba(97,218,251,.35);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 0 32px rgba(97,218,251,.5)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 0 24px rgba(97,218,251,.35)'">💾 Salvar Jogo</button>
       <button id="chronoLoadBtn20" style="
         flex: 1;
-        min-width: 140px;
-        padding: 12px 18px;
+        min-width: 150px;
+        max-width: 200px;
+        padding: 14px 20px;
         border: none;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #75d8ff, #9f6cff);
+        border-radius: 12px;
+        background: linear-gradient(135deg, #9f6cff, #c6a0ff);
         color: #06101d;
         font: 700 13px Orbitron, sans-serif;
         letter-spacing: .08em;
         cursor: pointer;
-        box-shadow: 0 0 20px rgba(117,216,255,.25);
-      ">📂 Carregar State</button>
+        box-shadow: 0 0 24px rgba(159,108,255,.35);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 0 32px rgba(159,108,255,.5)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 0 24px rgba(159,108,255,.35)'">📂 Carregar Save</button>
     </div>
   `;
   
@@ -30737,7 +30756,7 @@ document.addEventListener('click', e => {
   }
 }, true);
 
-// MutationObserver com debounce forte - evita loop
+// MutationObserver com debounce forte - evita loop e flicker
 let observerTimeout = null;
 const observer = new MutationObserver(() => {
   if(observerTimeout) clearTimeout(observerTimeout);
@@ -30747,7 +30766,7 @@ const observer = new MutationObserver(() => {
     } else {
       removeSaveCard();
     }
-  }, 100); // 100ms de debounce
+  }, 150); // 150ms de debounce para evitar flicker
 });
 
 observer.observe(document.body, {
@@ -30755,14 +30774,14 @@ observer.observe(document.body, {
   subtree: true
 });
 
-// Verificação inicial
+// Verificação inicial com delay maior
 setTimeout(() => {
   if(isSettingsScreen()){
     injectSaveCard();
   }
-}, 200);
+}, 300);
 
-console.log('Chrono Shards Save/Load System v2.0 carregado');
+console.log('Chrono Shards Save/Load System v2.1 carregado');
 })();
 </script>
 </body>
