@@ -30453,220 +30453,301 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 <script src="multiplayer.js"></script>
 <script>
 /* ────────────────────────────────────────────────────────────────
-CHRONO SHARDS 7.4.4 — Save/Load corrigido: só nas configurações + criptografia básica
-──────────────────────────────────────────────────────────────── */
+CHRONO SHARDS — Sistema de Save/Load Completo e Funcional
+─────────────────────────────────────────────────────────────── */
 (()=>{
-if(window.__chronoSaveLoad744)return; window.__chronoSaveLoad744=true;
-const SAVE_KEY_744=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
-const SAVE_KEYS_744=[
-  SAVE_KEY_744,
-  SAVE_KEY_744+'_class_unlocks_v3',
-  SAVE_KEY_744+'_secret_rift_v1',
-  SAVE_KEY_744+'_redeemed_codes_v1',
-  SAVE_KEY_744+'_chrono_augments_620',
-  SAVE_KEY_744+'_skins_clean_702',
-  SAVE_KEY_744+'_power_catalog_unlocks_544',
-  SAVE_KEY_744+'_mauro_shop_clean_702',
-  'chrono_rift_tutorial_skip_v1'
-];
-// Chave de ofuscação (salt) - muda a cada reload para dificultar edição manual
-const SALT_744='chrono_shards_v744_'+Math.floor(Math.random()*999999);
-function isConfigScreen744(){
-  const card=document.getElementById('overlayCard');
-  if(!card)return false;
-  const title=(card.querySelector('h1')?.textContent||'').toUpperCase();
-  return title.includes('CONFIGURAÇÕES');
+if(window.__chronoSaveLoadSystem) return;
+window.__chronoSaveLoadSystem = true;
+
+const SAVE_KEY = 'chrono_v4_meta';
+const SAVE_VERSION = '1.0';
+
+// Injeta CSS para os botões
+function injectStyles(){
+if(document.getElementById('saveLoadStyles')) return;
+const st = document.createElement('style');
+st.id = 'saveLoadStyles';
+st.textContent = `
+.saveLoadContainer{
+position:fixed;
+bottom:20px;
+left:20px;
+z-index:9999;
+display:flex;
+gap:10px;
+background:rgba(10,15,30,.95);
+padding:12px;
+border-radius:16px;
+border:2px solid rgba(97,218,251,.3);
+box-shadow:0 0 30px rgba(97,218,251,.2);
+backdrop-filter:blur(10px);
 }
-function removeSaveCard744(){
-  document.querySelectorAll('#saveLoadSection501, .saveLoadSection501, #saveLoadSection744, .saveLoadSection744').forEach(el=>el.remove());
+.saveLoadBtn{
+border:none;
+border-radius:12px;
+padding:10px 18px;
+cursor:pointer;
+font:700 13px Orbitron,sans-serif;
+letter-spacing:.05em;
+transition:all .2s;
+display:flex;
+align-items:center;
+gap:8px;
 }
-function injectSaveCard744(){
-  if(!isConfigScreen744())return;
-  removeSaveCard744();
-  const card=document.getElementById('overlayCard');
-  if(!card)return;
-  const section=document.createElement('div');
-  section.id='saveLoadSection744';
-  section.className='saveLoadSection744';
-  section.innerHTML=`
-    <div class="dunePanel461 settingsLow462" style="padding:20px 22px">
-      <span class="badge461" style="--co:#ffd166">SALVAR/CARREGAR</span>
-      <strong>Gerenciar Save do Jogo</strong>
-      <span>Exporte seu progresso para um arquivo ou importe um save anterior. Os dados são codificados para evitar edições manuais.</span>
-      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-        <button class="duneBtn461" id="saveGame744" style="background:linear-gradient(135deg,#62ff9b,#4ce0b3);color:#051a10">💾 Salvar Jogo</button>
-        <button class="duneBtn461" id="loadGame744" style="background:linear-gradient(135deg,#75d8ff,#9f6cff);color:#05101d">📂 Carregar Save</button>
-      </div>
-      <div id="saveMsg744" style="margin-top:12px;color:#bcd6ff;font-size:12px"></div>
-    </div>`;
-  card.appendChild(section);
-  document.getElementById('saveGame744').onclick=saveGame744;
-  document.getElementById('loadGame744').onclick=loadGame744;
+.saveLoadBtn:hover{
+transform:translateY(-2px);
+filter:brightness(1.15);
 }
-function obfuscateData744(data){
-  // Ofuscação: troca nomes de campos e reordena
-  const obf={};
-  const fieldMap={
-    'relicShards':'_rs',
-    'chronoFragments':'_cf',
-    'awakeningKeys':'_ak',
-    'highScore':'_hs',
-    'unlockedRelics':'_ur',
-    'stats':'_st',
-    'bestiaryKills':'_bk',
-    'missions39':'_m39',
-    'unlockedMoonSlayer':'_ums',
-    'moonMissionClaimed':'_mmc',
-    'allUnlocked':'_au',
-    'allInUnlocked':'_aiu',
-    'riftModeUnlocked':'_rmu',
-    'stellarEmperorRevealed':'_ser',
-    'stellarEmperorSecretUnlocked':'_sesu'
-  };
-  for(const [key,value] of Object.entries(data)){
-    const newKey=fieldMap[key]||('_'+key.replace(/[^a-zA-Z0-9]/g,'').slice(0,8));
-    obf[newKey]=value;
-  }
-  return obf;
+.saveLoadBtn:active{
+transform:translateY(0);
 }
-function deobfuscateData744(obf){
-  const fieldMap={
-    '_rs':'relicShards',
-    '_cf':'chronoFragments',
-    '_ak':'awakeningKeys',
-    '_hs':'highScore',
-    '_ur':'unlockedRelics',
-    '_st':'stats',
-    '_bk':'bestiaryKills',
-    '_m39':'missions39',
-    '_ums':'unlockedMoonSlayer',
-    '_mmc':'moonMissionClaimed',
-    '_au':'allUnlocked',
-    '_aiu':'allInUnlocked',
-    '_rmu':'riftModeUnlocked',
-    '_ser':'stellarEmperorRevealed',
-    '_sesu':'stellarEmperorSecretUnlocked'
-  };
-  const data={};
-  for(const [key,value] of Object.entries(obf)){
-    const newKey=fieldMap[key]||key.replace(/^_/,'');
-    data[newKey]=value;
-  }
-  return data;
+.saveBtn{
+background:linear-gradient(135deg,#62ff9b,#4ce0b3);
+color:#051a10;
+box-shadow:0 4px 15px rgba(98,255,155,.3);
 }
-async function generateHash744(text){
-  const encoder=new TextEncoder();
-  const data=encoder.encode(text+SALT_744);
-  const hashBuffer=await crypto.subtle.digest('SHA-256',data);
-  const hashArray=Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
+.loadBtn{
+background:linear-gradient(135deg,#75d8ff,#9f6cff);
+color:#05101d;
+box-shadow:0 4px 15px rgba(117,216,255,.3);
 }
-async function encryptSave744(data){
-  const json=JSON.stringify(data);
-  const obfuscated=obfuscateData744(data);
-  const obfJson=JSON.stringify(obfuscated);
-  const hash=await generateHash744(obfJson);
-  const payload={
-    v:'744',
-    d:obfJson,
-    h:hash,
-    s:SALT_744.slice(0,8)
-  };
-  const encoded=btoa(JSON.stringify(payload));
-  return encoded;
+.saveLoadNotice{
+position:fixed;
+top:20px;
+left:50%;
+transform:translateX(-50%);
+z-index:99999;
+padding:14px 24px;
+border-radius:14px;
+font:700 14px Orbitron,sans-serif;
+letter-spacing:.05em;
+box-shadow:0 0 40px rgba(0,0,0,.5);
+backdrop-filter:blur(10px);
+animation:noticeSlide .4s ease;
 }
-async function decryptSave744(encoded){
-  try{
-    const payload=JSON.parse(atob(encoded));
-    if(payload.v!=='744')throw new Error('Versão incompatível');
-    const hash=await generateHash744(payload.d);
-    if(hash!==payload.h)throw new Error('Hash inválido - dados corrompidos ou modificados');
-    const obf=JSON.parse(payload.d);
-    const data=deobfuscateData744(obf);
-    return data;
-  }catch(e){
-    throw new Error('Falha ao decodificar: '+e.message);
-  }
+@keyframes noticeSlide{
+from{opacity:0;transform:translateX(-50%) translateY(-20px)}
+to{opacity:1;transform:translateX(-50%) translateY(0)}
 }
-async function saveGame744(){
-  const msg=document.getElementById('saveMsg744');
-  try{
-    const allData={};
-    for(const key of SAVE_KEYS_744){
-      const raw=localStorage.getItem(key);
-      if(raw){
-        try{
-          allData[key]=JSON.parse(raw);
-        }catch{
-          allData[key]=raw;
-        }
-      }
-    }
-    const encrypted=await encryptSave744(allData);
-    const blob=new Blob([encrypted],{type:'text/plain'});
-    const url=URL.createObjectURL(blob);
-    const now=new Date();
-    const pad=n=>String(n).padStart(2,'0');
-    const stamp=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
-    const filename=`ChronoShards_Save_${stamp}.csav`;
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
-    msg.style.color='#86ffb0';
-    msg.textContent=`✅ Jogo salvo como "${filename}" (criptografado)`;
-  }catch(e){
-    console.error('[Save744]',e);
-    msg.style.color='#ff8fa3';
-    msg.textContent='❌ Erro ao salvar: '+e.message;
-  }
+.noticeSuccess{
+background:rgba(98,255,155,.95);
+color:#051a10;
+border:2px solid rgba(98,255,155,.5);
 }
-async function loadGame744(){
-  const msg=document.getElementById('saveMsg744');
-  const input=document.createElement('input');
-  input.type='file';
-  input.accept='.csav,.txt';
-  input.onchange=async(e)=>{
-    const file=e.target.files[0];
-    if(!file)return;
-    try{
-      const text=await file.text();
-      const data=await decryptSave744(text);
-      for(const key of SAVE_KEYS_744){
-        if(data[key]!==undefined){
-          localStorage.setItem(key,JSON.stringify(data[key]));
-        }
-      }
-      msg.style.color='#86ffb0';
-      msg.textContent='✅ Save carregado com sucesso! Recarregando...';
-      setTimeout(()=>location.reload(),1500);
-    }catch(e){
-      console.error('[Load744]',e);
-      msg.style.color='#ff8fa3';
-      msg.textContent='❌ Erro ao carregar: '+e.message;
-    }
-  };
-  input.click();
+.noticeError{
+background:rgba(255,77,109,.95);
+color:#fff;
+border:2px solid rgba(255,77,109,.5);
 }
-// Observer: só injeta o card se estiver na tela de configurações
-const mo744=new MutationObserver(()=>{
-  setTimeout(()=>{
-    if(isConfigScreen744()){
-      injectSaveCard744();
-    }else{
-      removeSaveCard744();
-    }
-  },50);
+.noticeInfo{
+background:rgba(117,216,255,.95);
+color:#05101d;
+border:2px solid rgba(117,216,255,.5);
+}
+`;
+document.head.appendChild(st);
+}
+
+// Cria os botões de save/load
+function createButtons(){
+if(document.getElementById('saveLoadButtons')) return;
+
+const container = document.createElement('div');
+container.id = 'saveLoadButtons';
+container.className = 'saveLoadContainer';
+
+container.innerHTML = `
+<button class="saveLoadBtn saveBtn" id="saveGameBtn">
+💾 Salvar Jogo
+</button>
+<button class="saveLoadBtn loadBtn" id="loadGameBtn">
+📂 Carregar Jogo
+</button>
+`;
+
+document.body.appendChild(container);
+
+// Adiciona event listeners
+document.getElementById('saveGameBtn').addEventListener('click', saveGame);
+document.getElementById('loadGameBtn').addEventListener('click', loadGame);
+}
+
+// Mostra notificação
+function showNotice(message, type='info'){
+const notice = document.createElement('div');
+notice.className = `saveLoadNotice notice${type.charAt(0).toUpperCase() + type.slice(1)}`;
+notice.textContent = message;
+document.body.appendChild(notice);
+
+setTimeout(()=>{
+notice.style.opacity = '0';
+notice.style.transform = 'translateX(-50%) translateY(-20px)';
+setTimeout(()=> notice.remove(), 400);
+}, 3000);
+}
+
+// Salva o jogo
+function saveGame(){
+try{
+const saveData = {
+version: SAVE_VERSION,
+timestamp: Date.now(),
+date: new Date().toLocaleString('pt-BR'),
+data: {}
+};
+
+// Coleta todos os dados do localStorage
+const keys = Object.keys(localStorage);
+for(const key of keys){
+if(key.startsWith('chrono_')){
+try{
+const value = localStorage.getItem(key);
+saveData.data[key] = JSON.parse(value);
+}catch{
+saveData.data[key] = value;
+}
+}
+}
+
+// Coleta dados do jogo atual
+if(typeof game !== 'undefined' && game){
+saveData.gameState = {
+classKey: game.classKey,
+wave: game.wave,
+score: game.score,
+kills: game.kills,
+gold: game.gold,
+level: game.level,
+xp: game.xp,
+player: game.player ? {
+hp: game.player.hp,
+maxHp: game.player.maxHp,
+shield: game.player.shield,
+maxShield: game.player.maxShield,
+focus: game.player.focus,
+maxFocus: game.player.maxFocus
+} : null,
+upgrades: game.upgrades || {}
+};
+}
+
+// Converte para JSON e salva
+const json = JSON.stringify(saveData, null, 2);
+localStorage.setItem('chrono_save_backup', json);
+
+// Cria download do arquivo
+const blob = new Blob([json], {type: 'application/json'});
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = `ChronoShards_Save_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.json`;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+
+showNotice('✅ Jogo salvo com sucesso!', 'success');
+console.log('[Save] Jogo salvo:', saveData);
+}catch(err){
+console.error('[Save] Erro ao salvar:', err);
+showNotice('❌ Erro ao salvar: ' + err.message, 'error');
+}
+}
+
+// Carrega o jogo
+function loadGame(){
+try{
+const input = document.createElement('input');
+input.type = 'file';
+input.accept = '.json,application/json';
+input.style.display = 'none';
+
+input.addEventListener('change', (e)=>{
+const file = e.target.files[0];
+if(!file){
+showNotice('⚠️ Nenhum arquivo selecionado', 'info');
+return;
+}
+
+const reader = new FileReader();
+reader.onload = (event)=>{
+try{
+const saveData = JSON.parse(event.target.result);
+
+// Valida versão
+if(saveData.version !== SAVE_VERSION){
+if(!confirm(`Este save foi criado com a versão ${saveData.version}, mas você está usando ${SAVE_VERSION}. Deseja continuar mesmo assim?`)){
+return;
+}
+}
+
+// Restaura dados do localStorage
+if(saveData.data){
+for(const key in saveData.data){
+localStorage.setItem(key, JSON.stringify(saveData.data[key]));
+}
+}
+
+// Restaura estado do jogo
+if(saveData.gameState && typeof game !== 'undefined'){
+Object.assign(game, saveData.gameState);
+if(saveData.gameState.player && game.player){
+Object.assign(game.player, saveData.gameState.player);
+}
+if(saveData.gameState.upgrades){
+game.upgrades = Object.assign(game.upgrades || {}, saveData.gameState.upgrades);
+}
+}
+
+showNotice('✅ Jogo carregado com sucesso! Recarregando...', 'success');
+console.log('[Load] Jogo carregado:', saveData);
+
+// Recarrega a página para aplicar as mudanças
+setTimeout(()=>{
+window.location.reload();
+}, 1500);
+
+}catch(err){
+console.error('[Load] Erro ao carregar:', err);
+showNotice('❌ Erro ao carregar: ' + err.message, 'error');
+}
+};
+
+reader.onerror = ()=>{
+showNotice('❌ Erro ao ler o arquivo', 'error');
+};
+
+reader.readAsText(file);
 });
-mo744.observe(document.body,{childList:true,subtree:true});
-// Remove imediatamente se não estiver em configurações
-if(!isConfigScreen744()){
-  removeSaveCard744();
+
+document.body.appendChild(input);
+input.click();
+document.body.removeChild(input);
+
+}catch(err){
+console.error('[Load] Erro:', err);
+showNotice('❌ Erro ao carregar: ' + err.message, 'error');
 }
-console.log('Chrono Shards 7.4.4 — Save/Load corrigido: só nas configurações + criptografia');
+}
+
+// Inicializa o sistema
+function init(){
+injectStyles();
+createButtons();
+console.log('[Save/Load] Sistema inicializado');
+}
+
+// Aguarda o DOM carregar
+if(document.readyState === 'loading'){
+document.addEventListener('DOMContentLoaded', init);
+}else{
+init();
+}
+
+// Expõe funções globalmente
+window.saveGame = saveGame;
+window.loadGame = loadGame;
+
 })();
 </script>
 </body>
