@@ -30453,15 +30453,14 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 <script src="multiplayer.js"></script>
 <script>
 /* ────────────────────────────────────────────────────────────────
-CHRONO SHARDS — Sistema de Save Manual Criptografado
-- Aparece SOMENTE na aba de configurações
-- Criptografia AES-GCM real
-- Card wide acima do botão "Voltar"
-- Remove ao sair da tela
+CHRONO SHARDS — Sistema de Save/Load Definitivo
+- Aparece SOMENTE na tela de Configurações
+- Botões funcionam mesmo com recriação do DOM
+- Remove automaticamente ao sair das configurações
 ──────────────────────────────────────────────────────────────── */
 (()=>{
-if(window.__chronoSaveSystem) return;
-window.__chronoSaveSystem = true;
+if(window.__chronoSaveLoadFinal) return;
+window.__chronoSaveLoadFinal = true;
 
 const SAVE_KEYS = [
   'chrono_v4_meta',
@@ -30475,220 +30474,161 @@ const SAVE_KEYS = [
   'chrono_rift_tutorial_skip_v1'
 ];
 
-// Chave de criptografia (em produção real, seria derivada de senha do usuário)
-const ENCRYPTION_KEY = 'ChronoShards_SaveKey_2024_Secure_v1';
+// Verifica se estamos na tela de Configurações pelo CONTEÚDO
+function isSettingsScreen(){
+  try{
+    const overlay = document.getElementById('overlay');
+    const card = document.getElementById('overlayCard');
+    if(!overlay || !card) return false;
+    if(overlay.classList.contains('hidden')) return false;
+    
+    const text = (card.textContent || '').toLowerCase();
+    // A tela de configurações sempre tem "LOW GFX" ou "CÓDIGOS" ou "CONFIGURAÇÕES"
+    return text.includes('low gfx') || 
+           (text.includes('configurações') && (text.includes('códigos') || text.includes('codigo'))) ||
+           (text.includes('settings') && text.includes('codes'));
+  }catch(e){
+    return false;
+  }
+}
 
-function isConfigScreen(){
+// Remove o card de save
+function removeSaveCard(){
+  const card = document.getElementById('chronoSaveCard');
+  if(card) card.remove();
+}
+
+// Injeta o card de save
+function injectSaveCard(){
+  if(!isSettingsScreen()) return;
+  
+  // Remove card antigo se existir
+  removeSaveCard();
+  
   const card = document.getElementById('overlayCard');
-  if(!card) return false;
-  const text = (card.textContent || '').toUpperCase();
-  return text.includes('CONFIGURAÇÕES') && !text.includes('SELEÇÃO DE PERSONAGEM');
-}
-
-function ensureStyle(){
-  if(document.getElementById('saveSystemStyle')) return;
-  const st = document.createElement('style');
-  st.id = 'saveSystemStyle';
-  st.textContent = `
-.saveContainer{
-  margin-top:20px;
-  padding:20px;
-  border-radius:20px;
-  background:linear-gradient(145deg,rgba(10,14,32,.96),rgba(5,8,18,.98));
-  border:1px solid rgba(117,216,255,.24);
-  box-shadow:0 0 30px rgba(97,218,251,.08),inset 0 0 20px rgba(255,255,255,.03);
-  margin-bottom:10px;
-}
-.saveTitle{
-  font-family:Orbitron,sans-serif;
-  font-size:14px;
-  letter-spacing:.12em;
-  color:#75d8ff;
-  margin:0 0 12px 0;
-  text-shadow:0 0 12px rgba(117,216,255,.4);
-}
-.saveDesc{
-  color:#bcd6ff;
-  font-size:12px;
-  line-height:1.5;
-  margin:0 0 16px 0;
-}
-.saveButtons{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-}
-.saveBtn{
-  flex:1;
-  min-width:140px;
-  padding:12px 16px;
-  border:none;
-  border-radius:14px;
-  font:700 13px Orbitron,sans-serif;
-  letter-spacing:.08em;
-  cursor:pointer;
-  transition:all .2s;
-  box-shadow:0 4px 16px rgba(0,0,0,.3);
-}
-.saveBtn:hover{
-  transform:translateY(-2px);
-  filter:brightness(1.1);
-  box-shadow:0 6px 20px rgba(0,0,0,.4);
-}
-.saveBtn:active{
-  transform:translateY(0);
-}
-.saveBtnSave{
-  background:linear-gradient(135deg,#75d8ff,#9f6cff);
-  color:#06101d;
-}
-.saveBtnLoad{
-  background:linear-gradient(135deg,#ffd166,#ff9bd2);
-  color:#1a0d00;
-}
-.saveMsg{
-  margin-top:12px;
-  padding:10px;
-  border-radius:10px;
-  font-size:12px;
-  text-align:center;
-  display:none;
-}
-.saveMsg.show{
-  display:block;
-}
-.saveMsg.success{
-  background:rgba(134,255,176,.12);
-  border:1px solid rgba(134,255,176,.3);
-  color:#86ffb0;
-}
-.saveMsg.error{
-  background:rgba(255,77,109,.12);
-  border:1px solid rgba(255,77,109,.3);
-  color:#ff4d6d;
-}
-.saveMsg.info{
-  background:rgba(117,216,255,.12);
-  border:1px solid rgba(117,216,255,.3);
-  color:#75d8ff;
-}
+  if(!card) return;
+  
+  const saveCard = document.createElement('div');
+  saveCard.id = 'chronoSaveCard';
+  saveCard.style.cssText = `
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 20px;
+    background: linear-gradient(145deg, rgba(10,14,32,.95), rgba(5,7,15,.95));
+    border: 1px solid rgba(117,216,255,.25);
+    box-shadow: 0 0 30px rgba(97,218,251,.1), inset 0 0 20px rgba(255,255,255,.03);
   `;
-  document.head.appendChild(st);
+  
+  saveCard.innerHTML = `
+    <h3 style="
+      font-family: Orbitron, sans-serif;
+      font-size: 14px;
+      letter-spacing: .12em;
+      color: #75d8ff;
+      margin: 0 0 12px 0;
+      text-shadow: 0 0 12px rgba(117,216,255,.4);
+    ">💾 SALVAR JOGO</h3>
+    <p style="
+      color: #b9c8e8;
+      font-size: 12px;
+      line-height: 1.5;
+      margin: 0 0 16px 0;
+    ">Exporte seu progresso completo em um arquivo ou importe um save anterior.</p>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <button id="chronoSaveBtn" style="
+        flex: 1;
+        min-width: 140px;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #75d8ff, #9f6cff);
+        color: #06101d;
+        font: 700 13px Orbitron, sans-serif;
+        letter-spacing: .08em;
+        cursor: pointer;
+        box-shadow: 0 0 20px rgba(117,216,255,.25);
+      ">💾 Salvar</button>
+      <button id="chronoLoadBtn" style="
+        flex: 1;
+        min-width: 140px;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #ffd166, #ff9bd2);
+        color: #1a0d00;
+        font: 700 13px Orbitron, sans-serif;
+        letter-spacing: .08em;
+        cursor: pointer;
+        box-shadow: 0 0 20px rgba(255,209,102,.25);
+      ">📂 Carregar</button>
+    </div>
+    <div id="chronoSaveMsg" style="
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      text-align: center;
+      display: none;
+    "></div>
+  `;
+  
+  card.appendChild(saveCard);
 }
 
-async function deriveKey(password){
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    enc.encode(password),
-    {name:'PBKDF2'},
-    false,
-    ['deriveBits','deriveKey']
-  );
-  return await crypto.subtle.deriveKey(
-    {
-      name:'PBKDF2',
-      salt:enc.encode('ChronoShards_Salt_2024'),
-      iterations:100000,
-      hash:'SHA-256'
-    },
-    keyMaterial,
-    {name:'AES-GCM',length:256},
-    false,
-    ['encrypt','decrypt']
-  );
+// Mostra mensagem
+function showMsg(text, type='success'){
+  const msg = document.getElementById('chronoSaveMsg');
+  if(!msg) return;
+  
+  msg.textContent = text;
+  msg.style.display = 'block';
+  
+  if(type === 'success'){
+    msg.style.background = 'rgba(134,255,176,.12)';
+    msg.style.border = '1px solid rgba(134,255,176,.3)';
+    msg.style.color = '#86ffb0';
+  }else if(type === 'error'){
+    msg.style.background = 'rgba(255,77,109,.12)';
+    msg.style.border = '1px solid rgba(255,77,109,.3)';
+    msg.style.color = '#ff4d6d';
+  }else{
+    msg.style.background = 'rgba(117,216,255,.12)';
+    msg.style.border = '1px solid rgba(117,216,255,.3)';
+    msg.style.color = '#75d8ff';
+  }
+  
+  setTimeout(()=>{
+    if(msg) msg.style.display = 'none';
+  }, 3000);
 }
 
-async function encryptData(data){
+// Salvar jogo
+function saveGame(){
   try{
-    const key = await deriveKey(ENCRYPTION_KEY);
-    const enc = new TextEncoder();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encrypted = await crypto.subtle.encrypt(
-      {name:'AES-GCM',iv:iv},
-      key,
-      enc.encode(JSON.stringify(data))
-    );
-    return {
-      iv:Array.from(iv),
-      data:Array.from(new Uint8Array(encrypted)),
-      version:1
+    const saveData = {
+      version: '1.0',
+      timestamp: Date.now(),
+      date: new Date().toLocaleString('pt-BR'),
+      data: {}
     };
-  }catch(e){
-    console.error('Erro ao criptografar:',e);
-    throw new Error('Falha na criptografia');
-  }
-}
-
-async function decryptData(encryptedObj){
-  try{
-    const key = await deriveKey(ENCRYPTION_KEY);
-    const iv = new Uint8Array(encryptedObj.iv);
-    const data = new Uint8Array(encryptedObj.data);
-    const decrypted = await crypto.subtle.decrypt(
-      {name:'AES-GCM',iv:iv},
-      key,
-      data
-    );
-    const dec = new TextDecoder();
-    return JSON.parse(dec.decode(decrypted));
-  }catch(e){
-    console.error('Erro ao descriptografar:',e);
-    throw new Error('Falha na descriptografia - arquivo inválido ou corrompido');
-  }
-}
-
-function collectSaveData(){
-  const saveData = {
-    timestamp:Date.now(),
-    date:new Date().toISOString(),
-    data:{}
-  };
-  for(const key of SAVE_KEYS){
-    try{
-      const value = localStorage.getItem(key);
-      if(value !== null){
-        saveData.data[key] = JSON.parse(value);
-      }
-    }catch(e){
-      console.warn('Erro ao coletar chave:',key,e);
-    }
-  }
-  return saveData;
-}
-
-function restoreSaveData(saveData){
-  if(!saveData || !saveData.data){
-    throw new Error('Estrutura de save inválida');
-  }
-  let restored = 0;
-  for(const key of SAVE_KEYS){
-    if(saveData.data[key] !== undefined){
+    
+    for(const key of SAVE_KEYS){
       try{
-        localStorage.setItem(key,JSON.stringify(saveData.data[key]));
-        restored++;
+        const value = localStorage.getItem(key);
+        if(value !== null){
+          saveData.data[key] = JSON.parse(value);
+        }
       }catch(e){
-        console.warn('Erro ao restaurar chave:',key,e);
+        console.warn('Erro ao ler chave:', key, e);
       }
     }
-  }
-  return restored;
-}
-
-async function saveGame(){
-  const msg = document.getElementById('saveMsg');
-  try{
-    msg.className = 'saveMsg show info';
-    msg.textContent = 'Criptografando dados...';
     
-    const saveData = collectSaveData();
-    const encrypted = await encryptData(saveData);
-    
-    const blob = new Blob([JSON.stringify(encrypted)],{type:'application/json'});
+    const json = JSON.stringify(saveData, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
     
     const now = new Date();
-    const pad = n => String(n).padStart(2,'0');
+    const pad = n => String(n).padStart(2, '0');
     const stamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
     const filename = `ChronoShards_Save_${stamp}.json`;
     
@@ -30699,145 +30639,116 @@ async function saveGame(){
     a.click();
     document.body.removeChild(a);
     
-    setTimeout(()=> URL.revokeObjectURL(url),1000);
+    setTimeout(()=> URL.revokeObjectURL(url), 1000);
     
-    msg.className = 'saveMsg show success';
-    msg.textContent = `✅ Save criado: ${filename}`;
-    
-    setTimeout(()=>{
-      msg.className = 'saveMsg';
-    },3000);
-  }catch(e){
-    console.error('Erro ao salvar:',e);
-    msg.className = 'saveMsg show error';
-    msg.textContent = `❌ Erro: ${e.message}`;
+    showMsg(`✅ Jogo salvo como "${filename}"`, 'success');
+  }catch(err){
+    console.error('Erro ao salvar:', err);
+    showMsg(`❌ Erro ao salvar: ${err.message}`, 'error');
   }
 }
 
-async function loadGame(){
-  const msg = document.getElementById('saveMsg');
-  try{
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,application/json';
-    input.style.display = 'none';
+// Carregar jogo
+function loadGame(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.style.display = 'none';
+  
+  input.onchange = (e)=>{
+    const file = e.target.files[0];
+    if(!file){
+      showMsg('⚠️ Nenhum arquivo selecionado', 'info');
+      return;
+    }
     
-    input.onchange = async(e)=>{
-      const file = e.target.files[0];
-      if(!file){
-        msg.className = 'saveMsg show info';
-        msg.textContent = 'Nenhum arquivo selecionado';
-        return;
-      }
-      
-      msg.className = 'saveMsg show info';
-      msg.textContent = 'Descriptografando arquivo...';
-      
-      const reader = new FileReader();
-      reader.onload = async(event)=>{
-        try{
-          const encrypted = JSON.parse(event.target.result);
-          const saveData = await decryptData(encrypted);
-          const restored = restoreSaveData(saveData);
-          
-          msg.className = 'saveMsg show success';
-          msg.textContent = `✅ Save carregado! ${restored} chaves restauradas. Recarregando...`;
-          
-          setTimeout(()=>{
-            window.location.reload();
-          },1500);
-        }catch(err){
-          console.error('Erro ao carregar:',err);
-          msg.className = 'saveMsg show error';
-          msg.textContent = `❌ Erro: ${err.message}`;
+    const reader = new FileReader();
+    reader.onload = (event)=>{
+      try{
+        const saveData = JSON.parse(event.target.result);
+        
+        if(!saveData.data){
+          showMsg('❌ Arquivo inválido', 'error');
+          return;
         }
-      };
-      reader.onerror = ()=>{
-        msg.className = 'saveMsg show error';
-        msg.textContent = '❌ Erro ao ler arquivo';
-      };
-      reader.readAsText(file);
+        
+        let restored = 0;
+        for(const key of SAVE_KEYS){
+          if(saveData.data[key] !== undefined){
+            try{
+              localStorage.setItem(key, JSON.stringify(saveData.data[key]));
+              restored++;
+            }catch(e){
+              console.warn('Erro ao restaurar chave:', key, e);
+            }
+          }
+        }
+        
+        showMsg(`✅ Save carregado! ${restored} chaves restauradas. Recarregando...`, 'success');
+        
+        setTimeout(()=>{
+          window.location.reload();
+        }, 1500);
+      }catch(err){
+        console.error('Erro ao carregar:', err);
+        showMsg(`❌ Erro ao carregar: ${err.message}`, 'error');
+      }
     };
     
-    document.body.appendChild(input);
-    input.click();
-    document.body.removeChild(input);
-  }catch(e){
-    console.error('Erro ao carregar:',e);
-    msg.className = 'saveMsg show error';
-    msg.textContent = `❌ Erro: ${e.message}`;
-  }
+    reader.onerror = ()=>{
+      showMsg('❌ Erro ao ler arquivo', 'error');
+    };
+    
+    reader.readAsText(file);
+  };
+  
+  document.body.appendChild(input);
+  input.click();
+  document.body.removeChild(input);
 }
 
-function injectSaveCard(){
-  if(!isConfigScreen()) return;
+// Event delegation para os botões (funciona mesmo com recriação do DOM)
+document.addEventListener('click', (e)=>{
+  const saveBtn = e.target.closest('#chronoSaveBtn');
+  const loadBtn = e.target.closest('#chronoLoadBtn');
   
-  ensureStyle();
-  
-  // Remove card antigo se existir
-  const oldCard = document.getElementById('saveContainer');
-  if(oldCard) oldCard.remove();
-  
-  const card = document.getElementById('overlayCard');
-  if(!card) return;
-  
-  // Encontra o botão "Voltar" ou o último elemento antes dele
-  const backBtn = card.querySelector('[id*="back"],[id*="Back"],button:last-of-type');
-  
-  const saveCard = document.createElement('div');
-  saveCard.id = 'saveContainer';
-  saveCard.className = 'saveContainer';
-  saveCard.innerHTML = `
-    <h3 class="saveTitle">💾 SALVAR JOGO</h3>
-    <p class="saveDesc">
-      Exporte seu progresso completo em um arquivo criptografado ou importe um save anterior.
-      Os dados são protegidos com criptografia AES-256-GCM.
-    </p>
-    <div class="saveButtons">
-      <button class="saveBtn saveBtnSave" id="saveBtn">💾 Salvar</button>
-      <button class="saveBtn saveBtnLoad" id="loadBtn">📂 Carregar</button>
-    </div>
-    <div class="saveMsg" id="saveMsg"></div>
-  `;
-  
-  // Insere ACIMA do botão voltar
-  if(backBtn && backBtn.parentElement === card){
-    card.insertBefore(saveCard,backBtn);
-  }else{
-    card.appendChild(saveCard);
+  if(saveBtn){
+    e.preventDefault();
+    e.stopPropagation();
+    saveGame();
   }
   
-  // Event listeners
-  document.getElementById('saveBtn').onclick = saveGame;
-  document.getElementById('loadBtn').onclick = loadGame;
-}
+  if(loadBtn){
+    e.preventDefault();
+    e.stopPropagation();
+    loadGame();
+  }
+}, true);
 
-function removeSaveCard(){
-  const card = document.getElementById('saveContainer');
-  if(card) card.remove();
-}
-
-// Observer para detectar mudanças de tela
+// Observer para detectar quando a tela de configurações é aberta/fechada
 const observer = new MutationObserver(()=>{
-  setTimeout(()=>{
-    if(isConfigScreen()){
-      injectSaveCard();
-    }else{
-      removeSaveCard();
-    }
-  },50);
+  if(isSettingsScreen()){
+    injectSaveCard();
+  }else{
+    removeSaveCard();
+  }
 });
 
-observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  attributeFilter: ['class', 'style']
+});
 
 // Verificação inicial
 setTimeout(()=>{
-  if(isConfigScreen()){
+  if(isSettingsScreen()){
     injectSaveCard();
   }
-},100);
+}, 100);
 
-console.log('Sistema de Save Manual Criptografado carregado');
+console.log('Chrono Shards — Sistema de Save/Load Definitivo carregado');
 })();
 </script>
 </body>
