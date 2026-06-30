@@ -1235,72 +1235,24 @@ function playSkillFx(d) {
 
 // ========================= ENEMY PATCH =========================
 function isLocalDown() {
-    const g = window.game;
-    if (!g) return false;
-    
-    // Verifica se o jogador está realmente morto
-    const isDowned = g.__mpDowned === true;
-    const isPlayerDown = g.player && (g.player.down === true || g.player.dead === true);
-    const isDead = g.player && g.player.hp <= 0;
-    
-    const result = isDowned || isPlayerDown || isDead;
-    
-    // Log SEMPRE que retornar true, não só na primeira vez
-    if (result) {
-        console.warn('[MP-DEBUG] isLocalDown = true', {
-            __mpDowned: g.__mpDowned,
-            'player.down': g.player?.down,
-            'player.dead': g.player?.dead,
-            'player.hp': g.player?.hp,
-            'game.running': g.running,
-            timestamp: Date.now()
-        });
-    }
-    
-    return result;
+  const g = window.game;
+  return !!(g && (g.__mpDowned || (g.player && (g.player.down || g.player.dead))));
 }
 
-function doLocalRevive() {
-    const g = window.game; 
-    if (!g) return;
-    
-    // Garante que TODOS os flags de downed sejam resetados
-    g.__mpDowned = false;
-    
-    if (g.player) {
-        g.player.hp = Math.max(1, Math.floor((g.player.maxHp || 100) * REVIVE_HP_PCT));
-        g.player.down = false;
-        g.player.dead = false;
-        g.player.hurtCd = 0; // Reseta o cooldown de dano também
-    }
-    
-    setRunningFromNetwork(true);
-    
-    const me = S.players.get(S.myId);
-    if (me) { 
-        me.down = false; 
-        me.hp = g.player?.hp || me.hp; 
-    }
-    
-    if (!S.isHost) { 
-        const c = S.conns.get(S.roomCode); 
-        if (c) send(c, { t: 'down', down: false }); 
-    } else {
-        broadcastLobby();
-    }
-    
-    netToast('Você foi revivido!', 'ok');
-    
-    // Log para confirmar que o revive funcionou
-    console.log('[MP-DEBUG] doLocalRevive executado', {
-        'player.down': g.player?.down,
-        'player.dead': g.player?.dead,
-        'player.hp': g.player?.hp,
-        '__mpDowned': g.__mpDowned
-    });
-}
+/*
+  Corrige o bug de "downed" quebrado: o jogador derrubado continuava se
+  movendo, atirando e usando habilidades normalmente (acontecia tanto com
+  o host quanto com o 2º jogador), em vez de ficar parado e indefeso.
 
-
+  Causa raiz: nada no jogo verificava player.down/dead dentro de
+  updatePlayer/shoot/useSkill/startDash — esse estado só existia para fins
+  de UI (placar/painel de equipe). Resolvido envolvendo essas funções
+  (mesmo padrão de wrap já usado no resto do jogo) para não executarem
+  enquanto isLocalDown() for verdadeiro, mais uma camada extra que
+  intercepta eventos de teclado/mouse de combate/movimento como segurança
+  adicional para mecânicas especiais de classes que não passam por
+  useSkill/shoot.
+*/
 function installDownGates() {
   if (window.__mpDownGatesInstalled) return;
   window.__mpDownGatesInstalled = true;
@@ -1309,20 +1261,9 @@ function installDownGates() {
     const orig = window[name];
     if (typeof orig !== 'function' || orig.__mpDownGate) return;
     const wrapped = function (...a) {
-      if (isLocalDown()) {
-        // Mecanismo de fallback: se o jogador está vivo mas os flags estão errados, reseta
-        const g = window.game;
-        if (g && g.player && g.player.hp > 0 && (g.player.down === true || g.player.dead === true)) {
-            console.error('[MP-FALLBACK] Resetando flags de downed incorretos');
-            g.player.down = false;
-            g.player.dead = false;
-            g.__mpDowned = false;
-        } else {
-            return;
-        }
-    }
-    return orig.apply(this, a);
-};
+      if (isLocalDown()) return;
+      return orig.apply(this, a);
+    };
     wrapped.__mpDownGate = true;
     try { window[name] = wrapped; } catch (_) {}
   };
