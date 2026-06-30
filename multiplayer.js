@@ -1235,8 +1235,19 @@ function playSkillFx(d) {
 
 // ========================= ENEMY PATCH =========================
 function isLocalDown() {
-  const g = window.game;
-  return !!(g && (g.__mpDowned || (g.player && (g.player.down || g.player.dead))));
+    const g = window.game;
+    const result = !!(g && (g.__mpDowned || (g.player && (g.player.down || g.player.dead))));
+    if (result && !window.__mpDownLogged) {
+        window.__mpDownLogged = true;
+        console.error('[MP-DEBUG] isLocalDown = true - Causa:', {
+            __mpDowned: g?.__mpDowned,
+            'player.down': g?.player?.down,
+            'player.dead': g?.player?.dead,
+            'player.hp': g?.player?.hp,
+            'game.running': g?.running
+        });
+    }
+    return result;
 }
 
 /*
