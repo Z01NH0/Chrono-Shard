@@ -274,7 +274,68 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
 </div>
 </div>
 <script>
-// ── BG STARS ──────────────────────────────────────────────────
+(() => {
+    if (window.__chronoSalvaVidas) return;
+    window.__chronoSalvaVidas = true;
+
+    // 1. ESCUDO ANTI-404 (Intercepta Fetch e XHR do PeerJS)
+    // Se o servidor de sinalização do PeerJS cuspir um 404, a gente finge que não viu
+    // e devolve uma resposta vazia pra não quebrar a UI.
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+        return originalFetch.apply(this, args).catch(err => {
+            console.warn('[SALVA-VIDAS] Fetch falhou (provavelmente o 404 do PeerJS), mas a gente segurou a onda:', args[0]);
+            return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}), text: () => Promise.resolve('') });
+        });
+    };
+
+    const originalXHROpen = XMLHttpRequest.prototype.open;
+    const originalXHRSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+        this._salvaVidasUrl = url;
+        return originalXHROpen.apply(this, [method, url, ...rest]);
+    };
+    XMLHttpRequest.prototype.send = function(...args) {
+        this.addEventListener('error', () => {
+            console.warn('[SALVA-VIDAS] XHR deu erro/404 em:', this._salvaVidasUrl, 'Mas o jogo continua!');
+        });
+        return originalXHRSend.apply(this, args);
+    };
+
+    // 2. ESCUDO ANTI-INPUT FANTASMA
+    // Garante que os listeners de teclado e mouse NUNCA morram, mesmo que o código principal dê tilt.
+    const originalAddEventListener = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function(type, listener, options) {
+        const protectedEvents = ['keydown', 'keyup', 'mousedown', 'mouseup', 'click', 'contextmenu'];
+        if (protectedEvents.includes(type) && (this === window || this === document)) {
+            const safeListener = function(event) {
+                try {
+                    listener.call(this, event);
+                } catch (err) {
+                    console.error('[SALVA-VIDAS] Input listener deu erro, mas não vamos deixar o WASD morrer:', err);
+                }
+            };
+            return originalAddEventListener.call(this, type, safeListener, options);
+        }
+        return originalAddEventListener.call(this, type, listener, options);
+    };
+
+    // 3. DESFIBRILADOR DE LOOP
+    // Se o requestAnimationFrame morrer por causa de um erro bobo, a gente força ele a respirar de novo.
+    window.addEventListener('error', (event) => {
+        console.error('[SALVA-VIDAS] Erro global detectado! O jogo tentou morrer, mas eu segurei:', event.error || event.message);
+        if (typeof requestAnimationFrame !== 'undefined' && typeof loop !== 'undefined') {
+            try { requestAnimationFrame(loop); } catch(e) {}
+        }
+    });
+    
+    window.addEventListener('unhandledrejection', (event) => {
+        console.error('[SALVA-VIDAS] Promise rejeitada (culpa do PeerJS provavelmente):', event.reason);
+        event.preventDefault(); // Impede o console de surtar e travar a thread
+    });
+
+    console.log('%c[SALVA-VIDAS] Paraquedas ativado. Pode pular do avião sem medo.', 'color: #00ff00; font-weight: bold; font-size: 14px;');
+})();
 const bgC = document.getElementById('bg-canvas');
 const bgX = bgC.getContext('2d');
 bgC.width = window.innerWidth; bgC.height = window.innerHeight;
