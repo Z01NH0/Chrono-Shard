@@ -30452,369 +30452,123 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="multiplayer.js"></script>
 <script>
-/* ────────────────────────────────────────────────────────────────
-   Chrono Shards — Sistema de Salvar/Carregar Jogo Manual
-   Exporta e importa TODOS os dados do localStorage em um único .json
-─────────────────────────────────────────────────────────────── */
-(()=>{
-  if(window.__chronoSaveLoadSystem) return;
-  window.__chronoSaveLoadSystem = true;
+    (() => {
+      if (window.__chronoManualSaveSystem) return;
+      window.__chronoManualSaveSystem = true;
 
-  // Todas as chaves do localStorage que o jogo usa
-  const SAVE_KEYS = [
-    'chrono_v4_meta',
-    'chrono_v4_meta_class_unlocks_v3',
-    'chrono_v4_meta_secret_rift_v1',
-    'chrono_v4_meta_redeemed_codes_v1',
-    'chrono_v4_meta_chrono_augments_620',
-    'chrono_v4_meta_skins_clean_702',
-    'chrono_v4_meta_power_catalog_unlocks_544',
-    'chrono_v4_meta_mauro_shop_clean_702',
-    'chrono_rift_tutorial_skip_v1'
-  ];
+      const SAVE_KEY = typeof SAVE_KEY !== 'undefined' ? SAVE_KEY : 'chrono_v4_meta';
+      const META_KEY = typeof META_KEY !== 'undefined' ? META_KEY : 'chrono_v4_meta';
+      const FILE_VERSION = '1.0';
+      const STATUS_EL = () => document.getElementById('chronoSaveStatus');
 
-  const VERSION = '1.0';
+      function setStatus(msg, type = '') {
+        const el = STATUS_EL();
+        if (el) { el.textContent = msg; el.className = `chrono-status ${type}`; }
+      }
 
-  // ── Injeta CSS do sistema de salvar/carregar ──
-  function injectStyles(){
-    if(document.getElementById('saveLoadStyles')) return;
-    const st = document.createElement('style');
-    st.id = 'saveLoadStyles';
-    st.textContent = `
-      .saveLoadSection{
-        margin-top:28px;padding:22px;border-radius:22px;
-        background:linear-gradient(145deg,rgba(255,209,102,.08),rgba(159,108,255,.06));
-        border:1px solid rgba(255,209,102,.28);
-        box-shadow:inset 0 0 30px rgba(255,255,255,.03),0 10px 30px rgba(0,0,0,.25);
+      // Exportar save para JSON
+      function exportSave() {
+        try {
+          const gameData = localStorage.getItem(SAVE_KEY) || '{}';
+          const metaData = localStorage.getItem(META_KEY) || '{}';
+          const payload = {
+            v: FILE_VERSION,
+            exportedAt: new Date().toISOString(),
+            save: JSON.parse(gameData),
+            meta: JSON.parse(metaData)
+          };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `chrono_shards_save_${Date.now()}.json`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          setStatus('💾 Save exportado com sucesso!', 'success');
+          setTimeout(() => setStatus(''), 2000);
+        } catch (e) {
+          console.error('Erro ao exportar save:', e);
+          setStatus('❌ Falha ao criar arquivo.', 'error');
+        }
       }
-      .saveLoadSection h3{
-        margin:0 0 6px;font-family:Orbitron,sans-serif;font-size:15px;
-        letter-spacing:.14em;color:#ffd166;
-        text-shadow:0 0 12px rgba(255,209,102,.4);
-      }
-      .saveLoadSection p{
-        margin:0 0 16px;color:#b8c9e8;font-size:12px;line-height:1.45;
-      }
-      .saveLoadButtons{
-        display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
-      }
-      .saveLoadBtn{
-        border:none;border-radius:999px;padding:12px 20px;cursor:pointer;
-        font:900 12px Orbitron,sans-serif;letter-spacing:.08em;
-        transition:transform .15s,filter .15s,box-shadow .15s;
-        display:inline-flex;align-items:center;gap:8px;
-      }
-      .saveLoadBtn:hover{transform:translateY(-2px);filter:brightness(1.12)}
-      .saveLoadBtn:active{transform:translateY(0)}
-      .saveBtn{
-        background:linear-gradient(135deg,#62ff9b,#4ce0b3);color:#051a10;
-        box-shadow:0 0 22px rgba(98,255,155,.28);
-      }
-      .loadBtn{
-        background:linear-gradient(135deg,#75d8ff,#9f6cff);color:#05101d;
-        box-shadow:0 0 22px rgba(117,216,255,.28);
-      }
-      .deleteBtn{
-        background:linear-gradient(135deg,#ff6b6b,#ff304f);color:#fff;
-        box-shadow:0 0 22px rgba(255,48,79,.25);
-      }
-      .saveLoadNotice{
-        margin-top:14px;padding:10px 14px;border-radius:14px;
-        font-size:11px;color:#cfe3ff;text-align:center;
-        background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);
-        opacity:0;transition:opacity .3s;
-      }
-      .saveLoadNotice.show{opacity:1}
-      .saveLoadNotice.success{color:#86ffb0;border-color:rgba(134,255,176,.3)}
-      .saveLoadNotice.error{color:#ff8fa3;border-color:rgba(255,143,163,.3)}
-      .saveLoadNotice.warn{color:#ffd166;border-color:rgba(255,209,102,.3)}
-    `;
-    document.head.appendChild(st);
-  }
 
-  // ── Coleta todos os dados do localStorage ──
-  function collectAllData(){
-    const payload = {
-      _meta:{
-        version: VERSION,
-        game: 'Chrono Shards',
-        exportedAt: new Date().toISOString(),
-        timestamp: Date.now()
-      },
-      data:{}
-    };
-    for(const key of SAVE_KEYS){
-      try{
-        const value = localStorage.getItem(key);
-        if(value !== null){
-          // Tenta parsear como JSON para salvar de forma limpa
-          try{
-            payload.data[key] = JSON.parse(value);
-          }catch{
-            payload.data[key] = value;
+      // Importar save de JSON
+      function importSave(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            if (!data.v || data.v !== FILE_VERSION || !data.save || !data.meta) {
+              throw new Error('Formato inválido');
+            }
+            if (!confirm('⚠️ Isso vai substituir seu progresso atual. Continuar?')) {
+              setStatus('❌ Cancelado pelo usuário.', 'error');
+              return;
+            }
+            localStorage.setItem(SAVE_KEY, JSON.stringify(data.save));
+            localStorage.setItem(META_KEY, JSON.stringify(data.meta));
+            setStatus('🔄 Save carregado! Recarregando...', 'success');
+            // Força recarregamento limpo para sincronizar estado do jogo
+            setTimeout(() => location.reload(), 800);
+          } catch (err) {
+            console.error('Erro ao importar:', err);
+            setStatus('❌ Arquivo corrompido ou inválido.', 'error');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // Injetar UI nas configurações
+      function injectSaveUI() {
+        if (document.getElementById('chronoManualSavePanel')) return;
+        
+        // Tenta encontrar container de configurações existentes
+        const target = document.querySelector('.settings-panel, #settingsMenu, .config-container, .overlay-card') || document.body;
+        
+        const panel = document.createElement('div');
+        panel.id = 'chronoManualSavePanel';
+        panel.innerHTML = `
+          <h3>📁 Salvar / Carregar Manual</h3>
+          <button class="chrono-save-btn export" id="chronoExportBtn">💾 Salvar Jogo (.json)</button>
+          <button class="chrono-save-btn import" id="chronoImportBtn">📂 Carregar State</button>
+          <input type="file" class="chrono-file-input" id="chronoFileInput" accept=".json,application/json">
+          <div class="chrono-status" id="chronoSaveStatus"></div>
+        `;
+        
+        // Insere no final do container ou no body se não encontrar
+        if (target.id === 'chronoManualSavePanel') return; // Evita duplicação
+        target.appendChild(panel);
+
+        // Bind events
+        document.getElementById('chronoExportBtn').onclick = exportSave;
+        document.getElementById('chronoImportBtn').onclick = () => document.getElementById('chronoFileInput').click();
+        document.getElementById('chronoFileInput').onchange = (e) => {
+          if (e.target.files.length) importSave(e.target.files[0]);
+          e.target.value = ''; // Reset input
+        };
+      }
+
+      // Observa mudanças no DOM para injetar quando as configs abrirem
+      const observer = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.addedNodes.length) {
+            injectSaveUI();
+            // Se já injetou, para de observar
+            if (document.getElementById('chronoManualSavePanel')) {
+              observer.disconnect();
+              break;
+            }
           }
         }
-      }catch(e){
-        console.warn('[Save] Falha ao ler chave', key, e);
-      }
-    }
-    return payload;
-  }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
 
-  // ── Restaura dados no localStorage ──
-  function restoreAllData(payload){
-    if(!payload || !payload.data){
-      throw new Error('Arquivo de save inválido: estrutura ausente.');
-    }
-    if(payload._meta && payload._meta.game !== 'Chrono Shards'){
-      throw new Error('Este arquivo não é um save do Chrono Shards.');
-    }
-
-    let restored = 0;
-    for(const key of SAVE_KEYS){
-      if(payload.data.hasOwnProperty(key)){
-        try{
-          const value = payload.data[key];
-          const serialized = typeof value === 'string' ? value : JSON.stringify(value);
-          localStorage.setItem(key, serialized);
-          restored++;
-        }catch(e){
-          console.warn('[Load] Falha ao restaurar chave', key, e);
-        }
-      }
-    }
-    return restored;
-  }
-
-  // ── Salvar: gera arquivo .json e dispara download ──
-  function saveGameToFile(){
-    try{
-      const payload = collectAllData();
-      const json = JSON.stringify(payload, null, 2);
-      const blob = new Blob([json], {type:'application/json;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-
-      const now = new Date();
-      const pad = n => String(n).padStart(2,'0');
-      const stamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
-      const filename = `ChronoShards_Save_${stamp}.json`;
-
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-
-      setTimeout(()=> URL.revokeObjectURL(url), 1000);
-
-      showNotice(`✅ Jogo salvo como "${filename}"`, 'success');
-      return true;
-    }catch(e){
-      console.error('[Save] Erro ao salvar:', e);
-      showNotice('❌ Falha ao salvar o jogo: ' + e.message, 'error');
-      return false;
-    }
-  }
-
-  // ── Carregar: abre input file e restaura o save ──
-  function loadGameFromFile(){
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json,application/json';
-    input.style.display = 'none';
-
-    input.addEventListener('change', (ev)=>{
-      const file = ev.target.files && ev.target.files[0];
-      if(!file){
-        showNotice('⚠️ Nenhum arquivo selecionado.', 'warn');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e)=>{
-        try{
-          const payload = JSON.parse(e.target.result);
-          const restored = restoreAllData(payload);
-
-          if(restored === 0){
-            showNotice('⚠️ Nenhum dado válido encontrado no arquivo.', 'warn');
-            return;
-          }
-
-          showNotice(`✅ Save carregado! ${restored} chave(s) restaurada(s). Recarregando...`, 'success');
-
-          // Recarrega a página para aplicar os dados
-          setTimeout(()=>{
-            try{
-              // Limpa overlay antes de recarregar
-              const ov = document.getElementById('overlay');
-              if(ov) ov.classList.add('hidden');
-            }catch{}
-            window.location.reload();
-          }, 1400);
-        }catch(err){
-          console.error('[Load] Erro ao processar arquivo:', err);
-          showNotice('❌ Arquivo inválido ou corrompido: ' + err.message, 'error');
-        }
-      };
-      reader.onerror = ()=>{
-        showNotice('❌ Não foi possível ler o arquivo.', 'error');
-      };
-      reader.readAsText(file);
-    });
-
-    document.body.appendChild(input);
-    input.click();
-    document.body.removeChild(input);
-  }
-
-  // ── Apagar save (com confirmação) ──
-  function clearSaveData(){
-    const confirmed = window.confirm(
-      '⚠️ ATENÇÃO: Isso vai apagar TODO o progresso do jogo (relíquias, classes, skins, missões, etc).\n\n' +
-      'Essa ação NÃO PODE ser desfeita!\n\n' +
-      'Deseja continuar?'
-    );
-    if(!confirmed){
-      showNotice('Ação cancelada.', 'warn');
-      return;
-    }
-
-    const doubleConfirm = window.confirm(
-      'Tem CERTEZA ABSOLUTA?\n\n' +
-      'Recomendamos fazer um backup (botão "Salvar") antes de apagar.'
-    );
-    if(!doubleConfirm){
-      showNotice('Ação cancelada.', 'warn');
-      return;
-    }
-
-    try{
-      for(const key of SAVE_KEYS){
-        localStorage.removeItem(key);
-      }
-      showNotice('🗑️ Todos os dados foram apagados. Recarregando...', 'success');
-      setTimeout(()=> window.location.reload(), 1200);
-    }catch(e){
-      showNotice('❌ Falha ao apagar dados: ' + e.message, 'error');
-    }
-  }
-
-  // ── Mostra aviso temporário ──
-  function showNotice(text, type='success'){
-    let notice = document.getElementById('saveLoadNotice');
-    if(!notice){
-      notice = document.createElement('div');
-      notice.id = 'saveLoadNotice';
-      notice.className = 'saveLoadNotice';
-      const section = document.querySelector('.saveLoadSection');
-      if(section) section.appendChild(notice);
-      else document.body.appendChild(notice);
-    }
-    notice.textContent = text;
-    notice.className = 'saveLoadNotice show ' + type;
-    clearTimeout(notice._timer);
-    notice._timer = setTimeout(()=>{
-      notice.classList.remove('show');
-    }, 4500);
-  }
-
-  // ── Injeta a seção "Salvar Jogo" no menu de Configurações ──
-  function injectSaveLoadSection(){
-    injectStyles();
-
-    // Remove seção antiga se existir
-    const old = document.getElementById('saveLoadSection');
-    if(old) old.remove();
-
-    const section = document.createElement('div');
-    section.id = 'saveLoadSection';
-    section.className = 'saveLoadSection';
-    section.innerHTML = `
-      <h3>💾 SALVAR JOGO</h3>
-      <p>Exporte seu progresso completo para um arquivo .json ou importe um save anterior. O arquivo contém relíquias, classes desbloqueadas, skins, ampliações, missões e todo o progresso permanente.</p>
-      <div class="saveLoadButtons">
-        <button class="saveLoadBtn saveBtn" id="btnSaveGame">
-          💾 Salvar
-        </button>
-        <button class="saveLoadBtn loadBtn" id="btnLoadGame">
-          📂 Carregar State
-        </button>
-        <button class="saveLoadBtn deleteBtn" id="btnDeleteSave">
-          🗑️ Apagar Save
-        </button>
-      </div>
-      <div class="saveLoadNotice" id="saveLoadNotice"></div>
-    `;
-
-    // Tenta encontrar o container das configurações
-    const card = document.getElementById('overlayCard');
-    if(!card) return;
-
-    // Procura pelo último container de opções dentro da tela de configurações
-    const settingsContent = card.querySelector('.duneGrid461') ||
-                            card.querySelector('.settingsLow462')?.parentElement ||
-                            card;
-
-    settingsContent.appendChild(section);
-
-    // Bind dos botões
-    document.getElementById('btnSaveGame').onclick = (e)=>{
-      e.preventDefault(); e.stopPropagation();
-      saveGameToFile();
-    };
-    document.getElementById('btnLoadGame').onclick = (e)=>{
-      e.preventDefault(); e.stopPropagation();
-      loadGameFromFile();
-    };
-    document.getElementById('btnDeleteSave').onclick = (e)=>{
-      e.preventDefault(); e.stopPropagation();
-      clearSaveData();
-    };
-  }
-
-  // ── Hook em TODAS as funções de configurações conhecidas ──
-  const settingsFunctions = [
-    'openSettingsMenu37',
-    'openSettings461',
-    'openSettingsMenu',
-    'openSettings'
-  ];
-
-  for(const fnName of settingsFunctions){
-    const original = window[fnName];
-    if(typeof original === 'function' && !original.__saveLoadHook){
-      const wrapped = function(){
-        const result = original.apply(this, arguments);
-        // Injeta a seção depois que a tela renderiza
-        setTimeout(injectSaveLoadSection, 50);
-        setTimeout(injectSaveLoadSection, 200);
-        setTimeout(injectSaveLoadSection, 500);
-        return result;
-      };
-      wrapped.__saveLoadHook = true;
-      window[fnName] = wrapped;
-      try{ eval(fnName + '=wrapped'); }catch{}
-    }
-  }
-
-  // ── Observa mudanças no DOM para garantir que a seção apareça ──
-  try{
-    const observer = new MutationObserver(()=>{
-      const card = document.getElementById('overlayCard');
-      if(!card) return;
-      const text = card.textContent || '';
-      // Se está na tela de configurações e a seção ainda não existe
-      if(/CONFIGURAÇÕES/i.test(text) && !document.getElementById('saveLoadSection')){
-        setTimeout(injectSaveLoadSection, 80);
-      }
-    });
-    observer.observe(document.body, {childList:true, subtree:true});
-  }catch{}
-
-  console.log('Chrono Shards — Sistema de Salvar/Carregar Jogo Manual carregado');
-})();
-</script>
+      // Tenta injetar imediatamente caso configs já estejam na tela
+      setTimeout(injectSaveUI, 500);
+    })();
+  </script>
 </body>
 </html>
