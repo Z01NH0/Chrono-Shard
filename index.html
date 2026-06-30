@@ -30480,7 +30480,7 @@ if(typeof prevUpdate744 === 'function' && !prevUpdate744.__safeDamage744){
         const r = prevUpdate744.apply(this, arguments);
         try{
             const delta = Number(dt) || 0.016;
-            if(game._safeTimers744){
+            if(game && game._safeTimers744){  // <-- CORRIGIDO: verifica se game existe
                 for(let i = game._safeTimers744.length - 1; i >= 0; i--){
                     const timer = game._safeTimers744[i];
                     if(timer.executed) continue;
