@@ -30453,14 +30453,16 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 <script src="multiplayer.js"></script>
 <script>
 /* ────────────────────────────────────────────────────────────────
-CHRONO SHARDS — Sistema de Save/Load Definitivo
-- Aparece SOMENTE na tela de Configurações
-- Botões funcionam mesmo com recriação do DOM
-- Remove automaticamente ao sair das configurações
-──────────────────────────────────────────────────────────────── */
+CHRONO SHARDS — Save/Load System v2.0 (Clean Implementation)
+- Aparece APENAS na tela de Configurações
+- Botões funcionam SEMPRE (event delegation)
+- Sem loop de MutationObserver
+- Criptografia AES-GCM real
+- Visual wide, acima do botão Voltar
+─────────────────────────────────────────────────────────────── */
 (()=>{
-if(window.__chronoSaveLoadFinal) return;
-window.__chronoSaveLoadFinal = true;
+if(window.__chronoSaveSystem20) return;
+window.__chronoSaveSystem20 = true;
 
 const SAVE_KEYS = [
   'chrono_v4_meta',
@@ -30474,71 +30476,76 @@ const SAVE_KEYS = [
   'chrono_rift_tutorial_skip_v1'
 ];
 
-// Verifica se estamos na tela de Configurações pelo CONTEÚDO
+// Detecta se estamos na tela de Configurações
 function isSettingsScreen(){
-  try{
-    const overlay = document.getElementById('overlay');
-    const card = document.getElementById('overlayCard');
-    if(!overlay || !card) return false;
-    if(overlay.classList.contains('hidden')) return false;
-    
-    const text = (card.textContent || '').toLowerCase();
-    // A tela de configurações sempre tem "LOW GFX" ou "CÓDIGOS" ou "CONFIGURAÇÕES"
-    return text.includes('low gfx') || 
-           (text.includes('configurações') && (text.includes('códigos') || text.includes('codigo'))) ||
-           (text.includes('settings') && text.includes('codes'));
-  }catch(e){
-    return false;
-  }
+  const card = document.getElementById('overlayCard');
+  if(!card) return false;
+  const title = card.querySelector('h1')?.textContent || '';
+  return title.includes('CONFIGURAÇÕES');
 }
 
-// Remove o card de save
+// Remove card de save se existir
 function removeSaveCard(){
-  const card = document.getElementById('chronoSaveCard');
-  if(card) card.remove();
+  const el = document.getElementById('chronoSaveCard20');
+  if(el) el.remove();
 }
 
-// Injeta o card de save
+// Insere card de save ACIMA do botão Voltar
 function injectSaveCard(){
   if(!isSettingsScreen()) return;
   
-  // Remove card antigo se existir
   removeSaveCard();
   
   const card = document.getElementById('overlayCard');
   if(!card) return;
   
+  // Encontra botão Voltar
+  const backBtn = card.querySelector('[id*="cfgBack"], [id*="backCfg"], button:last-of-type');
+  
   const saveCard = document.createElement('div');
-  saveCard.id = 'chronoSaveCard';
+  saveCard.id = 'chronoSaveCard20';
   saveCard.style.cssText = `
     margin-top: 20px;
     padding: 20px;
     border-radius: 20px;
-    background: linear-gradient(145deg, rgba(10,14,32,.95), rgba(5,7,15,.95));
-    border: 1px solid rgba(117,216,255,.25);
-    box-shadow: 0 0 30px rgba(97,218,251,.1), inset 0 0 20px rgba(255,255,255,.03);
+    background: linear-gradient(145deg, rgba(255,209,102,.12), rgba(159,108,255,.08));
+    border: 1px solid rgba(255,209,102,.30);
+    box-shadow: 0 0 30px rgba(255,209,102,.15), inset 0 0 20px rgba(255,255,255,.04);
   `;
   
   saveCard.innerHTML = `
     <h3 style="
       font-family: Orbitron, sans-serif;
-      font-size: 14px;
+      font-size: 16px;
       letter-spacing: .12em;
-      color: #75d8ff;
+      color: #ffd166;
       margin: 0 0 12px 0;
-      text-shadow: 0 0 12px rgba(117,216,255,.4);
+      text-shadow: 0 0 12px rgba(255,209,102,.4);
     ">💾 SALVAR JOGO</h3>
     <p style="
-      color: #b9c8e8;
-      font-size: 12px;
+      color: #b9c8ee;
+      font-size: 13px;
       line-height: 1.5;
       margin: 0 0 16px 0;
-    ">Exporte seu progresso completo em um arquivo ou importe um save anterior.</p>
+    ">Exporte seu progresso completo em um arquivo criptografado ou importe um save anterior.</p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-      <button id="chronoSaveBtn" style="
+      <button id="chronoSaveBtn20" style="
         flex: 1;
         min-width: 140px;
-        padding: 12px 16px;
+        padding: 12px 18px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #62ff9b, #4ce0b3);
+        color: #051a10;
+        font: 700 13px Orbitron, sans-serif;
+        letter-spacing: .08em;
+        cursor: pointer;
+        box-shadow: 0 0 20px rgba(98,255,155,.25);
+      ">💾 Salvar</button>
+      <button id="chronoLoadBtn20" style="
+        flex: 1;
+        min-width: 140px;
+        padding: 12px 18px;
         border: none;
         border-radius: 14px;
         background: linear-gradient(135deg, #75d8ff, #9f6cff);
@@ -30547,84 +30554,117 @@ function injectSaveCard(){
         letter-spacing: .08em;
         cursor: pointer;
         box-shadow: 0 0 20px rgba(117,216,255,.25);
-      ">💾 Salvar</button>
-      <button id="chronoLoadBtn" style="
-        flex: 1;
-        min-width: 140px;
-        padding: 12px 16px;
-        border: none;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #ffd166, #ff9bd2);
-        color: #1a0d00;
-        font: 700 13px Orbitron, sans-serif;
-        letter-spacing: .08em;
-        cursor: pointer;
-        box-shadow: 0 0 20px rgba(255,209,102,.25);
-      ">📂 Carregar</button>
+      ">📂 Carregar State</button>
     </div>
-    <div id="chronoSaveMsg" style="
-      margin-top: 12px;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 12px;
-      text-align: center;
-      display: none;
-    "></div>
   `;
   
-  card.appendChild(saveCard);
+  // Insere ACIMA do botão Voltar
+  if(backBtn && backBtn.parentElement === card){
+    card.insertBefore(saveCard, backBtn);
+  } else {
+    card.appendChild(saveCard);
+  }
 }
 
-// Mostra mensagem
-function showMsg(text, type='success'){
-  const msg = document.getElementById('chronoSaveMsg');
-  if(!msg) return;
-  
-  msg.textContent = text;
-  msg.style.display = 'block';
-  
-  if(type === 'success'){
-    msg.style.background = 'rgba(134,255,176,.12)';
-    msg.style.border = '1px solid rgba(134,255,176,.3)';
-    msg.style.color = '#86ffb0';
-  }else if(type === 'error'){
-    msg.style.background = 'rgba(255,77,109,.12)';
-    msg.style.border = '1px solid rgba(255,77,109,.3)';
-    msg.style.color = '#ff4d6d';
-  }else{
-    msg.style.background = 'rgba(117,216,255,.12)';
-    msg.style.border = '1px solid rgba(117,216,255,.3)';
-    msg.style.color = '#75d8ff';
+// Criptografia AES-GCM
+async function deriveKey(){
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    enc.encode('ChronoShards_SaveKey_v20'),
+    {name: 'PBKDF2'},
+    false,
+    ['deriveBits', 'deriveKey']
+  );
+  return await crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: enc.encode('ChronoShards_Salt_v20'),
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    {name: 'AES-GCM', length: 256},
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptData(data){
+  const key = await deriveKey();
+  const enc = new TextEncoder();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt(
+    {name: 'AES-GCM', iv: iv},
+    key,
+    enc.encode(JSON.stringify(data))
+  );
+  return {
+    iv: Array.from(iv),
+    data: Array.from(new Uint8Array(encrypted)),
+    version: '2.0'
+  };
+}
+
+async function decryptData(encryptedObj){
+  const key = await deriveKey();
+  const iv = new Uint8Array(encryptedObj.iv);
+  const data = new Uint8Array(encryptedObj.data);
+  const decrypted = await crypto.subtle.decrypt(
+    {name: 'AES-GCM', iv: iv},
+    key,
+    data
+  );
+  const dec = new TextDecoder();
+  return JSON.parse(dec.decode(decrypted));
+}
+
+// Coleta dados do save
+function collectSaveData(){
+  const saveData = {
+    timestamp: Date.now(),
+    date: new Date().toISOString(),
+    data: {}
+  };
+  for(const key of SAVE_KEYS){
+    try{
+      const value = localStorage.getItem(key);
+      if(value !== null){
+        saveData.data[key] = JSON.parse(value);
+      }
+    }catch(e){
+      console.warn('Erro ao coletar chave:', key, e);
+    }
   }
-  
-  setTimeout(()=>{
-    if(msg) msg.style.display = 'none';
-  }, 3000);
+  return saveData;
+}
+
+// Restaura dados do save
+function restoreSaveData(saveData){
+  if(!saveData || !saveData.data){
+    throw new Error('Estrutura de save inválida');
+  }
+  let restored = 0;
+  for(const key of SAVE_KEYS){
+    if(saveData.data[key] !== undefined){
+      try{
+        localStorage.setItem(key, JSON.stringify(saveData.data[key]));
+        restored++;
+      }catch(e){
+        console.warn('Erro ao restaurar chave:', key, e);
+      }
+    }
+  }
+  return restored;
 }
 
 // Salvar jogo
-function saveGame(){
+async function saveGame(){
   try{
-    const saveData = {
-      version: '1.0',
-      timestamp: Date.now(),
-      date: new Date().toLocaleString('pt-BR'),
-      data: {}
-    };
+    const saveData = collectSaveData();
+    const encrypted = await encryptData(saveData);
     
-    for(const key of SAVE_KEYS){
-      try{
-        const value = localStorage.getItem(key);
-        if(value !== null){
-          saveData.data[key] = JSON.parse(value);
-        }
-      }catch(e){
-        console.warn('Erro ao ler chave:', key, e);
-      }
-    }
-    
-    const json = JSON.stringify(saveData, null, 2);
-    const blob = new Blob([json], {type: 'application/json'});
+    const blob = new Blob([JSON.stringify(encrypted)], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
     
     const now = new Date();
@@ -30639,78 +30679,50 @@ function saveGame(){
     a.click();
     document.body.removeChild(a);
     
-    setTimeout(()=> URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     
-    showMsg(`✅ Jogo salvo como "${filename}"`, 'success');
-  }catch(err){
-    console.error('Erro ao salvar:', err);
-    showMsg(`❌ Erro ao salvar: ${err.message}`, 'error');
+    alert(`✅ Jogo salvo como "${filename}"`);
+  }catch(e){
+    console.error('Erro ao salvar:', e);
+    alert('❌ Erro ao salvar: ' + e.message);
   }
 }
 
 // Carregar jogo
-function loadGame(){
+async function loadGame(){
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json,application/json';
-  input.style.display = 'none';
   
-  input.onchange = (e)=>{
+  input.onchange = async(e) => {
     const file = e.target.files[0];
-    if(!file){
-      showMsg('⚠️ Nenhum arquivo selecionado', 'info');
-      return;
-    }
+    if(!file) return;
     
     const reader = new FileReader();
-    reader.onload = (event)=>{
+    reader.onload = async(event) => {
       try{
-        const saveData = JSON.parse(event.target.result);
+        const encrypted = JSON.parse(event.target.result);
+        const saveData = await decryptData(encrypted);
+        const restored = restoreSaveData(saveData);
         
-        if(!saveData.data){
-          showMsg('❌ Arquivo inválido', 'error');
-          return;
-        }
+        alert(`✅ Save carregado! ${restored} chaves restauradas. Recarregando...`);
         
-        let restored = 0;
-        for(const key of SAVE_KEYS){
-          if(saveData.data[key] !== undefined){
-            try{
-              localStorage.setItem(key, JSON.stringify(saveData.data[key]));
-              restored++;
-            }catch(e){
-              console.warn('Erro ao restaurar chave:', key, e);
-            }
-          }
-        }
-        
-        showMsg(`✅ Save carregado! ${restored} chaves restauradas. Recarregando...`, 'success');
-        
-        setTimeout(()=>{
-          window.location.reload();
-        }, 1500);
+        setTimeout(() => window.location.reload(), 1500);
       }catch(err){
         console.error('Erro ao carregar:', err);
-        showMsg(`❌ Erro ao carregar: ${err.message}`, 'error');
+        alert('❌ Erro ao carregar: ' + err.message);
       }
     };
-    
-    reader.onerror = ()=>{
-      showMsg('❌ Erro ao ler arquivo', 'error');
-    };
-    
     reader.readAsText(file);
   };
   
-  document.body.appendChild(input);
   input.click();
-  document.body.removeChild(input);
 }
 
-// Event delegation para os botões (funciona mesmo com recriação do DOM)
-document.addEventListener('click', (e)=>{
-  const saveBtn = e.target.closest('#chronoSaveBtn');
-  const loadBtn = e.target.closest('#chronoLoadBtn');
+// Event delegation - captura cliques nos botões de save
+document.addEventListener('click', e => {
+  const saveBtn = e.target.closest('#chronoSaveBtn20');
+  const loadBtn = e.target.closest('#chronoLoadBtn20');
   
   if(saveBtn){
     e.preventDefault();
@@ -30725,183 +30737,32 @@ document.addEventListener('click', (e)=>{
   }
 }, true);
 
-// Observer para detectar quando a tela de configurações é aberta/fechada
-const observer = new MutationObserver(()=>{
-  if(isSettingsScreen()){
-    injectSaveCard();
-  }else{
-    removeSaveCard();
-  }
+// MutationObserver com debounce forte - evita loop
+let observerTimeout = null;
+const observer = new MutationObserver(() => {
+  if(observerTimeout) clearTimeout(observerTimeout);
+  observerTimeout = setTimeout(() => {
+    if(isSettingsScreen()){
+      injectSaveCard();
+    } else {
+      removeSaveCard();
+    }
+  }, 100); // 100ms de debounce
 });
 
 observer.observe(document.body, {
   childList: true,
-  subtree: true,
-  attributes: true,
-  attributeFilter: ['class', 'style']
+  subtree: true
 });
 
 // Verificação inicial
-setTimeout(()=>{
+setTimeout(() => {
   if(isSettingsScreen()){
     injectSaveCard();
   }
-}, 100);
+}, 200);
 
-console.log('Chrono Shards — Sistema de Save/Load Definitivo carregado');
-})();
-</script>
-  <script>
-/* Chrono Shards 7.4.4 — FIX: congelamento ao abrir configurações */
-(()=>{
-if(window.__freezeFix744)return; window.__freezeFix744=true;
-
-// Desabilita todos os MutationObservers problemáticos
-try{
-// Remove observers antigos que podem estar em loop
-const observers = window.__activeObservers744 || [];
-observers.forEach(obs=>{
-try{ obs.disconnect(); }catch{}
-});
-window.__activeObservers744 = [];
-}catch{}
-
-// Substitui MutationObservers por uma versão mais segura com debounce
-const createSafeObserver = (callback, options={})=>{
-let timeout = null;
-let lastCall = 0;
-const MIN_INTERVAL = 100; // mínimo 100ms entre chamadas
-
-const debouncedCallback = ()=>{
-const now = Date.now();
-if(now - lastCall < MIN_INTERVAL) return;
-lastCall = now;
-
-clearTimeout(timeout);
-timeout = setTimeout(()=>{
-try{
-callback();
-}catch(e){
-console.warn('SafeObserver error:', e);
-}
-}, 50);
-};
-
-const observer = new MutationObserver(debouncedCallback);
-
-// Guarda referência para poder desconectar depois
-if(!window.__activeObservers744) window.__activeObservers744 = [];
-window.__activeObservers744.push(observer);
-
-return observer;
-};
-
-// Substitui a função original de sanitize para evitar loops
-const originalSanitize = window.sanitizeEmpButtons;
-if(originalSanitize){
-let sanitizing = false;
-window.sanitizeEmpButtons = function(){
-if(sanitizing) return;
-sanitizing = true;
-try{
-originalSanitize.apply(this, arguments);
-}catch(e){
-console.warn('sanitize error:', e);
-}finally{
-sanitizing = false;
-}
-};
-}
-
-// Protege guardInfoScreen contra loops
-const originalGuard = window.guardInfoScreen;
-if(originalGuard){
-let guarding = false;
-window.guardInfoScreen = function(){
-if(guarding) return;
-guarding = true;
-try{
-originalGuard.apply(this, arguments);
-}catch(e){
-console.warn('guard error:', e);
-}finally{
-guarding = false;
-}
-};
-}
-
-// Reduz frequência de setInterval problemáticos
-const originalSetInterval = window.setInterval;
-const intervals = new Map();
-window.setInterval = function(fn, delay, ...args){
-// Força mínimo de 200ms para evitar spam
-const safeDelay = Math.max(200, delay || 200);
-const id = originalSetInterval.call(window, fn, safeDelay, ...args);
-intervals.set(id, {fn, delay: safeDelay});
-return id;
-};
-
-// Adiciona proteção contra loops em openSettings
-const originalOpenSettings = window.openSettings461 || window.openSettings;
-if(originalOpenSettings){
-let openingSettings = false;
-const safeOpenSettings = function(){
-if(openingSettings){
-console.warn('openSettings já está aberto, ignorando chamada duplicada');
-return;
-}
-openingSettings = true;
-
-try{
-const result = originalOpenSettings.apply(this, arguments);
-return result;
-}catch(e){
-console.error('Erro ao abrir configurações:', e);
-throw e;
-}finally{
-// Libera após um tempo para permitir reabrir
-setTimeout(()=>{
-openingSettings = false;
-}, 500);
-}
-};
-
-// Substitui a função original
-if(window.openSettings461) window.openSettings461 = safeOpenSettings;
-if(window.openSettings) window.openSettings = safeOpenSettings;
-}
-
-// Limpa observers antigos que podem estar causando problemas
-try{
-// Desconecta todos os observers ativos
-if(window.__activeObservers744){
-window.__activeObservers744.forEach(obs=>{
-try{ obs.disconnect(); }catch{}
-});
-window.__activeObservers744 = [];
-}
-}catch{}
-
-// Adiciona listener de segurança para detectar e parar loops
-let loopDetector = 0;
-const maxLoopCount = 50;
-const originalDOMModify = Node.prototype.appendChild;
-Node.prototype.appendChild = function(node){
-loopDetector++;
-if(loopDetector > maxLoopCount){
-console.error('Loop detectado! Parando modificações DOM temporariamente');
-loopDetector = 0;
-setTimeout(()=>{ loopDetector = 0; }, 100);
-throw new Error('DOM modification loop detected and stopped');
-}
-try{
-return originalDOMModify.call(this, node);
-}finally{
-setTimeout(()=>{ loopDetector--; }, 10);
-}
-};
-
-console.log('Chrono Shards 7.4.4 — correção de congelamento aplicada');
+console.log('Chrono Shards Save/Load System v2.0 carregado');
 })();
 </script>
 </body>
