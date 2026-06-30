@@ -30751,5 +30751,158 @@ setTimeout(()=>{
 console.log('Chrono Shards — Sistema de Save/Load Definitivo carregado');
 })();
 </script>
+  <script>
+/* Chrono Shards 7.4.4 — FIX: congelamento ao abrir configurações */
+(()=>{
+if(window.__freezeFix744)return; window.__freezeFix744=true;
+
+// Desabilita todos os MutationObservers problemáticos
+try{
+// Remove observers antigos que podem estar em loop
+const observers = window.__activeObservers744 || [];
+observers.forEach(obs=>{
+try{ obs.disconnect(); }catch{}
+});
+window.__activeObservers744 = [];
+}catch{}
+
+// Substitui MutationObservers por uma versão mais segura com debounce
+const createSafeObserver = (callback, options={})=>{
+let timeout = null;
+let lastCall = 0;
+const MIN_INTERVAL = 100; // mínimo 100ms entre chamadas
+
+const debouncedCallback = ()=>{
+const now = Date.now();
+if(now - lastCall < MIN_INTERVAL) return;
+lastCall = now;
+
+clearTimeout(timeout);
+timeout = setTimeout(()=>{
+try{
+callback();
+}catch(e){
+console.warn('SafeObserver error:', e);
+}
+}, 50);
+};
+
+const observer = new MutationObserver(debouncedCallback);
+
+// Guarda referência para poder desconectar depois
+if(!window.__activeObservers744) window.__activeObservers744 = [];
+window.__activeObservers744.push(observer);
+
+return observer;
+};
+
+// Substitui a função original de sanitize para evitar loops
+const originalSanitize = window.sanitizeEmpButtons;
+if(originalSanitize){
+let sanitizing = false;
+window.sanitizeEmpButtons = function(){
+if(sanitizing) return;
+sanitizing = true;
+try{
+originalSanitize.apply(this, arguments);
+}catch(e){
+console.warn('sanitize error:', e);
+}finally{
+sanitizing = false;
+}
+};
+}
+
+// Protege guardInfoScreen contra loops
+const originalGuard = window.guardInfoScreen;
+if(originalGuard){
+let guarding = false;
+window.guardInfoScreen = function(){
+if(guarding) return;
+guarding = true;
+try{
+originalGuard.apply(this, arguments);
+}catch(e){
+console.warn('guard error:', e);
+}finally{
+guarding = false;
+}
+};
+}
+
+// Reduz frequência de setInterval problemáticos
+const originalSetInterval = window.setInterval;
+const intervals = new Map();
+window.setInterval = function(fn, delay, ...args){
+// Força mínimo de 200ms para evitar spam
+const safeDelay = Math.max(200, delay || 200);
+const id = originalSetInterval.call(window, fn, safeDelay, ...args);
+intervals.set(id, {fn, delay: safeDelay});
+return id;
+};
+
+// Adiciona proteção contra loops em openSettings
+const originalOpenSettings = window.openSettings461 || window.openSettings;
+if(originalOpenSettings){
+let openingSettings = false;
+const safeOpenSettings = function(){
+if(openingSettings){
+console.warn('openSettings já está aberto, ignorando chamada duplicada');
+return;
+}
+openingSettings = true;
+
+try{
+const result = originalOpenSettings.apply(this, arguments);
+return result;
+}catch(e){
+console.error('Erro ao abrir configurações:', e);
+throw e;
+}finally{
+// Libera após um tempo para permitir reabrir
+setTimeout(()=>{
+openingSettings = false;
+}, 500);
+}
+};
+
+// Substitui a função original
+if(window.openSettings461) window.openSettings461 = safeOpenSettings;
+if(window.openSettings) window.openSettings = safeOpenSettings;
+}
+
+// Limpa observers antigos que podem estar causando problemas
+try{
+// Desconecta todos os observers ativos
+if(window.__activeObservers744){
+window.__activeObservers744.forEach(obs=>{
+try{ obs.disconnect(); }catch{}
+});
+window.__activeObservers744 = [];
+}
+}catch{}
+
+// Adiciona listener de segurança para detectar e parar loops
+let loopDetector = 0;
+const maxLoopCount = 50;
+const originalDOMModify = Node.prototype.appendChild;
+Node.prototype.appendChild = function(node){
+loopDetector++;
+if(loopDetector > maxLoopCount){
+console.error('Loop detectado! Parando modificações DOM temporariamente');
+loopDetector = 0;
+setTimeout(()=>{ loopDetector = 0; }, 100);
+throw new Error('DOM modification loop detected and stopped');
+}
+try{
+return originalDOMModify.call(this, node);
+}finally{
+setTimeout(()=>{ loopDetector--; }, 10);
+}
+};
+
+console.log('Chrono Shards 7.4.4 — correção de congelamento aplicada');
+})();
+</script>
 </body>
 </html>
