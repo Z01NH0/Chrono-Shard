@@ -966,9 +966,28 @@ function enemyDeath(index,e){
   if(e.marked){
     addRing(x,y,'#ff4d6d',90,5);
     addParticles(x,y,'#ff4d6d',20,1.2);
+    // Reaper soul collection
+    if(game.classKey==='reaper' && (e._reaperMarked||e.marked)){
+      game.reaperSouls = Math.min((game.reaperSouls||0)+1, game.reaperSoulMax||30);
+      game.soulParticles = game.soulParticles || [];
+      game.soulParticles.push({x:x, y:y, tx:game.player.x, ty:game.player.y, life:0.6});
+      addFloatingText(game.player.x,game.player.y-40,'+1 ALMA','#ff7b9c',14);
+      // Check for soul burst at 30
+      if(game.reaperSouls >= 30 && game.reaperSoulCooldown <= 0){
+        game.reaperSoulCooldown = 10;
+        addRing(game.player.x,game.player.y,'#ff7b9c',180,8);
+        addParticles(game.player.x,game.player.y,'#ff7b9c',50,1.5);
+        game.shake = 15;
+        // Stun all enemies
+        for(const en of game.enemies){
+          en._stunned = true;
+          en._stunTimer = 1.0;
+        }
+      }
+    }
     for(let j=game.enemies.length-1;j>=0;j--){
       const en=game.enemies[j];
-      if(dist({x,y},en)<90){en.hp-=55*game.upgrades.damage;en.hitFlash=0.15;if(en.hp<=0) enemyDeath(j,en);}
+      if(en && dist({x:x||0,y:y||0},en)<90){en.hp-=55*game.upgrades.damage;en.hitFlash=0.15;if(en.hp<=0) enemyDeath(j,en);}
     }
   }
 
