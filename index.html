@@ -350,7 +350,7 @@ const CLASSES = {
   },
   reaper:{
     name:'Reaper ⚔️', color:'#ff7b9c', hp:115, shield:25,
-    focus:90, speed:315, weapon:'shotgun',
+    focus:90, speed:315, weapon:'scythe',
     skills:['deathMark','soulDrain','phantomStrike'],
     desc:'CQC brutal. Quanto mais mata, mais forte fica.',
     tag:'AGRESSIVO', tagColor:'#ff6b9d'
@@ -361,6 +361,7 @@ const CLASSES = {
 const WEAPONS = {
   blaster:{name:'Blaster',cooldown:0.13,bulletSpeed:580,damage:14,spread:0.10,projectiles:1,life:1.1},
   shotgun:{name:'Shotgun',cooldown:0.38,bulletSpeed:460,damage:12,spread:0.22,projectiles:5,life:0.55},
+  scythe:{name:'Ceifadora',cooldown:0.42,range:140,damage:20,swingArc:2.2,life:0.35},
   rail:{name:'AWP-ChR',cooldown:0.52,bulletSpeed:880,damage:38,spread:0.01,projectiles:1,life:0.75},
   orb:{name:'Orbe do Abismo',cooldown:0.20,bulletSpeed:370,damage:17,spread:0.04,projectiles:1,life:1.4},
   plasma:{name:'Plasma',cooldown:0.25,bulletSpeed:420,damage:20,spread:0.08,projectiles:2,life:1.0},
@@ -492,6 +493,15 @@ function resetGame(classKey){
       dashTime:0, dashAngle:0, trail:[]
     }
   };
+  
+  // Initialize Reaper soul system
+  if(classKey==='reaper'){
+    game.reaperSouls=0;
+    game.reaperSoulCooldown=0;
+    game.reaperSoulMax=30;
+    game.soulParticles=[];
+  }
+  
   applyMetaRelics();
   spawnInitialDroneIfNeeded();
   game.loopHpSnapshot = game.player.hp;
@@ -666,6 +676,58 @@ function shoot(){
   if(!game.running||p.fireCd>0) return;
   const weapon=WEAPONS[game.weaponKey];
   const baseAngle=angleTo(p,mouse);
+  
+  // Reaper scythe melee attack
+  if(game.weaponKey==='scythe'){
+    const range=weapon.range;
+    const swingArc=weapon.swingArc;
+    const startAng=baseAngle-swingArc/2;
+    const endAng=baseAngle+swingArc/2;
+    const dmg=weapon.damage*game.upgrades.damage*(game.combo>4?1+(game.combo-4)*0.05:1);
+    
+    // Create scythe slash visual
+    game.scytheSlashes=game.scytheSlashes||[];
+    game.scytheSlashes.push({
+      x:p.x, y:p.y,
+      startAng:startAng, endAng:endAng,
+      life:weapon.life, maxLife:weapon.life,
+      color:'#ff7b9c', range:range
+    });
+    
+    // Check for enemies hit during the swing
+    for(let i=game.enemies.length-1;i>=0;i--){
+      const e=game.enemies[i];
+      const distToEnemy=Math.hypot(e.x-p.x,e.y-p.y);
+      const angleToEnemy=angleTo(p,e);
+      let angleDiff=Math.abs(angleToEnemy-baseAngle);
+      if(angleDiff>Math.PI)angleDiff=2*Math.PI-angleDiff;
+      
+      // Hit if within range and swing arc
+      if(distToEnemy<=range+e.r&&angleDiff<=swingArc/2+0.3){
+        const crit=Math.random()<game.upgrades.critChance;
+        let finalDmg=crit?dmg*2:dmg;
+        if(e._reaperMarked)finalDmg*=1.35;
+        
+        if(e.shieldHp>0){
+          e.shieldHp-=finalDmg;
+          if(e.shieldHp<0){e.hp+=e.shieldHp;e.shieldHp=0;}
+        }else{
+          e.hp-=finalDmg;
+        }
+        e.hitFlash=0.1;
+        
+        addParticles(e.x,e.y,e._reaperMarked?'#ff4d6d':'#ff7b9c',8,0.6);
+        if(crit)addFloatingText(e.x,e.y-16,'CRÍTICO!','#ffd166',15);
+        
+        if(e.hp<=0)enemyDeath(i,e);
+      }
+    }
+    
+    p.fireCd=weapon.cooldown/game.upgrades.fireRate;
+    addParticles(p.x+Math.cos(baseAngle)*20,p.y+Math.sin(baseAngle)*20,'#ff7b9c',6,0.5);
+    return;
+  }
+  
   const extra=game.upgrades.multishot;
   const total=weapon.projectiles+extra;
   const pierce=game.upgrades.pierce+(p.railPierceMode>0?4:0);
@@ -1659,6 +1721,47 @@ function drawBullets(){
     ctx.fillStyle=grd;
     ctx.beginPath();ctx.arc(b.x,b.y,b.r*2,0,Math.PI*2);ctx.fill();
     ctx.restore();
+  }
+  
+  // Draw Reaper scythe slashes
+  if(game.scytheSlashes){
+    for(let i=game.scytheSlashes.length-1;i>=0;i--){
+      const s=game.scytheSlashes[i];
+      s.life-=game.dt||0.016;
+      if(s.life<=0){game.scytheSlashes.splice(i,1);continue;}
+      
+      const k=s.life/s.maxLife;
+      ctx.save();
+      ctx.translate(s.x,s.y);
+      ctx.globalAlpha=k*0.85;
+      ctx.shadowBlur=28;
+      ctx.shadowColor=s.color;
+      
+      // Draw scythe slash arc
+      const grad=ctx.createLinearGradient(
+        Math.cos(s.startAng)*s.range,Math.sin(s.startAng)*s.range,
+        Math.cos(s.endAng)*s.range,Math.sin(s.endAng)*s.range
+      );
+      grad.addColorStop(0,'rgba(255,123,156,0)');
+      grad.addColorStop(0.5,s.color);
+      grad.addColorStop(1,'rgba(255,123,156,0)');
+      
+      ctx.strokeStyle=grad;
+      ctx.lineWidth=8*k;
+      ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.arc(0,0,s.range,s.startAng,s.endAng);
+      ctx.stroke();
+      
+      // Inner bright line
+      ctx.strokeStyle='rgba(255,200,220,'+(0.7*k)+')';
+      ctx.lineWidth=3*k;
+      ctx.beginPath();
+      ctx.arc(0,0,s.range*0.95,s.startAng,s.endAng);
+      ctx.stroke();
+      
+      ctx.restore();
+    }
   }
 }
 
