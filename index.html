@@ -1334,6 +1334,27 @@ function updateFX(dt){
   game.shake=Math.max(0,game.shake-dt*22);
   game.flash=Math.max(0,game.flash-dt);
   if(game.waveAnnounceTimer>0) game.waveAnnounceTimer-=dt;
+  
+  // Reaper soul cooldown decay
+  if(game.classKey==='reaper' && game.reaperSoulCooldown>0){
+    game.reaperSoulCooldown-=dt;
+    if(game.reaperSoulCooldown<=0) game.reaperSoulCooldown=0;
+  }
+  
+  // Update soul particles for Reaper
+  if(game.classKey==='reaper' && game.soulParticles){
+    for(let i=game.soulParticles.length-1;i>=0;i--){
+      const sp=game.soulParticles[i];
+      sp.life-=dt;
+      // Move towards player
+      const dx=sp.tx-sp.x, dy=sp.ty-sp.y;
+      const d=Math.hypot(dx,dy)||1;
+      sp.x+=(dx/d)*280*dt;
+      sp.y+=(dy/d)*280*dt;
+      if(sp.life<=0||d<8) game.soulParticles.splice(i,1);
+    }
+  }
+  
   for(let i=game.particles.length-1;i>=0;i--){
     const p=game.particles[i];
     p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;
