@@ -31618,7 +31618,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
       const g=G(),p=g?.player,key=g?CLASSES?.[g.classKey]?.skills?.[idx]:null,bcd=N(g?.skillCds?.[idx]),bf=N(p?.focus);
       const out=useAfterMage745.apply(this,arguments);const gg=G(),pp=gg?.player;
       const used=!!(gg&&pp&&bcd<=0&&(N(gg.skillCds?.[idx])>bcd+.001||N(pp.focus)<bf-.001));
-      if(used&&gg.classKey==='colonel'&&key==='colonelAirstrike')spawnColonelRaid745();
+      /* 7.4.7: bombardeio contínuo removido do kit normal; o Q volta à implementação anterior. */
       return out;
     };
     wrapped.__colonelRaid745=true;window.useSkill=wrapped;try{useSkill=wrapped}catch{}
@@ -31737,7 +31737,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   // Update final descriptions to match actual behavior.
   try{
     if(SKILL_DEFS?.temporalLoop)SKILL_DEFS.temporalLoop.desc='Volta 10s na própria trajetória e rebobina os projéteis inimigos durante o retorno.';
-    if(SKILL_DEFS?.colonelAirstrike)SKILL_DEFS.colonelAirstrike.desc='Chama um esquadrão que cruza a arena lançando bombas continuamente por toda a rota.';
+    if(SKILL_DEFS?.colonelAirstrike)SKILL_DEFS.colonelAirstrike.desc='Chama o reforço e eles bombardeiam tudo! Parece até cena de filme.';
     if(SKILL_DEFS?.parryField)SKILL_DEFS.parryField.desc='Deflete projéteis e repele contatos. Encerra ao atingir 4 contatos ou quando o tempo acaba.';
     if(SKILL_DEFS?.ricoPursuer&&/4 balas menores/i.test(SKILL_DEFS.ricoPursuer.desc))SKILL_DEFS.ricoPursuer.desc=SKILL_DEFS.ricoPursuer.desc.replace(/4 balas menores/gi,'2 balas menores');
   }catch{}
@@ -31887,6 +31887,167 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   console.log(PATCH+' — compras da vitrine do Mauro estabilizadas');
 })();
 
+</script>
+
+
+<script>
+/* Chrono Shards 7.4.8 — Coronel: Ultimate ampliada, rotas aleatórias e carga estabilizada */
+(()=>{
+  'use strict';
+  if(window.__chronoPatch748ColonelUltimate)return;
+  window.__chronoPatch748ColonelUltimate=true;
+  const PATCH='Chrono Shards 7.4.8';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const R=(a,b)=>a+Math.random()*(b-a);
+  const C=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const G=()=>window.game||globalThis.game;
+
+  function ensure(g=G()){
+    if(!g)return null;
+    if(!g.colonelUlt748)g.colonelUlt748={
+      active:false,ultRef:null,wave:0,planes:[],bombs:[],bursts:[],
+      totalDrops:0,totalExplosions:0,totalPlanes:0,serial:0
+    };
+    const s=g.colonelUlt748;
+    s.planes=s.planes||[];s.bombs=s.bombs||[];s.bursts=s.bursts||[];
+    return s;
+  }
+  function clearLegacyUlt(g){
+    if(!g)return;
+    if(Array.isArray(g.air481))g.air481.length=0;
+    if(Array.isArray(g.colonelJets492))g.colonelJets492.length=0;
+    if(Array.isArray(g.colonelBlasts492))g.colonelBlasts492.length=0;
+    if(Array.isArray(g.colonelCarpetBlasts609))g.colonelCarpetBlasts609.length=0;
+  }
+  function lockCharge(g){
+    if(!g)return;
+    g.awakUltCharge=0;
+    g.awakUltCd=0;
+    if('_awakBank485' in g)g._awakBank485=0;
+  }
+  function begin(g,s,ult){
+    s.active=true;s.ultRef=ult;s.wave=.02;s.planes.length=0;s.bombs.length=0;s.bursts.length=0;
+    s.totalDrops=0;s.totalExplosions=0;s.totalPlanes=0;s.serial++;
+    lockCharge(g);clearLegacyUlt(g);
+    try{addFloatingText(g.player.x,g.player.y-56,'BOMBARDEIO TOTAL','#caff7a',20);addRing(g.player.x,g.player.y,'#78d66b',210,8);addParticles(g.player.x,g.player.y,'#caff7a',48,1.25)}catch{}
+  }
+  function randomRoute(){
+    const edge=Math.floor(R(0,4));
+    let sx,sy,tx,ty;
+    if(edge===0){sx=-230;sy=R(45,H-45);tx=W+230;ty=R(45,H-45);}
+    else if(edge===1){sx=W+230;sy=R(45,H-45);tx=-230;ty=R(45,H-45);}
+    else if(edge===2){sx=R(45,W-45);sy=-230;tx=R(45,W-45);ty=H+230;}
+    else{sx=R(45,W-45);sy=H+230;tx=R(45,W-45);ty=-230;}
+    const dx=tx-sx,dy=ty-sy,len=Math.hypot(dx,dy)||1;
+    return {sx,sy,tx,ty,ux:dx/len,uy:dy/len,px:-dy/len,py:dx/len,len};
+  }
+  function spawnFormation(g,s){
+    const route=randomRoute(),speed=R(760,930);
+    const offsets=[-150,-50,50,150];
+    for(let i=0;i<offsets.length;i++){
+      const off=offsets[i]+R(-18,18),lead=R(-95,55);
+      const x=route.sx+route.px*off+route.ux*lead;
+      const y=route.sy+route.py*off+route.uy*lead;
+      s.planes.push({
+        x,y,vx:route.ux*speed,vy:route.uy*speed,ang:Math.atan2(route.uy,route.ux),
+        life:(route.len+520)/speed+.45,drop:R(.035,.16),spacing:R(.135,.19),path:[],wing:i,scale:R(1.42,1.62)
+      });
+      s.totalPlanes++;
+    }
+  }
+  function dropBomb(g,s,p){
+    const lead=R(35,120),side=R(-80,80);
+    const groundX=C(p.x+p.vx/Math.max(1,Math.hypot(p.vx,p.vy))*lead+(-p.vy/Math.max(1,Math.hypot(p.vx,p.vy)))*side,42,W-42);
+    const groundY=C(p.y+p.vy/Math.max(1,Math.hypot(p.vx,p.vy))*lead+(p.vx/Math.max(1,Math.hypot(p.vx,p.vy)))*side,42,H-42);
+    s.bombs.push({x:p.x,y:p.y,z:R(150,205),tx:groundX,ty:groundY,t:0,life:R(.44,.62),spin:R(0,Math.PI*2),r:R(11,14),damage:46*N(g.upgrades?.damage,1)});
+    s.totalDrops++;
+  }
+  function explode(g,s,b){
+    const radius=116,dmg=N(b.damage,46);
+    s.totalExplosions++;
+    s.bursts.push({x:b.tx,y:b.ty,r:radius,life:.58,maxLife:.58});
+    try{addRing(b.tx,b.ty,'#ff9b3d',radius,7);addRing(b.tx,b.ty,'#fff0a8',radius*.60,4);addParticles(b.tx,b.ty,'#ff7a2f',34,1.2);addParticles(b.tx,b.ty,'#fff0a8',16,.72)}catch{}
+    for(let i=(g.enemies||[]).length-1;i>=0;i--){
+      const e=g.enemies[i],er=N(e.r,10),d=Math.hypot(N(e.x)-b.tx,N(e.y)-b.ty);
+      if(d>radius+er)continue;
+      const fall=.58+.42*(1-C(d/(radius+er),0,1));
+      e.hp=N(e.hp)-dmg*fall;e.hitFlash=Math.max(N(e.hitFlash),.20);
+      if(e.hp<=0)try{enemyDeath(i,e)}catch{}
+    }
+    g.shake=Math.max(N(g.shake),10);
+  }
+  function finalBlast(g,s){
+    const p=g.player||{x:W/2,y:H/2};
+    let tx=p.x,ty=p.y,best=Infinity;
+    for(const e of g.enemies||[]){const d=Math.hypot(N(e.x)-p.x,N(e.y)-p.y);if(d<best){best=d;tx=e.x;ty=e.y}}
+    const b={tx:C(tx,55,W-55),ty:C(ty,55,H-55),damage:145*N(g.upgrades?.damage,1)};
+    const radius=240;s.bursts.push({x:b.tx,y:b.ty,r:radius,life:.88,maxLife:.88});
+    try{addRing(b.tx,b.ty,'#caff7a',radius,12);addRing(b.tx,b.ty,'#fff7bd',radius*.58,6);addParticles(b.tx,b.ty,'#caff7a',82,1.8)}catch{}
+    for(let i=(g.enemies||[]).length-1;i>=0;i--){const e=g.enemies[i];if(Math.hypot(e.x-b.tx,e.y-b.ty)<=radius+N(e.r,10)){e.hp-=b.damage;e.hitFlash=.3;if(e.hp<=0)try{enemyDeath(i,e)}catch{}}}
+    g.flash=Math.max(N(g.flash),.34);g.flashColor='#78d66b';g.shake=Math.max(N(g.shake),28);
+  }
+  function updateSystem(g,s,ult,dt){
+    dt=Math.max(0,Math.min(.05,N(dt,.016)));
+    if(ult){
+      if(!s.active||s.ultRef!==ult)begin(g,s,ult);
+      lockCharge(g);clearLegacyUlt(g);
+      ult.life=N(ult.life,8)-dt;
+      s.wave-=dt;
+      while(s.wave<=0&&ult.life>.15){spawnFormation(g,s);s.wave+=.82;}
+      if(ult.life<=0){
+        finalBlast(g,s);s.active=false;s.ultRef=null;lockCharge(g);
+        if(g.ults481)delete g.ults481.colonel;
+      }
+    }else if(s.active){s.active=false;s.ultRef=null;lockCharge(g);}
+
+    for(let i=s.planes.length-1;i>=0;i--){
+      const p=s.planes[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.drop-=dt;
+      p.path.unshift({x:p.x,y:p.y,life:.34});if(p.path.length>14)p.path.pop();for(const q of p.path)q.life-=dt;
+      while(p.drop<=0&&p.life>.08){p.drop+=p.spacing;if(p.x>22&&p.x<W-22&&p.y>22&&p.y<H-22)dropBomb(g,s,p);}
+      if(p.life<=0||p.x<-330||p.x>W+330||p.y<-330||p.y>H+330)s.planes.splice(i,1);
+    }
+    for(let i=s.bombs.length-1;i>=0;i--){
+      const b=s.bombs[i];b.t+=dt;const k=C(b.t/b.life,0,1),arc=Math.sin(k*Math.PI)*44;
+      b.x=b.x+(b.tx-b.x)*Math.min(1,dt*6.5);b.y=b.y+(b.ty-b.y)*Math.min(1,dt*6.5);b.z=(1-k)*180+arc;b.spin+=dt*11;
+      if(k>=1){explode(g,s,b);s.bombs.splice(i,1);}
+    }
+    for(let i=s.bursts.length-1;i>=0;i--){s.bursts[i].life-=dt;if(s.bursts[i].life<=0)s.bursts.splice(i,1)}
+  }
+
+  const prevUpdate748=window.updatePlayer||globalThis.updatePlayer;
+  if(typeof prevUpdate748==='function'&&!prevUpdate748.__colonelUlt748){
+    const wrapped=function(dt){
+      const g=G();let ult=null;
+      if(g?.classKey==='colonel'&&g.ults481?.colonel){ult=g.ults481.colonel;lockCharge(g);delete g.ults481.colonel;}
+      const out=prevUpdate748.apply(this,arguments);
+      if(g&&ult){g.ults481=g.ults481||{};g.ults481.colonel=ult;lockCharge(g);}
+      const s=ensure(g);if(g&&s)updateSystem(g,s,ult,dt);
+      return out;
+    };
+    wrapped.__colonelUlt748=true;window.updatePlayer=wrapped;try{updatePlayer=wrapped}catch{}
+  }
+
+  function draw748(){
+    const g=G(),s=g?.colonelUlt748;if(!g||!s)return;
+    ctx.save();ctx.globalCompositeOperation='lighter';
+    for(const q of s.bursts){const k=C(q.life/q.maxLife,0,1),grow=1-k;ctx.globalAlpha=k*.84;ctx.strokeStyle='#ffd166';ctx.lineWidth=7*k+1;ctx.beginPath();ctx.arc(q.x,q.y,18+(q.r-18)*grow,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=k*.18;ctx.fillStyle='#ff8a35';ctx.beginPath();ctx.arc(q.x,q.y,Math.max(10,q.r*grow*.72),0,Math.PI*2);ctx.fill();}
+    for(const b of s.bombs){ctx.save();ctx.translate(b.x,b.y-b.z*.22);ctx.rotate(b.spin);ctx.globalAlpha=.99;ctx.shadowBlur=22;ctx.shadowColor='#ff8a35';ctx.fillStyle='#201307';ctx.strokeStyle='#ffd166';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(0,-b.r);ctx.lineTo(b.r*.72,0);ctx.lineTo(0,b.r);ctx.lineTo(-b.r*.72,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();ctx.globalAlpha=.20;ctx.fillStyle='#ff8a35';ctx.beginPath();ctx.ellipse(b.tx,b.ty,18,8,0,0,Math.PI*2);ctx.fill();}
+    for(const p of s.planes){
+      for(const tr of p.path){ctx.globalAlpha=Math.max(0,tr.life/.34)*.14;ctx.fillStyle='#dfffcf';ctx.beginPath();ctx.ellipse(tr.x,tr.y,32,7,p.ang,0,Math.PI*2);ctx.fill()}
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.ang);ctx.scale(p.scale,p.scale);ctx.globalAlpha=.99;ctx.shadowBlur=30;ctx.shadowColor='#caff7a';ctx.fillStyle='#162419';ctx.strokeStyle='#eaffd8';ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(62,0);ctx.lineTo(20,-10);ctx.lineTo(-16,-31);ctx.lineTo(-9,-8);ctx.lineTo(-60,-13);ctx.lineTo(-41,0);ctx.lineTo(-60,13);ctx.lineTo(-9,8);ctx.lineTo(-16,31);ctx.lineTo(20,10);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#caff7a';ctx.beginPath();ctx.arc(22,-6,4,0,Math.PI*2);ctx.arc(22,6,4,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
+    ctx.restore();
+  }
+  const prevRender748=window.render||globalThis.render;
+  if(typeof prevRender748==='function'&&!prevRender748.__colonelUlt748){const wrapped=function(){const out=prevRender748.apply(this,arguments);try{draw748()}catch(e){console.warn(PATCH+' render',e)}return out};wrapped.__colonelUlt748=true;window.render=wrapped;try{render=wrapped}catch{}}
+
+  const prevReset748=window.resetGame||globalThis.resetGame;
+  if(typeof prevReset748==='function'&&!prevReset748.__colonelUlt748){const wrapped=function(){const out=prevReset748.apply(this,arguments);const g=G();if(g)g.colonelUlt748={active:false,ultRef:null,wave:0,planes:[],bombs:[],bursts:[],totalDrops:0,totalExplosions:0,totalPlanes:0,serial:0};return out};wrapped.__colonelUlt748=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}}
+
+  try{if(SKILL_DEFS?.colonelAirstrike)SKILL_DEFS.colonelAirstrike.desc='Chama o reforço e eles bombardeiam tudo! Parece até cena de filme.';}catch{}
+  window.__ColonelUlt748={ensure,updateSystem,spawnFormation,lockCharge,randomRoute};
+  console.log(PATCH+' — Q preservado; Ultimate X ampliada com mais aviões, rotas aleatórias e carga corrigida');
+})();
 </script>
 
 </body>
