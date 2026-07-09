@@ -32050,5 +32050,417 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
 })();
 </script>
 
+
+<script>
+/* Chrono Shards 8.0.0 — DOOM MODE */
+(()=>{
+  'use strict';
+  if(window.__chronoDoomMode800)return;
+  window.__chronoDoomMode800=true;
+  const PATCH='Chrono Shards 8.0.0 — DOOM MODE';
+  const META_KEY=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const DOOM_META_KEY=META_KEY+'_doom_mode_v1';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const C=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const R=(a,b)=>Math.random()*(b-a)+a;
+  const RI=(a,b)=>Math.floor(R(a,b+1));
+  const D2=(a,b)=>Math.hypot(N(a?.x)-N(b?.x),N(a?.y)-N(b?.y));
+  const G=()=>{try{return game}catch{return window.game||globalThis.game||null}};
+  let pendingDoom800=false;
+
+  const STAGES=[
+    {min:0,name:'ESTÁVEL',color:'#55ff87',hp:1,speed:1,spawn:.76,cap:42,elite:.05},
+    {min:20,name:'ALERTA',color:'#ffd84d',hp:1.15,speed:1.10,spawn:.61,cap:54,elite:.10},
+    {min:40,name:'INSTABILIDADE',color:'#ff922f',hp:1.32,speed:1.16,spawn:.47,cap:68,elite:.17},
+    {min:60,name:'CRÍTICO',color:'#ff5638',hp:1.56,speed:1.23,spawn:.35,cap:82,elite:.25},
+    {min:80,name:'DOOM IMINENTE',color:'#ff263d',hp:1.86,speed:1.32,spawn:.27,cap:100,elite:.34},
+    {min:100,name:'DOOM',color:'#ff101f',hp:2.18,speed:1.40,spawn:.21,cap:118,elite:.40}
+  ];
+
+  const COMMON_BASES={
+    chaser:{r:12,speed:[92,124],hp:30,color:'#ff5e7e',value:10},
+    strafer:{r:10,speed:[132,170],hp:24,color:'#ffb86b',value:14},
+    tank:{r:19,speed:[55,76],hp:72,color:'#c38bff',value:20},
+    bomber:{r:14,speed:[94,116],hp:30,color:'#ff9966',value:18},
+    swarmer:{r:7,speed:[174,224],hp:14,color:'#ff4fa8',value:8},
+    sentinel:{r:16,speed:[50,70],hp:54,color:'#4ce0b3',value:22},
+    leaper:{r:13,speed:[88,114],hp:39,color:'#ffe066',value:18},
+    medic:{r:14,speed:[74,94],hp:46,color:'#86ffb0',value:26},
+    sniperDrone:{r:12,speed:[68,88],hp:34,color:'#8fd0ff',value:24},
+    splitter:{r:16,speed:[76,102],hp:60,color:'#ff8cf0',value:24}
+  };
+
+  const MISSION_POOL=[
+    {id:'kills',title:'ABATE SEM FIM',desc:'Elimine inimigos antes que a arena engula você.',metric:'kills',target:25,time:45,min:0},
+    {id:'corrupt',title:'PURGA CORROMPIDA',desc:'Mate inimigos Corrompidos.',metric:'corruptKills',target:8,time:48,min:2},
+    {id:'elite',title:'QUEBRE A VANGUARDA',desc:'Elimine inimigos Elite.',metric:'eliteKills',target:5,time:42,min:1},
+    {id:'medic',title:'SEM CURA NO INFERNO',desc:'Elimine Médicos inimigos.',metric:'medicKills',target:4,time:45,min:1},
+    {id:'dashKills',title:'COLHEITA CINÉTICA',desc:'Mate inimigos enquanto estiver no Dash.',metric:'dashKills',target:8,time:42,min:0},
+    {id:'ranged',title:'SILENCIE OS ATIRADORES',desc:'Elimine Sentinelas e Snipers.',metric:'rangedKills',target:8,time:44,min:1},
+    {id:'tank',title:'QUEBRE A MURALHA',desc:'Elimine Tanques.',metric:'tankKills',target:6,time:46,min:0},
+    {id:'bomber',title:'DESARME O CAOS',desc:'Elimine Bombardeiros.',metric:'bomberKills',target:8,time:44,min:0},
+    {id:'swarmer',title:'LIMPE A PRAGA',desc:'Elimine Enxames.',metric:'swarmerKills',target:12,time:43,min:0},
+    {id:'mini',title:'CAÇADOR DE ABERRAÇÕES',desc:'Derrote um Miniboss do DOOM.',metric:'minibossKills',target:1,time:58,min:3},
+    {id:'boss',title:'DERRUBE O COLOSSO',desc:'Derrote um Boss antes do prazo.',metric:'bossKills',target:1,time:78,min:2},
+    {id:'portals',title:'FECHE AS FERIDAS',desc:'Destrua Portais Infernais.',metric:'portalKills',target:2,time:56,min:2,setup:'portals'},
+    {id:'totems',title:'QUEBRE OS TOTENS',desc:'Destrua Totens do DOOM.',metric:'totemKills',target:3,time:54,min:2,setup:'totems'},
+    {id:'dashes',title:'NÃO PARE',desc:'Execute Dashes.',metric:'dashes',target:12,time:34,min:0},
+    {id:'noDamage',title:'INTOCÁVEL',desc:'Sobreviva sem sofrer dano.',special:'noDamage',target:18,time:31,min:0},
+    {id:'moving',title:'O CHÃO ESTÁ VIVO',desc:'Permaneça em movimento.',special:'moving',target:20,time:34,min:0},
+    {id:'lowHp',title:'NA BEIRA DO ABISMO',desc:'Sobreviva com menos de 35% de HP.',special:'lowHp',target:10,time:44,min:1},
+    {id:'souls',title:'ALMAS CONDENADAS',desc:'Colete as almas infernais espalhadas pela arena.',metric:'soulCollects',target:5,time:42,min:1,setup:'souls'},
+    {id:'seals',title:'RITO DE CONTENÇÃO',desc:'Atravesse os Selos Infernais em sequência.',metric:'seals',target:5,time:46,min:1,setup:'seals'},
+    {id:'center',title:'OLHO DA TEMPESTADE',desc:'Mate inimigos perto do centro da arena.',metric:'centerKills',target:10,time:38,min:0},
+    {id:'edge',title:'SEM ROTAS DE FUGA',desc:'Mate inimigos próximos às bordas da arena.',metric:'edgeKills',target:10,time:42,min:0},
+    {id:'streak',title:'MASSACRE RELÂMPAGO',desc:'Faça 6 abates dentro de uma janela de 6 segundos.',special:'streak',target:6,time:38,min:1},
+    {id:'noDash',title:'PÉS NO INFERNO',desc:'Mate inimigos sem usar Dash. Usar Dash zera o progresso.',special:'noDash',target:12,time:42,min:0},
+    {id:'skillless',title:'SÓ FERRO E SANGUE',desc:'Fique sem usar Skills. Usar uma Skill zera o tempo.',special:'skillless',target:20,time:34,min:0},
+    {id:'corruptDash',title:'CEIFADOR DE CORROMPIDOS',desc:'Mate Corrompidos durante o Dash.',metric:'corruptDashKills',target:4,time:50,min:2}
+  ];
+
+  function rawMeta(){try{return JSON.parse(localStorage.getItem(DOOM_META_KEY)||'{}')||{}}catch{return {}}}
+  function writeRaw(m){try{localStorage.setItem(DOOM_META_KEY,JSON.stringify(m||{}))}catch{}}
+  function fmtTime(sec){sec=Math.max(0,Math.floor(N(sec)));const m=Math.floor(sec/60),s=sec%60;return `${m}:${String(s).padStart(2,'0')}`}
+  function stageOf(v){if(v>=100)return 5;if(v>80)return 4;if(v>60)return 3;if(v>40)return 2;if(v>20)return 1;return 0}
+  function state(){const g=G();return g?.doom800||null}
+  function isDoom(){return !!state()}
+
+  function ensureStyle(){
+    if(document.getElementById('doomMode800Style'))return;
+    const st=document.createElement('style');st.id='doomMode800Style';st.textContent=`
+      .doomModeCard800{border-color:rgba(255,38,61,.35)!important;background:linear-gradient(145deg,rgba(34,3,8,.98),rgba(5,1,4,.99))!important;box-shadow:inset 0 0 45px rgba(255,20,40,.08),0 18px 50px rgba(0,0,0,.5)!important}
+      .doomModeCard800:after{content:'';position:absolute;inset:auto -10% -45% -10%;height:70%;background:radial-gradient(ellipse at center,rgba(255,45,20,.22),transparent 68%);animation:doomCardBreath800 2.2s ease-in-out infinite alternate;pointer-events:none}
+      .doomModeCard800 h2{color:#ffedf0!important;text-shadow:0 0 18px rgba(255,25,47,.55)}
+      @keyframes doomCardBreath800{to{transform:scale(1.12);filter:brightness(1.5)}}
+      .doomTutorial800{text-align:left;background:radial-gradient(circle at 50% 0,rgba(125,0,15,.18),transparent 34%),rgba(8,3,7,.985)!important;border-color:rgba(255,40,55,.28)!important}
+      .doomTutorial800 h1{background:linear-gradient(90deg,#fff,#ff6b52,#ff102d,#300007)!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important;text-align:center}
+      .doomTutGrid800{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:18px 0}
+      .doomTutBox800{padding:15px;border-radius:18px;border:1px solid rgba(255,60,70,.18);background:linear-gradient(145deg,rgba(28,5,10,.92),rgba(7,3,6,.96));box-shadow:inset 0 0 20px rgba(255,0,30,.035)}
+      .doomTutBox800 h3{margin:0 0 7px;font-family:Orbitron,sans-serif;color:#ff5a45;font-size:13px;letter-spacing:.08em}.doomTutBox800 p{margin:0;color:#d7b8be;line-height:1.5;font-size:13px}
+      #doomHud800{position:absolute;top:17px;left:50%;transform:translateX(-50%);width:min(390px,35vw);z-index:7;pointer-events:none;text-align:center;display:none;filter:drop-shadow(0 10px 20px rgba(0,0,0,.7))}
+      #doomHud800.show{display:block}.doomTitle800{font:900 21px Orbitron,sans-serif;letter-spacing:.22em;color:#fff;text-shadow:0 0 9px var(--doomC),0 0 20px var(--doomC);margin-bottom:7px;transition:.25s color,.25s text-shadow}
+      .doomBarShell800{height:19px;border-radius:999px;padding:3px;background:rgba(5,0,3,.92);border:1px solid color-mix(in srgb,var(--doomC) 65%,#fff 5%);box-shadow:inset 0 0 16px rgba(0,0,0,.9),0 0 17px color-mix(in srgb,var(--doomC) 38%,transparent);position:relative;overflow:visible}
+      .doomBarTrack800{position:absolute;inset:3px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.045)}
+      #doomFill800{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,color-mix(in srgb,var(--doomC) 65%,#050505),var(--doomC),#fff0);box-shadow:0 0 16px var(--doomC);transition:width .16s linear,background .3s}
+      #doomPct800{position:absolute;inset:0;display:grid;place-items:center;font:900 10px Orbitron,sans-serif;color:#fff;text-shadow:0 1px 4px #000;letter-spacing:.08em}
+      #doomStage800{display:inline-block;margin-top:6px;padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.55);border:1px solid color-mix(in srgb,var(--doomC) 45%,transparent);font:800 9px Orbitron,sans-serif;letter-spacing:.16em;color:var(--doomC)}
+      #doomHud800.doom .doomTitle800{animation:doomTitleMad800 .14s steps(2,end) infinite alternate;color:#fff}
+      #doomHud800.doom .doomBarShell800{animation:doomBarBurn800 .48s ease-in-out infinite alternate;box-shadow:0 0 16px #ff1025,0 -8px 28px rgba(255,75,0,.55),0 -18px 34px rgba(255,20,0,.25)}
+      #doomHud800.doom .doomBarShell800:before,#doomHud800.doom .doomBarShell800:after{content:'';position:absolute;left:4%;right:4%;bottom:65%;height:32px;background:radial-gradient(ellipse at 8% 100%,#ffba32 0 12%,#ff3d13 18%,transparent 44%),radial-gradient(ellipse at 28% 100%,#ff9825 0 11%,#ff1e13 20%,transparent 48%),radial-gradient(ellipse at 52% 100%,#ffd85b 0 9%,#ff3515 20%,transparent 49%),radial-gradient(ellipse at 76% 100%,#ffad28 0 11%,#ff2010 21%,transparent 47%),radial-gradient(ellipse at 94% 100%,#ffd15a 0 8%,#ff2910 19%,transparent 45%);filter:blur(1px);transform-origin:bottom;animation:doomFlame800 .24s ease-in-out infinite alternate;opacity:.92;pointer-events:none}
+      #doomHud800.doom .doomBarShell800:after{transform:scaleX(.92) scaleY(.72);filter:blur(4px);opacity:.45;animation-duration:.37s}
+      @keyframes doomTitleMad800{0%{transform:translate(-2px,1px) skewX(-2deg);text-shadow:3px 0 #ff1025,-3px 0 #150000,0 0 28px #ff1025}100%{transform:translate(2px,-1px) skewX(2deg);text-shadow:-3px 0 #ff653d,3px 0 #000,0 0 40px #ff1025}}
+      @keyframes doomBarBurn800{to{filter:brightness(1.3)}}@keyframes doomFlame800{to{transform:scaleY(1.28) translateY(-2px) skewX(2deg)}}
+      #doomMission800{display:none;width:300px;padding:13px 14px;border-radius:16px;background:linear-gradient(145deg,rgba(18,2,7,.93),rgba(4,3,7,.94));border:1px solid rgba(255,38,61,.30);box-shadow:0 12px 30px rgba(0,0,0,.42),inset 0 0 25px rgba(255,0,35,.04);pointer-events:none}
+      #doomMission800.show{display:block}.doomMissionTag800{font:900 9px Orbitron,sans-serif;letter-spacing:.16em;color:#ff334d;margin-bottom:5px}.doomMissionName800{font:900 13px Orbitron,sans-serif;letter-spacing:.06em;color:#fff;margin-bottom:4px}.doomMissionDesc800{font-size:12px;color:#d4adb6;line-height:1.3}.doomMissionProg800{display:flex;justify-content:space-between;gap:12px;margin-top:8px;font:800 11px Orbitron,sans-serif;color:#ff7b87}.doomMissionTimerShell800{height:6px;border-radius:999px;background:rgba(255,255,255,.05);overflow:hidden;margin-top:6px}.doomMissionTimerShell800 i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#54000b,#ff1835,#ff7051);box-shadow:0 0 9px #ff1835;transition:width .1s linear}
+      #doomAlert800{position:absolute;z-index:15;left:50%;top:42%;transform:translate(-50%,-50%) scale(.8);min-width:420px;text-align:center;pointer-events:none;opacity:0;font:900 38px Orbitron,sans-serif;letter-spacing:.16em;color:#fff;text-shadow:0 0 18px #ff102d,0 0 50px #000}
+      #doomAlert800.show{animation:doomAlert800 1.65s ease both}#doomAlert800.success{color:#baffc5;text-shadow:0 0 18px #4dff83,0 0 50px #000}#doomAlert800.fail{color:#ffedf0;background:linear-gradient(90deg,transparent,rgba(0,0,0,.76),transparent);border-top:1px solid rgba(255,20,45,.4);border-bottom:1px solid rgba(255,20,45,.4);padding:16px 30px}
+      #doomAlert800 small{display:block;font:800 11px Orbitron,sans-serif;letter-spacing:.14em;margin-top:8px;color:inherit}
+      @keyframes doomAlert800{0%{opacity:0;transform:translate(-50%,-50%) scale(.72) skewX(-8deg)}14%{opacity:1;transform:translate(-50%,-50%) scale(1.05) skewX(2deg)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.13)}}
+      .doomEnd800{background:radial-gradient(circle at 50% 0,rgba(150,0,22,.22),transparent 36%),rgba(8,3,7,.99)!important;border-color:rgba(255,35,55,.28)!important}.doomEnd800 h1{background:linear-gradient(90deg,#fff,#ff7a52,#ff102d)!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important}.doomStats800{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:17px 0}.doomStat800{padding:12px;border-radius:15px;border:1px solid rgba(255,40,60,.16);background:rgba(30,4,9,.58)}.doomStat800 small{display:block;color:#b98d96;font-size:10px}.doomStat800 b{display:block;margin-top:3px;font:900 19px Orbitron,sans-serif;color:#ff6a58}
+      @media(max-width:900px){#doomHud800{top:105px;width:44vw}.doomTitle800{font-size:16px}#doomMission800{width:260px}}
+    `;document.head.appendChild(st);
+  }
+
+  function ensureUI(){
+    ensureStyle();
+    const shell=document.querySelector('.game-shell')||document.body;
+    let hud=document.getElementById('doomHud800');
+    if(!hud){hud=document.createElement('div');hud.id='doomHud800';hud.innerHTML=`<div class="doomTitle800">☠ DOOMETER ☠</div><div class="doomBarShell800"><div class="doomBarTrack800"><i id="doomFill800"></i></div><span id="doomPct800">0%</span></div><span id="doomStage800">ESTÁVEL</span>`;shell.appendChild(hud);}
+    let mission=document.getElementById('doomMission800');
+    if(!mission){mission=document.createElement('div');mission.id='doomMission800';mission.innerHTML=`<div class="doomMissionTag800">☠ CONTRATO DO DOOM</div><div class="doomMissionName800">—</div><div class="doomMissionDesc800">—</div><div class="doomMissionProg800"><span class="doomMissionCount800">0/0</span><span class="doomMissionTime800">0.0s</span></div><div class="doomMissionTimerShell800"><i></i></div>`;(document.querySelector('.left-panel')||shell).appendChild(mission);}
+    let alert=document.getElementById('doomAlert800');if(!alert){alert=document.createElement('div');alert.id='doomAlert800';shell.appendChild(alert);}
+  }
+
+  function showAlert(title,sub='',kind='fail'){
+    ensureUI();const el=document.getElementById('doomAlert800');if(!el)return;el.className='';void el.offsetWidth;el.className=`show ${kind}`;el.innerHTML=`${title}${sub?`<small>${sub}</small>`:''}`;
+  }
+
+  function makeMapDecor(){
+    const cracks=Array.from({length:34},()=>{let x=R(40,W-40),y=R(35,H-35);const pts=[{x,y}];for(let i=0;i<RI(3,7);i++){x=C(x+R(-70,70),15,W-15);y=C(y+R(-55,55),15,H-15);pts.push({x,y});}return pts;});
+    const runes=Array.from({length:13},()=>({x:R(80,W-80),y:R(70,H-70),r:R(18,44),rot:R(0,6.28),spin:R(-.18,.18)}));
+    const embers=Array.from({length:72},()=>({x:R(0,W),y:R(0,H),sp:R(18,62),r:R(.8,2.4),ph:R(0,6.28)}));
+    const pillars=[{x:80,y:90},{x:W-80,y:90},{x:80,y:H-90},{x:W-80,y:H-90},{x:W/2,y:55},{x:W/2,y:H-55}];
+    const rivers=[{axis:'h',p:H*.26,amp:35,phase:0},{axis:'h',p:H*.73,amp:42,phase:2.1},{axis:'v',p:W*.50,amp:28,phase:4.2}];
+    return {cracks,runes,embers,pillars,rivers};
+  }
+
+  function metrics(){return {kills:0,corruptKills:0,eliteKills:0,medicKills:0,dashKills:0,rangedKills:0,tankKills:0,bomberKills:0,swarmerKills:0,minibossKills:0,bossKills:0,portalKills:0,totemKills:0,dashes:0,soulCollects:0,seals:0,centerKills:0,edgeKills:0,corruptDashKills:0}}
+
+  function initDoom(){
+    const g=G();if(!g)return;
+    ensureUI();
+    g.riftMode50=false;g.rift50=null;g.duneMap=false;g.duneTransition37=null;g.secretArena=false;g.secretEvent=null;g.shopPending=false;g.betweenWaves=false;g.waveBoss=false;g.bossActive=false;g.wave=1;g.enemies=[];g.enemyBullets=[];g.bullets=[];g.hazards=[];g.loot=[];g.mapDecor={obstacles:[],decor:[]};g.enemiesToSpawn=0;g.enemiesSpawnedThisWave=0;g.spawnTimer=999;
+    const d=g.doom800={
+      value:0,stage:0,elapsed:0,timeAtDoom:0,timeTick:0,spawnCd:.55,damageDoomCd:0,
+      bossTimer:Infinity,bossEncounter:false,bossUnlocked:false,bossSerial:0,emperorSpawned:false,
+      miniTimer:28,portalTimer:18,totemTimer:26,meteorTimer:12,gustTimer:20,
+      mission:null,nextMissionCd:1.8,missionHistory:[],missionsCompleted:0,missionsFailed:0,
+      metrics:metrics(),killTimes:[],resurrections:[],portals:[],hellGusts:[],meteors:[],soulPickups:[],seals:[],map:makeMapDecor(),
+      lastDamageAt:-999,lastDashAt:-999,lastSkillAt:-999,movingTime:0,lowHpTime:0,noDashKills:0,skilllessTime:0,
+      minibossKills:0,bossKills:0,totalBossSpawns:0,totalMiniSpawns:0,endAwarded:false,score:0,lastStage:0,
+      quake:0,stageFlash:0
+    };
+    if(g.player){g.player.x=W/2;g.player.y=H/2;g.player.vx=0;g.player.vy=0;}
+    const wr=document.getElementById('wave');if(wr?.parentElement){wr.parentElement.dataset.doomOldLabel='Wave: ';const n=wr.parentElement.childNodes[0];if(n&&n.nodeType===3)n.nodeValue='Tempo: ';}
+    syncUI();
+    try{addFloatingText(W/2,H/2-65,'O DOOM ESTÁ OBSERVANDO','#ff3048',25);addRing(W/2,H/2,'#ff2238',145,6);g.flash=.4;g.flashColor='#4b0008';g.shake=16}catch{}
+  }
+
+  function cleanupDoomUI(){
+    document.getElementById('doomHud800')?.classList.remove('show','doom');document.getElementById('doomMission800')?.classList.remove('show');
+    const wr=document.getElementById('wave');if(wr?.parentElement){const n=wr.parentElement.childNodes[0];if(n&&n.nodeType===3&&n.nodeValue==='Tempo: ')n.nodeValue='Wave: ';}
+  }
+
+  function syncUI(){
+    const g=G(),d=state();if(!g||!d)return;ensureUI();const st=STAGES[d.stage];const hud=document.getElementById('doomHud800');hud?.classList.add('show');hud?.classList.toggle('doom',d.value>=100);if(hud)hud.style.setProperty('--doomC',st.color);
+    const fill=document.getElementById('doomFill800');if(fill)fill.style.width=`${C(d.value,0,100)}%`;const pct=document.getElementById('doomPct800');if(pct)pct.textContent=`${d.value.toFixed(1)}%`;const stage=document.getElementById('doomStage800');if(stage){stage.textContent=st.name;stage.style.color=st.color;}
+    const wr=document.getElementById('wave');if(wr)wr.textContent=fmtTime(d.elapsed);
+    const m=d.mission,panel=document.getElementById('doomMission800');panel?.classList.toggle('show',!!m);
+    if(m&&panel){panel.querySelector('.doomMissionName800').textContent=m.title;panel.querySelector('.doomMissionDesc800').textContent=m.desc;panel.querySelector('.doomMissionCount800').textContent=`${formatMissionProgress(m)}/${m.target}`;panel.querySelector('.doomMissionTime800').textContent=`${Math.max(0,m.time).toFixed(1)}s`;const bar=panel.querySelector('.doomMissionTimerShell800 i');if(bar)bar.style.width=`${C(m.time/m.maxTime*100,0,100)}%`;}
+  }
+
+  function setValue(v,reason=''){
+    const g=G(),d=state();if(!g||!d)return;const oldStage=d.stage,old=d.value;d.value=C(v,0,100);d.stage=stageOf(d.value);
+    if(d.stage!==oldStage){applyStageToExisting(d.stage);stageTransition(oldStage,d.stage);}
+    if(old<40&&d.value>=40&&!d.bossUnlocked){d.bossUnlocked=true;d.bossTimer=60;}
+    if(old<100&&d.value>=100)triggerDoomArrival();
+    syncUI();
+  }
+  function addDoom(delta,reason=''){const d=state();if(d)setValue(d.value+delta,reason)}
+
+  function stageTransition(oldStage,newStage){
+    const g=G(),d=state();if(!g||!d)return;d.stageFlash=1.2;g.flash=Math.max(N(g.flash),.28);g.flashColor=newStage>oldStage?'#ff102d':'#4dff83';g.shake=Math.max(N(g.shake),newStage>oldStage?13:7);
+    if(newStage>oldStage){const st=STAGES[newStage];showAlert(st.name,newStage===5?'NÃO EXISTE MAIS VOLTA':'A ARENA ESTÁ PIORANDO','fail');}
+    else showAlert('DOOM RECUOU','A MISSÃO COMPROU ALGUNS SEGUNDOS','success');
+  }
+
+  function applyStageToExisting(stage){
+    const g=G(),d=state();if(!g||!d)return;for(const e of g.enemies||[]){if(!e||e.type==='boss'||e.doomMini800||e.doomPortal800||e.doomTotem800)continue;ensureEnemyBase(e);const ratio=C(N(e.hp)/Math.max(1,N(e.maxHp,1)),0,1);const tm=1+Math.min(.9,d.elapsed/700);e.maxHp=Math.max(1,Math.round(e.doomBaseMaxHp800*STAGES[stage].hp*tm));e.hp=Math.max(1,e.maxHp*ratio);e.speed=e.doomBaseSpeed800*STAGES[stage].speed*(1+Math.min(.18,d.elapsed/1500));}}
+  function ensureEnemyBase(e){if(!e||e.doomBaseMaxHp800)return;e.doomBaseMaxHp800=Math.max(1,N(e.maxHp,e.hp||20));e.doomBaseSpeed800=Math.max(1,N(e.speed,80));e.doomScaled800=true;}
+
+  function edgePos(){const side=RI(0,3);if(side===0)return{x:R(30,W-30),y:-42,side};if(side===1)return{x:W+42,y:R(30,H-30),side};if(side===2)return{x:R(30,W-30),y:H+42,side};return{x:-42,y:R(30,H-30),side};}
+  function chooseWeighted(items){let sum=items.reduce((a,x)=>a+x[1],0),r=R(0,sum);for(const [k,w] of items){r-=w;if(r<=0)return k}return items[items.length-1][0]}
+  function typeWeights(stage){
+    const a=[['chaser',26],['strafer',18],['tank',12],['bomber',11],['swarmer',12],['sentinel',10]];
+    if(stage>=1)a.push(['leaper',7],['medic',5],['sniperDrone',5]);
+    if(stage>=2){for(const x of a)if(x[0]==='medic')x[1]=10;a.push(['splitter',6]);}
+    if(stage>=3){for(const x of a)if(x[0]==='medic')x[1]=12;}
+    if(stage>=4){for(const x of a)if(x[0]==='medic')x[1]=14;}
+    return a;
+  }
+
+  function spawnDoomEnemy(type=null,pos=null,opts={}){
+    const g=G(),d=state();if(!g||!d)return null;const stage=d.stage;type=type||chooseWeighted(typeWeights(stage));const b=COMMON_BASES[type]||COMMON_BASES.chaser;const p=pos||edgePos();const elite=opts.elite??(Math.random()<STAGES[stage].elite);const timeHp=1+Math.min(.9,d.elapsed/700),timeSp=1+Math.min(.18,d.elapsed/1500);const hp=Math.floor(b.hp*STAGES[stage].hp*timeHp*(elite?1.9:1));const sp=R(b.speed[0],b.speed[1])*STAGES[stage].speed*timeSp*(elite?1.18:1);
+    const e={x:p.x,y:p.y,vx:0,vy:0,r:elite?b.r+4:b.r,speed:sp,hp,maxHp:hp,type,value:elite?b.value*2:b.value,color:b.color,elite,wobble:R(0,6.28),hitFlash:0,shotTimer:R(1,2.2),shieldHp:elite?Math.floor(b.hp*.35):0,marked:false,markedTimer:0,frozenTime:0,leapCd:R(1,2.2),healPulse:0,aimTimer:R(1,2.2),poison:0,doomBaseMaxHp800:b.hp*(elite?1.9:1),doomBaseSpeed800:sp/(STAGES[stage].speed*timeSp),doomScaled800:true};
+    if(opts.corrupted){e.doomCorrupted800=true;e.color='#8f1022';e.maxHp=Math.round(e.maxHp*1.5);e.hp=e.maxHp;e.speed*=1.2;e.r+=2;e.value=Math.round(e.value*1.7);}
+    g.enemies.push(e);return e;
+  }
+
+  function adaptUntrackedEnemies(){const g=G(),d=state();if(!g||!d)return;for(const e of g.enemies||[]){if(!e||e.type==='boss'||e.doomScaled800||e.doomMini800||e.doomPortal800||e.doomTotem800)continue;ensureEnemyBase(e);const ratio=C(N(e.hp)/Math.max(1,N(e.maxHp,1)),0,1);const tm=1+Math.min(.9,d.elapsed/700);e.maxHp=Math.round(e.doomBaseMaxHp800*STAGES[d.stage].hp*tm);e.hp=Math.max(1,e.maxHp*ratio);e.speed=e.doomBaseSpeed800*STAGES[d.stage].speed;}}
+
+  function spawnPortal(pos=null){const g=G(),d=state();if(!g||!d)return null;const p=pos||{x:R(100,W-100),y:R(95,H-95)};const hp=Math.round(420*STAGES[d.stage].hp*(1+d.elapsed/900));const e={x:p.x,y:p.y,vx:0,vy:0,r:28,speed:0,hp,maxHp:hp,type:'doomPortal800',value:80,color:'#ff1737',elite:true,wobble:R(0,6.28),hitFlash:0,shotTimer:0,shieldHp:0,marked:false,frozenTime:0,doomPortal800:true,doomSpawnCd800:1.2};g.enemies.push(e);return e;}
+  function spawnTotem(){const g=G(),d=state();if(!g||!d)return null;const hp=Math.round(360*STAGES[d.stage].hp*(1+d.elapsed/1000));const e={x:R(120,W-120),y:R(100,H-100),vx:0,vy:0,r:24,speed:0,hp,maxHp:hp,type:'doomTotem800',value:70,color:'#ff612f',elite:true,wobble:R(0,6.28),hitFlash:0,shieldHp:0,marked:false,frozenTime:0,doomTotem800:true,doomPulseCd800:1.4};g.enemies.push(e);return e;}
+
+  function spawnMiniboss(kind=null){
+    const g=G(),d=state();if(!g||!d)return null;kind=kind||['butcher','priest','harvester','carrier'][RI(0,3)];const p=edgePos(),tm=1+d.elapsed/700;const def={butcher:{name:'DOOM BUTCHER',r:34,hp:1150,sp:64,col:'#ff3a2f'},priest:{name:'HELL PRIEST',r:27,hp:880,sp:74,col:'#b719ff'},harvester:{name:'THE HARVESTER',r:29,hp:980,sp:112,col:'#ff174f'},carrier:{name:'DOOM CARRIER',r:33,hp:1250,sp:54,col:'#ff7b27'}}[kind];const hp=Math.round(def.hp*STAGES[d.stage].hp*tm*.72);
+    const e={x:p.x,y:p.y,vx:0,vy:0,r:def.r,speed:def.sp*STAGES[d.stage].speed,hp,maxHp:hp,type:`doomMini_${kind}800`,value:180,color:def.col,elite:true,wobble:R(0,6.28),hitFlash:0,shieldHp:0,marked:false,frozenTime:0,doomMini800:true,doomMiniKind800:kind,name:def.name,doomActionCd800:R(1.4,3),doomStacks800:0};g.enemies.push(e);d.totalMiniSpawns++;try{addFloatingText(e.x,C(e.y,80,H-80),def.name,def.col,20);addRing(C(e.x,50,W-50),C(e.y,50,H-50),def.col,110,5)}catch{}return e;
+  }
+
+  function bossPos(side){if(side===0)return{x:R(180,W-180),y:-110};if(side===1)return{x:W+110,y:R(140,H-140)};if(side===2)return{x:R(180,W-180),y:H+110};return{x:-110,y:R(140,H-140)}}
+  function spawnDoomBoss(bossType,side){
+    const g=G(),d=state();if(!g||!d)return;const p=bossPos(side),scale=(1+d.elapsed/650)*STAGES[d.stage].hp;let data;
+    if(bossType==='titan')data={r:64,speed:38,hp:Math.round(5600*scale),value:560,color:'#7b61ff',shotTimer:1,summonTimer:3.8,slamTimer:2.7,laserTimer:5.2,phase:1};
+    else if(bossType==='oracle')data={r:56,speed:43,hp:Math.round(5300*scale),value:650,color:'#b6ff7a',shotTimer:1,summonTimer:3.2,riftTimer:2.5,beamTimer:5.5,phase:1};
+    else data={r:46,speed:62,hp:Math.round(4300*scale),value:360,color:'#ff2e63',shotTimer:1,summonTimer:2.8,phase:1,burstTimer:4.2};
+    g.enemies.push({bossType,x:p.x,y:p.y,vx:0,vy:0,r:data.r,speed:data.speed,hp:data.hp,maxHp:data.hp,type:'boss',value:data.value,color:data.color,elite:false,wobble:0,hitFlash:0,shieldHp:0,marked:false,frozenTime:0,auraAngle:0,...data,doomBoss800:true});g.bossActive=true;d.totalBossSpawns++;try{addRing(C(p.x,70,W-70),C(p.y,70,H-70),data.color,150,7)}catch{}
+  }
+  function spawnBossEncounter(){const g=G(),d=state();if(!g||!d)return;const count=d.stage>=4?2:1,sides=[0,1,2,3].sort(()=>Math.random()-.5),types=['archon','titan','oracle'].sort(()=>Math.random()-.5);for(let i=0;i<count;i++)spawnDoomBoss(types[i%types.length],sides[i]);d.bossEncounter=true;d.bossTimer=60;showAlert(count===2?'DOIS BOSSES ENTRARAM':'UM BOSS ENTROU',count===2?'ELES VIERAM DE LADOS DIFERENTES':'O CONTADOR PAROU ATÉ ELE MORRER','fail');}
+
+  function triggerDoomArrival(){
+    const g=G(),d=state();if(!g||!d||d.emperorSpawned)return;d.emperorSpawned=true;d.timeAtDoom=0;const hp=Math.round((11500+d.elapsed*11)*1.25),side=RI(0,3),p=bossPos(side);g.enemies.push({type:'boss',bossType:'lostEmperor',name:'Emperador das Trevas',x:p.x,y:p.y,vx:0,vy:0,r:74,speed:78,hp,maxHp:hp,value:1500,color:'#ff101f',elite:false,wobble:0,hitFlash:0,phase:1,shotTimer:.72,ghostTimer:2.0,bombTimer:2.8,slashTimer:3.5,teleportTimer:4.5,voidRuptureTimer:7,auraAngle:0,doomEmperor800:true});g.bossActive=true;g.lostBossBullets=g.lostBossBullets||[];g.shadowFire=g.shadowFire||[];g.flash=.85;g.flashColor='#ff001f';g.shake=34;showAlert('☠ DOOM ☠','O EMPERADOR DAS TREVAS CHEGOU — NADA PAROU','fail');try{addRing(C(p.x,80,W-80),C(p.y,80,H-80),'#ff102d',210,10);addParticles(C(p.x,80,W-80),C(p.y,80,H-80),'#ff102d',90,1.8)}catch{}
+  }
+
+  function updateBossSystem(dt){
+    const g=G(),d=state();if(!g||!d)return;const regular=(g.enemies||[]).filter(e=>e?.type==='boss'&&!e.doomEmperor800);
+    if(d.bossEncounter){if(regular.length===0){d.bossEncounter=false;d.bossTimer=60;}}
+    else if(d.value>=40&&d.value<100){d.bossTimer-=dt;if(d.bossTimer<=0)spawnBossEncounter();}
+    if(d.value>=100)d.timeAtDoom+=dt;
+  }
+
+  function startMission(){
+    const g=G(),d=state();if(!g||!d)return;let eligible=MISSION_POOL.filter(m=>d.stage>=m.min&&!d.missionHistory.slice(-3).includes(m.id));if(!eligible.length)eligible=MISSION_POOL.filter(m=>d.stage>=m.min);const def=eligible[RI(0,eligible.length-1)],m={...def,maxTime:def.time,baseline:{},progress:0};for(const [k,v] of Object.entries(d.metrics))m.baseline[k]=v;d.mission=m;d.missionHistory.push(m.id);if(d.missionHistory.length>12)d.missionHistory.shift();d.movingTime=0;d.lowHpTime=0;d.skilllessTime=0;d.noDashKills=0;d.killTimes=[];
+    if(m.special==='noDamage')d.lastDamageAt=d.elapsed;
+    if(m.setup==='portals'){spawnPortal();spawnPortal();}
+    if(m.setup==='totems'){spawnTotem();spawnTotem();spawnTotem();}
+    if(m.setup==='souls'){d.soulPickups=Array.from({length:m.target},()=>({x:R(100,W-100),y:R(95,H-95),r:14,p:R(0,6.28)}));}
+    if(m.setup==='seals'){d.seals=[];spawnNextSeal();}
+    if(m.id==='boss'&&!d.bossEncounter)d.bossTimer=Math.min(N(d.bossTimer,60),8);
+    if(m.id==='mini'&&!(g.enemies||[]).some(e=>e?.doomMini800))d.miniTimer=Math.min(d.miniTimer,5);
+    syncUI();
+  }
+  function spawnNextSeal(){const d=state();if(!d)return;d.seals=[{x:R(105,W-105),y:R(95,H-95),r:34,p:R(0,6.28)}];}
+  function missionProgress(m){const d=state();if(!d||!m)return 0;if(m.metric)return Math.max(0,N(d.metrics[m.metric])-N(m.baseline[m.metric]));if(m.special==='noDamage')return Math.max(0,d.elapsed-d.lastDamageAt);if(m.special==='moving')return d.movingTime;if(m.special==='lowHp')return d.lowHpTime;if(m.special==='streak'){const now=d.elapsed;d.killTimes=d.killTimes.filter(t=>now-t<=6);return d.killTimes.length;}if(m.special==='noDash')return d.noDashKills;if(m.special==='skillless')return d.skilllessTime;return 0}
+  function formatMissionProgress(m){const p=missionProgress(m);return m.special&&['noDamage','moving','lowHp','skillless'].includes(m.special)?p.toFixed(1):Math.floor(p)}
+  function finishMission(success){const d=state();if(!d?.mission)return;const m=d.mission;d.mission=null;d.soulPickups=[];d.seals=[];if(success){d.missionsCompleted++;addDoom(-10,'mission');showAlert('MISSÃO CONCLUÍDA','DOOM -10%','success');}else{d.missionsFailed++;addDoom(10,'missionFail');showAlert('DOOM PIOROU','MISSÃO FALHOU — DOOM +10%','fail');const g=G();if(g){g.flash=Math.max(N(g.flash),.55);g.flashColor='#1b0007';g.shake=Math.max(N(g.shake),22);try{addParticles(g.player.x,g.player.y,'#ff102d',55,1.25);addRing(g.player.x,g.player.y,'#1b0007',180,9)}catch{}}}d.nextMissionCd=success?2.2:2.8;}
+
+  function updateMission(dt){
+    const g=G(),d=state();if(!g||!d)return;if(!d.mission){d.nextMissionCd-=dt;if(d.nextMissionCd<=0)startMission();return;}const m=d.mission;m.time-=dt;
+    const p=g.player;if(m.special==='moving'){const moving=!!(keys?.w||keys?.a||keys?.s||keys?.d||Math.hypot(N(p?.vx),N(p?.vy))>45);d.movingTime=moving?d.movingTime+dt:Math.max(0,d.movingTime-dt*.35);}
+    if(m.special==='lowHp'&&p&&p.hp/p.maxHp<=.35)d.lowHpTime+=dt;
+    if(m.special==='skillless')d.skilllessTime+=dt;
+    if(missionProgress(m)>=m.target){finishMission(true);return;}if(m.time<=0)finishMission(false);
+  }
+
+  function updateMissionObjects(dt){const g=G(),d=state();if(!g||!d||!g.player)return;for(let i=d.soulPickups.length-1;i>=0;i--){const s=d.soulPickups[i];s.p+=dt*3;if(D2(s,g.player)<s.r+g.player.r+6){d.soulPickups.splice(i,1);d.metrics.soulCollects++;try{addParticles(s.x,s.y,'#fff',16,.7);addRing(s.x,s.y,'#ff334d',50,3);addFloatingText(s.x,s.y-20,'ALMA CAPTURADA','#ff8f9d',13)}catch{}}}
+    const seal=d.seals[0];if(seal){seal.p+=dt*2;if(D2(seal,g.player)<seal.r+g.player.r){d.metrics.seals++;try{addRing(seal.x,seal.y,'#ffd166',80,5);addParticles(seal.x,seal.y,'#ff334d',22,.8)}catch{};if(d.metrics.seals-N(d.mission?.baseline?.seals)<N(d.mission?.target,0))spawnNextSeal();else d.seals=[];}}
+  }
+
+  function spawnMeteor(){const d=state();if(!d)return;d.meteors.push({x:R(80,W-80),y:R(75,H-75),r:R(58,82),warn:1.15,life:.45,hit:false});}
+  function spawnGust(){const d=state();if(!d)return;const vertical=Math.random()<.5;d.hellGusts.push({vertical,pos:vertical?R(110,W-110):R(90,H-90),width:R(48,72),warn:.9,life:1.0,hitCd:0});}
+  function updateArenaEvents(dt){
+    const g=G(),d=state();if(!g||!d)return;
+    if(d.stage>=2){d.meteorTimer-=dt;if(d.meteorTimer<=0){spawnMeteor();if(d.stage>=4&&Math.random()<.5)spawnMeteor();d.meteorTimer=R(d.stage>=4?5:7,d.stage>=4?8:11);}}
+    if(d.stage>=3){d.gustTimer-=dt;if(d.gustTimer<=0){spawnGust();d.gustTimer=R(d.stage>=4?7:11,d.stage>=4?11:16);}}
+    for(let i=d.meteors.length-1;i>=0;i--){const m=d.meteors[i];if(m.warn>0){m.warn-=dt;if(m.warn<=0){try{addRing(m.x,m.y,'#ff5a2f',m.r,6);addParticles(m.x,m.y,'#ff3b1f',35,1.3)}catch{};if(D2(m,g.player)<m.r+g.player.r)dealDamageToPlayer(18+d.stage*3);m.hit=true;g.shake=Math.max(N(g.shake),12);}}else{m.life-=dt;if(m.life<=0)d.meteors.splice(i,1);}}
+    for(let i=d.hellGusts.length-1;i>=0;i--){const h=d.hellGusts[i];h.hitCd=Math.max(0,h.hitCd-dt);if(h.warn>0)h.warn-=dt;else{h.life-=dt;const inside=h.vertical?Math.abs(g.player.x-h.pos)<h.width/2+g.player.r:Math.abs(g.player.y-h.pos)<h.width/2+g.player.r;if(inside&&h.hitCd<=0){dealDamageToPlayer(12+d.stage*2);h.hitCd=.45;}if(h.life<=0)d.hellGusts.splice(i,1);}}
+    if(d.stage>=3&&Math.random()<dt*(d.stage>=4?.22:.10))g.shake=Math.max(N(g.shake),R(1.8,4.2));
+  }
+
+  function updateSpawner(dt){
+    const g=G(),d=state();if(!g||!d)return;d.spawnCd-=dt;const current=(g.enemies||[]).filter(e=>e&&!e.doomPortal800&&!e.doomTotem800&&e.type!=='boss').length,cap=STAGES[d.stage].cap;
+    if(d.spawnCd<=0&&current<cap){let count=d.stage>=4?(Math.random()<.55?2:1):d.stage>=3?(Math.random()<.22?2:1):1;for(let i=0;i<count;i++)spawnDoomEnemy();d.spawnCd+=STAGES[d.stage].spawn*R(.78,1.18);}
+    if(d.stage>=2){d.portalTimer-=dt;if(d.portalTimer<=0){spawnPortal();d.portalTimer=R(d.stage>=4?9:13,d.stage>=4?14:19);}}
+    if(d.stage>=3){d.miniTimer-=dt;if(d.miniTimer<=0){const alive=(g.enemies||[]).filter(e=>e?.doomMini800).length;if(alive<3)spawnMiniboss();d.miniTimer=R(d.stage>=4?17:24,d.stage>=4?24:34);}
+      d.totemTimer-=dt;if(d.totemTimer<=0){if((g.enemies||[]).filter(e=>e?.doomTotem800).length<2)spawnTotem();d.totemTimer=R(22,32);}}
+    for(let i=d.resurrections.length-1;i>=0;i--){const q=d.resurrections[i];q.delay-=dt;if(q.delay<=0){spawnDoomEnemy(q.type,{x:q.x,y:q.y},{elite:q.elite,corrupted:true});d.resurrections.splice(i,1);}}
+  }
+
+  function updateCustomAI(dt){
+    const g=G(),d=state();if(!g||!d||!g.player)return;const p=g.player;
+    for(const e of g.enemies||[]){
+      if(e.doomPortal800){e.vx=e.vy=0;e.doomSpawnCd800-=dt;if(e.doomSpawnCd800<=0){for(let n=0;n<2+(d.stage>=4?1:0);n++)spawnDoomEnemy(null,{x:e.x+R(-45,45),y:e.y+R(-45,45)});e.doomSpawnCd800=R(2.2,3.3);}continue;}
+      if(e.doomTotem800){e.vx=e.vy=0;e.doomPulseCd800-=dt;if(e.doomPulseCd800<=0){for(const a of g.enemies||[]){if(a!==e&&!a.doomTotem800&&D2(e,a)<190){a.hp=Math.min(a.maxHp,N(a.hp)+a.maxHp*.06);a.doomRage800=Math.max(N(a.doomRage800),1.2);}}try{addRing(e.x,e.y,'#ff612f',165,3)}catch{};e.doomPulseCd800=3;}continue;}
+      if(!e.doomMini800)continue;const a=Math.atan2(p.y-e.y,p.x-e.x),kind=e.doomMiniKind800;e.doomActionCd800-=dt;
+      if(kind==='butcher'){e.vx=Math.cos(a)*e.speed;e.vy=Math.sin(a)*e.speed;if(e.doomActionCd800<=0){try{addRing(e.x,e.y,'#ff3a2f',190,8);addParticles(e.x,e.y,'#ff3a2f',30,1)}catch{};if(D2(e,p)<190+p.r)dealDamageToPlayer(24);e.doomActionCd800=R(3.1,4.2);}}
+      if(kind==='priest'){const dd=D2(e,p);e.vx=(dd<300?-Math.cos(a):Math.cos(a)*.25)*e.speed;e.vy=(dd<300?-Math.sin(a):Math.sin(a)*.25)*e.speed;if(e.doomActionCd800<=0){for(const ally of g.enemies||[]){if(ally!==e&&D2(e,ally)<250&&ally.hp<ally.maxHp)ally.hp=Math.min(ally.maxHp,ally.hp+ally.maxHp*.13);}try{addRing(e.x,e.y,'#b719ff',220,5)}catch{};e.doomActionCd800=3.8;}}
+      if(kind==='harvester'){const mult=1+N(e.doomStacks800)*.04;e.vx=Math.cos(a)*e.speed*mult;e.vy=Math.sin(a)*e.speed*mult;if(e.doomActionCd800<=0){e.vx=Math.cos(a)*e.speed*4.2;e.vy=Math.sin(a)*e.speed*4.2;try{addRing(e.x,e.y,'#ff174f',70,4)}catch{};e.doomActionCd800=R(2.5,3.4);}}
+      if(kind==='carrier'){e.vx=Math.cos(a)*e.speed*.62;e.vy=Math.sin(a)*e.speed*.62;if(e.doomActionCd800<=0){for(let n=0;n<3;n++)spawnDoomEnemy(null,{x:e.x+R(-70,70),y:e.y+R(-70,70)});try{addRing(e.x,e.y,'#ff7b27',120,5)}catch{};e.doomActionCd800=R(4.0,5.2);}}
+    }
+  }
+
+  function updateRangedPressure(dt){const g=G(),d=state();if(!g||!d||d.stage<2)return;const p=g.player;for(const e of g.enemies||[]){if(!['sentinel','sniperDrone'].includes(e?.type))continue;e.doomFanCd800=N(e.doomFanCd800,R(.8,1.6))-dt;if(e.doomFanCd800<=0){const a=Math.atan2(p.y-e.y,p.x-e.x),sp=e.type==='sniperDrone'?470:410,col=e.color||'#ff553d';for(const off of [-.22,0,.22])g.enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(a+off)*sp,vy:Math.sin(a+off)*sp,r:4.5,life:2.8,damage:e.type==='sniperDrone'?11:8,color:col,homing:false,doomFast800:true});e.doomFanCd800=R(1.35,1.9);}}}
+
+  function updateDoom(dt){
+    const g=G(),d=state();if(!g||!d)return;dt=C(N(dt,.016),0,.05);d.elapsed+=dt;d.timeTick+=dt;d.damageDoomCd=Math.max(0,d.damageDoomCd-dt);while(d.timeTick+1e-9>=.5){d.timeTick-=.5;addDoom(.07,'time');}
+    d.score=Math.floor(d.elapsed*10+N(g.kills)*25+d.missionsCompleted*320+d.metrics.bossKills*1000+d.metrics.minibossKills*450+d.timeAtDoom*22);
+    g.shopPending=false;g.betweenWaves=false;g.waveBoss=false;g.enemiesToSpawn=0;g.enemiesSpawnedThisWave=0;
+    adaptUntrackedEnemies();updateSpawner(dt);updateBossSystem(dt);updateArenaEvents(dt);updateMissionObjects(dt);updateMission(dt);syncUI();
+  }
+
+  function registerKill(e,x,y){
+    const g=G(),d=state();if(!g||!d||!e)return;const m=d.metrics;m.kills++;const dash=N(g.player?.dashTime)>0;
+    if(e.doomCorrupted800){m.corruptKills++;if(dash)m.corruptDashKills++;}
+    if(e.elite&&e.type!=='boss'&&!e.doomMini800&&!e.doomPortal800&&!e.doomTotem800)m.eliteKills++;
+    if(e.type==='medic')m.medicKills++;if(dash)m.dashKills++;if(['sentinel','sniperDrone'].includes(e.type))m.rangedKills++;if(e.type==='tank')m.tankKills++;if(e.type==='bomber')m.bomberKills++;if(e.type==='swarmer')m.swarmerKills++;
+    if(e.doomMini800){m.minibossKills++;d.minibossKills++;}if(e.type==='boss'){m.bossKills++;d.bossKills++;}if(e.doomPortal800)m.portalKills++;if(e.doomTotem800)m.totemKills++;
+    if(Math.hypot(x-W/2,y-H/2)<210)m.centerKills++;if(x<150||x>W-150||y<120||y>H-120)m.edgeKills++;d.killTimes.push(d.elapsed);d.noDashKills++;
+    if(e.doomMini800&&e.doomMiniKind800==='harvester')return;
+    for(const h of g.enemies||[]){if(h?.doomMiniKind800==='harvester'&&D2(h,{x,y})<240){h.doomStacks800=C(N(h.doomStacks800)+1,0,15);try{addParticles(h.x,h.y,'#ff174f',6,.45)}catch{}}}
+  }
+
+  function maybeResurrect(e,x,y){const d=state();if(!d||d.stage<2||!e||e.doomCorrupted800||e.type==='boss'||e.doomMini800||e.doomPortal800||e.doomTotem800)return;const chance=[0,0,.12,.20,.26,.30][d.stage]||0;if(Math.random()<chance)d.resurrections.push({type:COMMON_BASES[e.type]?e.type:'chaser',x,y,elite:!!e.elite,delay:R(.65,1.15)});}
+
+  function drawDoomMap(){
+    const g=G(),d=state();if(!g||!d)return;const s=d.stage,t=d.elapsed,map=d.map;ctx.save();
+    const bg=ctx.createRadialGradient(W/2,H*.45,40,W/2,H/2,Math.max(W,H)*.74);bg.addColorStop(0,s>=4?'#4b0710':s>=2?'#30050c':'#21040a');bg.addColorStop(.56,s>=3?'#150106':'#0e0205');bg.addColorStop(1,'#020103');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle=`rgba(150,${s>=3?15:25},30,${.10+s*.025})`;ctx.lineWidth=1;for(let x=-40;x<W+40;x+=52){ctx.beginPath();ctx.moveTo(x+(t*5%52),0);ctx.lineTo(x-110+(t*5%52),H);ctx.stroke()}for(let y=-20;y<H+20;y+=46){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+    if(s>=1){for(let ri=0;ri<Math.min(map.rivers.length,s);ri++){const rv=map.rivers[ri];ctx.save();ctx.globalCompositeOperation='lighter';ctx.shadowBlur=24+s*4;ctx.shadowColor='#ff2b12';ctx.strokeStyle=s>=4?'rgba(255,95,20,.82)':'rgba(210,35,18,.58)';ctx.lineWidth=8+s*2;ctx.beginPath();if(rv.axis==='h'){for(let x=0;x<=W;x+=18){const y=rv.p+Math.sin(x*.012+rv.phase+t*.18)*rv.amp;(x===0?ctx.moveTo(x,y):ctx.lineTo(x,y));}}else{for(let y=0;y<=H;y+=18){const x=rv.p+Math.sin(y*.013+rv.phase+t*.16)*rv.amp;(y===0?ctx.moveTo(x,y):ctx.lineTo(x,y));}}ctx.stroke();ctx.restore();}}
+    const crackCount=6+s*5;ctx.lineCap='round';for(let ci=0;ci<Math.min(crackCount,map.cracks.length);ci++){const pts=map.cracks[ci];ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=s>=4?'rgba(255,85,20,.86)':s>=2?'rgba(255,38,28,.58)':'rgba(120,20,28,.35)';ctx.shadowBlur=8+s*4;ctx.shadowColor='#ff2917';ctx.lineWidth=1.4+s*.45;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.restore();}
+    for(let i=0;i<Math.min(map.runes.length,3+s*2);i++){const r=map.runes[i];ctx.save();ctx.translate(r.x,r.y);ctx.rotate(r.rot+t*r.spin);ctx.globalAlpha=.08+s*.035;ctx.strokeStyle=s>=4?'#ff3824':'#a61c32';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,r.r,0,6.28);ctx.stroke();ctx.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3;(k?ctx.lineTo:ctx.moveTo).call(ctx,Math.cos(a)*r.r*.78,Math.sin(a)*r.r*.78)}ctx.closePath();ctx.stroke();ctx.restore();}
+    for(const p of map.pillars){ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle='#090306';ctx.strokeStyle=s>=3?'#6e0b18':'#32101a';ctx.lineWidth=3;ctx.fillRect(-17,-33,34,66);ctx.strokeRect(-17,-33,34,66);ctx.fillStyle=s>=2?'#ff2b1a':'#811020';ctx.shadowBlur=18+s*3;ctx.shadowColor='#ff2618';ctx.beginPath();ctx.arc(0,-36,5+s*.6,0,6.28);ctx.fill();ctx.restore();}
+    if(s>=2){ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<map.embers.length;i++){const e=map.embers[i],yy=(e.y-t*e.sp+H*20)%H;ctx.globalAlpha=.18+Math.sin(t*3+e.ph)*.10+s*.025;ctx.fillStyle=i%4?'#ff3d20':'#ffd36a';ctx.beginPath();ctx.arc(e.x,yy,e.r+(s>=4?.7:0),0,6.28);ctx.fill();}ctx.restore();}
+    if(s>=3){ctx.save();ctx.globalAlpha=.16+s*.035;ctx.fillStyle='#000';for(let i=0;i<8+s*2;i++){const x=(i*173+Math.sin(i*9.1)*80)%W,y=H-40-Math.abs(Math.sin(t*.23+i))*70;ctx.beginPath();ctx.moveTo(x-18,y+60);ctx.lineTo(x,y-R(0,0));ctx.lineTo(x+18,y+60);ctx.fill();}ctx.restore();}
+    if(s>=4){ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<8;i++){const ph=(t*.8+i*.71)%1,ang=i*.8+t*.05,rr=90+ph*520;ctx.strokeStyle=`rgba(255,30,30,${.18*(1-ph)})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(W/2,H/2,rr,ang,ang+1.8);ctx.stroke();}ctx.restore();}
+    if(s===5){ctx.save();ctx.globalCompositeOperation='lighter';const vg=ctx.createRadialGradient(W/2,H/2,30,W/2,H/2,450);vg.addColorStop(0,'rgba(255,35,10,.14)');vg.addColorStop(.45,'rgba(180,0,18,.08)');vg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);ctx.restore();}
+    ctx.restore();
+  }
+
+  function drawDoomObjects(){
+    const g=G(),d=state();if(!g||!d)return;ctx.save();ctx.globalCompositeOperation='lighter';
+    for(const m of d.meteors){const k=m.warn>0?C(m.warn/1.15,0,1):0;ctx.globalAlpha=m.warn>0?.25+.25*Math.sin(d.elapsed*18):C(m.life/.45,0,1)*.35;ctx.strokeStyle='#ff4a2b';ctx.lineWidth=3;ctx.beginPath();ctx.arc(m.x,m.y,m.r*(1.1-k*.18),0,6.28);ctx.stroke();if(m.warn<=0){ctx.fillStyle='#ff3518';ctx.beginPath();ctx.arc(m.x,m.y,m.r*C(m.life/.45,0,1),0,6.28);ctx.fill();}}
+    for(const h of d.hellGusts){const warn=h.warn>0;ctx.globalAlpha=warn?.14+.12*Math.sin(d.elapsed*20):.45;ctx.fillStyle=warn?'#6d0915':'#ff351c';if(h.vertical)ctx.fillRect(h.pos-h.width/2,0,h.width,H);else ctx.fillRect(0,h.pos-h.width/2,W,h.width);}
+    for(const s of d.soulPickups){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.p*.18);ctx.shadowBlur=24;ctx.shadowColor='#fff';ctx.fillStyle='#fff';ctx.globalAlpha=.9;ctx.beginPath();ctx.moveTo(0,-15);ctx.quadraticCurveTo(14,-4,7,10);ctx.quadraticCurveTo(0,20,-7,10);ctx.quadraticCurveTo(-14,-4,0,-15);ctx.fill();ctx.fillStyle='#ff3650';ctx.beginPath();ctx.arc(-3,-3,2,0,6.28);ctx.arc(3,-3,2,0,6.28);ctx.fill();ctx.restore();}
+    for(const s of d.seals){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.p);ctx.globalAlpha=.55+.25*Math.sin(d.elapsed*8);ctx.strokeStyle='#ffd166';ctx.shadowBlur=22;ctx.shadowColor='#ff293c';ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,s.r,0,6.28);ctx.stroke();ctx.beginPath();for(let k=0;k<5;k++){const a=k*Math.PI*2/5-Math.PI/2;(k?ctx.lineTo:ctx.moveTo).call(ctx,Math.cos(a)*s.r*.72,Math.sin(a)*s.r*.72)}ctx.closePath();ctx.stroke();ctx.restore();}
+    ctx.restore();
+  }
+
+  function drawCustomEnemies(){const g=G(),d=state();if(!g||!d)return;for(const e of g.enemies||[]){if(!(e.doomCorrupted800||e.doomMini800||e.doomPortal800||e.doomTotem800))continue;ctx.save();ctx.translate(e.x,e.y);const pulse=1+Math.sin(d.elapsed*6+N(e.wobble))*.05;ctx.scale(pulse,pulse);
+      if(e.doomCorrupted800){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55;ctx.strokeStyle='#ff122d';ctx.shadowBlur=20;ctx.shadowColor='#ff122d';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(0,0,e.r+7+Math.sin(d.elapsed*8)*2,0,6.28);ctx.stroke();for(let i=0;i<4;i++){const a=d.elapsed*1.8+i*Math.PI/2;ctx.beginPath();ctx.moveTo(Math.cos(a)*(e.r+5),Math.sin(a)*(e.r+5));ctx.lineTo(Math.cos(a)*(e.r+15),Math.sin(a)*(e.r+15));ctx.stroke();}}
+      if(e.doomPortal800){ctx.globalCompositeOperation='lighter';ctx.shadowBlur=28;ctx.shadowColor='#ff1737';ctx.fillStyle='#080006';ctx.strokeStyle='#ff1737';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,26,35,d.elapsed*.35,0,6.28);ctx.fill();ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,0,12,26,-d.elapsed*.7,0,6.28);ctx.stroke();}
+      if(e.doomTotem800){ctx.shadowBlur=25;ctx.shadowColor='#ff612f';ctx.fillStyle='#120205';ctx.strokeStyle='#ff612f';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-32);ctx.lineTo(18,-8);ctx.lineTo(11,29);ctx.lineTo(-11,29);ctx.lineTo(-18,-8);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#ffba45';ctx.beginPath();ctx.arc(0,-8,6,0,6.28);ctx.fill();}
+      if(e.doomMini800){const k=e.doomMiniKind800;ctx.shadowBlur=28;ctx.shadowColor=e.color;ctx.fillStyle='#0b0205';ctx.strokeStyle=e.color;ctx.lineWidth=4;if(k==='butcher'){ctx.beginPath();ctx.moveTo(0,-e.r);ctx.lineTo(e.r,0);ctx.lineTo(e.r*.5,e.r);ctx.lineTo(-e.r*.5,e.r);ctx.lineTo(-e.r,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#fff1d8';ctx.fillRect(-18,-7,12,5);ctx.fillRect(6,-7,12,5);}if(k==='priest'){ctx.beginPath();ctx.arc(0,0,e.r,0,6.28);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(0,-e.r-15);ctx.lineTo(12,-e.r+2);ctx.lineTo(-12,-e.r+2);ctx.closePath();ctx.stroke();}if(k==='harvester'){ctx.rotate(d.elapsed*.25);ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,rr=i%2?e.r*.65:e.r*1.25;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}ctx.closePath();ctx.fill();ctx.stroke();}if(k==='carrier'){ctx.beginPath();ctx.rect(-e.r*.75,-e.r*.9,e.r*1.5,e.r*1.8);ctx.fill();ctx.stroke();ctx.strokeStyle='#ff1737';ctx.beginPath();ctx.ellipse(0,0,e.r*.42,e.r*.7,d.elapsed*.5,0,6.28);ctx.stroke();}
+        ctx.font='900 10px Orbitron';ctx.textAlign='center';ctx.fillStyle=e.color;ctx.shadowBlur=8;ctx.fillText(e.name||'MINIBOSS',0,-e.r-27);}
+      ctx.restore();}}
+
+  function doomGameOver(reason='O DOOM consumiu a run.'){
+    const g=G(),d=state();if(!g||!d)return;g.running=false;try{mouse.down=false}catch{};ensureStyle();let reward=0,total=0,best=0;if(!d.endAwarded){reward=Math.max(1,Math.floor(d.elapsed/28)+d.missionsCompleted*2+d.metrics.bossKills*3+d.metrics.minibossKills+Math.floor(d.timeAtDoom/22));const m=rawMeta();m.doomFragments=N(m.doomFragments)+reward;m.doomRecord=m.doomRecord||{};m.doomRecord.bestTime=Math.max(N(m.doomRecord.bestTime),d.elapsed);m.doomRecord.bestScore=Math.max(N(m.doomRecord.bestScore),d.score);m.doomRecord.bestDoomTime=Math.max(N(m.doomRecord.bestDoomTime),d.timeAtDoom);m.doomRecord.runs=N(m.doomRecord.runs)+1;writeRaw(m);total=N(m.doomFragments);best=N(m.doomRecord.bestTime);d.endAwarded=true;d.lastReward=reward;}else{const m=rawMeta();reward=N(d.lastReward);total=N(m.doomFragments);best=N(m.doomRecord?.bestTime);}
+    overlay.classList.remove('hidden');overlayCard.className='card doomEnd800';overlayCard.innerHTML=`<h1>DOOM SURVIVAL</h1><p>${reason}</p><div class="doomStats800"><div class="doomStat800"><small>TEMPO</small><b>${fmtTime(d.elapsed)}</b></div><div class="doomStat800"><small>INIMIGOS</small><b>${N(g.kills)}</b></div><div class="doomStat800"><small>MINIBOSSES</small><b>${d.metrics.minibossKills}</b></div><div class="doomStat800"><small>BOSSES</small><b>${d.metrics.bossKills}</b></div><div class="doomStat800"><small>MISSÕES</small><b>${d.missionsCompleted}</b></div><div class="doomStat800"><small>TEMPO NO DOOM</small><b>${fmtTime(d.timeAtDoom)}</b></div><div class="doomStat800"><small>SCORE</small><b>${d.score.toLocaleString()}</b></div><div class="doomStat800"><small>FRAGMENTOS DOOM</small><b>+${reward}</b></div></div><p>Total de Fragmentos DOOM: <strong>${total}</strong> • Melhor tempo: <strong>${fmtTime(best)}</strong></p><div class="duneActions461"><button class="duneBtn461" id="doomAgain800">Jogar DOOM novamente</button><button class="duneBtn461 dark" id="doomModes800">Escolher modo</button><button class="duneBtn461 dark" id="doomHome800">Menu inicial</button></div>`;
+    document.getElementById('doomAgain800').onclick=()=>{pendingDoom800=true;(window.openClassMenu461||window.openClassMenu)?.();};document.getElementById('doomModes800').onclick=()=>window.openModeChoice50?.();document.getElementById('doomHome800').onclick=()=>window.openStartMenu?.();
+  }
+
+  function openTutorial(){pendingDoom800=true;ensureStyle();overlay.classList.remove('hidden');overlayCard.className='card doomTutorial800';overlayCard.innerHTML=`<h1>☠ MODO DOOM ☠</h1><p style="text-align:center">Não há waves e não há pausa. O inferno cresce continuamente e o DOOMETER decide o quanto a arena quer você morto.</p><div class="doomTutGrid800"><div class="doomTutBox800"><h3>DOOMETER</h3><p>Sobe com o tempo, dano recebido e abates. Verde, amarelo, laranja, crítico e vermelho mudam inimigos e o próprio mapa.</p></div><div class="doomTutBox800"><h3>SPAWN CONTÍNUO</h3><p>Inimigos nunca param de chegar. Médicos, Elites, Corrompidos, Portais e Minibosses entram conforme o DOOM piora.</p></div><div class="doomTutBox800"><h3>CONTRATOS</h3><p>Missões difíceis aparecem sob seu HUD. Completar reduz 10% do DOOM. Falhar aumenta 10% e piora a arena.</p></div><div class="doomTutBox800"><h3>BOSSES</h3><p>A partir de 40%, um contador de 60s prepara o próximo Boss. O contador só reinicia depois que o Boss atual morrer. Acima de 80%, entram dois de lados diferentes.</p></div><div class="doomTutBox800"><h3>100% — DOOM</h3><p>O mapa entra em colapso e o Emperador das Trevas aparece sem cutscene. Nenhum inimigo é removido e o combate não para.</p></div><div class="doomTutBox800"><h3>OBJETIVO</h3><p>Sobreviva o máximo possível. Tempo, contratos, Minibosses, Bosses e tempo vivo no DOOM aumentam Score e Fragmentos DOOM.</p></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="doomTutBack800">← Voltar</button><button class="duneBtn461" id="doomTutGo800">CONTINUAR PARA PERSONAGENS</button></div>`;document.getElementById('doomTutBack800').onclick=()=>{pendingDoom800=false;window.openModeChoice50?.();};document.getElementById('doomTutGo800').onclick=()=>{(window.openClassMenu461||window.openClassMenu)?.();};}
+
+  function injectModeCard(){const grid=document.querySelector('.riftModeChoice50');if(!grid||document.getElementById('doomMode800'))return;const card=document.createElement('div');card.className='riftModeCard50 doomModeCard800';card.id='doomMode800';card.style.setProperty('--c','#ff263d');card.innerHTML=`<span class="riftTag50">SOBREVIVÊNCIA INFINITA</span><h2>DOOM</h2><p>Sem waves. Sem descanso. Controle o DOOMETER, cumpra contratos, enfrente Minibosses e sobreviva quando o Emperador das Trevas chegar.</p>`;grid.appendChild(card);card.onclick=e=>{e?.preventDefault?.();e?.stopPropagation?.();openTutorial();};}
+
+  // MENU ROUTE
+  const prevMode800=window.openModeChoice50;
+  if(typeof prevMode800==='function'){window.openModeChoice50=function(){pendingDoom800=false;const out=prevMode800.apply(this,arguments);setTimeout(injectModeCard,0);setTimeout(injectModeCard,80);return out;};}
+
+  // RESET / MODE START
+  const prevReset800=window.resetGame||globalThis.resetGame;
+  if(typeof prevReset800==='function'&&!prevReset800.__doom800){const wrapped=function(){const start=pendingDoom800;pendingDoom800=false;const out=prevReset800.apply(this,arguments);if(start)initDoom();else cleanupDoomUI();return out;};wrapped.__doom800=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}}
+
+  // Disable wave/shop flow only in DOOM.
+  const prevWave800=window.updateWaveState||globalThis.updateWaveState;if(typeof prevWave800==='function'){const wrapped=function(){if(isDoom()){const g=G();g.shopPending=false;g.betweenWaves=false;return;}return prevWave800.apply(this,arguments);};window.updateWaveState=wrapped;try{updateWaveState=wrapped}catch{}}
+  const prevStartWave800=window.startNextWave||globalThis.startNextWave;if(typeof prevStartWave800==='function'){const wrapped=function(){if(isDoom())return;return prevStartWave800.apply(this,arguments);};window.startNextWave=wrapped;try{startNextWave=wrapped}catch{}}
+  const prevShop800=window.openShopMenu||globalThis.openShopMenu;if(typeof prevShop800==='function'){const wrapped=function(){if(isDoom())return;return prevShop800.apply(this,arguments);};window.openShopMenu=wrapped;try{openShopMenu=wrapped}catch{}}
+
+  // Enemy AI: block base wave spawner and run custom behaviors.
+  const prevEnemies800=window.updateEnemies||globalThis.updateEnemies;if(typeof prevEnemies800==='function'){const wrapped=function(dt){if(!isDoom())return prevEnemies800.apply(this,arguments);const g=G();g.enemiesToSpawn=0;g.enemiesSpawnedThisWave=0;updateCustomAI(dt);updateRangedPressure(dt);const out=prevEnemies800.apply(this,arguments);g.enemiesToSpawn=0;g.enemiesSpawnedThisWave=0;return out;};window.updateEnemies=wrapped;try{updateEnemies=wrapped}catch{}}
+
+  // Faster ranged projectiles from orange onward.
+  const prevEnemyBullets800=window.updateEnemyBullets||globalThis.updateEnemyBullets;if(typeof prevEnemyBullets800==='function'){const wrapped=function(dt){const d=state(),g=G();if(d&&d.stage>=2)for(const b of g.enemyBullets||[]){if(!b.doomSpeed800){b.vx=N(b.vx)*1.22;b.vy=N(b.vy)*1.22;b.doomSpeed800=true;}}return prevEnemyBullets800.apply(this,arguments);};window.updateEnemyBullets=wrapped;try{updateEnemyBullets=wrapped}catch{}}
+
+  // Main mode system piggybacks on FX update after normal combat simulation.
+  const prevFX800=window.updateFX||globalThis.updateFX;if(typeof prevFX800==='function'){const wrapped=function(dt){const out=prevFX800.apply(this,arguments);if(isDoom())updateDoom(dt);return out;};window.updateFX=wrapped;try{updateFX=wrapped}catch{}}
+
+  // Damage raises Doom only when a real HP/shield state change happened.
+  const prevDamage800=window.dealDamageToPlayer||globalThis.dealDamageToPlayer;if(typeof prevDamage800==='function'){const wrapped=function(amount){const d=state(),g=G(),p=g?.player,before=p?[N(p.hp),N(p.shield),N(p.shieldHits)]:null;const out=prevDamage800.apply(this,arguments);if(d&&p&&before){const changed=N(p.hp)!==before[0]||N(p.shield)!==before[1]||N(p.shieldHits)!==before[2];if(changed){d.lastDamageAt=d.elapsed;if(d.damageDoomCd<=0){addDoom(.5,'damage');d.damageDoomCd=.35;}}}return out;};window.dealDamageToPlayer=wrapped;try{dealDamageToPlayer=wrapped}catch{}}
+
+  // Kills drive Doom, missions and corruption resurrection.
+  const prevDeath800=window.enemyDeath||globalThis.enemyDeath;if(typeof prevDeath800==='function'){const wrapped=function(index,e){const d=state(),x=N(e?.x),y=N(e?.y),snapshot=e?{...e}:null;if(d&&e){registerKill(e,x,y);const inc=e.type==='boss'?0:e.doomMini800?1.5:e.doomCorrupted800?.25:e.elite?.5:.10;addDoom(inc,'kill');maybeResurrect(snapshot,x,y);}const out=prevDeath800.apply(this,arguments);if(d){const g=G();g.shopPending=false;g.betweenWaves=false;}return out;};window.enemyDeath=wrapped;try{enemyDeath=wrapped}catch{}}
+
+  // Dash / skill mission tracking.
+  const prevDash800=window.startDash||globalThis.startDash;if(typeof prevDash800==='function'){const wrapped=function(){const d=state(),g=G(),before=N(g?.player?.dashTime);const out=prevDash800.apply(this,arguments);if(d&&N(g?.player?.dashTime)>before){d.metrics.dashes++;d.lastDashAt=d.elapsed;d.noDashKills=0;}return out;};window.startDash=wrapped;try{startDash=wrapped}catch{}}
+  const prevSkill800=window.useSkill||globalThis.useSkill;if(typeof prevSkill800==='function'){const wrapped=function(idx){const d=state(),g=G(),before=d?N(g?.skillCds?.[idx]):0;const out=prevSkill800.apply(this,arguments);if(d&&N(g?.skillCds?.[idx])>before){d.lastSkillAt=d.elapsed;d.skilllessTime=0;}return out;};window.useSkill=wrapped;try{useSkill=wrapped}catch{}}
+
+  // Map and visuals.
+  const prevGrid800=window.drawGrid||globalThis.drawGrid;if(typeof prevGrid800==='function'){const wrapped=function(){if(isDoom()){drawDoomMap();return;}return prevGrid800.apply(this,arguments);};window.drawGrid=wrapped;try{drawGrid=wrapped}catch{}}
+  const prevHaz800=window.drawHazards||globalThis.drawHazards;if(typeof prevHaz800==='function'){const wrapped=function(){const out=prevHaz800.apply(this,arguments);if(isDoom())drawDoomObjects();return out;};window.drawHazards=wrapped;try{drawHazards=wrapped}catch{}}
+  const prevDrawEnemies800=window.drawEnemies||globalThis.drawEnemies;if(typeof prevDrawEnemies800==='function'){const wrapped=function(){const out=prevDrawEnemies800.apply(this,arguments);if(isDoom())drawCustomEnemies();return out;};window.drawEnemies=wrapped;try{drawEnemies=wrapped}catch{}}
+
+  // Custom end screen.
+  const prevGameOver800=window.gameOver||globalThis.gameOver;if(typeof prevGameOver800==='function'){const wrapped=function(){if(isDoom()){doomGameOver();return;}return prevGameOver800.apply(this,arguments);};window.gameOver=wrapped;try{gameOver=wrapped}catch{}}
+
+  // HUD sync after the normal HUD so Tempo cannot be overwritten by Wave.
+  const prevHUD800=window.updateHUD||globalThis.updateHUD;if(typeof prevHUD800==='function'){const wrapped=function(){const out=prevHUD800.apply(this,arguments);if(isDoom())syncUI();return out;};window.updateHUD=wrapped;try{updateHUD=wrapped}catch{}}
+
+  window.__DoomMode800={initDoom,setValue,addDoom,startMission,finishMission,spawnDoomEnemy,spawnPortal,spawnTotem,spawnMiniboss,spawnBossEncounter,triggerDoomArrival,updateDoom,stageOf,STAGES,MISSION_POOL,state,isDoom,openTutorial};
+  setTimeout(()=>{try{if(document.querySelector('.riftModeChoice50'))injectModeCard()}catch{}},0);
+  console.log(PATCH+' — spawner contínuo, DOOMETER, mapa evolutivo, 25 contratos, Minibosses, Bosses e Emperador carregados');
+})();
+
+</script>
+
 </body>
 </html>
