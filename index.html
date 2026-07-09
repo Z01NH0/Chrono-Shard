@@ -32505,11 +32505,13 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
       .doomStart801 .duneStat461{background:linear-gradient(145deg,rgba(29,4,9,.82),rgba(8,3,6,.84))!important;border-color:rgba(255,45,68,.18)!important;box-shadow:inset 0 0 22px rgba(255,18,44,.04)}
       .doomStart801 .duneStat461 b{color:#ff6f5d!important}.doomStart801 .duneStat461 small{color:#c18d98!important}
       .doomStart801 .duneBtn461{background:linear-gradient(135deg,#9c0016,#ff2e49)!important;border:1px solid rgba(255,120,120,.16)!important;box-shadow:0 10px 24px rgba(0,0,0,.34),inset 0 0 14px rgba(255,255,255,.05)!important}
-      .doomStart801 .duneBtn461.blue{background:linear-gradient(135deg,#5a0010,#a8001d)!important}
-      .doomStart801 .duneBtn461.purple{background:linear-gradient(135deg,#42000f,#870016)!important}
+      .doomStart801 .duneBtn461.blue{background:linear-gradient(135deg,#6d0012,#c70023)!important;color:#ffeef1!important}
+      .doomStart801 .duneBtn461.purple{background:linear-gradient(135deg,#54000f,#9c001b)!important;color:#ffeef1!important}
       .doomStart801 .duneBtn461.dark{background:linear-gradient(135deg,#130207,#26040d)!important;color:#ffd7de!important}
-      .doomTagline801{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;margin:8px auto 16px;border-radius:999px;border:1px solid rgba(255,50,72,.22);background:rgba(33,2,8,.76);font:800 11px Orbitron,sans-serif;letter-spacing:.18em;color:#ff6a58;box-shadow:0 0 14px rgba(255,18,44,.12)}
+      .card.dune461.doomShell801{background:linear-gradient(180deg,#090106 0%,#080105 58%,#060104 100%)!important;border:1px solid rgba(255,36,59,.28)!important;box-shadow:0 0 0 1px rgba(255,20,48,.06) inset,0 24px 80px rgba(0,0,0,.64),0 0 36px rgba(170,0,25,.16)!important}
+      .card.dune461.doomShell801::before{display:none!important}.card.dune461.doomShell801::after{display:none!important}
       .doomStart801 .startButtonsMain462,.doomStart801 .startTutorial462{position:relative;z-index:2}
+      .doomStart801 .duneTop461{margin-bottom:4px}.doomStart801 .duneStats461{margin-top:28px}
       @keyframes doomSpin801{to{transform:translate(-50%,-50%) rotate(360deg)}}
       @keyframes doomSpinRev801{to{transform:translate(0,0) rotate(-360deg)}}
       @keyframes doomPulse801{to{transform:scale(1.08);opacity:.85}}
@@ -32558,16 +32560,39 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     window.updateFX=wrapped; try{updateFX=wrapped}catch{}
   }
 
+  function exposeMenuFns801(){
+    try{if(typeof openHub461==='function')window.openHub461=openHub461;}catch{}
+    try{if(typeof openTutorial461==='function')window.openTutorial461=openTutorial461;}catch{}
+    try{if(typeof openSettings461==='function')window.openSettings461=openSettings461;}catch{}
+    try{if(typeof openClassMenu461==='function')window.openClassMenu461=openClassMenu461;}catch{}
+    try{if(typeof openStartMenu461==='function')window.openStartMenu461=openStartMenu461;}catch{}
+  }
+
+  function callMenu801(primary, fallbacks=[]){
+    const names=[primary].concat(fallbacks||[]);
+    for(const name of names){
+      try{const fn=(typeof window!=='undefined'&&typeof window[name]==='function')?window[name]:(typeof globalThis!=='undefined'&&typeof globalThis[name]==='function'?globalThis[name]:null);if(fn)return fn();}catch{}
+      try{if(name==='openHub461'&&typeof openHub461==='function')return openHub461();}catch{}
+      try{if(name==='openTutorial461'&&typeof openTutorial461==='function')return openTutorial461();}catch{}
+      try{if(name==='openSettings461'&&typeof openSettings461==='function')return openSettings461();}catch{}
+      try{if(name==='openClassMenu461'&&typeof openClassMenu461==='function')return openClassMenu461();}catch{}
+      try{if(name==='openStartMenu461'&&typeof openStartMenu461==='function')return openStartMenu461();}catch{}
+    }
+    return null;
+  }
+
   function renderDoomStartMenu801(){
     ensureMenuStyle801();
+    exposeMenuFns801();
     try{game=null;mouse.down=false;}catch{}
     if(typeof setCard==='function')setCard();
+    try{overlayCard.classList.add('doomShell801')}catch{}
     const m=(typeof meta==='function'?meta():{})||{};
-    overlayCard.innerHTML=`<div class="startStage461 doomStart801"><div class="doomBackdrop801"><div class="doomSigils801"></div><div class="doomRitual801 main"><i></i><i></i><i></i><i></i><i></i></div><div class="doomRitual801 alt"><i></i><i></i><i></i><i></i><i></i></div><div class="doomRitual801 alt right"><i></i><i></i><i></i><i></i><i></i></div></div><div class="startInner461"><div class="duneTop461"><div class="duneUpdate461">DOOM UPDATE</div><div class="duneTitle461">CHRONO<br>SHARDS</div></div><div class="doomTagline801">☠ RITUAIS ATIVOS • O INFERNO RESPONDE ☠</div><p class="duneSub461">As Fissuras Chrono sangraram para dentro do abismo. O mapa está condenado, os selos foram rompidos e o <b>DOOM</b> agora se espalha sem pausas. Escolha sua classe, acumule relíquias, recupere ${typeof CHRONO!=='undefined'?CHRONO:'✦'} Fragmentos Chrono e prepare-se para sobreviver ao colapso infernal.</p><div class="duneStats461" style="grid-template-columns:repeat(3,1fr)"><div class="duneStat461"><small>HIGH SCORE</small><b>${typeof fmt==='function'?fmt(m.highScore):m.highScore||0}</b></div><div class="duneStat461"><small>RELÍQUIAS</small><b>${typeof fmt==='function'?fmt(m.relicShards):m.relicShards||0}</b></div><div class="duneStat461"><small>${typeof CHRONO!=='undefined'?CHRONO:'✦'} FRAGMENTOS</small><b>${typeof fmt==='function'?fmt(m.chronoFragments):m.chronoFragments||0}</b></div></div><div class="startButtonsMain462"><button class="duneBtn461" id="play461">JOGAR</button><button class="duneBtn461 blue" id="hub461">CONQUISTAS & MISSÕES</button><button class="duneBtn461 purple" id="cfg461">CONFIGURAÇÕES</button></div><div class="startTutorial462"><button class="duneBtn461 dark" id="tutorial461">TUTORIAL</button></div></div></div>`;
-    document.getElementById('play461').onclick=window.openClassMenu461||window.openClassMenu;
-    document.getElementById('hub461').onclick=window.openHub461;
-    document.getElementById('tutorial461').onclick=window.openTutorial461;
-    document.getElementById('cfg461').onclick=window.openSettings461;
+    overlayCard.innerHTML=`<div class="startStage461 doomStart801"><div class="doomBackdrop801"><div class="doomSigils801"></div><div class="doomRitual801 main"><i></i><i></i><i></i><i></i><i></i></div><div class="doomRitual801 alt"><i></i><i></i><i></i><i></i><i></i></div><div class="doomRitual801 alt right"><i></i><i></i><i></i><i></i><i></i></div></div><div class="startInner461"><div class="duneTop461"><div class="duneUpdate461">DOOM UPDATE</div><div class="duneTitle461">CHRONO<br>SHARDS</div></div><p class="duneSub461">As Fissuras Chrono sangraram para dentro do abismo. O mapa está condenado, os selos foram rompidos e o <b>DOOM</b> agora se espalha sem pausas. Escolha sua classe, acumule relíquias, recupere ${typeof CHRONO!=='undefined'?CHRONO:'✦'} Fragmentos Chrono e prepare-se para sobreviver ao colapso infernal.</p><div class="duneStats461" style="grid-template-columns:repeat(3,1fr)"><div class="duneStat461"><small>HIGH SCORE</small><b>${typeof fmt==='function'?fmt(m.highScore):m.highScore||0}</b></div><div class="duneStat461"><small>RELÍQUIAS</small><b>${typeof fmt==='function'?fmt(m.relicShards):m.relicShards||0}</b></div><div class="duneStat461"><small>${typeof CHRONO!=='undefined'?CHRONO:'✦'} FRAGMENTOS</small><b>${typeof fmt==='function'?fmt(m.chronoFragments):m.chronoFragments||0}</b></div></div><div class="startButtonsMain462"><button class="duneBtn461" id="play461">JOGAR</button><button class="duneBtn461 blue" id="hub461">CONQUISTAS & MISSÕES</button><button class="duneBtn461 purple" id="cfg461">CONFIGURAÇÕES</button></div><div class="startTutorial462"><button class="duneBtn461 dark" id="tutorial461">TUTORIAL</button></div></div></div>`;
+    document.getElementById('play461').onclick=(e)=>{e?.preventDefault?.();e?.stopPropagation?.();callMenu801('openClassMenu461',['openClassMenu']);};
+    document.getElementById('hub461').onclick=(e)=>{e?.preventDefault?.();e?.stopPropagation?.();callMenu801('openHub461',['openDuneHub461','openHub40','openHubMenu37']);};
+    document.getElementById('tutorial461').onclick=(e)=>{e?.preventDefault?.();e?.stopPropagation?.();callMenu801('openTutorial461');};
+    document.getElementById('cfg461').onclick=(e)=>{e?.preventDefault?.();e?.stopPropagation?.();callMenu801('openSettings461',['openSettingsMenu']);};
     setTimeout(()=>{try{window.__chronoRiftMode504&&window.openStartMenu&&window.openStartMenu!==renderDoomStartMenu801}catch{}},0);
   }
 
@@ -32587,6 +32612,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   }
 
   // Se o menu inicial já estiver aberto, reflita a nova identidade sem exigir reload.
+  exposeMenuFns801();
   setTimeout(()=>{try{if(document.getElementById('play461')&&overlayCard?.innerHTML?.includes('CHRONO'))renderDoomStartMenu801();}catch{}},80);
   console.log(PATCH+' — crash do mapDecor corrigido e menu inicial corrompido pelo DOOM.');
 })();
