@@ -30927,5 +30927,535 @@ setTimeout(() => {
 console.log('Chrono Shards Save/Load System v2.1 carregado');
 })();
 </script>
+
+<style id="reaperSoul744Style">
+  #reaperSoulRow744{
+    display:none;
+    align-items:center;
+    gap:8px;
+    margin-top:2px;
+  }
+  #reaperSoulRow744>span{
+    min-width:58px;
+  }
+  #reaperSoulBox744{
+    position:relative;
+    width:86px;
+    height:36px;
+    border:1px solid rgba(255,123,156,.62);
+    border-radius:8px;
+    background:linear-gradient(145deg,rgba(37,5,18,.94),rgba(10,5,14,.96));
+    box-shadow:0 0 14px rgba(255,123,156,.18),inset 0 0 14px rgba(255,123,156,.08);
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    font-family:Orbitron,sans-serif;
+    color:#ffe6f0;
+    transition:filter .18s ease,opacity .18s ease,border-color .18s ease;
+  }
+  #reaperSoulBox744 .reaperSoulGlyph744{
+    position:relative;
+    z-index:2;
+    font-size:20px;
+    line-height:1;
+    color:#ffffff;
+    text-shadow:0 0 6px #ffffff,0 0 14px #ff7b9c;
+    animation:reaperSoulPulse744 1.25s ease-in-out infinite alternate;
+  }
+  #reaperSoulCount744{
+    position:relative;
+    z-index:2;
+    font-size:12px;
+    letter-spacing:.04em;
+  }
+  #reaperSoulCooldown744{
+    position:absolute;
+    inset:0;
+    z-index:4;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(2,2,6,.78);
+    color:#ffffff;
+    font:700 13px Orbitron,sans-serif;
+    letter-spacing:.06em;
+    text-shadow:0 0 8px #ff7b9c;
+  }
+  #reaperSoulBox744.cooling744{
+    filter:saturate(.35) brightness(.62);
+    border-color:rgba(255,255,255,.18);
+  }
+  #reaperSoulBox744.cooling744 .reaperSoulGlyph744{
+    animation:none;
+    opacity:.45;
+  }
+  #reaperSoulBox744.fullFlash744{
+    animation:reaperSoulBurst744 .55s ease-out;
+  }
+  @keyframes reaperSoulPulse744{
+    from{transform:translateY(1px) scale(.94);opacity:.76}
+    to{transform:translateY(-1px) scale(1.08);opacity:1}
+  }
+  @keyframes reaperSoulBurst744{
+    0%{box-shadow:0 0 12px rgba(255,123,156,.2);transform:scale(1)}
+    45%{box-shadow:0 0 34px rgba(255,255,255,.95),0 0 52px rgba(255,123,156,.8);transform:scale(1.08)}
+    100%{box-shadow:0 0 14px rgba(255,123,156,.18);transform:scale(1)}
+  }
+</style>
+
+<script>
+/* Chrono Shards 7.4.4 — Reaper: sistema de almas funcional, HUD, buffs, explosão e cooldown */
+(()=>{
+  if(window.__reaperSoulSystem744)return;
+  window.__reaperSoulSystem744=true;
+
+  const MAX_SOULS=30;
+  const SOUL_COOLDOWN=10;
+  const DAMAGE_PER_SOUL=.003; // +0,3% por alma
+  const FIRE_RATE_PER_SOUL=.1; // +0,1 de cadência por alma, conforme o rework original
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp744=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const getGame744=()=>{try{return game||window.game||null}catch{return window.game||null}};
+  const durability744=e=>N(e?.hp)+Math.max(0,N(e?.shieldHp));
+
+  function ensureState744(forceReset=false){
+    const g=getGame744();
+    if(!g)return null;
+    if(forceReset||!g.reaperSoulState744){
+      g.reaperSoulState744={
+        count:0,
+        max:MAX_SOULS,
+        cooldown:0,
+        appliedSouls:0,
+        wisps:[],
+        bursts:[],
+        hudFlash:0
+      };
+    }
+    const s=g.reaperSoulState744;
+    s.max=MAX_SOULS;
+    s.wisps=Array.isArray(s.wisps)?s.wisps:[];
+    s.bursts=Array.isArray(s.bursts)?s.bursts:[];
+    s.count=clamp744(Math.floor(N(s.count)),0,MAX_SOULS);
+    s.cooldown=Math.max(0,N(s.cooldown));
+    s.appliedSouls=Math.max(0,Math.floor(N(s.appliedSouls)));
+    mirrorLegacy744(g,s);
+    return s;
+  }
+
+  function mirrorLegacy744(g,s){
+    if(!g||!s)return;
+    g.reaperSouls=s.count;
+    g.reaperSoulMax=MAX_SOULS;
+    g.reaperSoulCooldown=s.cooldown;
+  }
+
+  function clearMark744(e){
+    if(!e)return;
+    if(N(e._reaperBaseSpeed)>0)e.speed=e._reaperBaseSpeed;
+    e._reaperBaseSpeed=0;
+    e._reaperMarked=false;
+    e.marked=false;
+    e.markedTimer=0;
+    e._reaperSoulMarked744=false;
+    delete e._reaperSoulDurability744;
+  }
+
+  function tagVisibleMarks744(){
+    const g=getGame744();
+    if(!g||g.classKey!=='reaper')return;
+    for(const e of g.enemies||[]){
+      if(!e)continue;
+      const legacyMarked=!!(e._reaperMarked||e.marked);
+      if(legacyMarked&&!e._reaperSoulMarked744){
+        e._reaperSoulMarked744=true;
+        e._reaperSoulDurability744=durability744(e);
+      }else if(e._reaperSoulMarked744&&!legacyMarked){
+        e._reaperSoulMarked744=false;
+        delete e._reaperSoulDurability744;
+      }
+    }
+  }
+
+  function consumeDamagedMarks744(){
+    const g=getGame744();
+    if(!g||g.classKey!=='reaper')return;
+    for(const e of g.enemies||[]){
+      if(!e||!e._reaperSoulMarked744)continue;
+      if(!(e._reaperMarked||e.marked)){
+        e._reaperSoulMarked744=false;
+        delete e._reaperSoulDurability744;
+        continue;
+      }
+      const now=durability744(e);
+      const before=N(e._reaperSoulDurability744,now);
+      if(now<before-.0001){
+        clearMark744(e);
+      }else{
+        e._reaperSoulDurability744=now;
+      }
+    }
+  }
+
+  function spawnSoulWisp744(x,y){
+    const g=getGame744(),s=ensureState744();
+    if(!g||!s)return;
+    s.wisps.push({
+      x:N(x,N(g.player?.x)),y:N(y,N(g.player?.y)),
+      life:1.35,maxLife:1.35,
+      phase:Math.random()*Math.PI*2,
+      speed:240+Math.random()*55,
+      trail:[]
+    });
+  }
+
+  function removeAppliedBuffs744(g,s){
+    if(!g?.upgrades||!s)return;
+    const n=s.appliedSouls;
+    if(n<=0)return;
+    g.upgrades.damage=Math.max(.05,N(g.upgrades.damage,1)-n*DAMAGE_PER_SOUL);
+    g.upgrades.fireRate=Math.max(.05,N(g.upgrades.fireRate,1)-n*FIRE_RATE_PER_SOUL);
+    s.appliedSouls=0;
+  }
+
+  function triggerSoulBurst744(){
+    const g=getGame744(),s=ensureState744();
+    const p=g?.player;
+    if(!g||!s||!p||s.cooldown>0)return;
+
+    removeAppliedBuffs744(g,s);
+    s.count=0;
+    s.cooldown=SOUL_COOLDOWN;
+    s.hudFlash=.55;
+    s.bursts.push({x:p.x,y:p.y,life:.82,maxLife:.82,r:230});
+
+    for(const e of g.enemies||[]){
+      if(!e)continue;
+      e._microStun23=Math.max(N(e._microStun23),1);
+      e.stunTimer=Math.max(N(e.stunTimer),1);
+      e._stunTimer=Math.max(N(e._stunTimer),1);
+      e.vx=0;
+      e.vy=0;
+    }
+
+    try{
+      addRing(p.x,p.y,'#ff7b9c',230,9);
+      addRing(p.x,p.y,'#ffffff',175,5);
+      addParticles(p.x,p.y,'#ffffff',55,1.35);
+      addParticles(p.x,p.y,'#ff7b9c',70,1.55);
+      addFloatingText(p.x,p.y-52,'COLHEITA COMPLETA','#ffffff',18);
+      if(typeof eclipseNotice==='function')eclipseNotice('30 ALMAS — ONDA DO CEIFADOR','#ff7b9c',19);
+    }catch{}
+
+    g.shake=Math.max(N(g.shake),24);
+    g.flash=Math.max(N(g.flash),.42);
+    g.flashColor='#ffb6d5';
+    mirrorLegacy744(g,s);
+    syncSoulHud744();
+  }
+
+  function gainSoul744(x,y){
+    const g=getGame744(),s=ensureState744();
+    if(!g||!s||g.classKey!=='reaper'||s.cooldown>0)return false;
+
+    s.count=Math.min(MAX_SOULS,s.count+1);
+    s.appliedSouls++;
+    if(g.upgrades){
+      g.upgrades.damage=N(g.upgrades.damage,1)+DAMAGE_PER_SOUL;
+      g.upgrades.fireRate=N(g.upgrades.fireRate,1)+FIRE_RATE_PER_SOUL;
+    }
+    spawnSoulWisp744(x,y);
+
+    try{
+      const p=g.player;
+      window.__reaperSoulTextBypass744=true;
+      try{addFloatingText(p.x,p.y-42,'+1 ALMA','#ff7b9c',14)}finally{window.__reaperSoulTextBypass744=false;}
+    }catch{}
+
+    mirrorLegacy744(g,s);
+    syncSoulHud744();
+    if(s.count>=MAX_SOULS)triggerSoulBurst744();
+    return true;
+  }
+
+  function updateSoulFX744(dt){
+    const g=getGame744(),s=ensureState744();
+    const p=g?.player;
+    if(!g||!s||!p)return;
+
+    if(g.classKey==='reaper'&&s.cooldown>0){
+      s.cooldown=Math.max(0,s.cooldown-dt);
+      if(s.cooldown<=0){
+        s.count=0;
+        s.cooldown=0;
+        try{
+          addFloatingText(p.x,p.y-42,'ALMAS LIBERADAS','#ffb6d5',14);
+          addRing(p.x,p.y,'#ff7b9c',62,3);
+        }catch{}
+      }
+    }
+    s.hudFlash=Math.max(0,N(s.hudFlash)-dt);
+
+    for(let i=s.wisps.length-1;i>=0;i--){
+      const w=s.wisps[i];
+      w.life-=dt;
+      w.phase+=dt*8;
+      w.trail=w.trail||[];
+      w.trail.unshift({x:w.x,y:w.y});
+      if(w.trail.length>9)w.trail.pop();
+      const dx=p.x-w.x,dy=p.y-w.y,d=Math.hypot(dx,dy)||1;
+      const a=Math.atan2(dy,dx)+Math.sin(w.phase)*.12;
+      const accel=1+clamp744((w.maxLife-w.life)/w.maxLife,0,1)*1.5;
+      w.x+=Math.cos(a)*w.speed*accel*dt;
+      w.y+=Math.sin(a)*w.speed*accel*dt;
+      if(d<15||w.life<=0){
+        try{addParticles(p.x,p.y,'#ffffff',8,.42);addRing(p.x,p.y,'#ffb6d5',26,2)}catch{}
+        s.wisps.splice(i,1);
+      }
+    }
+
+    for(let i=s.bursts.length-1;i>=0;i--){
+      const b=s.bursts[i];
+      b.life-=dt;
+      if(b.life<=0)s.bursts.splice(i,1);
+    }
+
+    mirrorLegacy744(g,s);
+  }
+
+  function drawSoulFX744(){
+    const g=getGame744(),s=g?.reaperSoulState744;
+    if(!g||!s||g.classKey!=='reaper')return;
+    const low=(()=>{try{return !!g.meta?.gfxLow}catch{return false}})();
+
+    ctx.save();
+    ctx.globalCompositeOperation=low?'source-over':'lighter';
+
+    for(const w of s.wisps||[]){
+      const alpha=clamp744(w.life/w.maxLife,0,1);
+      const trail=w.trail||[];
+      for(let i=trail.length-1;i>=0;i--){
+        const t=trail[i],k=(trail.length-i)/Math.max(1,trail.length);
+        ctx.globalAlpha=alpha*k*.24;
+        ctx.fillStyle='#ffb6d5';
+        ctx.beginPath();ctx.arc(t.x,t.y,2+4*k,0,Math.PI*2);ctx.fill();
+      }
+      ctx.save();
+      ctx.translate(w.x,w.y);
+      ctx.globalAlpha=.9*alpha;
+      ctx.shadowBlur=low?0:22;
+      ctx.shadowColor='#ffb6d5';
+      const grad=ctx.createRadialGradient(0,-3,1,0,0,18);
+      grad.addColorStop(0,'rgba(255,255,255,1)');
+      grad.addColorStop(.34,'rgba(255,228,242,.92)');
+      grad.addColorStop(1,'rgba(255,123,156,0)');
+      ctx.fillStyle=grad;
+      ctx.beginPath();ctx.ellipse(0,-3,10,15,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.86)';
+      ctx.lineWidth=1.7;
+      ctx.beginPath();
+      ctx.moveTo(-5,6);ctx.quadraticCurveTo(-2,17,0,23);ctx.quadraticCurveTo(3,15,6,6);ctx.stroke();
+      ctx.fillStyle='#fff';
+      ctx.beginPath();ctx.arc(-3,-6,1.5,0,Math.PI*2);ctx.arc(3,-6,1.5,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+
+    for(const b of s.bursts||[]){
+      const k=1-clamp744(b.life/b.maxLife,0,1);
+      const alpha=1-k;
+      const r=35+(b.r-35)*k;
+      ctx.globalAlpha=alpha*.9;
+      ctx.shadowBlur=low?0:30;
+      ctx.shadowColor='#ff7b9c';
+      ctx.strokeStyle='#ff7b9c';
+      ctx.lineWidth=10*(1-k)+2;
+      ctx.beginPath();ctx.arc(b.x,b.y,r,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=alpha*.72;
+      ctx.strokeStyle='#ffffff';
+      ctx.lineWidth=4*(1-k)+1;
+      ctx.beginPath();ctx.arc(b.x,b.y,r*.76,0,Math.PI*2);ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function ensureSoulHud744(){
+    const stats=document.querySelector('.hud .left-panel .stats')||document.querySelector('.stats');
+    if(!stats)return null;
+    let row=document.getElementById('reaperSoulRow744');
+    if(!row){
+      row=document.createElement('div');
+      row.id='reaperSoulRow744';
+      row.innerHTML='<span>ALMAS</span><div id="reaperSoulBox744"><span class="reaperSoulGlyph744">◉</span><b id="reaperSoulCount744">0/30</b><div id="reaperSoulCooldown744">10.0s</div></div>';
+      const xpRow=document.getElementById('xpHudRow711')||document.getElementById('xpHudRow710')||document.getElementById('xpRow708');
+      if(xpRow&&xpRow.parentElement===stats)xpRow.after(row);else stats.appendChild(row);
+    }
+    return row;
+  }
+
+  function syncSoulHud744(){
+    const row=ensureSoulHud744();
+    if(!row)return;
+    const g=getGame744();
+    const active=!!(g&&g.classKey==='reaper');
+    row.style.display=active?'flex':'none';
+    if(!active)return;
+
+    const s=ensureState744();
+    const count=document.getElementById('reaperSoulCount744');
+    const box=document.getElementById('reaperSoulBox744');
+    const cd=document.getElementById('reaperSoulCooldown744');
+    if(count)count.textContent=`${s.count}/${MAX_SOULS}`;
+    const cooling=s.cooldown>0;
+    if(box){
+      box.classList.toggle('cooling744',cooling);
+      box.classList.toggle('fullFlash744',s.hudFlash>0);
+      box.title=cooling
+        ?`Colheita em recarga: ${s.cooldown.toFixed(1)}s`
+        :`Almas: ${s.count}/${MAX_SOULS} • +${(s.count*.3).toFixed(1)}% dano • +${(s.count*.1).toFixed(1)} cadência`;
+    }
+    if(cd){
+      cd.style.display=cooling?'flex':'none';
+      cd.textContent=cooling?`${s.cooldown.toFixed(1)}s`:'';
+    }
+  }
+
+  // Reinicia o sistema junto da partida e remove qualquer buff temporário antes da troca de sessão.
+  const prevReset744=window.resetGame||globalThis.resetGame;
+  if(typeof prevReset744==='function'&&!prevReset744.__reaperSoul744){
+    const wrapped=function(classKey){
+      const oldG=getGame744(),oldS=oldG?.reaperSoulState744;
+      if(oldG&&oldS)removeAppliedBuffs744(oldG,oldS);
+      const r=prevReset744.apply(this,arguments);
+      const g=getGame744();
+      if(g)ensureState744(true);
+      syncSoulHud744();
+      return r;
+    };
+    wrapped.__reaperSoul744=true;
+    window.resetGame=wrapped;
+    try{resetGame=wrapped}catch{}
+  }
+
+  // Marca imediatamente os alvos criados pelo E, inclusive através da cadeia de patches antiga.
+  const prevUseSkill744=window.useSkill||globalThis.useSkill;
+  if(typeof prevUseSkill744==='function'&&!prevUseSkill744.__reaperSoul744){
+    const wrapped=function(){
+      const r=prevUseSkill744.apply(this,arguments);
+      try{tagVisibleMarks744()}catch{}
+      return r;
+    };
+    wrapped.__reaperSoul744=true;
+    window.useSkill=wrapped;
+    try{useSkill=wrapped}catch{}
+  }
+
+  // Substitui apenas a coleta de almas antiga. Mantém os demais efeitos de morte/marca do jogo.
+  const prevEnemyDeath744=window.enemyDeath||globalThis.enemyDeath;
+  if(typeof prevEnemyDeath744==='function'&&!prevEnemyDeath744.__reaperSoul744){
+    const wrapped=function(index,e){
+      const g=getGame744();
+      const isReaper=!!(g&&g.classKey==='reaper');
+      const markedAtDeath=!!(isReaper&&e&&(e._reaperSoulMarked744||e._reaperMarked||e.marked));
+      const sx=N(e?.x,N(g?.player?.x)),sy=N(e?.y,N(g?.player?.y));
+
+      let oldLegacyCount,oldLegacyCd,oldSoulParticles,oldText;
+      if(isReaper){
+        const s=ensureState744();
+        oldLegacyCount=g.reaperSouls;
+        oldLegacyCd=g.reaperSoulCooldown;
+        oldSoulParticles=g.soulParticles;
+        g.reaperSouls=0;
+        g.reaperSoulCooldown=999;
+        g.soulParticles=[];
+        try{
+          oldText=addFloatingText;
+          addFloatingText=function(x,y,text){
+            if(/ALMA/i.test(String(text||''))&&!window.__reaperSoulTextBypass744)return;
+            return oldText.apply(this,arguments);
+          };
+        }catch{}
+        mirrorLegacy744(g,s);
+        g.reaperSoulCooldown=999;
+      }
+
+      let out;
+      try{
+        out=prevEnemyDeath744.apply(this,arguments);
+      }finally{
+        if(isReaper){
+          try{if(oldText)addFloatingText=oldText}catch{}
+          g.soulParticles=oldSoulParticles||[];
+          const s=ensureState744();
+          g.reaperSouls=N(oldLegacyCount,s.count);
+          g.reaperSoulCooldown=N(oldLegacyCd,s.cooldown);
+          mirrorLegacy744(g,s);
+        }
+      }
+
+      if(markedAtDeath){
+        if(e)clearMark744(e);
+        gainSoul744(sx,sy);
+      }
+      return out;
+    };
+    wrapped.__reaperSoul744=true;
+    window.enemyDeath=wrapped;
+    try{enemyDeath=wrapped}catch{}
+  }
+
+  // Atualização no fim do frame: consome a marca após o primeiro dano e controla cooldown/FX.
+  const prevUpdateFX744=window.updateFX||globalThis.updateFX;
+  if(typeof prevUpdateFX744==='function'&&!prevUpdateFX744.__reaperSoul744){
+    const wrapped=function(dt){
+      const r=prevUpdateFX744.apply(this,arguments);
+      try{
+        const g=getGame744();
+        if(g?.classKey==='reaper'){
+          tagVisibleMarks744();
+          consumeDamagedMarks744();
+        }
+        updateSoulFX744(Math.max(0,N(dt,N(g?.dt,.016))));
+        syncSoulHud744();
+      }catch(e){console.warn('Reaper Soul 7.4.4 update',e)}
+      return r;
+    };
+    wrapped.__reaperSoul744=true;
+    window.updateFX=wrapped;
+    try{updateFX=wrapped}catch{}
+  }
+
+  const prevRender744=window.render||globalThis.render;
+  if(typeof prevRender744==='function'&&!prevRender744.__reaperSoul744){
+    const wrapped=function(){
+      const r=prevRender744.apply(this,arguments);
+      try{drawSoulFX744()}catch(e){console.warn('Reaper Soul 7.4.4 render',e)}
+      return r;
+    };
+    wrapped.__reaperSoul744=true;
+    window.render=wrapped;
+    try{render=wrapped}catch{}
+  }
+
+  const prevHUD744=window.updateHUD||globalThis.updateHUD;
+  if(typeof prevHUD744==='function'&&!prevHUD744.__reaperSoul744){
+    const wrapped=function(){
+      const r=prevHUD744.apply(this,arguments);
+      try{syncSoulHud744()}catch{}
+      return r;
+    };
+    wrapped.__reaperSoul744=true;
+    window.updateHUD=wrapped;
+    try{updateHUD=wrapped}catch{}
+  }
+
+  ensureSoulHud744();
+  syncSoulHud744();
+  console.log('Chrono Shards 7.4.4 — Reaper com almas, HUD, buffs, explosão, stun e cooldown corrigidos');
+})();
+</script>
+
 </body>
 </html>
