@@ -31746,5 +31746,148 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
 })();
 </script>
 
+<style id="mauroPurchase746Style">
+/* Chrono Shards 7.4.6 — feedback transacional da Loja do Mauro */
+.mauroTxnToast746{position:fixed;left:50%;top:22px;z-index:2147483400;transform:translateX(-50%);min-width:min(86vw,360px);max-width:min(92vw,560px);padding:13px 18px;border-radius:18px;text-align:center;pointer-events:none;background:linear-gradient(145deg,rgba(10,13,30,.98),rgba(22,10,32,.98));border:1px solid color-mix(in srgb,var(--c,#ffd166) 52%,rgba(255,255,255,.14));box-shadow:0 0 34px color-mix(in srgb,var(--c,#ffd166) 28%,transparent),0 18px 50px rgba(0,0,0,.42);animation:mauroTxn746 2.2s ease forwards}.mauroTxnToast746 strong{display:block;color:#fff;font:900 13px Orbitron,Rajdhani,sans-serif;letter-spacing:.06em}.mauroTxnToast746 small{display:block;margin-top:5px;color:color-mix(in srgb,var(--c,#ffd166) 76%,#fff);font:700 11px Rajdhani,sans-serif}@keyframes mauroTxn746{0%{opacity:0;transform:translateX(-50%) translateY(-14px) scale(.96)}12%,78%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-10px) scale(.98)}}
+
+</style>
+<script>
+/* Chrono Shards 7.4.6 — Mauro Purchase Coordinator */
+(()=>{
+  if(window.__mauroPurchase746)return;
+  window.__mauroPurchase746=true;
+
+  const PATCH='Chrono Shards 7.4.6';
+  const SAVE=(()=>{try{return typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta'}catch{return 'chrono_v4_meta'}})();
+  const SHOP_KEY=SAVE+'_mauro_shop_clean_702';
+  const AUG_KEY=SAVE+'_chrono_augments_620';
+  const SKIN_KEY=SAVE+'_skins_clean_702';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  let guard={idx:-1,until:0};
+  let busy=false;
+
+  function parse(key,fallback){
+    const raw=localStorage.getItem(key);
+    if(raw==null)return structuredClone(fallback);
+    try{return JSON.parse(raw)??structuredClone(fallback)}catch{return structuredClone(fallback)}
+  }
+  function meta(){
+    const m=parse(SAVE,{});
+    m.relicShards=N(m.relicShards);
+    m.chronoFragments=N(m.chronoFragments);
+    m.awakeningKeys=N(m.awakeningKeys);
+    return m;
+  }
+  function shop(){
+    const s=parse(SHOP_KEY,null);
+    if(!s||!Array.isArray(s.items))return null;
+    s.sold=s.sold||{};
+    return s;
+  }
+  function aug(){const d=parse(AUG_KEY,{});d.unlocked=d.unlocked||{};d.selected=d.selected||{};return d}
+  function skins(){const s=parse(SKIN_KEY,{});s.unlocked=s.unlocked||{};s.selected=s.selected||{};return s}
+
+  function visible(){
+    const ov=document.getElementById('overlay'),card=document.getElementById('overlayCard');
+    if(!card||ov?.classList.contains('hidden'))return false;
+    return card.classList.contains('mauroShop702')||/LOJA DO MAURO|LOJINHA DO SEU MAURO/i.test(card.textContent||'');
+  }
+  function toast(text,color='#ffd166',sub=''){
+    document.querySelectorAll('.mauroTxnToast746').forEach(e=>e.remove());
+    const el=document.createElement('div');el.className='mauroTxnToast746';el.style.setProperty('--c',color);
+    el.innerHTML=`<strong>${String(text)}</strong>${sub?`<small>${String(sub)}</small>`:''}`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),2200);
+  }
+  function refresh(){
+    setTimeout(()=>{
+      try{
+        const fn=window.openMauroShop703||window.openMauroShop702||window.openLojaDoMauro702||window.openMetaRelicMenu||window.openRelics461;
+        if(typeof fn==='function')fn();
+      }catch(e){console.warn(PATCH+' refresh',e)}
+    },0);
+  }
+  function backups(keys){const out={};for(const k of keys)out[k]=localStorage.getItem(k);return out}
+  function rollback(b){for(const [k,v] of Object.entries(b)){if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v)}}
+
+  function purchase(idx){
+    if(busy)return {handled:true,ok:false,reason:'busy'};
+    const st=shop();
+    const it=st?.items?.[idx];
+    if(!it)return {handled:false,ok:false,reason:'missing'};
+    if(it.type==='mauroChest714')return {handled:false,ok:false,reason:'chest'};
+    if(it.type==='empty')return {handled:true,ok:false,reason:'empty'};
+    if(st.sold?.[idx]){toast('Item esgotado','#ffd166','Ele volta na próxima rotação.');refresh();return {handled:true,ok:false,reason:'sold'}};
+
+    const m=meta(),cost=Math.max(0,N(it.cost));
+    if(N(m.relicShards)<cost){toast('Relíquias insuficientes','#ff8fa3',`Custa ${cost} relíquias.`);return {handled:true,ok:false,reason:'funds'}}
+
+    const d=aug(),ss=skins();
+    if(it.type==='aug'&&d.unlocked?.[it.augId]){toast('Você já possui essa Ampliação','#ffd166');refresh();return {handled:true,ok:false,reason:'owned_aug'}}
+    if(it.type==='skin'&&ss.unlocked?.[it.skinId]){toast('Você já possui essa skin','#ffd166');refresh();return {handled:true,ok:false,reason:'owned_skin'}}
+
+    busy=true;
+    const touched=[SAVE,SHOP_KEY];
+    if(it.type==='aug')touched.push(AUG_KEY);
+    if(it.type==='skin')touched.push(SKIN_KEY);
+    const bak=backups(touched);
+    try{
+      m.relicShards=N(m.relicShards)-cost;
+      if(it.type==='key')m.awakeningKeys=N(m.awakeningKeys)+Math.max(0,N(it.qty));
+      else if(it.type==='chrono')m.chronoFragments=N(m.chronoFragments)+Math.max(0,N(it.qty));
+      else if(it.type==='aug')d.unlocked[it.augId]=true;
+      else if(it.type==='skin')ss.unlocked[it.skinId]=true;
+      else return {handled:false,ok:false,reason:'unknown'};
+
+      st.sold[idx]=true;
+      localStorage.setItem(SAVE,JSON.stringify(m));
+      if(it.type==='aug')localStorage.setItem(AUG_KEY,JSON.stringify(d));
+      if(it.type==='skin')localStorage.setItem(SKIN_KEY,JSON.stringify(ss));
+      localStorage.setItem(SHOP_KEY,JSON.stringify(st));
+      try{if(window.game?.meta)window.game.meta=Object.assign(window.game.meta||{},m)}catch{}
+
+      toast('Compra realizada!','#ffd166',it.title||'Item do Seu Mauro');
+      refresh();
+      return {handled:true,ok:true,reason:'ok',type:it.type,cost};
+    }catch(e){
+      try{rollback(bak)}catch(rollbackError){console.warn(PATCH+' rollback',rollbackError)}
+      console.warn(PATCH+' compra revertida',e);
+      toast('A compra não foi concluída','#ff8fa3','Nenhuma moeda foi perdida.');
+      return {handled:true,ok:false,reason:'storage'};
+    }finally{busy=false}
+  }
+
+  function idxFromEvent(e){
+    if(!visible())return null;
+    const b=e.target?.closest?.('[data-buy702]');
+    if(!b||b.disabled)return null;
+    const idx=Number(b.dataset.buy702);
+    return Number.isInteger(idx)&&idx>=0?idx:null;
+  }
+  function handle(e,phase){
+    const idx=idxFromEvent(e);if(idx==null)return;
+    const st=shop(),it=st?.items?.[idx];
+    if(!it||it.type==='mauroChest714')return; // o baú mantém a abertura interativa do 7.1.4
+
+    const now=performance.now();
+    if(phase==='click'&&guard.idx===idx&&now<guard.until){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();return;
+    }
+    const r=purchase(idx);
+    if(!r.handled)return;
+    guard={idx,until:now+900};
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+  }
+
+  // Pointerdown impede que uma reconstrução da vitrine entre o pressionar e o click perca a compra.
+  window.addEventListener('pointerdown',e=>handle(e,'pointerdown'),true);
+  // Mantém teclado/Enter funcionando e suprime o click subsequente do mesmo pointerdown.
+  window.addEventListener('click',e=>handle(e,'click'),true);
+
+  window.__MauroPurchase746={purchase,shop,meta};
+  console.log(PATCH+' — compras da vitrine do Mauro estabilizadas');
+})();
+
+</script>
+
 </body>
 </html>
