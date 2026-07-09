@@ -32189,7 +32189,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   function initDoom(){
     const g=G();if(!g)return;
     ensureUI();
-    g.riftMode50=false;g.rift50=null;g.duneMap=false;g.duneTransition37=null;g.secretArena=false;g.secretEvent=null;g.shopPending=false;g.betweenWaves=false;g.waveBoss=false;g.bossActive=false;g.wave=1;g.enemies=[];g.enemyBullets=[];g.bullets=[];g.hazards=[];g.loot=[];g.mapDecor={obstacles:[],decor:[]};g.enemiesToSpawn=0;g.enemiesSpawnedThisWave=0;g.spawnTimer=999;
+    g.riftMode50=false;g.rift50=null;g.duneMap=false;g.duneTransition37=null;g.secretArena=false;g.secretEvent=null;g.shopPending=false;g.betweenWaves=false;g.waveBoss=false;g.bossActive=false;g.wave=1;g.enemies=[];g.enemyBullets=[];g.bullets=[];g.hazards=[];g.loot=[];g.mapDecor={theme:{accent:'#ff3048',bg:'#110106'},obstacles:[],pads:[],decor:[],lanes:[]};g.enemiesToSpawn=0;g.enemiesSpawnedThisWave=0;g.spawnTimer=999;
     const d=g.doom800={
       value:0,stage:0,elapsed:0,timeAtDoom:0,timeTick:0,spawnCd:.55,damageDoomCd:0,
       bossTimer:Infinity,bossEncounter:false,bossUnlocked:false,bossSerial:0,emperorSpawned:false,
@@ -32460,6 +32460,136 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   console.log(PATCH+' — spawner contínuo, DOOMETER, mapa evolutivo, 25 contratos, Minibosses, Bosses e Emperador carregados');
 })();
 
+</script>
+
+
+<script>
+/* Chrono Shards 8.0.1 — DOOM Hotfix + Menu Theme */
+(()=>{
+  if(window.__doomHotfix801)return;
+  window.__doomHotfix801=true;
+  const PATCH='Chrono Shards 8.0.1 — DOOM Hotfix + Menu Theme';
+
+  function ensureMenuStyle801(){
+    if(document.getElementById('doomMenu801Style'))return;
+    const st=document.createElement('style');
+    st.id='doomMenu801Style';
+    st.textContent=`
+      .doomStart801{position:relative;overflow:hidden!important;border:1px solid rgba(255,42,64,.35)!important;background:radial-gradient(circle at 50% 0,rgba(112,0,16,.25),transparent 28%),linear-gradient(180deg,#180208 0%,#0c0105 44%,#050103 100%)!important;box-shadow:inset 0 0 60px rgba(255,0,35,.08),0 25px 60px rgba(0,0,0,.55)!important}
+      .doomStart801:before{content:'';position:absolute;inset:-20% -10%;background:radial-gradient(circle at 20% 18%,rgba(255,60,30,.16),transparent 18%),radial-gradient(circle at 82% 22%,rgba(255,0,50,.12),transparent 16%),radial-gradient(circle at 50% 65%,rgba(255,40,0,.08),transparent 28%);pointer-events:none;filter:blur(8px)}
+      .doomStart801 .startInner461{position:relative;z-index:2}
+      .doomBackdrop801,.doomBackdrop801:before,.doomBackdrop801:after{position:absolute;inset:0;pointer-events:none}
+      .doomBackdrop801{z-index:0;overflow:hidden}
+      .doomBackdrop801:before{content:'';background:radial-gradient(circle at center,rgba(255,40,60,.08),transparent 44%);filter:blur(18px);animation:doomPulse801 4s ease-in-out infinite alternate}
+      .doomBackdrop801:after{content:'';background:linear-gradient(180deg,transparent,rgba(255,0,40,.06),transparent);mix-blend-mode:screen;animation:doomVeil801 6s linear infinite}
+      .doomRitual801{position:absolute;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%);opacity:.75;filter:drop-shadow(0 0 12px rgba(255,40,60,.22));}
+      .doomRitual801.main{width:520px;height:520px;background:radial-gradient(circle,transparent 57%,rgba(255,52,73,.15) 58%,transparent 60%,rgba(255,52,73,.17) 66%,transparent 68%),repeating-conic-gradient(from 0deg,rgba(255,52,73,.24) 0 7deg,transparent 7deg 16deg);mask:radial-gradient(circle,transparent 0 46%,#000 48% 72%,transparent 74%);animation:doomSpin801 30s linear infinite}
+      .doomRitual801.main:before,.doomRitual801.main:after{content:'';position:absolute;inset:12%;border-radius:50%;border:1px solid rgba(255,74,98,.35)}
+      .doomRitual801.main:after{inset:24%;border-color:rgba(255,144,110,.22)}
+      .doomRitual801.main i,.doomRitual801.alt i{position:absolute;left:50%;top:50%;width:2px;height:43%;background:linear-gradient(180deg,rgba(255,74,98,.0),rgba(255,74,98,.75),rgba(255,74,98,.0));transform-origin:center bottom}
+      .doomRitual801.main i:nth-child(1){transform:translate(-50%,-95%) rotate(0deg)} .doomRitual801.main i:nth-child(2){transform:translate(-50%,-95%) rotate(72deg)} .doomRitual801.main i:nth-child(3){transform:translate(-50%,-95%) rotate(144deg)} .doomRitual801.main i:nth-child(4){transform:translate(-50%,-95%) rotate(216deg)} .doomRitual801.main i:nth-child(5){transform:translate(-50%,-95%) rotate(288deg)}
+      .doomRitual801.alt{width:260px;height:260px;left:16%;top:68%;opacity:.32;background:repeating-conic-gradient(from 0deg,rgba(255,40,60,.24) 0 8deg,transparent 8deg 18deg);mask:radial-gradient(circle,transparent 0 46%,#000 50% 69%,transparent 71%);animation:doomSpinRev801 22s linear infinite}
+      .doomRitual801.alt.right{left:auto;right:8%;top:23%;transform:translate(0,0);animation-duration:26s}
+      .doomRitual801.alt.right i{height:35%}
+      .doomSigils801{position:absolute;inset:0;z-index:1;opacity:.48;background:
+        radial-gradient(circle at 8% 82%,rgba(255,50,72,.38) 0 2px,transparent 2px),
+        radial-gradient(circle at 14% 76%,rgba(255,50,72,.28) 0 1px,transparent 1px),
+        radial-gradient(circle at 84% 24%,rgba(255,50,72,.38) 0 2px,transparent 2px),
+        radial-gradient(circle at 80% 30%,rgba(255,50,72,.28) 0 1px,transparent 1px),
+        radial-gradient(circle at 48% 17%,rgba(255,200,140,.18) 0 2px,transparent 2px),
+        radial-gradient(circle at 58% 78%,rgba(255,90,60,.24) 0 2px,transparent 2px);
+        animation:doomFlicker801 3.2s steps(2,end) infinite alternate}
+      .doomStart801 .duneUpdate461{color:#ff3a54!important;-webkit-text-fill-color:#ff3a54!important;letter-spacing:.28em;text-shadow:0 0 10px rgba(255,30,64,.55),0 0 28px rgba(255,12,40,.3)!important}
+      .doomStart801 .duneTitle461{background:linear-gradient(180deg,#fff8f5 0%,#ff8467 42%,#ff1737 72%,#59000d 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 8px 18px rgba(255,20,55,.22));}
+      .doomStart801 .duneSub461{color:#e7b2b9!important;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+      .doomStart801 .duneStat461{background:linear-gradient(145deg,rgba(29,4,9,.82),rgba(8,3,6,.84))!important;border-color:rgba(255,45,68,.18)!important;box-shadow:inset 0 0 22px rgba(255,18,44,.04)}
+      .doomStart801 .duneStat461 b{color:#ff6f5d!important}.doomStart801 .duneStat461 small{color:#c18d98!important}
+      .doomStart801 .duneBtn461{background:linear-gradient(135deg,#9c0016,#ff2e49)!important;border:1px solid rgba(255,120,120,.16)!important;box-shadow:0 10px 24px rgba(0,0,0,.34),inset 0 0 14px rgba(255,255,255,.05)!important}
+      .doomStart801 .duneBtn461.blue{background:linear-gradient(135deg,#5a0010,#a8001d)!important}
+      .doomStart801 .duneBtn461.purple{background:linear-gradient(135deg,#42000f,#870016)!important}
+      .doomStart801 .duneBtn461.dark{background:linear-gradient(135deg,#130207,#26040d)!important;color:#ffd7de!important}
+      .doomTagline801{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;margin:8px auto 16px;border-radius:999px;border:1px solid rgba(255,50,72,.22);background:rgba(33,2,8,.76);font:800 11px Orbitron,sans-serif;letter-spacing:.18em;color:#ff6a58;box-shadow:0 0 14px rgba(255,18,44,.12)}
+      .doomStart801 .startButtonsMain462,.doomStart801 .startTutorial462{position:relative;z-index:2}
+      @keyframes doomSpin801{to{transform:translate(-50%,-50%) rotate(360deg)}}
+      @keyframes doomSpinRev801{to{transform:translate(0,0) rotate(-360deg)}}
+      @keyframes doomPulse801{to{transform:scale(1.08);opacity:.85}}
+      @keyframes doomVeil801{0%{transform:translateY(-8%)}100%{transform:translateY(8%)}}
+      @keyframes doomFlicker801{0%{opacity:.3}100%{opacity:.56}}
+    `;
+    document.head.appendChild(st);
+  }
+
+  function normalizeMapDecor801(g){
+    if(!g)return null;
+    if(!g.mapDecor||typeof g.mapDecor!=='object')g.mapDecor={};
+    const md=g.mapDecor;
+    if(!Array.isArray(md.obstacles))md.obstacles=[];
+    if(!Array.isArray(md.pads))md.pads=[];
+    if(!Array.isArray(md.decor))md.decor=[];
+    if(!Array.isArray(md.lanes))md.lanes=[];
+    if(!md.theme||typeof md.theme!=='object')md.theme={accent:'#ff3048',bg:'#110106'};
+    return md;
+  }
+
+  // Hotfix do crash no DOOM: alguns patches antigos assumem mapDecor.pads sempre como array.
+  const doomAPI=window.__DoomMode800;
+  if(doomAPI&&typeof doomAPI.initDoom==='function'&&!doomAPI.initDoom.__hotfix801){
+    const prev=doomAPI.initDoom;
+    const wrapped=function(){
+      const out=prev.apply(this,arguments);
+      normalizeMapDecor801(window.game);
+      return out;
+    };
+    wrapped.__hotfix801=true;
+    doomAPI.initDoom=wrapped;
+  }
+
+  const prevUpdatePlayer801=window.updatePlayer||globalThis.updatePlayer;
+  if(typeof prevUpdatePlayer801==='function'&&!prevUpdatePlayer801.__hotfix801){
+    const wrapped=function(dt){normalizeMapDecor801(window.game);return prevUpdatePlayer801.apply(this,arguments);};
+    wrapped.__hotfix801=true;
+    window.updatePlayer=wrapped; try{updatePlayer=wrapped}catch{}
+  }
+
+  const prevFX801=window.updateFX||globalThis.updateFX;
+  if(typeof prevFX801==='function'&&!prevFX801.__mapDecorFix801){
+    const wrapped=function(dt){const out=prevFX801.apply(this,arguments);if(window.game?.doom800)normalizeMapDecor801(window.game);return out;};
+    wrapped.__mapDecorFix801=true;
+    window.updateFX=wrapped; try{updateFX=wrapped}catch{}
+  }
+
+  function renderDoomStartMenu801(){
+    ensureMenuStyle801();
+    try{game=null;mouse.down=false;}catch{}
+    if(typeof setCard==='function')setCard();
+    const m=(typeof meta==='function'?meta():{})||{};
+    overlayCard.innerHTML=`<div class="startStage461 doomStart801"><div class="doomBackdrop801"><div class="doomSigils801"></div><div class="doomRitual801 main"><i></i><i></i><i></i><i></i><i></i></div><div class="doomRitual801 alt"><i></i><i></i><i></i><i></i><i></i></div><div class="doomRitual801 alt right"><i></i><i></i><i></i><i></i><i></i></div></div><div class="startInner461"><div class="duneTop461"><div class="duneUpdate461">DOOM UPDATE</div><div class="duneTitle461">CHRONO<br>SHARDS</div></div><div class="doomTagline801">☠ RITUAIS ATIVOS • O INFERNO RESPONDE ☠</div><p class="duneSub461">As Fissuras Chrono sangraram para dentro do abismo. O mapa está condenado, os selos foram rompidos e o <b>DOOM</b> agora se espalha sem pausas. Escolha sua classe, acumule relíquias, recupere ${typeof CHRONO!=='undefined'?CHRONO:'✦'} Fragmentos Chrono e prepare-se para sobreviver ao colapso infernal.</p><div class="duneStats461" style="grid-template-columns:repeat(3,1fr)"><div class="duneStat461"><small>HIGH SCORE</small><b>${typeof fmt==='function'?fmt(m.highScore):m.highScore||0}</b></div><div class="duneStat461"><small>RELÍQUIAS</small><b>${typeof fmt==='function'?fmt(m.relicShards):m.relicShards||0}</b></div><div class="duneStat461"><small>${typeof CHRONO!=='undefined'?CHRONO:'✦'} FRAGMENTOS</small><b>${typeof fmt==='function'?fmt(m.chronoFragments):m.chronoFragments||0}</b></div></div><div class="startButtonsMain462"><button class="duneBtn461" id="play461">JOGAR</button><button class="duneBtn461 blue" id="hub461">CONQUISTAS & MISSÕES</button><button class="duneBtn461 purple" id="cfg461">CONFIGURAÇÕES</button></div><div class="startTutorial462"><button class="duneBtn461 dark" id="tutorial461">TUTORIAL</button></div></div></div>`;
+    document.getElementById('play461').onclick=window.openClassMenu461||window.openClassMenu;
+    document.getElementById('hub461').onclick=window.openHub461;
+    document.getElementById('tutorial461').onclick=window.openTutorial461;
+    document.getElementById('cfg461').onclick=window.openSettings461;
+    setTimeout(()=>{try{window.__chronoRiftMode504&&window.openStartMenu&&window.openStartMenu!==renderDoomStartMenu801}catch{}},0);
+  }
+
+  const prevStart461=window.openStartMenu461;
+  if(typeof prevStart461==='function'){
+    const wrapped=function(){return renderDoomStartMenu801();};
+    wrapped.__doomTheme801=true;
+    window.openStartMenu461=wrapped;
+    try{openStartMenu461=wrapped}catch{}
+  }
+  const prevStart=window.openStartMenu;
+  if(typeof prevStart==='function'){
+    const wrapped=function(){return renderDoomStartMenu801();};
+    wrapped.__doomTheme801=true;
+    window.openStartMenu=wrapped;
+    try{openStartMenu=wrapped}catch{}
+  }
+
+  // Se o menu inicial já estiver aberto, reflita a nova identidade sem exigir reload.
+  setTimeout(()=>{try{if(document.getElementById('play461')&&overlayCard?.innerHTML?.includes('CHRONO'))renderDoomStartMenu801();}catch{}},80);
+  console.log(PATCH+' — crash do mapDecor corrigido e menu inicial corrompido pelo DOOM.');
+})();
 </script>
 
 </body>
