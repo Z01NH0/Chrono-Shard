@@ -16047,8 +16047,8 @@ function killKey37(e){
   function ricoDamage(e,dmg,src=null){if(!game||!e)return;const mult=(game.upgrades?.eliteHunter529&&(e.elite||e.type==='boss'||e.bossType)?1.18:1)*(e.ricoMarked529?1.18:1);dmg*=mult;if(e.shieldHp>0){e.shieldHp-=dmg;if(e.shieldHp<0){e.hp+=e.shieldHp;e.shieldHp=0}}else e.hp-=dmg;e.hitFlash=.14;if(game.upgrades?.lifesteal)game.player.hp=clamp2(game.player.hp+dmg*Math.min(game.upgrades.lifesteal,.035),0,game.player.maxHp);const idx=game.enemies.indexOf(e);if(idx>=0&&e.hp<=0)enemyDeath(idx,e);}
   function hitFissure(x,y,r,dmg,color=RICO_YELLOW){if(!isRift())return false;let any=false;for(const f of game.rift50.fissures||[]){if(f.hp>0&&Math.hypot(x-f.x,y-f.y)<r+(f.r||26)){f.hp-=dmg*(game.upgrades?.eliteHunter529?1.18:1);f._flash508=.18;parts(x,y,color,5,.4);any=true;}}return any;}
   function spawnRicoBullet(x,y,a,opts={}){ensureRico();const sp=opts.speed||585;const max=opts.small?110:70;if(game.ricoBullets529.length>max)game.ricoBullets529.splice(0,game.ricoBullets529.length-max);game.ricoBullets529.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:opts.r||5.8,life:opts.life||1.7,damage:opts.damage||42,bounces:0,maxBounces:opts.maxBounces??4,split:!!opts.split,small:!!opts.small,firstBoost:false,color:opts.color||RICO_BLUE,pursuer:opts.pursuer||0,pool:!!opts.pool,hitIds:new Set(),orbit:null,age:0});}
-  function splitRico(b,count=4){if(b.small)return;for(let i=0;i<count;i++){const a=Math.atan2(b.vy,b.vx)+rnd(-1.55,1.55)+(i-(count-1)/2)*.25;spawnRicoBullet(b.x,b.y,a,{small:true,r:3.2,life:.95,damage:b.damage*.34,speed:460+rnd(-50,90),maxBounces:2,color:RICO_YELLOW});}}
-  function ricoOnBounce(b,split=true){b.bounces++;if(!b.firstBoost){b.life+=.75;const s=Math.hypot(b.vx,b.vy)||1;b.vx=b.vx/s*(s*1.14);b.vy=b.vy/s*(s*1.14);b.firstBoost=true;}if(split&&b.split)splitRico(b,4);ring(b.x,b.y,b.color,24,2);parts(b.x,b.y,b.color,6,.35);}
+  function splitRico(b,count=2){if(b.small)return;for(let i=0;i<count;i++){const a=Math.atan2(b.vy,b.vx)+rnd(-1.55,1.55)+(i-(count-1)/2)*.25;spawnRicoBullet(b.x,b.y,a,{small:true,r:3.2,life:.95,damage:b.damage*.34,speed:460+rnd(-50,90),maxBounces:2,color:RICO_YELLOW});}}
+  function ricoOnBounce(b,split=true){b.bounces++;if(!b.firstBoost){b.life+=.75;const s=Math.hypot(b.vx,b.vy)||1;b.vx=b.vx/s*(s*1.14);b.vy=b.vy/s*(s*1.14);b.firstBoost=true;}if(split&&b.split)splitRico(b,2);ring(b.x,b.y,b.color,24,2);parts(b.x,b.y,b.color,6,.35);}
   function bounceRico(b){let bounced=false;if(b.x<b.r){b.x=b.r;b.vx=Math.abs(b.vx);bounced=true;}if(b.x>W-b.r){b.x=W-b.r;b.vx=-Math.abs(b.vx);bounced=true;}if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy);bounced=true;}if(b.y>H-b.r){b.y=H-b.r;b.vy=-Math.abs(b.vy);bounced=true;}if(bounced)ricoOnBounce(b,true);return bounced;}
   function ricoWallHit529(b){if(!game?.rift50?.structures)return null;for(const s of game.rift50.structures||[]){if(!s||s.hp<=0||s.kind!=='wall')continue;const w=n(s.w,(s.rot==='v'?28:78)),h=n(s.h,(s.rot==='v'?78:28));if(b.x+b.r>s.x-w/2&&b.x-b.r<s.x+w/2&&b.y+b.r>s.y-h/2&&b.y-b.r<s.y+h/2)return {s,w,h};}return null;}
   function safeBlocked529(px,py,x,y,r){try{return typeof shotBlockedByMap==='function'&&shotBlockedByMap(px,py,{x,y,r});}catch{return false;}}
@@ -17039,7 +17039,7 @@ function killKey37(e){
       const prev=game.ricoPrev541.get(b);
       if(b._redWallHitLock541)b._redWallHitLock541=Math.max(0,b._redWallHitLock541-dt);
       if(prev)hitRedWall541(b,prev);
-      if(prev&&b.hitIds&&b.hitIds.size>prev.hits&&!b.small&&!b.pursuer&&!b.pool){spawnMini541(b,4,.46,{color:GOLD,life:1.05,maxBounces:3,speed:500});}
+      if(prev&&b.hitIds&&b.hitIds.size>prev.hits&&!b.small&&!b.pursuer&&!b.pool){spawnMini541(b,2,.46,{color:GOLD,life:1.05,maxBounces:3,speed:500});}
       if(prev&&b.q541&&N(b.bounces)>prev.bounces){const sp=Math.max(480,Math.hypot(b.vx||0,b.vy||0))*1.3;const t=target541(b,850);const a=t?ang541(b,t):Math.atan2(b.vy||0,b.vx||1);b.vx=Math.cos(a)*sp;b.vy=Math.sin(a)*sp;b.life=Math.max(b.life||0,1.05);pullWave541(b.x,b.y,112,82);}
       if(b.orbit){b.life=Math.max(b.life||0,.5);orbitDamage541(b,dt);}
     }
@@ -31454,6 +31454,295 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   ensureSoulHud744();
   syncSoulHud744();
   console.log('Chrono Shards 7.4.4 — Reaper com almas, HUD, buffs, explosão, stun e cooldown corrigidos');
+})();
+</script>
+
+
+<style id="chronoPatch745Style">
+  /* Chrono Shards 7.4.5 — Mauro remodel + small HUD safety */
+  .mauroBot702{
+    background:
+      radial-gradient(circle at 50% 18%,rgba(255,255,255,.22),transparent 24%),
+      linear-gradient(145deg,#3b4968 0%,#121827 46%,#26162e 100%)!important;
+    border-color:rgba(255,209,102,.62)!important;
+    box-shadow:0 0 42px rgba(255,209,102,.24),inset 0 0 26px rgba(255,255,255,.08),inset 0 -18px 28px rgba(0,0,0,.36)!important;
+  }
+  .mauroBot702:before,.mauroBot702:after{
+    content:'●'!important;display:grid!important;place-items:center!important;
+    top:34px!important;width:34px!important;height:30px!important;border-radius:45% 45% 52% 52%!important;
+    background:radial-gradient(circle at 45% 42%,#fff 0 10%,#75d8ff 15% 28%,#10263c 34% 62%,#050914 68%)!important;
+    color:#dff8ff!important;font-size:13px!important;border:2px solid rgba(207,246,255,.5)!important;
+    box-shadow:0 0 18px rgba(117,216,255,.48),inset 0 0 12px rgba(117,216,255,.22)!important;
+    text-shadow:0 0 10px #75d8ff!important;
+  }
+  .mauroBot702:before{left:20px!important;transform:rotate(-4deg)}
+  .mauroBot702:after{right:20px!important;transform:rotate(4deg)}
+  .mauroNose745{position:absolute;left:50%;top:67px;width:18px;height:20px;transform:translateX(-50%);z-index:4;
+    clip-path:polygon(50% 0,100% 78%,76% 100%,24% 100%,0 78%);background:linear-gradient(145deg,#d6ddeb,#46536e 58%,#171d2b);border-radius:5px;
+    filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+  .mauroStache745{position:absolute;left:50%;top:78px;width:100px;height:35px;transform:translateX(-50%);z-index:6;pointer-events:none;filter:drop-shadow(0 5px 4px rgba(0,0,0,.5))}
+  .mauroStache745:before,.mauroStache745:after{content:'';position:absolute;top:2px;width:54px;height:25px;
+    background:linear-gradient(180deg,#5a2a12 0%,#2b1209 50%,#120704 100%);border:1px solid rgba(255,196,112,.18);
+    box-shadow:inset 0 3px 4px rgba(255,255,255,.08),0 0 8px rgba(0,0,0,.55)}
+  .mauroStache745:before{right:47px;border-radius:70% 18% 72% 20%;clip-path:polygon(100% 18%,80% 4%,52% 14%,28% 35%,8% 26%,0 7%,3% 45%,20% 72%,48% 76%,74% 61%,100% 48%);transform:rotate(7deg)}
+  .mauroStache745:after{left:47px;border-radius:18% 70% 20% 72%;clip-path:polygon(0 18%,20% 4%,48% 14%,72% 35%,92% 26%,100% 7%,97% 45%,80% 72%,52% 76%,26% 61%,0 48%);transform:rotate(-7deg)}
+  .mauroMouth702{left:46px!important;right:46px!important;bottom:23px!important;height:8px!important;border-radius:3px!important;
+    background:repeating-linear-gradient(90deg,#78e5ff 0 3px,#18253a 3px 6px)!important;box-shadow:0 0 11px rgba(117,216,255,.42)!important}
+  .mauroBot702 .mauroAntenna702{background:linear-gradient(#fff1a8,#ffd166)!important}
+  .mauroBot702.mauroFaceReady745{animation:mauroIdle745 3.6s ease-in-out infinite}
+  @keyframes mauroIdle745{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-3px) rotate(.5deg)}}
+
+  /* Evita que HUDs exclusivos sobrevivam à troca de classe por DOM antigo. */
+  body:not(.noop745) #reaperSoulRow744[style*="display: none"]{pointer-events:none!important}
+</style>
+<script>
+/* Chrono Shards 7.4.5 — Mage Rewind, Colonel Air Raid, Ronin Parry Cap, Mauro Face & UI Audit */
+(()=>{
+  if(window.__chronoPatch745)return;window.__chronoPatch745=true;
+  const PATCH='Chrono Shards 7.4.5';
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const C=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const G=()=>{try{return window.game||game}catch{return null}};
+  const A=(a,b)=>Math.atan2((b?.y||0)-(a?.y||0),(b?.x||0)-(a?.x||0));
+  const D=(a,b)=>Math.hypot((a?.x||0)-(b?.x||0),(a?.y||0)-(b?.y||0));
+  const R=(a,b)=>a+Math.random()*(b-a);
+
+  // ── MAGE: projectile rewind belongs to R/Temporal Loop, not the meteor ──
+  const prevUseSkill745=window.useSkill||globalThis.useSkill;
+  if(typeof prevUseSkill745==='function'&&!prevUseSkill745.__chrono745){
+    const wrapped=function(idx){
+      const g=G(),p=g?.player,key=g?CLASSES?.[g.classKey]?.skills?.[idx]:null;
+      const beforeCd=N(g?.skillCds?.[idx]),beforeFocus=N(p?.focus);
+      const out=prevUseSkill745.apply(this,arguments);
+      const gg=G(),pp=gg?.player;
+      const used=!!(gg&&pp&&beforeCd<=0&&(N(gg.skillCds?.[idx])>beforeCd+.001||N(pp.focus)<beforeFocus-.001));
+      try{
+        if(used&&gg.classKey==='mage'&&key==='voidNova'){
+          // Meteor keeps its enemy-control effect, but no longer rewinds enemy projectiles.
+          gg.voidProjectileRewind33=0;
+          for(const b of gg.enemyBullets||[])delete b._voidRewind33;
+        }
+        if(used&&gg.classKey==='mage'&&key==='temporalLoop'&&gg.rewindActive){
+          const dur=Math.max(.95,N(gg.rewindActive.duration,1.05));
+          gg.voidProjectileRewind33=Math.max(N(gg.voidProjectileRewind33),dur);
+          for(const b of gg.enemyBullets||[])b._voidRewind33=dur;
+          try{addRing(gg.player.x,gg.player.y,'#c6a0ff',150,6);addFloatingText(gg.player.x,gg.player.y-48,'PROJÉTEIS REBOBINADOS','#e7d4ff',15)}catch{}
+        }
+      }catch(e){console.warn(PATCH+' mage fix',e)}
+      return out;
+    };
+    wrapped.__chrono745=true;window.useSkill=wrapped;try{useSkill=wrapped}catch{}
+  }
+
+  // ── COLONEL: independent continuous bombing raid ──
+  function ensureColonel745(g=G()){
+    if(!g)return null;
+    g.colonelRaidPlanes745=g.colonelRaidPlanes745||[];
+    g.colonelRaidBombs745=g.colonelRaidBombs745||[];
+    g.colonelRaidFire745=g.colonelRaidFire745||[];
+    g.colonelRaidBursts745=g.colonelRaidBursts745||[];
+    return g;
+  }
+  function clearLegacyColonelAir745(g){
+    if(!g)return;
+    for(const k of ['colonelAirstrikes','colonelBombs','colonelFire','colonelAirstrikes30','colonelBombs30','colonelFire30','colonelShockwaves30','colonelAirstrikes31','colonelBombs31','colonelFire31','colonelShockwaves31'])if(Array.isArray(g[k]))g[k].length=0;
+  }
+  function edgePoint745(p,a,offset=0){
+    const margin=150,dx=-Math.cos(a),dy=-Math.sin(a),ts=[];
+    if(Math.abs(dx)>.0001){ts.push(((-margin)-p.x)/dx,((W+margin)-p.x)/dx)}
+    if(Math.abs(dy)>.0001){ts.push(((-margin)-p.y)/dy,((H+margin)-p.y)/dy)}
+    const t=ts.filter(x=>Number.isFinite(x)&&x>0).sort((x,y)=>x-y)[0]||Math.max(W,H);
+    const sx=p.x+dx*t,sy=p.y+dy*t,side=a+Math.PI/2;
+    return{x:sx+Math.cos(side)*offset,y:sy+Math.sin(side)*offset};
+  }
+  function spawnColonelRaid745(){
+    const g=ensureColonel745(),p=g?.player;if(!g||!p)return;
+    clearLegacyColonelAir745(g);
+    g.colonelRaidPlanes745.length=0;g.colonelRaidBombs745.length=0;g.colonelRaidFire745.length=0;g.colonelRaidBursts745.length=0;
+    const a=A(p,mouse),speed=610,travel=Math.hypot(W,H)+520,life=travel/speed;
+    [-86,0,86].forEach((off,i)=>{
+      const st=edgePoint745(p,a,off);
+      g.colonelRaidPlanes745.push({x:st.x,y:st.y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,ang:a,life:life+i*.08,drop:.06+i*.075,spacing:.22,path:[],index:i});
+    });
+    try{addFloatingText(p.x,p.y-42,'ESQUADRÃO DE BOMBARDEIO','#dfffcf',20);addRing(p.x,p.y,'#78d66b',126,6);addParticles(p.x,p.y,'#caffbd',28,.9)}catch{}
+    g.shake=Math.max(N(g.shake),13);
+  }
+  function explodeColonelBomb745(g,b){
+    const radius=88,dmg=N(b.damage,34);
+    g.colonelRaidBursts745.push({x:b.x,y:b.y,life:.48,maxLife:.48,r:radius});
+    g.colonelRaidFire745.push({x:b.x,y:b.y,r:62,life:2.35,maxLife:2.35,dps:7.5*N(g.upgrades?.damage,1)});
+    try{addRing(b.x,b.y,'#ffb347',radius,5);addParticles(b.x,b.y,'#ff8a35',20,.9);addParticles(b.x,b.y,'#fff0a8',10,.65)}catch{}
+    for(let i=(g.enemies||[]).length-1;i>=0;i--){
+      const e=g.enemies[i],d=D(b,e);if(d>radius+N(e.r,10))continue;
+      const fall=.55+.45*(1-C(d/(radius+N(e.r,10)),0,1));
+      e.hp-=dmg*fall;e.hitFlash=Math.max(N(e.hitFlash),.16);
+      if(e.hp<=0)enemyDeath(i,e);
+    }
+    g.shake=Math.max(N(g.shake),8);
+  }
+  function updateColonelRaid745(dt){
+    const g=ensureColonel745();if(!g)return;
+    for(let i=g.colonelRaidPlanes745.length-1;i>=0;i--){
+      const p=g.colonelRaidPlanes745[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.drop-=dt;
+      p.path.unshift({x:p.x,y:p.y,life:.35});if(p.path.length>12)p.path.pop();for(const q of p.path)q.life-=dt;
+      while(p.drop<=0&&p.life>.08){
+        p.drop+=p.spacing;
+        const side=p.ang+Math.PI/2,j=R(-34,34),forward=R(-10,22);
+        g.colonelRaidBombs745.push({x:p.x+Math.cos(side)*j+Math.cos(p.ang)*forward,y:p.y+Math.sin(side)*j+Math.sin(p.ang)*forward,vx:p.vx*.15+R(-20,20),vy:p.vy*.15+R(-20,20),z:105+R(0,35),fall:250+R(-20,45),r:9,spin:R(0,Math.PI*2),damage:34*N(g.upgrades?.damage,1)});
+      }
+      if(p.life<=0||p.x<-260||p.x>W+260||p.y<-260||p.y>H+260)g.colonelRaidPlanes745.splice(i,1);
+    }
+    for(let i=g.colonelRaidBombs745.length-1;i>=0;i--){
+      const b=g.colonelRaidBombs745[i];b.x+=b.vx*dt;b.y+=b.vy*dt;b.z-=b.fall*dt;b.spin+=dt*9;
+      if(b.z<=0){explodeColonelBomb745(g,b);g.colonelRaidBombs745.splice(i,1)}
+    }
+    for(let i=g.colonelRaidFire745.length-1;i>=0;i--){
+      const f=g.colonelRaidFire745[i];f.life-=dt;if(f.life<=0){g.colonelRaidFire745.splice(i,1);continue}
+      for(let j=(g.enemies||[]).length-1;j>=0;j--){const e=g.enemies[j];if(D(f,e)<f.r+N(e.r,10)){e.hp-=f.dps*dt;e.hitFlash=Math.max(N(e.hitFlash),.05);if(e.hp<=0)enemyDeath(j,e)}}
+    }
+    for(let i=g.colonelRaidBursts745.length-1;i>=0;i--){const b=g.colonelRaidBursts745[i];b.life-=dt;if(b.life<=0)g.colonelRaidBursts745.splice(i,1)}
+  }
+  function drawColonelRaid745(){
+    const g=G();if(!g)return;ensureColonel745(g);ctx.save();ctx.globalCompositeOperation='lighter';
+    for(const f of g.colonelRaidFire745){const k=C(f.life/f.maxLife,0,1),gr=ctx.createRadialGradient(f.x,f.y,4,f.x,f.y,f.r);gr.addColorStop(0,'rgba(255,246,160,.42)');gr.addColorStop(.35,'rgba(255,126,34,.30)');gr.addColorStop(1,'rgba(255,36,0,0)');ctx.globalAlpha=.72*k;ctx.fillStyle=gr;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill()}
+    for(const b of g.colonelRaidBursts745){const k=1-C(b.life/b.maxLife,0,1);ctx.globalAlpha=(1-k)*.8;ctx.strokeStyle='#ffd166';ctx.lineWidth=5*(1-k)+1;ctx.beginPath();ctx.arc(b.x,b.y,12+(b.r-12)*k,0,Math.PI*2);ctx.stroke()}
+    for(const b of g.colonelRaidBombs745){ctx.save();ctx.translate(b.x,b.y-b.z*.18);ctx.rotate(b.spin);ctx.globalAlpha=.95;ctx.shadowBlur=14;ctx.shadowColor='#ff8a35';ctx.fillStyle='#1b1207';ctx.strokeStyle='#ffd166';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-b.r);ctx.lineTo(b.r*.7,0);ctx.lineTo(0,b.r);ctx.lineTo(-b.r*.7,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();ctx.globalAlpha=.18;ctx.fillStyle='#ff8a35';ctx.beginPath();ctx.ellipse(b.x,b.y,8+Math.max(0,20-b.z*.08),4+Math.max(0,9-b.z*.04),0,0,Math.PI*2);ctx.fill()}
+    for(const p of g.colonelRaidPlanes745){for(const t of p.path){ctx.globalAlpha=Math.max(0,t.life/.35)*.12;ctx.fillStyle='#dfffcf';ctx.beginPath();ctx.arc(t.x,t.y,12,0,Math.PI*2);ctx.fill()}ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.ang);ctx.scale(1.5,1.5);ctx.globalAlpha=.98;ctx.shadowBlur=18;ctx.shadowColor='#caffbd';ctx.fillStyle='#1e3a23';ctx.strokeStyle='#e9ffdf';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(54,0);ctx.lineTo(20,-8);ctx.lineTo(-10,-25);ctx.lineTo(-6,-7);ctx.lineTo(-50,-11);ctx.lineTo(-34,0);ctx.lineTo(-50,11);ctx.lineTo(-6,7);ctx.lineTo(-10,25);ctx.lineTo(20,8);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
+    ctx.restore();
+  }
+
+  // Hook the already-consumed Colonel skill and replace legacy visual-only raid with the new one.
+  const useAfterMage745=window.useSkill||globalThis.useSkill;
+  if(typeof useAfterMage745==='function'&&!useAfterMage745.__colonelRaid745){
+    const wrapped=function(idx){
+      const g=G(),p=g?.player,key=g?CLASSES?.[g.classKey]?.skills?.[idx]:null,bcd=N(g?.skillCds?.[idx]),bf=N(p?.focus);
+      const out=useAfterMage745.apply(this,arguments);const gg=G(),pp=gg?.player;
+      const used=!!(gg&&pp&&bcd<=0&&(N(gg.skillCds?.[idx])>bcd+.001||N(pp.focus)<bf-.001));
+      if(used&&gg.classKey==='colonel'&&key==='colonelAirstrike')spawnColonelRaid745();
+      return out;
+    };
+    wrapped.__colonelRaid745=true;window.useSkill=wrapped;try{useSkill=wrapped}catch{}
+  }
+
+  // ── RONIN: parry ends at 4 contacts + stronger area feedback ──
+  function ensureRonin745(g=G(),reset=false){
+    if(!g)return null;
+    if(reset||!g.roninParryState745)g.roninParryState745={contacts:0,active:false,bulletSeen:new WeakSet(),bodySeen:new WeakSet(),sparks:[],rings:[],flash:0};
+    return g.roninParryState745;
+  }
+  function parryHitFX745(x,y){const g=G(),s=ensureRonin745(g);if(!g||!s)return;s.sparks.push({x,y,life:.34,maxLife:.34,ang:R(0,Math.PI*2)});s.flash=.16;try{addRing(x,y,'#fff2a8',32,3);addParticles(x,y,'#ffe38c',8,.5)}catch{}}
+  function endParry745(reason='LIMIT'){
+    const g=G(),s=ensureRonin745(g);if(!g||!s)return;g.parryTimer=0;s.active=false;s.flash=.4;
+    try{addRing(g.player.x,g.player.y,'#fff2a8',118,7);addRing(g.player.x,g.player.y,'#ffd166',82,3);addFloatingText(g.player.x,g.player.y-42,reason==='LIMIT'?'PARRY 4/4':'PARRY ENCERRADO','#fff2a8',15)}catch{}
+  }
+  const roninUse745=window.useSkill||globalThis.useSkill;
+  if(typeof roninUse745==='function'&&!roninUse745.__roninParry745){
+    const wrapped=function(idx){const g=G(),p=g?.player,key=g?CLASSES?.[g.classKey]?.skills?.[idx]:null,bcd=N(g?.skillCds?.[idx]),bf=N(p?.focus);const out=roninUse745.apply(this,arguments);const gg=G(),pp=gg?.player,used=!!(gg&&pp&&bcd<=0&&(N(gg.skillCds?.[idx])>bcd+.001||N(pp.focus)<bf-.001));if(used&&gg.classKey==='ronin'&&key==='parryField'&&N(gg.parryTimer)>0){const s=ensureRonin745(gg,true);s.active=true;s.rings.push({life:.55,maxLife:.55});}return out};
+    wrapped.__roninParry745=true;window.useSkill=wrapped;try{useSkill=wrapped}catch{}
+  }
+  const prevEnemyBullets745=window.updateEnemyBullets||globalThis.updateEnemyBullets;
+  if(typeof prevEnemyBullets745==='function'&&!prevEnemyBullets745.__roninParry745){
+    const wrapped=function(dt){
+      const g=G(),s=ensureRonin745(g),p=g?.player;let extras=[];
+      if(g&&s&&p&&g.classKey==='ronin'&&s.active&&N(g.parryTimer)>0){
+        const near=(g.enemyBullets||[]).filter(b=>b&&D(b,p)<94+N(b.r));
+        const fresh=near.filter(b=>!s.bulletSeen.has(b));const rem=Math.max(0,4-s.contacts),accepted=fresh.slice(0,rem);extras=fresh.slice(rem);
+        for(const b of accepted){s.bulletSeen.add(b);s.contacts++;parryHitFX745(b.x,b.y)}
+        if(extras.length){const set=new Set(extras);g.enemyBullets=g.enemyBullets.filter(b=>!set.has(b));}
+      }
+      const out=prevEnemyBullets745.apply(this,arguments);
+      if(g&&extras.length)g.enemyBullets.push(...extras);
+      if(g&&s&&s.active&&s.contacts>=4)endParry745('LIMIT');
+      return out;
+    };
+    wrapped.__roninParry745=true;window.updateEnemyBullets=wrapped;try{updateEnemyBullets=wrapped}catch{}
+  }
+  const prevEnemies745=window.updateEnemies||globalThis.updateEnemies;
+  if(typeof prevEnemies745==='function'&&!prevEnemies745.__roninParry745){
+    const wrapped=function(dt){
+      const g=G(),s=ensureRonin745(g),p=g?.player;let extras=[];
+      if(g&&s&&p&&g.classKey==='ronin'&&s.active&&N(g.parryTimer)>0){
+        const near=(g.enemies||[]).filter(e=>e&&D(e,p)<94+N(e.r,10));
+        for(const e of g.enemies||[])if(e&&D(e,p)>=94+N(e.r,10))s.bodySeen.delete(e);
+        const fresh=near.filter(e=>!s.bodySeen.has(e)),rem=Math.max(0,4-s.contacts),accepted=fresh.slice(0,rem);extras=fresh.slice(rem);
+        for(const e of accepted){s.bodySeen.add(e);s.contacts++;parryHitFX745(e.x,e.y)}
+        // Keep excess simultaneous contacts out of the legacy parry pass for this frame.
+        if(extras.length){const set=new Set(extras);g.enemies=g.enemies.filter(e=>!set.has(e));}
+      }
+      const out=prevEnemies745.apply(this,arguments);
+      if(g&&extras.length)g.enemies.push(...extras);
+      if(g&&s&&s.active&&s.contacts>=4)endParry745('LIMIT');
+      return out;
+    };
+    wrapped.__roninParry745=true;window.updateEnemies=wrapped;try{updateEnemies=wrapped}catch{}
+  }
+  function updateRoninFX745(dt){const g=G(),s=ensureRonin745(g);if(!g||!s)return;if(s.active&&N(g.parryTimer)<=0)s.active=false;s.flash=Math.max(0,s.flash-dt);for(let i=s.sparks.length-1;i>=0;i--){s.sparks[i].life-=dt;if(s.sparks[i].life<=0)s.sparks.splice(i,1)}for(let i=s.rings.length-1;i>=0;i--){s.rings[i].life-=dt;if(s.rings[i].life<=0)s.rings.splice(i,1)}}
+  function drawRoninParry745(){
+    const g=G(),s=g?.roninParryState745,p=g?.player;if(!g||!s||!p||g.classKey!=='ronin')return;
+    if(!(s.active&&N(g.parryTimer)>0)&&!s.sparks.length&&s.flash<=0)return;
+    const t=N(g.time),active=s.active&&N(g.parryTimer)>0;ctx.save();ctx.globalCompositeOperation='lighter';
+    if(active){
+      const pulse=1+Math.sin(t*14)*.045,r=94*pulse;
+      ctx.globalAlpha=.12+.05*Math.sin(t*18);ctx.fillStyle='#ffe38c';ctx.shadowBlur=32;ctx.shadowColor='#ffd166';ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fill();
+      for(let k=0;k<3;k++){ctx.globalAlpha=.72-k*.18;ctx.strokeStyle=k===1?'#ffffff':'#ffe38c';ctx.lineWidth=3-k*.6;ctx.setLineDash(k===0?[10,7]:k===1?[3,9]:[]);ctx.lineDashOffset=-t*(28+k*18)*(k%2? -1:1);ctx.beginPath();ctx.arc(p.x,p.y,76+k*10+Math.sin(t*12+k)*3,0,Math.PI*2);ctx.stroke()}
+      ctx.setLineDash([]);for(let i=0;i<8;i++){const a=t*1.8+i*Math.PI/4,rr=100+Math.sin(t*7+i)*5;ctx.globalAlpha=.5;ctx.fillStyle=i%2?'#fff2a8':'#ffd166';ctx.beginPath();ctx.arc(p.x+Math.cos(a)*rr,p.y+Math.sin(a)*rr,2.4,0,Math.PI*2);ctx.fill()}
+      ctx.globalAlpha=.95;ctx.font='900 12px Orbitron, sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff2a8';ctx.shadowBlur=12;ctx.shadowColor='#ffd166';ctx.fillText(`PARRY ${s.contacts}/4`,p.x,p.y-116);
+    }
+    for(const q of s.sparks){const k=C(q.life/q.maxLife,0,1);ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.ang+(1-k)*1.4);ctx.globalAlpha=k;ctx.strokeStyle='#fff2a8';ctx.lineWidth=4*k+1;ctx.shadowBlur=18;ctx.shadowColor='#ffd166';ctx.beginPath();ctx.moveTo(-18,0);ctx.lineTo(18,0);ctx.moveTo(0,-18);ctx.lineTo(0,18);ctx.stroke();ctx.restore()}
+    if(s.flash>0){ctx.globalAlpha=s.flash*.28;ctx.strokeStyle='#ffffff';ctx.lineWidth=6;ctx.beginPath();ctx.arc(p.x,p.y,108+(1-s.flash)*26,0,Math.PI*2);ctx.stroke()}
+    ctx.restore();
+  }
+
+  // Shared frame/render hooks for Colonel + Ronin.
+  const prevFX745=window.updateFX||globalThis.updateFX;
+  if(typeof prevFX745==='function'&&!prevFX745.__chronoSystems745){
+    const wrapped=function(dt){const out=prevFX745.apply(this,arguments);const d=Math.max(0,N(dt,N(G()?.dt,.016)));try{updateColonelRaid745(d);updateRoninFX745(d)}catch(e){console.warn(PATCH+' update',e)}return out};
+    wrapped.__chronoSystems745=true;window.updateFX=wrapped;try{updateFX=wrapped}catch{}
+  }
+  const prevRender745=window.render||globalThis.render;
+  if(typeof prevRender745==='function'&&!prevRender745.__chronoSystems745){
+    const wrapped=function(){const out=prevRender745.apply(this,arguments);try{drawColonelRaid745();drawRoninParry745()}catch(e){console.warn(PATCH+' render',e)}return out};
+    wrapped.__chronoSystems745=true;window.render=wrapped;try{render=wrapped}catch{}
+  }
+
+  // Reset new transient systems cleanly on class/run changes.
+  const prevReset745=window.resetGame||globalThis.resetGame;
+  if(typeof prevReset745==='function'&&!prevReset745.__chrono745){
+    const wrapped=function(classKey){const out=prevReset745.apply(this,arguments);const g=G();if(g){ensureColonel745(g);g.colonelRaidPlanes745=[];g.colonelRaidBombs745=[];g.colonelRaidFire745=[];g.colonelRaidBursts745=[];ensureRonin745(g,true);if(classKey!=='reaper'){const row=document.getElementById('reaperSoulRow744');if(row)row.style.display='none'}}return out};
+    wrapped.__chrono745=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}
+  }
+
+  // ── MAURO: robotic handlebar moustache face ──
+  function patchMauroFace745(){
+    document.querySelectorAll('.mauroBot702').forEach(bot=>{
+      bot.classList.add('mauroFaceReady745');
+      if(!bot.querySelector('.mauroNose745')){const n=document.createElement('span');n.className='mauroNose745';bot.appendChild(n)}
+      if(!bot.querySelector('.mauroStache745')){const m=document.createElement('span');m.className='mauroStache745';bot.appendChild(m)}
+      bot.setAttribute('aria-label','Seu Mauro, robô lojista de bigode curvado');
+    });
+  }
+
+  // Conservative UI audit: remove duplicate singleton HUD/shop elements and keep class-only HUDs scoped.
+  function uiAudit745(){
+    try{
+      for(const id of ['reaperSoulRow744','relicFloat702','chronoFloat702']){const els=[...document.querySelectorAll('#'+id)];els.slice(1).forEach(el=>el.remove())}
+      const g=G(),soul=document.getElementById('reaperSoulRow744');if(soul&&g&&g.classKey!=='reaper')soul.style.display='none';
+      patchMauroFace745();
+      const card=document.getElementById('overlayCard');if(card&&/CONQUISTAS\s*(?:&|E)\s*MISSÕES/i.test(card.textContent||'')&&!/LOJA DO MAURO|LOJINHA DO SEU MAURO/i.test(card.textContent||''))card.querySelectorAll('#mauroBack704,#mauroBack703,#mauroBack702,.mauroBackWrap704').forEach(el=>(el.closest('.mauroBackWrap704')||el).remove());
+    }catch(e){console.warn(PATCH+' UI audit',e)}
+  }
+  try{new MutationObserver(()=>setTimeout(uiAudit745,0)).observe(document.body,{childList:true,subtree:true});setInterval(uiAudit745,500)}catch{}
+  setTimeout(uiAudit745,0);
+
+  // Update final descriptions to match actual behavior.
+  try{
+    if(SKILL_DEFS?.temporalLoop)SKILL_DEFS.temporalLoop.desc='Volta 10s na própria trajetória e rebobina os projéteis inimigos durante o retorno.';
+    if(SKILL_DEFS?.colonelAirstrike)SKILL_DEFS.colonelAirstrike.desc='Chama um esquadrão que cruza a arena lançando bombas continuamente por toda a rota.';
+    if(SKILL_DEFS?.parryField)SKILL_DEFS.parryField.desc='Deflete projéteis e repele contatos. Encerra ao atingir 4 contatos ou quando o tempo acaba.';
+    if(SKILL_DEFS?.ricoPursuer&&/4 balas menores/i.test(SKILL_DEFS.ricoPursuer.desc))SKILL_DEFS.ricoPursuer.desc=SKILL_DEFS.ricoPursuer.desc.replace(/4 balas menores/gi,'2 balas menores');
+  }catch{}
+
+  console.log(PATCH+' — Mago, Coronel, Ricocheteador, Ronin, Mauro e auditoria de UI aplicados');
 })();
 </script>
 
