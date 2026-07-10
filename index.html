@@ -33454,7 +33454,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
 (()=>{
   if(window.__doomInfernalGate810)return;
   window.__doomInfernalGate810=true;
-  const PATCH='Chrono Shards 8.1.0 — Infernal Key Event';
+  const PATCH='Chrono Shards 8.2.1 — Infernal Key Event + Boss Wave Deferral';
   const META_KEY=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
   const DOOM_UNLOCK='doomModeUnlocked810';
   const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
@@ -33500,7 +33500,9 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   function boss(){const s=state();return s?.boss&&game?.enemies?.includes(s.boss)&&s.boss.hp>0?s.boss:null}
   function ensureState(){
     if(!window.game)return null;
-    if(!game.infernalEvent810)game.infernalEvent810={rolledWaves:{},active:false,boss:null,souls:[],lava:[],projectiles:[],keyDrops:[],burn:0,burnTick:0,redPulse:0};
+    if(!game.infernalEvent810)game.infernalEvent810={rolledWaves:{},active:false,boss:null,souls:[],lava:[],projectiles:[],keyDrops:[],burn:0,burnTick:0,redPulse:0,deferredWave810:0,deferredFrom810:0};
+    if(!Number.isFinite(Number(game.infernalEvent810.deferredWave810)))game.infernalEvent810.deferredWave810=0;
+    if(!Number.isFinite(Number(game.infernalEvent810.deferredFrom810)))game.infernalEvent810.deferredFrom810=0;
     return game.infernalEvent810;
   }
 
@@ -33524,7 +33526,31 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     return true;
   }
   function maybeRollWave(){
-    if(!normalMode()||doomUnlocked())return;const s=ensureState();const w=N(game.wave);if(w<2||w%2!==0||s.rolledWaves[w])return;s.rolledWaves[w]=true;if(Math.random()<.20)spawnInfernal();
+    if(!normalMode()||doomUnlocked())return;
+    const s=ensureState(),w=N(game.wave);
+    if(!s)return;
+
+    // Um sorteio que venceu em uma boss wave é executado exatamente 1 wave depois.
+    // Isso não consome nem cancela o sorteio normal da próxima wave par (ex.: 10 -> 11, e 12 continua elegível).
+    if(N(s.deferredWave810)===w){
+      if(!s.active&&spawnInfernal()){
+        s.deferredWave810=0;
+        s.deferredFrom810=0;
+      }
+      return;
+    }
+
+    if(w<2||w%2!==0||s.rolledWaves[w]||s.active)return;
+    s.rolledWaves[w]=true;
+    if(Math.random()>=.20)return;
+
+    const bossWave=!!game.waveBoss||(w%5===0);
+    if(bossWave){
+      s.deferredWave810=w+1;
+      s.deferredFrom810=w;
+      return;
+    }
+    spawnInfernal();
   }
 
   function levelUp(e){
@@ -33679,7 +33705,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   setTimeout(()=>{try{if(document.getElementById('doomMode800'))lockDoomCard()}catch{}},50);
 
   window.__InfernalGate810={spawnInfernal,maybeRollWave,state,boss,doomUnlocked,unlockDoom,lockDoomCard};
-  console.log(PATCH+' — DOOM gate, Devourador Infernal, Chave do DOOM e reward integrity carregados');
+  console.log(PATCH+' — DOOM gate, Devourador Infernal, Chave do DOOM, adiamento de boss wave e reward integrity carregados');
 })();
 </script>
 
