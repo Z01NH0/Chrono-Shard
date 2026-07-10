@@ -32918,5 +32918,361 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
 })();
 </script>
 
+
+<script>
+/* Chrono Shards 8.0.6 — Premium Crosshair Arsenal */
+(()=>{
+  if(window.__doomCrosshairShop806)return;
+  window.__doomCrosshairShop806=true;
+  const SAVE=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
+  const FREE_MODELS=['comum','ponto','diamante','duplo','triangulo','runa','caveira','espinhos','eclipse'];
+  const PREMIUM_CROSSHAIRS=[
+    {id:'inferno',name:'Inferno',currency:'relics',cost:12,desc:'Lâminas em chamas convergindo no alvo.'},
+    {id:'sigilo',name:'Sigilo',currency:'relics',cost:16,desc:'Um selo demoníaco compacto e preciso.'},
+    {id:'serra',name:'Serra',currency:'relics',cost:20,desc:'Disco agressivo com dentes de guerra.'},
+    {id:'orbital',name:'Orbital',currency:'relics',cost:24,desc:'Dois anéis de rastreamento com leitura limpa.'},
+    {id:'helix',name:'Hélice',currency:'relics',cost:28,desc:'Espirais opostas marcando o centro.'},
+    {id:'coroa',name:'Coroa',currency:'relics',cost:34,desc:'Picos régios para quem joga no topo.'},
+    {id:'abismo',name:'Abismo',currency:'relics',cost:42,desc:'Olho vazio cercado por runas rachadas.'},
+    {id:'necrose',name:'Necrose',currency:'relics',cost:50,desc:'Espinhos ossificados e aura maldita.'},
+    {id:'cronofratura',name:'Cronofratura',currency:'chrono',cost:1,desc:'Fragmentos Chrono partidos flutuando em volta do núcleo.'},
+    {id:'tronoeterno',name:'Trono Eterno',currency:'chrono',cost:2,desc:'A mira suprema, inspirada no Emperador das Trevas.'}
+  ];
+  const PREMIUM_BY_ID=Object.fromEntries(PREMIUM_CROSSHAIRS.map(x=>[x.id,x]));
+  const ALL_MODELS=FREE_MODELS.concat(PREMIUM_CROSSHAIRS.map(x=>x.id));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  function read(){let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{};return m;}
+  function write(m){try{localStorage.setItem(SAVE,JSON.stringify(m||{}));}catch{}; if(window.game)game.meta=m; return m;}
+  function ensureStyle(){
+    if(document.getElementById('crosshairShop806Style'))return;
+    const st=document.createElement('style'); st.id='crosshairShop806Style'; st.textContent=`
+      .crossPremiumGrid806{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin-top:12px}
+      .crossModel529.locked806{filter:saturate(.6) brightness(.92);opacity:.86;border-style:dashed}
+      .crossModel529.locked806 .lockLabel806{display:inline-flex;align-items:center;justify-content:center;gap:5px;font:900 10px Orbitron,sans-serif;letter-spacing:.08em;color:#ffc9d1;padding:4px 8px;border-radius:999px;background:rgba(68,4,13,.85);border:1px solid rgba(255,90,110,.2);margin-top:6px}
+      .crossModel529 .premiumMeta806{display:grid;gap:4px;margin-top:6px}
+      .crossModel529 .premiumMeta806 small{display:block;color:#cfa4ad;font-size:10px;line-height:1.25}
+      .crossModel529 .buyCross806{margin-top:6px;padding:7px 8px;border-radius:10px;border:1px solid rgba(255,70,95,.22);background:linear-gradient(135deg,#4b000d,#a8001c);color:#fff;font:900 10px Orbitron,sans-serif;letter-spacing:.05em}
+      .crossModel529 .buyCross806.chrono{background:linear-gradient(135deg,#3a0b45,#7843ff)}
+      .crossOwnedTag806{display:inline-flex;padding:5px 8px;border-radius:999px;background:rgba(10,60,24,.72);border:1px solid rgba(133,255,176,.24);color:#bfffd0;font:900 10px Orbitron,sans-serif;letter-spacing:.08em;margin-top:6px}
+      .crossSectionHead806{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+      .crossSectionHead806 .wallet806{display:flex;gap:8px;flex-wrap:wrap}
+      .crossMoney806{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:rgba(30,4,9,.72);border:1px solid rgba(255,54,74,.18);color:#ffe1e6;font:900 11px Orbitron,sans-serif;letter-spacing:.05em}
+      .crossMoney806 b{color:#fff}.crossMoney806.chrono{border-color:rgba(138,108,255,.25);color:#e5ddff}
+      .crossShopMsg806{min-height:18px;color:#ff9eaa;margin-top:8px;font-weight:700}
+      .crossModel529.selected806{box-shadow:0 0 0 1px rgba(255,255,255,.14) inset,0 0 0 2px rgba(255,72,96,.2),0 12px 24px rgba(0,0,0,.28)!important}
+    `; document.head.appendChild(st);
+  }
+  function ownedModels(){
+    const m=read();
+    const arr=new Set([...(Array.isArray(m.crosshairOwned806)?m.crosshairOwned806:[]),...FREE_MODELS]);
+    return arr;
+  }
+  function saveOwned(set){ const m=read(); m.crosshairOwned806=Array.from(set); write(m); }
+  function crossCfg(){ const m=read(); m.crosshair529=m.crosshair529||{}; let model=m.crosshair529.model||'comum'; if(!ownedModels().has(model)) model='comum'; return {color:m.crosshair529.color||'#ff3434',model,size:clamp(n(m.crosshair529.size,1),.55,1.65)}; }
+  function renderPremiumSvg(model,color,size=1){
+    const st=`stroke:${color};fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px ${color})`;
+    const wrap=s=>s.replace('class="crossSvg529"',`class="crossSvg529" style="--co:${color};--size530:${size}"`);
+    if(model==='inferno')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><path d="M60 18 C50 35 44 44 44 56c0 9 7 16 16 16s16-7 16-16c0-12-6-21-16-38Z" style="fill:${color};fill-opacity:.18;stroke:${color};stroke-width:4"/><path d="M60 8v20M60 92v20M8 60h20M92 60h20M22 22l13 13M98 22 85 35M22 98l13-13M98 98 85 85" style="${st}"/><circle cx="60" cy="60" r="7" fill="${color}"/></svg>`);
+    if(model==='sigilo')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="30" style="${st};opacity:.85"/><path d="M60 20L95 40 95 80 60 100 25 80 25 40Z" style="${st};opacity:.65"/><path d="M40 60h40M60 40v40M36 36l48 48M84 36L36 84" style="${st}"/><circle cx="60" cy="60" r="4" fill="${color}"/></svg>`);
+    if(model==='serra')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><path d="M60 15l8 16 18-9 2 18 18 2-9 18 16 8-16 8 9 18-18 2-2 18-18-9-8 16-8-16-18 9-2-18-18-2 9-18-16-8 16-8-9-18 18-2 2-18 18 9Z" style="${st};fill:${color};fill-opacity:.10"/><circle cx="60" cy="60" r="12" style="${st}"/></svg>`);
+    if(model==='orbital')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="10" style="${st}"/><ellipse cx="60" cy="60" rx="34" ry="18" style="${st};opacity:.8" transform="rotate(25 60 60)"/><ellipse cx="60" cy="60" rx="34" ry="18" style="${st};opacity:.45" transform="rotate(-25 60 60)"/><circle cx="85" cy="71" r="4" fill="${color}"/><circle cx="37" cy="45" r="4" fill="${color}"/></svg>`);
+    if(model==='helix')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><path d="M30 25c18 0 18 20 30 20s12-20 30-20" style="${st}"/><path d="M30 95c18 0 18-20 30-20s12 20 30 20" style="${st}"/><path d="M60 15v90" style="${st};opacity:.45"/><circle cx="60" cy="60" r="5" fill="${color}"/></svg>`);
+    if(model==='coroa')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><path d="M26 84l10-36 18 16 6-28 6 28 18-16 10 36Z" style="${st};fill:${color};fill-opacity:.10"/><path d="M20 60h20M80 60h20M60 20v16M60 84v16" style="${st}"/><circle cx="60" cy="60" r="7" fill="${color}"/></svg>`);
+    if(model==='abismo')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="28" style="${st};opacity:.75"/><circle cx="60" cy="60" r="14" style="fill:${color};fill-opacity:.14;stroke:${color};stroke-width:3"/><path d="M60 12v16M60 92v16M12 60h16M92 60h16M28 28l11 11M92 28 81 39M28 92l11-11M92 92 81 81" style="${st};opacity:.75"/></svg>`);
+    if(model==='necrose')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><path d="M60 18l7 15 16-5-1 17 17 1-5 16 15 7-15 7 5 16-17 1 1 17-16-5-7 15-7-15-16 5 1-17-17-1 5-16-15-7 15-7-5-16 17-1-1-17 16 5Z" style="${st};opacity:.7"/><path d="M44 44l32 32M76 44 44 76" style="${st}"/><circle cx="60" cy="60" r="5" fill="${color}"/></svg>`);
+    if(model==='cronofratura')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><path d="M60 17 73 40 102 45 82 64 86 94 60 81 34 94 38 64 18 45 47 40Z" style="${st};opacity:.55"/><path d="M35 24l11 18M83 24 72 42M24 84l18-11M96 84 78 73" style="${st}"/><path d="M60 34v17M60 69v17M34 60h17M69 60h17" style="${st}"/><circle cx="60" cy="60" r="8" fill="${color}"/></svg>`);
+    if(model==='tronoeterno')return wrap(`<svg class="crossSvg529" viewBox="0 0 120 120"><path d="M26 96V40l16 12 18-24 18 24 16-12v56Z" style="${st};fill:${color};fill-opacity:.08"/><path d="M60 12v18M60 90v18M12 60h18M90 60h18M30 30l10 10M90 30 80 40M30 90l10-10M90 90 80 80" style="${st}"/><circle cx="60" cy="60" r="10" style="${st}"/><circle cx="60" cy="60" r="4" fill="${color}"/></svg>`);
+    return null;
+  }
+  const baseRenderSvg=window.renderCrossSvg530;
+  window.renderCrossSvg530=function(model,color,size=1){ return renderPremiumSvg(model,color,size) || (typeof baseRenderSvg==='function'?baseRenderSvg(model,color,size):''); };
+  function drawCrosshairExtended(){
+    const cfg=crossCfg(),c=cfg.color,m=cfg.model,z=cfg.size||1; const x=mouse.x,y=mouse.y,S=v=>v*z;
+    ctx.save();ctx.strokeStyle=c;ctx.fillStyle=c;ctx.shadowBlur=14*z;ctx.shadowColor=c;ctx.lineWidth=2.2*z;ctx.lineCap='round';ctx.lineJoin='round';
+    if(m==='inferno'){ctx.beginPath();ctx.moveTo(x,y-S(18));ctx.lineTo(x,y-S(4));ctx.moveTo(x,y+S(4));ctx.lineTo(x,y+S(18));ctx.moveTo(x-S(18),y);ctx.lineTo(x-S(4),y);ctx.moveTo(x+S(4),y);ctx.lineTo(x+S(18),y);ctx.stroke();ctx.globalAlpha=.35;ctx.beginPath();ctx.arc(x,y,S(12),0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;ctx.beginPath();ctx.arc(x,y,S(4),0,Math.PI*2);ctx.fill();}
+    else if(m==='sigilo'){ctx.globalAlpha=.8;ctx.beginPath();ctx.arc(x,y,S(20),0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;ctx.beginPath();ctx.moveTo(x,y-S(22));ctx.lineTo(x+S(22),y);ctx.lineTo(x,y+S(22));ctx.lineTo(x-S(22),y);ctx.closePath();ctx.stroke();ctx.beginPath();ctx.moveTo(x-S(10),y);ctx.lineTo(x+S(10),y);ctx.moveTo(x,y-S(10));ctx.lineTo(x,y+S(10));ctx.stroke();ctx.beginPath();ctx.arc(x,y,S(3),0,Math.PI*2);ctx.fill();}
+    else if(m==='serra'){ctx.beginPath();for(let i=0;i<16;i++){const a=i*Math.PI/8,r=i%2?S(14):S(24);const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.closePath();ctx.stroke();ctx.beginPath();ctx.arc(x,y,S(7),0,Math.PI*2);ctx.stroke();}
+    else if(m==='orbital'){ctx.beginPath();ctx.arc(x,y,S(7),0,Math.PI*2);ctx.stroke();ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/5);ctx.scale(1,.58);ctx.beginPath();ctx.arc(0,0,S(26),0,Math.PI*2);ctx.stroke();ctx.rotate(-Math.PI/2.5);ctx.globalAlpha=.45;ctx.beginPath();ctx.arc(0,0,S(26),0,Math.PI*2);ctx.stroke();ctx.restore();ctx.beginPath();ctx.arc(x+S(18),y+S(8),S(2.4),0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(x-S(18),y-S(8),S(2.4),0,Math.PI*2);ctx.fill();}
+    else if(m==='helix'){for(const dir of [-1,1]){ctx.beginPath();for(let i=-14;i<=14;i++){const px=x+i*S(1.2),py=y+Math.sin(i/4)*S(9)*dir;if(i===-14)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.stroke();}ctx.beginPath();ctx.arc(x,y,S(3),0,Math.PI*2);ctx.fill();}
+    else if(m==='coroa'){ctx.beginPath();ctx.moveTo(x-S(20),y+S(12));ctx.lineTo(x-S(12),y-S(10));ctx.lineTo(x,y+S(1));ctx.lineTo(x+S(12),y-S(10));ctx.lineTo(x+S(20),y+S(12));ctx.stroke();ctx.beginPath();ctx.moveTo(x-S(18),y);ctx.lineTo(x-S(5),y);ctx.moveTo(x+S(5),y);ctx.lineTo(x+S(18),y);ctx.moveTo(x,y-S(18));ctx.lineTo(x,y-S(5));ctx.moveTo(x,y+S(5));ctx.lineTo(x,y+S(18));ctx.stroke();ctx.beginPath();ctx.arc(x,y,S(3),0,Math.PI*2);ctx.fill();}
+    else if(m==='abismo'){ctx.globalAlpha=.75;ctx.beginPath();ctx.arc(x,y,S(18),0,Math.PI*2);ctx.stroke();ctx.globalAlpha=.25;ctx.beginPath();ctx.arc(x,y,S(9),0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*S(23),y+Math.sin(a)*S(23));ctx.lineTo(x+Math.cos(a)*S(31),y+Math.sin(a)*S(31));ctx.stroke();}}
+    else if(m==='necrose'){ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.moveTo(x+Math.cos(a)*S(6),y+Math.sin(a)*S(6));ctx.lineTo(x+Math.cos(a)*S(26),y+Math.sin(a)*S(26));ctx.stroke();}ctx.beginPath();ctx.arc(x,y,S(6),0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(x-S(8),y-S(8));ctx.lineTo(x+S(8),y+S(8));ctx.moveTo(x+S(8),y-S(8));ctx.lineTo(x-S(8),y+S(8));ctx.stroke();}
+    else if(m==='cronofratura'){ctx.globalAlpha=.5;ctx.beginPath();for(let i=0;i<5;i++){const a=-Math.PI/2+i*(2*Math.PI/5),r=i%2?S(10):S(24);const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.closePath();ctx.stroke();ctx.globalAlpha=1;ctx.beginPath();ctx.moveTo(x-S(18),y);ctx.lineTo(x-S(6),y);ctx.moveTo(x+S(6),y);ctx.lineTo(x+S(18),y);ctx.moveTo(x,y-S(18));ctx.lineTo(x,y-S(6));ctx.moveTo(x,y+S(6));ctx.lineTo(x,y+S(18));ctx.stroke();ctx.beginPath();ctx.arc(x,y,S(5),0,Math.PI*2);ctx.fill();}
+    else if(m==='tronoeterno'){ctx.beginPath();ctx.moveTo(x-S(20),y+S(18));ctx.lineTo(x-S(20),y-S(12));ctx.lineTo(x-S(8),y-S(2));ctx.lineTo(x,y-S(20));ctx.lineTo(x+S(8),y-S(2));ctx.lineTo(x+S(20),y-S(12));ctx.lineTo(x+S(20),y+S(18));ctx.stroke();ctx.beginPath();ctx.arc(x,y,S(8),0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y-S(30));ctx.lineTo(x,y-S(12));ctx.moveTo(x,y+S(12));ctx.lineTo(x,y+S(30));ctx.moveTo(x-S(30),y);ctx.lineTo(x-S(12),y);ctx.moveTo(x+S(12),y);ctx.lineTo(x+S(30),y);ctx.stroke();ctx.beginPath();ctx.arc(x,y,S(3),0,Math.PI*2);ctx.fill();}
+    else return false;
+    ctx.restore(); return true;
+  }
+  const baseDrawCrosshair=window.drawCrosshair;
+  window.drawCrosshair=function(){ if(drawCrosshairExtended())return; if(typeof baseDrawCrosshair==='function') return baseDrawCrosshair.apply(this,arguments); };
+  try{drawCrosshair=window.drawCrosshair;}catch{}
+  window.crossCfg530=crossCfg;
+
+  function purchase(modelId){
+    const item=PREMIUM_BY_ID[modelId]; if(!item) return {ok:false,msg:'Mira inválida.'};
+    const owned=ownedModels(); if(owned.has(modelId)) return {ok:true,msg:'Essa mira já é sua.'};
+    const m=read(); m.relicShards=n(m.relicShards); m.chronoFragments=n(m.chronoFragments);
+    if(item.currency==='chrono'){
+      if(m.chronoFragments<item.cost) return {ok:false,msg:'Fragmentos Chrono insuficientes.'};
+      m.chronoFragments-=item.cost;
+    }else{
+      if(m.relicShards<item.cost) return {ok:false,msg:'Relíquias insuficientes.'};
+      m.relicShards-=item.cost;
+    }
+    owned.add(modelId); m.crosshairOwned806=Array.from(owned); write(m);
+    try{ if(typeof rewardBurst==='function') rewardBurst(item.cost, item.currency==='chrono'?'FRAGMENTOS GASTOS':'RELÍQUIAS GASTAS', item.currency==='chrono'?'#9f6cff':'#ffae5f'); }catch{}
+    return {ok:true,msg:`Mira ${item.name} desbloqueada!`};
+  }
+
+  const baseOpenCross=window.openCrosshairConfig530;
+  window.openCrosshairConfig530=function(){
+    ensureStyle();
+    if(typeof window.addStyle530==='function') try{window.addStyle530();}catch{}
+    if(typeof window.addControlsStyle805==='function') try{window.addControlsStyle805();}catch{}
+    const saved=crossCfg();
+    const controls=window.__doomControls805;
+    let temp={...saved};
+    let tempKeys=controls?{...controls.get()}:{skill1:'q',skill2:'e',skill3:'r',skill4:'x',dash:'Shift'};
+    let listening=null,keyMsg='';
+    overlay.classList.remove('hidden'); overlayCard.className='card dune461 riftCfg529';
+    const order=['skill1','skill2','skill3','skill4','dash'];
+    const desc={skill1:'Primeira habilidade do kit',skill2:'Segunda habilidade do kit',skill3:'Terceira habilidade do kit',skill4:'Ultimate do personagem',dash:'Movimento rápido / esquiva'};
+    function cleanupCapture(){window.__doomKeybindCapture=false;window.__doomKeybindCaptureHandler=null;listening=null;}
+    function startCapture(action){
+      listening=action; keyMsg='Pressione uma tecla para '+(controls?.labels?.[action]||action)+'…';
+      window.__doomKeybindCapture=true;
+      window.__doomKeybindCaptureHandler=(ev,raw)=>{
+        if(!listening)return; const act=listening;
+        if(raw==='Escape'){cleanupCapture();keyMsg='Alteração cancelada.';draw();return;}
+        if(controls&&!controls.canBind(raw)){keyMsg='Essa tecla é reservada para movimento, menu ou sistema.';cleanupCapture();draw();return;}
+        const old=tempKeys[act]; const conflict=order.find(a=>a!==act&&controls?.normalize(tempKeys[a])===controls?.normalize(raw));
+        if(conflict) tempKeys[conflict]=old;
+        tempKeys[act]=raw; cleanupCapture(); keyMsg=`${controls?.labels?.[act]||act} alterada para ${controls?.display(raw)||raw}.`; draw();
+      }; draw();
+    }
+    function closeToSettings(){cleanupCapture(); if(window.openSettings529)window.openSettings529(); else window.openStartMenu?.();}
+    function saveAll(){ cleanupCapture(); const m=read(); m.crosshair529=temp; write(m); if(controls)controls.save(tempKeys); if(window.openSettings529)window.openSettings529(); else window.openStartMenu?.(); }
+    function wallet(){ const m=read(); return {relics:n(m.relicShards), chrono:n(m.chronoFragments)}; }
+    function cardForModel(model){
+      const item=PREMIUM_BY_ID[model]; const owned=ownedModels().has(model); const selected=temp.model===model; const premium=!!item;
+      const title=premium?item.name:(model[0].toUpperCase()+model.slice(1));
+      const preview=window.renderCrossSvg530(model,temp.color,.55);
+      if(!premium){ return `<button class="crossModel529 ${selected?'active selected806':''}" data-m530="${model}" style="--co:${temp.color}">${preview}<span>${esc(title)}</span></button>`; }
+      const costText=item.currency==='chrono'?`${item.cost} ${typeof CHRONO!=='undefined'?CHRONO:'✦'} Fragmento${item.cost>1?'s':''}`:`${item.cost} Relíquias`;
+      return `<div class="crossModel529 ${owned?'':'locked806'} ${selected?'active selected806':''}" style="--co:${temp.color}" data-premium-wrap="${model}">${preview}<span>${esc(title)}</span><div class="premiumMeta806"><small>${esc(item.desc)}</small></div>${owned?`<span class="crossOwnedTag806">DESBLOQUEADA</span><button class="buyCross806" data-m530="${model}">Equipar</button>`:`<span class="lockLabel806">🔒 BLOQUEADA</span><button class="buyCross806 ${item.currency==='chrono'?'chrono':''}" data-buy-cross806="${model}">Comprar • ${esc(costText)}</button>`}</div>`;
+    }
+    function draw(){
+      const cash=wallet();
+      overlayCard.innerHTML=`<h1 style="text-align:center">CONFIGURAR MIRA/BOTÕES</h1><p class="duneSub461">Personalize a mira, altere os atalhos de combate e desbloqueie modelos premium. O botão Salvar grava as duas configurações de uma vez.</p><div class="aimControlLayout805"><section class="aimSide805"><div class="aimTop805"><div><div class="dunePanel461"><span class="badge461" style="--co:#ff526a">COR</span><strong>Paleta da mira</strong><div class="palette529">${(window.CROSS_COLORS530||['#ff3434','#75d8ff','#9f6cff','#ffd166','#86ffb0','#ff6b9d','#ffffff','#ff8a2a']).map(c=>`<button class="swatch529" data-c530="${c}" style="--c:${c};outline:${c===temp.color?'3px solid #fff':'none'}"></button>`).join('')}</div></div><div class="dunePanel461" style="margin-top:12px"><span class="badge461" style="--co:#ff9b66">TAMANHO</span><strong>Ajustar tamanho</strong><div class="sizeRow530"><span>Menor</span><input class="crossSize530" id="crossSize530" type="range" min="55" max="165" value="${Math.round(temp.size*100)}"><span>Maior</span></div><small style="display:block;margin-top:8px;color:#d6aeb6">Padrão: 100%</small></div></div><div class="crossPreview529 aimPreview805" style="--size530:${temp.size}">${window.renderCrossSvg530(temp.model,temp.color,temp.size)}</div></div><div class="dunePanel461 crossModelPanel809"><div class="crossSectionHead806"><div><span class="badge461" style="--co:#ff4d66">MODELOS</span><strong>Modelos de mira</strong></div><div class="wallet806"><span class="crossMoney806">🜂 <b>${cash.relics}</b></span><span class="crossMoney806 chrono">${typeof CHRONO!=='undefined'?CHRONO:'✦'} <b>${cash.chrono}</b></span></div></div><div class="crossModels529 crossAllModels809">${FREE_MODELS.map(cardForModel).join('')}${PREMIUM_CROSSHAIRS.map(x=>cardForModel(x.id)).join('')}</div><div class="crossShopMsg806">${keyMsg||'As miras premium ficam bloqueadas até a compra e depois podem ser equipadas normalmente.'}</div></div></section><aside class="bindSide805"><div class="dunePanel461"><span class="badge461" style="--co:#ff3b57">BOTÕES</span><strong>Configuração de atalhos</strong><div class="bindIntro805">Clique nos atalhos para alterar seus botões.</div><div class="bindList805">${order.map(a=>`<div class="bindRow805"><div><strong>${controls?.labels?.[a]||a}</strong><small>${desc[a]}</small></div><button class="bindKey805 ${listening===a?'listening':''}" data-bind805="${a}">${listening===a?'PRESSIONE…':(controls?.display(tempKeys[a])||tempKeys[a])}</button></div>`).join('')}</div><div class="bindMsg805">Os atalhos personalizados funcionam em todos os personagens.</div><button class="duneBtn461 dark bindReset805" id="resetKeys805">Restaurar Q / E / R / X / Shift</button></div></aside></div><div class="duneActions461"><button class="duneBtn461 dark" id="cancelCross530">Cancelar</button><button class="duneBtn461" id="saveCross530">Salvar</button></div>`;
+      overlayCard.querySelectorAll('[data-c530]').forEach(b=>b.onclick=()=>{temp.color=b.dataset.c530;draw();});
+      overlayCard.querySelectorAll('[data-m530]').forEach(b=>b.onclick=()=>{const mdl=b.dataset.m530; if(!ownedModels().has(mdl)) return; temp.model=mdl; draw();});
+      overlayCard.querySelectorAll('[data-buy-cross806]').forEach(b=>b.onclick=()=>{const out=purchase(b.dataset.buyCross806); if(out.ok){ temp.model=b.dataset.buyCross806; keyMsg=out.msg; } else keyMsg=out.msg; draw();});
+      overlayCard.querySelectorAll('[data-bind805]').forEach(b=>b.onclick=()=>startCapture(b.dataset.bind805));
+      const range=document.getElementById('crossSize530'); range.oninput=()=>{temp.size=clamp(Number(range.value)/100,.55,1.65); const prev=overlayCard.querySelector('.crossPreview529'); if(prev){ prev.style.setProperty('--size530',temp.size); prev.innerHTML=window.renderCrossSvg530(temp.model,temp.color,temp.size); }};
+      document.getElementById('resetKeys805').onclick=()=>{tempKeys=controls?{...controls.defaults}:{skill1:'q',skill2:'e',skill3:'r',skill4:'x',dash:'Shift'}; cleanupCapture(); keyMsg='Atalhos restaurados para Q / E / R / X / Shift.'; draw();};
+      document.getElementById('cancelCross530').onclick=closeToSettings; document.getElementById('saveCross530').onclick=saveAll;
+    }
+    draw();
+  };
+  try{openCrosshairConfig530=window.openCrosshairConfig530}catch{}
+  console.log('Chrono Shards 8.0.6 — arsenal premium de miras carregado');
+})();
+</script>
+
+
+<script>
+/* Chrono Shards 8.0.7 — Crosshair Preview/Battle Parity Fix */
+(()=>{
+  if(window.__doomCrosshairParity807)return;
+  window.__doomCrosshairParity807=true;
+
+  function drawCrosshairParity807(){
+    const cfg=(typeof window.crossCfg530==='function'?window.crossCfg530():{color:'#ff3434',model:'comum',size:1});
+    const c=cfg.color||'#ff3434', m=cfg.model||'comum', z=cfg.size||1;
+    const x=mouse.x,y=mouse.y,S=v=>v*z;
+    ctx.save();
+    ctx.strokeStyle=c; ctx.fillStyle=c; ctx.shadowBlur=14*z; ctx.shadowColor=c; ctx.lineWidth=2.2*z; ctx.lineCap='round'; ctx.lineJoin='round';
+
+    const line=(x1,y1,x2,y2,alpha=1)=>{const ga=ctx.globalAlpha; ctx.globalAlpha=alpha; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.globalAlpha=ga;};
+    const circ=(cx,cy,r,alpha=1,fill=false)=>{const ga=ctx.globalAlpha; ctx.globalAlpha=alpha; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); fill?ctx.fill():ctx.stroke(); ctx.globalAlpha=ga;};
+    const poly=(pts,alpha=1,fill=false)=>{if(!pts.length)return; const ga=ctx.globalAlpha; ctx.globalAlpha=alpha; ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]); ctx.closePath(); fill?ctx.fill():ctx.stroke(); ctx.globalAlpha=ga;};
+
+    if(m==='comum'){
+      circ(x,y,S(10)); line(x-S(17),y,x-S(6),y); line(x+S(6),y,x+S(17),y); line(x,y-S(17),x,y-S(6)); line(x,y+S(6),x,y+S(17));
+    }else if(m==='ponto'){
+      circ(x,y,S(4),1,true); circ(x,y,S(18),.45,false);
+    }else if(m==='diamante'){
+      poly([[x,y-S(17)],[x+S(17),y],[x,y+S(17)],[x-S(17),y]]); poly([[x,y-S(7)],[x+S(7),y],[x,y+S(7)],[x-S(7),y]],.7);
+    }else if(m==='duplo'){
+      circ(x,y,S(10)); circ(x,y,S(22),.5); line(x-S(29),y,x-S(17),y); line(x+S(17),y,x+S(29),y); line(x,y-S(29),x,y-S(17)); line(x,y+S(17),x,y+S(29));
+    }else if(m==='triangulo'){
+      poly([[x,y-S(20)],[x+S(20),y+S(17)],[x-S(20),y+S(17)]]); circ(x,y+S(4),S(3.5),1,true);
+    }else if(m==='runa'){
+      circ(x,y,S(23),.82); for(let i=0;i<8;i++){const a=i*Math.PI/4; line(x+Math.cos(a)*S(27),y+Math.sin(a)*S(27),x+Math.cos(a)*S(36),y+Math.sin(a)*S(36));} ctx.save(); ctx.translate(x,y); ctx.rotate(Math.PI/4); ctx.strokeRect(-S(7),-S(7),S(14),S(14)); ctx.restore(); circ(x,y,S(2.8),1,true);
+    }else if(m==='caveira'){
+      ctx.beginPath(); ctx.arc(x,y-S(3),S(16),Math.PI*.05,Math.PI*.95,true); ctx.lineTo(x+S(13),y+S(8)); ctx.lineTo(x+S(7),y+S(15)); ctx.lineTo(x-S(7),y+S(15)); ctx.lineTo(x-S(13),y+S(8)); ctx.closePath(); ctx.stroke();
+      poly([[x-S(9),y],[x-S(3),y+S(4)],[x-S(9),y+S(7)]],1,false); poly([[x+S(9),y],[x+S(3),y+S(4)],[x+S(9),y+S(7)]],1,false);
+      for(const dx of [-5,0,5]) line(x+S(dx),y+S(11),x+S(dx),y+S(18)); circ(x,y-S(13),S(2.5),1,true);
+    }else if(m==='espinhos'){
+      circ(x,y,S(7)); for(let i=0;i<8;i++){const a=i*Math.PI/4; line(x+Math.cos(a)*S(13),y+Math.sin(a)*S(13),x+Math.cos(a)*S(34),y+Math.sin(a)*S(34));}
+      for(const [ax,ay,bx,by,cx,cy] of [[-27,-27,-17,-17,-17,-27],[27,-27,17,-17,27,-17],[27,27,17,17,17,27],[-27,27,-17,17,-27,17]]){ctx.beginPath();ctx.moveTo(x+S(ax),y+S(ay));ctx.lineTo(x+S(bx),y+S(by));ctx.lineTo(x+S(cx),y+S(cy));ctx.stroke();}
+    }else if(m==='eclipse'){
+      circ(x,y,S(19),.75); ctx.globalAlpha=.28; ctx.beginPath(); ctx.arc(x-S(7),y,S(15),Math.PI*.35,Math.PI*1.65); ctx.stroke(); ctx.globalAlpha=1; circ(x,y,S(3),1,true);
+    }else if(m==='inferno'){
+      line(x,y-S(18),x,y-S(4)); line(x,y+S(4),x,y+S(18)); line(x-S(18),y,x-S(4),y); line(x+S(4),y,x+S(18),y); circ(x,y,S(12),.35); ctx.beginPath(); ctx.moveTo(x,y-S(17)); ctx.bezierCurveTo(x-S(8),y-S(4),x-S(5),y+S(6),x,y+S(11)); ctx.bezierCurveTo(x+S(5),y+S(6),x+S(8),y-S(4),x,y-S(17)); ctx.stroke(); circ(x,y,S(4),1,true);
+    }else if(m==='sigilo'){
+      circ(x,y,S(20),.8); poly([[x,y-S(22)],[x+S(22),y],[x,y+S(22)],[x-S(22),y]],1,false); line(x-S(10),y,x+S(10),y); line(x,y-S(10),x,y+S(10)); line(x-S(16),y-S(16),x+S(16),y+S(16),.7); line(x+S(16),y-S(16),x-S(16),y+S(16),.7); circ(x,y,S(3),1,true);
+    }else if(m==='serra'){
+      const pts=[]; for(let i=0;i<16;i++){const a=-Math.PI/2+i*Math.PI/8,r=i%2?S(14):S(24); pts.push([x+Math.cos(a)*r,y+Math.sin(a)*r]);} poly(pts,.95); circ(x,y,S(7));
+    }else if(m==='orbital'){
+      circ(x,y,S(7)); ctx.save(); ctx.translate(x,y); ctx.rotate(Math.PI/5); ctx.scale(1,.58); ctx.beginPath(); ctx.arc(0,0,S(26),0,Math.PI*2); ctx.stroke(); ctx.restore(); ctx.save(); ctx.translate(x,y); ctx.rotate(-Math.PI/5); ctx.scale(1,.58); ctx.globalAlpha=.45; ctx.beginPath(); ctx.arc(0,0,S(26),0,Math.PI*2); ctx.stroke(); ctx.restore(); circ(x+S(18),y+S(8),S(2.4),1,true); circ(x-S(18),y-S(8),S(2.4),1,true);
+    }else if(m==='helix'){
+      for(const dir of [-1,1]){ctx.beginPath();for(let i=-14;i<=14;i++){const px=x+i*S(1.2),py=y+Math.sin(i/4)*S(9)*dir;if(i===-14)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.stroke();} line(x,y-S(18),x,y+S(18),.45); circ(x,y,S(3),1,true);
+    }else if(m==='coroa'){
+      poly([[x-S(20),y+S(12)],[x-S(12),y-S(10)],[x,y+S(1)],[x+S(12),y-S(10)],[x+S(20),y+S(12)]]); line(x-S(18),y,x-S(5),y); line(x+S(5),y,x+S(18),y); line(x,y-S(18),x,y-S(5)); line(x,y+S(5),x,y+S(18)); circ(x,y,S(3),1,true);
+    }else if(m==='abismo'){
+      circ(x,y,S(18),.75); circ(x,y,S(9),.25); for(let i=0;i<8;i++){const a=i*Math.PI/4; line(x+Math.cos(a)*S(23),y+Math.sin(a)*S(23),x+Math.cos(a)*S(31),y+Math.sin(a)*S(31),.75);} 
+    }else if(m==='necrose'){
+      for(let i=0;i<8;i++){const a=i*Math.PI/4; line(x+Math.cos(a)*S(6),y+Math.sin(a)*S(6),x+Math.cos(a)*S(26),y+Math.sin(a)*S(26),.9);} circ(x,y,S(6)); line(x-S(8),y-S(8),x+S(8),y+S(8)); line(x+S(8),y-S(8),x-S(8),y+S(8));
+    }else if(m==='cronofratura'){
+      const pts=[]; for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?S(10):S(24); pts.push([x+Math.cos(a)*r,y+Math.sin(a)*r]);} poly(pts,.5); line(x-S(18),y,x-S(6),y); line(x+S(6),y,x+S(18),y); line(x,y-S(18),x,y-S(6)); line(x,y+S(6),x,y+S(18)); circ(x,y,S(5),1,true);
+    }else if(m==='tronoeterno'){
+      poly([[x-S(20),y+S(18)],[x-S(20),y-S(12)],[x-S(8),y-S(2)],[x,y-S(20)],[x+S(8),y-S(2)],[x+S(20),y-S(12)],[x+S(20),y+S(18)]],.95); circ(x,y,S(8)); line(x,y-S(30),x,y-S(12)); line(x,y+S(12),x,y+S(30)); line(x-S(30),y,x-S(12),y); line(x+S(12),y,x+S(30),y); circ(x,y,S(3),1,true);
+    }else{
+      circ(x,y,S(10)); line(x-S(17),y,x-S(6),y); line(x+S(6),y,x+S(17),y); line(x,y-S(17),x,y-S(6)); line(x,y+S(6),x,y+S(17));
+    }
+    ctx.restore();
+  }
+
+  window.drawCrosshair=drawCrosshairParity807;
+  try{drawCrosshair=window.drawCrosshair;}catch{}
+  console.log('Chrono Shards 8.0.7 — miras sincronizadas entre preview e batalha.');
+})();
+</script>
+
+
+<script>
+/* Chrono Shards 8.0.8 — Crosshair Route + Exact Visual Parity */
+(()=>{
+  if(window.__doomCrosshairExact808)return;
+  window.__doomCrosshairExact808=true;
+
+  const MODELS808=['comum','ponto','diamante','duplo','triangulo','runa','caveira','espinhos','eclipse','inferno','sigilo','serra','orbital','helix','coroa','abismo','necrose','cronofratura','tronoeterno'];
+  const escColor=c=>/^#[0-9a-fA-F]{3,8}$/.test(String(c||''))?String(c):'#ff3434';
+
+  function renderCrossSvg808(model,color,size=1){
+    color=escColor(color);
+    const st=`stroke:${color};fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px ${color})`;
+    const wrap=s=>s.replace('class="crossSvg529"',`class="crossSvg529" style="--co:${color};--size530:${size}"`);
+    if(model==='ponto')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="8" fill="${color}"/><circle cx="60" cy="60" r="28" style="${st};opacity:.55"/></svg>`);
+    if(model==='diamante')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M60 18 L102 60 L60 102 L18 60 Z" style="${st}"/><path d="M60 43 L77 60 L60 77 L43 60 Z" style="${st};opacity:.7"/></svg>`);
+    if(model==='duplo')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="19" style="${st}"/><circle cx="60" cy="60" r="39" style="${st};opacity:.45"/><path d="M60 7v22M60 91v22M7 60h22M91 60h22" style="${st}"/></svg>`);
+    if(model==='triangulo')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M60 16 L104 92 L16 92 Z" style="${st}"/><circle cx="60" cy="67" r="7" fill="${color}"/></svg>`);
+    if(model==='runa')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="36" style="${st};opacity:.75"/><path d="M60 17v15M60 88v15M17 60h15M88 60h15M30 30l11 11M79 79l11 11M90 30L79 41M41 79L30 90" style="${st}"/><path d="M60 43 L77 60 L60 77 L43 60 Z" style="${st};opacity:.85"/><circle cx="60" cy="60" r="4" fill="${color}"/></svg>`);
+    if(model==='caveira')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M34 54c0-19 11-31 26-31s26 12 26 31c0 12-5 20-13 25v14H47V79c-8-5-13-13-13-25Z" style="${st}"/><path d="M45 55l11 7-11 7M75 55l-11 7 11 7M52 83v10M60 82v11M68 83v10" style="${st}"/><circle cx="60" cy="47" r="3" fill="${color}"/></svg>`);
+    if(model==='espinhos')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="12" style="${st}"/><path d="M60 7l7 29-7-7-7 7ZM113 60l-29 7 7-7-7-7ZM60 113l-7-29 7 7 7-7ZM7 60l29-7-7 7 7 7ZM22 22l25 15-10 0 0 10ZM98 22L83 47l0-10-10 0ZM98 98L73 83l10 0 0-10ZM22 98l15-25 0 10 10 0Z" style="${st};fill:${color};fill-opacity:.13"/></svg>`);
+    if(model==='eclipse')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="28" style="${st};opacity:.7"/><path d="M72 34c-15 4-24 17-24 29s9 24 24 28c-8 8-26 7-35-4-10-12-10-34 1-45 9-10 26-14 34-8Z" style="fill:${color};fill-opacity:.23;stroke:${color};stroke-width:4;filter:drop-shadow(0 0 7px ${color})"/><circle cx="60" cy="60" r="4" fill="${color}"/></svg>`);
+    if(model==='inferno')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M60 18 C50 35 44 44 44 56c0 9 7 16 16 16s16-7 16-16c0-12-6-21-16-38Z" style="fill:${color};fill-opacity:.18;stroke:${color};stroke-width:4"/><path d="M60 8v20M60 92v20M8 60h20M92 60h20M22 22l13 13M98 22 85 35M22 98l13-13M98 98 85 85" style="${st}"/><circle cx="60" cy="60" r="7" fill="${color}"/></svg>`);
+    if(model==='sigilo')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="30" style="${st};opacity:.85"/><path d="M60 20L95 40 95 80 60 100 25 80 25 40Z" style="${st};opacity:.65"/><path d="M40 60h40M60 40v40M36 36l48 48M84 36L36 84" style="${st}"/><circle cx="60" cy="60" r="4" fill="${color}"/></svg>`);
+    if(model==='serra')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M60 15l8 16 18-9 2 18 18 2-9 18 16 8-16 8 9 18-18 2-2 18-18-9-8 16-8-16-18 9-2-18-18-2 9-18-16-8 16-8-9-18 18-2 2-18 18 9Z" style="${st};fill:${color};fill-opacity:.10"/><circle cx="60" cy="60" r="12" style="${st}"/></svg>`);
+    if(model==='orbital')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="10" style="${st}"/><ellipse cx="60" cy="60" rx="34" ry="18" style="${st};opacity:.8" transform="rotate(25 60 60)"/><ellipse cx="60" cy="60" rx="34" ry="18" style="${st};opacity:.45" transform="rotate(-25 60 60)"/><circle cx="85" cy="71" r="4" fill="${color}"/><circle cx="37" cy="45" r="4" fill="${color}"/></svg>`);
+    if(model==='helix')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M30 25c18 0 18 20 30 20s12-20 30-20" style="${st}"/><path d="M30 95c18 0 18-20 30-20s12 20 30 20" style="${st}"/><path d="M60 15v90" style="${st};opacity:.45"/><circle cx="60" cy="60" r="5" fill="${color}"/></svg>`);
+    if(model==='coroa')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M26 84l10-36 18 16 6-28 6 28 18-16 10 36Z" style="${st};fill:${color};fill-opacity:.10"/><path d="M20 60h20M80 60h20M60 20v16M60 84v16" style="${st}"/><circle cx="60" cy="60" r="7" fill="${color}"/></svg>`);
+    if(model==='abismo')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="28" style="${st};opacity:.75"/><circle cx="60" cy="60" r="14" style="fill:${color};fill-opacity:.14;stroke:${color};stroke-width:3"/><path d="M60 12v16M60 92v16M12 60h16M92 60h16M28 28l11 11M92 28 81 39M28 92l11-11M92 92 81 81" style="${st};opacity:.75"/></svg>`);
+    if(model==='necrose')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M60 18l7 15 16-5-1 17 17 1-5 16 15 7-15 7 5 16-17 1 1 17-16-5-7 15-7-15-16 5 1-17-17-1 5-16-15-7 15-7-5-16 17-1-1-17 16 5Z" style="${st};opacity:.7"/><path d="M44 44l32 32M76 44 44 76" style="${st}"/><circle cx="60" cy="60" r="5" fill="${color}"/></svg>`);
+    if(model==='cronofratura')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M60 17 73 40 102 45 82 64 86 94 60 81 34 94 38 64 18 45 47 40Z" style="${st};opacity:.55"/><path d="M35 24l11 18M83 24 72 42M24 84l18-11M96 84 78 73" style="${st}"/><path d="M60 34v17M60 69v17M34 60h17M69 60h17" style="${st}"/><circle cx="60" cy="60" r="8" fill="${color}"/></svg>`);
+    if(model==='tronoeterno')return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><path d="M26 96V40l16 12 18-24 18 24 16-12v56Z" style="${st};fill:${color};fill-opacity:.08"/><path d="M60 12v18M60 90v18M12 60h18M90 60h18M30 30l10 10M90 30 80 40M30 90l10-10M90 90 80 80" style="${st}"/><circle cx="60" cy="60" r="10" style="${st}"/><circle cx="60" cy="60" r="4" fill="${color}"/></svg>`);
+    return wrap(`<svg xmlns="http://www.w3.org/2000/svg" class="crossSvg529" viewBox="0 0 120 120"><circle cx="60" cy="60" r="24" style="${st}"/><path d="M60 5v30M60 85v30M5 60h30M85 60h30" style="${st}"/></svg>`);
+  }
+
+  window.renderCrossSvg530=renderCrossSvg808;
+  window.__crosshairModels808=MODELS808.slice();
+
+  // The old settings listener runs on document capture and blocks later handlers.
+  // Capture on window first so Configurar Mira/Botões always opens the latest premium UI.
+  window.addEventListener('click',ev=>{
+    const b=ev.target?.closest?.('#cross529,[data-open-crosshair]');
+    if(!b)return;
+    const fn=window.openCrosshairConfig530;
+    if(typeof fn!=='function')return;
+    ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation();
+    fn();
+  },true);
+
+  const imageCache808=new Map();
+  function svgImage808(model,color){
+    const key=model+'|'+color;
+    let rec=imageCache808.get(key);
+    if(rec)return rec;
+    const img=new Image();
+    rec={img,ready:false,error:false};
+    img.onload=()=>{rec.ready=true;};
+    img.onerror=()=>{rec.error=true;};
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(renderCrossSvg808(model,color,1));
+    imageCache808.set(key,rec);
+    return rec;
+  }
+
+  // Exact parity: gameplay draws the very same SVG source used by the settings preview.
+  const fallbackDraw808=window.drawCrosshair;
+  function drawCrosshairExact808(){
+    let cfg;
+    try{cfg=typeof window.crossCfg530==='function'?window.crossCfg530():null;}catch{}
+    cfg=cfg||{color:'#ff3434',model:'comum',size:1};
+    const model=MODELS808.includes(cfg.model)?cfg.model:'comum';
+    const color=escColor(cfg.color);
+    const size=Math.max(.55,Math.min(1.65,Number(cfg.size)||1));
+    const rec=svgImage808(model,color);
+    if(rec.ready&&rec.img.naturalWidth>0){
+      const px=76*size;
+      ctx.save();
+      ctx.drawImage(rec.img,mouse.x-px/2,mouse.y-px/2,px,px);
+      ctx.restore();
+      return;
+    }
+    if(typeof fallbackDraw808==='function')return fallbackDraw808.apply(this,arguments);
+  }
+  window.drawCrosshair=drawCrosshairExact808;
+  try{drawCrosshair=window.drawCrosshair;}catch{}
+
+  // Preload all models in the current color so the first battle frame does not wait on images.
+  try{
+    const cfg=typeof window.crossCfg530==='function'?window.crossCfg530():{color:'#ff3434'};
+    for(const m of MODELS808)svgImage808(m,escColor(cfg.color));
+  }catch{}
+
+  console.log('Chrono Shards 8.0.8 — premium route fixed; preview and gameplay now share the same SVG source.');
+})();
+</script>
+
+
+<script>
+/* Chrono Shards 8.0.9 — Crosshair Menu Classic Layout */
+(()=>{
+  if(window.__doomCrosshairLayout809)return;
+  window.__doomCrosshairLayout809=true;
+  const st=document.createElement('style');
+  st.id='doomCrosshairLayout809Style';
+  st.textContent=`
+    .crossModelPanel809{margin-top:0!important}
+    .crossAllModels809{grid-template-columns:repeat(auto-fit,minmax(108px,1fr))!important;align-items:stretch}
+    .crossAllModels809 .crossModel529{min-height:112px!important;height:auto!important;padding:10px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important}
+    .crossAllModels809 .crossModel529 svg{width:58px!important;height:58px!important;flex:0 0 auto}
+    .crossAllModels809 .crossModel529>span:first-of-type{margin-top:4px!important;font-size:11px!important}
+    .crossAllModels809 .premiumMeta806{display:none!important}
+    .crossAllModels809 .lockLabel806,.crossAllModels809 .crossOwnedTag806{margin-top:5px!important;font-size:8px!important;padding:3px 6px!important}
+    .crossAllModels809 .buyCross806{margin-top:6px!important;padding:6px 7px!important;font-size:8px!important;line-height:1.15!important;width:100%!important}
+    .crossModelPanel809 .crossSectionHead806{margin-bottom:10px}
+    .crossModelPanel809 .wallet806{gap:6px}
+    .crossModelPanel809 .crossMoney806{padding:6px 9px;font-size:10px}
+    .crossModelPanel809 .crossShopMsg806{margin-top:10px;font-size:12px;line-height:1.35}
+    @media(max-width:1050px){.crossAllModels809{grid-template-columns:repeat(auto-fit,minmax(102px,1fr))!important}}
+  `;
+  document.head.appendChild(st);
+  console.log('Chrono Shards 8.0.9 — layout clássico do menu de Mira/Botões restaurado.');
+})();
+</script>
+
 </body>
 </html>
