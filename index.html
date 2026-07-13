@@ -288,10 +288,20 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
     constructor(cb){
       this._cb=typeof cb==='function'?cb:()=>{};
       this._id=nextObserverId++;
-      this._native=NativeMO?new NativeMO((records)=>{if(!records?.length)return;try{this._cb(records,this)}catch(e){console.warn('Chrono observer 8.2.6',e)}}):null;
+      this._target=null;this._options=null;
+      this._native=NativeMO?new NativeMO((records)=>{
+        if(!records?.length)return;
+        // Patches antigos de menu observavam o BODY inteiro. Durante gameplay eles não
+        // precisam reagir a HP/XP/score mudando; isso criava uma tempestade de callbacks
+        // e setTimeouts nos primeiros segundos de cada run.
+        let playing=false;
+        try{const g=window.game;playing=!!(g&&g.running&&document.getElementById('overlay')?.classList.contains('hidden'))}catch{}
+        if(playing&&(this._target===document.body||this._target===document.documentElement))return;
+        try{this._cb(records,this)}catch(e){console.warn('Chrono observer 8.2.11',e)}
+      }):null;
       observers.add(this);
     }
-    observe(target,options={}){if(target&&this._native){observers.add(this);this._native.observe(target,options)}}
+    observe(target,options={}){if(target&&this._native){this._target=target;this._options=options;observers.add(this);this._native.observe(target,options)}}
     disconnect(){this._native?.disconnect();observers.delete(this)}
     takeRecords(){return this._native?.takeRecords?.()||[]}
   }
@@ -327,6 +337,27 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
   }
   requestAnimationFrame(schedulerTick);
   window.__ChronoUIScheduler820={interval,clear,tasks,observerCount:()=>observers.size,taskCount:()=>tasks.size};
+
+  // 8.2.7: coordenador de telas. Tarefas assíncronas só podem alterar a tela que as criou.
+  const uiRoute827=window.__ChronoUIRoute827=window.__ChronoUIRoute827||{
+    current:'boot',epoch:0,hubPermitUntil:0,lastReason:'boot',
+    enter(name,reason='render'){
+      this.current=String(name||'unknown');this.lastReason=String(reason||'render');this.epoch++;
+      try{const c=document.getElementById('overlayCard');if(c){c.dataset.uiScreen827=this.current;c.dataset.uiEpoch827=String(this.epoch)}}catch{}
+      return this.epoch;
+    },
+    token(name){return {name:String(name||this.current),epoch:this.epoch}},
+    valid(token){return !!token&&this.current===token.name&&this.epoch===token.epoch},
+    permitHub(reason='explicit',ms=900){this.hubPermitUntil=performance.now()+Math.max(150,Number(ms)||900);this.lastReason=reason;},
+    hubAllowed(){return this.current!=='missions'||performance.now()<=this.hubPermitUntil},
+    exactTitle(){try{return (document.getElementById('overlayCard')?.querySelector('h1')?.textContent||'').trim().toUpperCase()}catch{return ''}},
+    isMissions(){return this.current==='missions'||this.exactTitle()==='MISSÕES'}
+  };
+  window.__ChronoScheduleForScreen827=function(name,fn,delay=0){
+    const token=uiRoute827.token(name);
+    return setTimeout(()=>{if(uiRoute827.valid(token))try{fn()}catch(e){console.warn('Chrono UI task 8.2.7',e)}},Math.max(0,Number(delay)||0));
+  };
+
   // Early compatibility shell: gameplay functions may reference the optimizer before the final performance block is parsed.
   window.__ChronoOptimizer820=window.__ChronoOptimizer820||{
     setText(el,v){if(el){const t=String(v);if(el.textContent!==t)el.textContent=t}},
@@ -424,12 +455,23 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
     if(t==='Q')return 'skill1';if(t==='E')return 'skill2';if(t==='R')return 'skill3';if(t==='X')return 'skill4';if(t==='SHIFT')return 'dash';
     return h.dataset.action805||null;
   }
-  function refreshHints(){
-    const b=get();
-    document.querySelectorAll('.key-hint').forEach(h=>{const a=actionForHint(h);if(!a)return;h.dataset.action805=a;const label=display(b[a]);if(h.textContent!==label)h.textContent=label;});
+  let hintSig805='';
+  function refreshHints(force=false){
+    const b=get(),nodes=[...document.querySelectorAll('.key-hint')],ck=window.game?.classKey||'';
+    const sig=ck+'|'+ACTIONS.map(a=>b[a]).join('|')+'|'+nodes.map(h=>h.closest('.skill-icon')?.id||'').join(',');
+    if(!force&&sig===hintSig805)return;
+    hintSig805=sig;
+    nodes.forEach(h=>{const a=actionForHint(h);if(!a)return;h.dataset.action805=a;const label=display(b[a]);if(h.textContent!==label)h.textContent=label;});
   }
   window.__doomControls805={get,save,reset,display,normalize,canBind,defaults:{...DEFAULTS},actions:[...ACTIONS],labels:{...ACTION_LABEL},refreshHints};
-  document.addEventListener('DOMContentLoaded',()=>{refreshHints();try{new MutationObserver(refreshHints).observe(document.body,{childList:true,subtree:true});}catch{};window.__ChronoUIScheduler820.interval(refreshHints,180);});
+  document.addEventListener('DOMContentLoaded',()=>{
+    refreshHints(true);
+    try{
+      const root=document.getElementById('skillBar');
+      if(root)new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.key-hint,.skill-icon')||n.querySelector?.('.key-hint')))))refreshHints(true)}).observe(root,{childList:true,subtree:true});
+    }catch{}
+    window.__ChronoUIScheduler820.interval(()=>refreshHints(false),900);
+  });
 })();
 </script>
 
@@ -2063,25 +2105,30 @@ function drawTimeStop(){
   ctx.restore();
 }
 
+let waveAnnounceCanvas8211=null,waveAnnounceSig8211='';
+function prepareWaveAnnounce8211(){
+  if(!game?.waveAnnounce)return null;
+  const sig=game.waveAnnounce+'|'+(game.waveBoss?'boss':'wave');
+  if(waveAnnounceCanvas8211&&waveAnnounceSig8211===sig)return waveAnnounceCanvas8211;
+  const c=document.createElement('canvas');c.width=1120;c.height=150;const x=c.getContext('2d');
+  x.font='bold 52px Orbitron,Arial';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';
+  x.shadowBlur=40;x.shadowColor=game.waveBoss?'#ff2e63':'#61dafb';x.fillText(game.waveAnnounce,c.width/2,c.height/2);
+  waveAnnounceCanvas8211=c;waveAnnounceSig8211=sig;return c;
+}
+window.__prepareWaveAnnounce8211=prepareWaveAnnounce8211;
 function drawWaveAnnounce(){
-  if(game.waveAnnounceTimer<=0) return;
-  const alpha=Math.min(1,game.waveAnnounceTimer/0.5)*Math.min(1,(game.waveAnnounceTimer>1?1:(game.waveAnnounceTimer/0.5)));
-  ctx.save();ctx.globalAlpha=alpha;
-  ctx.font=`bold 52px Orbitron,Arial`;ctx.textAlign='center';
-  ctx.fillStyle='#fff';
-  ctx.shadowBlur=40;ctx.shadowColor=game.waveBoss?'#ff2e63':'#61dafb';
-  ctx.fillText(game.waveAnnounce,W/2,H/2);
-  ctx.restore();
+  if(game.waveAnnounceTimer<=0)return;
+  const alpha=Math.min(1,game.waveAnnounceTimer/.5)*Math.min(1,(game.waveAnnounceTimer>1?1:(game.waveAnnounceTimer/.5))),c=prepareWaveAnnounce8211();
+  if(!c)return;ctx.save();ctx.globalAlpha=alpha;ctx.drawImage(c,W/2-c.width/2,H/2-c.height/2);ctx.restore();
 }
 
+let hintCanvas8211=null,hintSig8211='';
 function drawHints(){
-  const p=game.player;
-  const skills=CLASSES[game.classKey].skills;
-  ctx.save();
-  ctx.fillStyle='rgba(180,210,255,0.7)';ctx.font='11px Rajdhani,Arial';ctx.textAlign='left';
-  const sk0=SKILL_DEFS[skills[0]];
-  ctx.fillText(`E: ${sk0.name} ${game.skillCds[0]>0?'('+game.skillCds[0].toFixed(1)+'s)':'✓'}`,16,H-14);
-  ctx.restore();
+  const skills=CLASSES[game.classKey].skills,sk0=SKILL_DEFS[skills[0]],text=`E: ${sk0.name} ${game.skillCds[0]>0?'('+game.skillCds[0].toFixed(1)+'s)':'✓'}`;
+  if(!hintCanvas8211||hintSig8211!==text){
+    const c=document.createElement('canvas');c.width=560;c.height=26;const x=c.getContext('2d');x.fillStyle='rgba(180,210,255,0.7)';x.font='11px Rajdhani,Arial';x.textAlign='left';x.textBaseline='alphabetic';x.fillText(text,0,16);hintCanvas8211=c;hintSig8211=text;
+  }
+  ctx.drawImage(hintCanvas8211,16,H-30);
 }
 
 // ── RENDER ───────────────────────────────────────────────────────
@@ -11756,7 +11803,17 @@ function killKey37(e){
 <script>
 (()=>{
   if(window.__chronoPatch483VerifiedRoutes)return; window.__chronoPatch483VerifiedRoutes=true;
-  function forceAwakeningLatest483(){
+  let missionEpoch483=0;
+  const missionTimers483=new Set();
+  function isMissionScreen483(epoch=missionEpoch483){
+    const c=window.overlayCard||document.getElementById('overlayCard');
+    const title=(c?.querySelector('h1')?.textContent||'').trim().toUpperCase();
+    return epoch===missionEpoch483&&!window.overlay?.classList?.contains('hidden')&&title==='MISSÕES'&&!!c?.querySelector('.awakGrid461');
+  }
+  function clearMissionTimers483(){for(const id of missionTimers483){try{clearTimeout(id)}catch{}}missionTimers483.clear()}
+  function scheduleMission483(epoch,ms){const id=setTimeout(()=>{missionTimers483.delete(id);if(isMissionScreen483(epoch))forceAwakeningLatest483(epoch)},ms);missionTimers483.add(id)}
+  function forceAwakeningLatest483(epoch=missionEpoch483){
+    if(!isMissionScreen483(epoch))return;
     try{ if(window.enhanceMissions480) window.enhanceMissions480(); }catch{}
     const grid=document.querySelector('.awakGrid461');
     if(!grid)return;
@@ -11770,8 +11827,11 @@ function killKey37(e){
   }
   const previousOpenMissions483=window.openMissions482||window.openMissions461||window.openMissions465||window.openMissions||null;
   window.openMissions483=function(){
+    clearMissionTimers483();const epoch=++missionEpoch483;
     if(previousOpenMissions483&&previousOpenMissions483!==window.openMissions483) previousOpenMissions483();
-    [0,40,120,260,520].forEach(t=>setTimeout(forceAwakeningLatest483,t));
+    window.__ChronoUIRoute827?.enter?.('missions','openMissions483');
+    const c=window.overlayCard||document.getElementById('overlayCard');if(c){c.dataset.uiScreen827='missions';c.dataset.missionEpoch483=String(epoch)}
+    [0,60,180,420].forEach(t=>scheduleMission483(epoch,t));
   };
   window.openMissions=window.openMissions461=window.openMissions465=window.openMissions482=window.openMissions483;
   document.addEventListener('click',e=>{
@@ -11780,8 +11840,15 @@ function killKey37(e){
     const a=e.target.closest&&e.target.closest('[data-awak480]');
     if(a&&window.openAwakening480){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();window.openAwakening480(a.dataset.awak480);}
   },true);
-  const mo=new MutationObserver(forceAwakeningLatest483);
-  try{mo.observe(document.body,{childList:true,subtree:true});}catch{}
+  // 8.2.7: o observer antigo reagia a qualquer interface. Agora só agenda uma atualização
+  // quando a própria grade de Missões sofre alteração, sem tocar em Bestiário, Loja ou Hub.
+  let missionObserverQueued483=false;
+  const mo=new MutationObserver(()=>{
+    if(!isMissionScreen483()||missionObserverQueued483)return;
+    missionObserverQueued483=true;
+    requestAnimationFrame(()=>{missionObserverQueued483=false;if(isMissionScreen483())forceAwakeningLatest483()});
+  });
+  try{const root=document.getElementById('overlayCard');if(root)mo.observe(root,{childList:true,subtree:true});}catch{}
   console.log('Chrono Shards 4.8.3 — rotas de Missões/Awakening verificadas e carga/cooldown de ultimates ajustados');
 })();
 </script>
@@ -12281,6 +12348,8 @@ function killKey37(e){
   }
   function enhanceMissions488(){
     if(!overlayCard||!overlayCard.querySelector)return;
+    const title=(overlayCard.querySelector('h1')?.textContent||'').trim().toUpperCase();
+    if(title!=='MISSÕES'||window.__ChronoUIRoute827?.current!=='missions')return;
     const grid=overlayCard.querySelector('.awakGrid461'); if(!grid)return;
     for(const id of Object.keys(AWAKEN_488)){
       let card=grid.querySelector(`[data-awak488="${id}"],[data-awak480="${id}"],[data-awak461="${id}"]`);
@@ -12292,7 +12361,11 @@ function killKey37(e){
     }
   }
   const prevMissions488=window.openMissions461||(typeof openMissions461==='function'?openMissions461:(window.openMissions||null));
-  function openMissions488(){if(prevMissions488&&prevMissions488!==openMissions488)prevMissions488.apply(this,arguments);[0,60,180].forEach(t=>setTimeout(enhanceMissions488,t));}
+  function openMissions488(){
+    if(prevMissions488&&prevMissions488!==openMissions488)prevMissions488.apply(this,arguments);
+    const epoch=window.__ChronoUIRoute827?.enter?.('missions','openMissions488');
+    [0,80,220].forEach(t=>setTimeout(()=>{if(window.__ChronoUIRoute827?.current==='missions'&&window.__ChronoUIRoute827?.epoch===epoch)enhanceMissions488()},t));
+  }
   window.openAwakening488=openAwakening488;window.openAwakening480=openAwakening488;window.openAwakening464=openAwakening488;window.openAwakening461=openAwakening488;
   try{openAwakening461=openAwakening488;}catch{}
   window.openMissions461=openMissions488;window.openMissions=openMissions488;try{openMissions461=openMissions488;}catch{}
@@ -16636,6 +16709,15 @@ function killKey37(e){
     }
     return null;
   }
+  let bookEpoch531=0;
+  const bookTimers531=new Set();
+  function clearBookTimers531(){for(const id of bookTimers531){try{clearTimeout(id)}catch{}}bookTimers531.clear()}
+  function scheduleBook531(epoch,fn,ms){const id=setTimeout(()=>{bookTimers531.delete(id);if(epoch!==bookEpoch531)return;try{fn(epoch)}catch(e){console.warn('Bestiário 5.3.1 tarefa cancelada',e)}},ms);bookTimers531.add(id);return id}
+  function isGeneralList531(epoch){
+    if(epoch!==bookEpoch531||!overlayCard||overlay?.classList?.contains('hidden'))return false;
+    const title=(overlayCard.querySelector('h1')?.textContent||'').trim().toUpperCase();
+    return overlayCard.dataset.bookview531==='list'&&overlayCard.dataset.booktab531==='general'&&title.includes('BESTIÁRIO')&&!overlayCard.querySelector('.bookDetail464,#bookDetailBack531,#bookDetailBack530,#bookBackO,#bookBackP');
+  }
   function clearLegacyRiftNewSections531(){
     overlayCard?.querySelectorAll?.('.riftBookGeneral531,.newBook529,.newBook530,.bookTickets529,.bookTickets530').forEach(el=>el.remove());
     // Remove qualquer seção antiga que tenha sobrado com título de registros novos/Elites da Rift Update.
@@ -16644,9 +16726,10 @@ function killKey37(e){
       if(h==='NOVOS REGISTROS'||h==='ELITES DA RIFT UPDATE')sec.remove();
     });
   }
-  function injectGeneralSection(){
+  function injectGeneralSection(expectedEpoch=bookEpoch531){
+    if(!isGeneralList531(expectedEpoch))return;
     addStyle();cleanupOldTickets();attachSideNav('general');
-    if(!overlayCard)return;
+    if(!isGeneralList531(expectedEpoch))return;
     overlayCard.dataset.booktab531='general';
     overlayCard.classList.add('bookTheme531','general531');
     clearLegacyRiftNewSections531();
@@ -16674,7 +16757,8 @@ function killKey37(e){
   }
   function buildSpecialBook531(tab){
     const entries=ENTRIES.filter(e=>e.tab===tab);
-    overlay.classList.remove('hidden');overlayCard.className='card bestiary464 bookTheme531 '+themeClass(tab);overlayCard.style.position='relative';overlayCard.dataset.booktab531=tab;
+    overlay.classList.remove('hidden');overlayCard.className='card bestiary464 bookTheme531 '+themeClass(tab);overlayCard.style.position='relative';overlayCard.dataset.booktab531=tab;overlayCard.dataset.bookview531='list';
+    window.__ChronoUIRoute827?.enter?.('bestiary-list','book-'+tab);
     const monsters=entries.filter(e=>e.kind!=='boss');
     const bosses=entries.filter(e=>e.kind==='boss');
     overlayCard.innerHTML=themeOrnaments(tab)+'<h1 style="text-align:center">'+themeTitle(tab)+'</h1><p class="duneSub461">'+themeIntro(tab)+'</p>'+
@@ -16686,20 +16770,23 @@ function killKey37(e){
     document.getElementById('bookBack531').onclick=()=>{document.getElementById('bookSideNav531')?.remove();(window.openHub461||window.openDuneHub461||window.openStartMenu)?.();};
   }
   function openBestiary531(tab='general'){
-    addStyle();
+    addStyle();clearBookTimers531();const epoch=++bookEpoch531;
     if(tab==='general'){
       if(typeof prevOpen530==='function')prevOpen530('general');
       else if(typeof prevLatest==='function')prevLatest();
-      setTimeout(injectGeneralSection,0);
-      setTimeout(injectGeneralSection,60);
+      if(overlayCard){overlayCard.dataset.booktab531='general';overlayCard.dataset.bookview531='list'}
+      window.__ChronoUIRoute827?.enter?.('bestiary-list','book-general');
+      scheduleBook531(epoch,injectGeneralSection,0);
+      scheduleBook531(epoch,injectGeneralSection,80);
       return;
     }
     buildSpecialBook531(tab);
   }
   function openBookDetail531(id,backTab){
-    addStyle();const e=ENTRIES.find(x=>x.id===id);if(!e)return;let m=read();const k=kills(id),req=required(e);if(k>=req&&!claimed(id)){m.bestiaryClaimed461=m.bestiaryClaimed461||{};m.bestiaryClaimed461[id]=true;m.relicShards=n(m.relicShards)+(e.kind==='boss'?25:12);write(m);}
+    clearBookTimers531();++bookEpoch531;addStyle();const e=ENTRIES.find(x=>x.id===id);if(!e)return;let m=read();const k=kills(id),req=required(e);if(k>=req&&!claimed(id)){m.bestiaryClaimed461=m.bestiaryClaimed461||{};m.bestiaryClaimed461[id]=true;m.relicShards=n(m.relicShards)+(e.kind==='boss'?25:12);write(m);}
     const ok=claimed(id)||k>=req;const tab=backTab||e.tab;
-    overlay.classList.remove('hidden');overlayCard.className='card bestiary464 bookTheme531 '+themeClass(tab);overlayCard.dataset.booktab531=tab;
+    overlay.classList.remove('hidden');overlayCard.className='card bestiary464 bookTheme531 '+themeClass(tab);overlayCard.dataset.booktab531=tab;overlayCard.dataset.bookview531='detail';
+    window.__ChronoUIRoute827?.enter?.('bestiary-detail','book-detail-'+id);
     overlayCard.innerHTML= ok ? themeOrnaments(tab)+'<h1 style="text-align:center">'+esc(e.name)+'</h1><p class="duneSub461">'+esc(e.typeLabel)+' • Registro '+(tab==='doom'?'do DOOM':tab==='rift'?'das Fissuras':'tático')+'</p><div class="bookDetail464"><div class="bookCanvasBox464">'+modelHTML(e)+'<div style="margin-top:12px;color:'+e.col+';font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.13em">MODELO TÁTICO ANIMADO</div></div><div><div class="statGrid464"><div class="stat464"><small>HP BASE</small><b>'+esc(e.hp)+'</b></div><div class="stat464"><small>VELOCIDADE</small><b>'+esc(e.spd)+'</b></div><div class="stat464"><small>DANO</small><b>'+esc(e.dmg)+'</b></div><div class="stat464"><small>APARECE</small><b>'+esc(e.spawn)+'</b></div><div class="stat464"><small>TIPO</small><b>'+esc(e.typeLabel)+'</b></div><div class="stat464"><small>ABATES</small><b>'+k+'</b></div></div><div class="text464"><h4>PADRÃO DE ATAQUE</h4>'+esc(e.atk)+'</div></div></div><div class="text464"><h4>ORIGEM E COMPORTAMENTO</h4>'+esc(e.lore)+'</div><div class="duneActions461"><button class="duneBtn461 dark" id="bookDetailBack531">← Bestiário</button></div>' : themeOrnaments(tab)+'<h1 style="text-align:center">REGISTRO BLOQUEADO</h1><p class="duneSub461">Derrote mais unidades para revelar este registro.</p>'+renderSection('Progresso do Registro',[e])+'<div class="duneActions461"><button class="duneBtn461 dark" id="bookDetailBack531">← Bestiário</button></div>';
     attachSideNav(tab);document.getElementById('bookDetailBack531').onclick=()=>openBestiary531(tab);
   }
@@ -16985,6 +17072,8 @@ function killKey37(e){
     if(!isBestiaryScreen()){removeSideNav();return;}
     try{document.querySelectorAll('.bookTickets529,.bookTickets530').forEach(el=>el.remove());}catch{}
     const c=card(); if(!c)return;
+    const detailOpen=!!c.querySelector('.bookDetail464,#bookDetailBack531,#bookDetailBack530,#bookBackO,#bookBackP')||c.dataset.bookview531==='detail';
+    if(detailOpen){bindBookControls();return;}
     // remove seções duplicadas antigas dos registros novos, deixando só os cards que foram movidos para Elites
     c.querySelectorAll('.newBook529,.newBook530,.riftBookGeneral531').forEach(el=>{
       const keep=[];
@@ -19021,7 +19110,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
         {key:'turretPack',icon:'🔧',tag:'RARO',color:'#7af1ff',name:'Torreta Permanente MK-II',desc:'Instala uma torreta permanente melhorada em um ponto aleatório do mapa.',cost:price56(100*Math.pow(1.44,N(c.turretPack))),available:N(c.turretPack)<N(lim.turretPack||3),effect:()=>{spawnMiniTurret();c.turretPack=N(c.turretPack)+1}},
         {key:'relicTrade',icon:'🜂',tag:'PERMANENTE',color:'#ffb8ff',name:'Pacote de Relíquias +3',desc:'Compra +3 relíquias permanentes. Pode ser comprado 4 vezes e o preço sobe a cada compra.',cost:relicCost,available:N(c.relicTrade)<4,effect:()=>{addRelics56(3);c.relicTrade=N(c.relicTrade)+1}},
         {key:'luckyPotion',icon:'🍀',tag:'ÚNICA',color:'#86ffb0',name:'Poção de Sorte',desc:'Se sentindo sortudo? Você pode comprar apenas uma vez, mas vai durar 10 waves.',cost:price56(600),available:N(c.luckyPotion)<1,effect:()=>{c.luckyPotion=1;game.luckyPotion56={startWave:N(game.wave)+1,untilWave:N(game.wave)+10};ensureLuckyBadge56();try{addFloatingText(game.player.x,game.player.y-34,'SORTUDO!','#86ffb0',20)}catch{}}},
-        {key:'chronoChest',icon:'🧰',tag:'RNG',color:'#ffd166',name:'Baú Chronal',desc:`Custa 150 ouro. Limite desta loja: ${Math.max(0,4-N(c.chronoChest))}/4 baús. Dá 3 recompensas.`,cost:price56(150),available:N(c.chronoChest)<4,effect:()=>{c.chronoChest=N(c.chronoChest)+1;openChronalChest56()},noRefresh:true}
+        {key:'chronoChest',icon:'🧰',tag:'RNG',color:'#ffd166',name:'Baú Chronal',desc:`Custa 150 ouro. Limite desta loja: ${Math.max(0,4-N(c.chronoChest))}/4 baús. Dá 3 recompensas.`,cost:price56(150),available:N(c.chronoChest)<4,effect:()=>{c.chronoChest=N(c.chronoChest)+1;(window.ChronoChestSingle622?.openNormal||openChronalChest56)()},noRefresh:true}
       ]
     };
     function card(it,i,group){return `<button class="shopItem56" data-shop56="${group}:${i}" ${it.available?'':'disabled'} style="--co:${it.color}"><span class="icon56">${it.icon}</span><small>${it.tag}</small><strong>${esc56(it.name)}</strong><span>${esc56(it.desc)}</span><em class="cost56">🪙 ${it.cost} ouro</em></button>`;}
@@ -19145,7 +19234,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     q('#riftAgain581').onclick=()=>{exitRiftEnd(false);window.__forceRiftNext518=true;(window.openClassMenu461||window.openClassMenu)?.();};
     q('#riftHome581').onclick=()=>{exitRiftEnd(true);(window.openStartMenu||window.openStartMenu461)?.();};
   }
-  function buy(id,stats){const costs={key:35,chrono:55,relic:40,chest:35,core:115,area:100,turret:140,gold:85,blessing:160};const cost=costs[id],m=meta();if(!cost||N(m.riftSparks)<cost)return;m.riftSparks=N(m.riftSparks)-cost;m.riftPerm=m.riftPerm||{};if(id==='key')m.awakeningKeys=N(m.awakeningKeys)+1;if(id==='chrono'){m.chronoFragments=N(m.chronoFragments)+1;m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected)+1;}if(id==='relic')m.relicShards=N(m.relicShards)+25;if(id==='core')m.riftPerm.coreHp=N(m.riftPerm.coreHp)+1;if(id==='area')m.riftPerm.buildArea=N(m.riftPerm.buildArea)+1;if(id==='turret')m.riftPerm.turretLimit=N(m.riftPerm.turretLimit)+1;if(id==='gold')m.riftPerm.startGold=N(m.riftPerm.startGold)+1;if(id==='blessing')m.riftPerm.goldBlessing=N(m.riftPerm.goldBlessing)+1;save(m);if(id==='chest'){openRiftChest(stats);return;}renderStore(stats);}
+  function buy(id,stats){const costs={key:35,chrono:55,relic:40,chest:35,core:115,area:100,turret:140,gold:85,blessing:160};const cost=costs[id],m=meta();if(!cost||N(m.riftSparks)<cost)return;m.riftSparks=N(m.riftSparks)-cost;m.riftPerm=m.riftPerm||{};if(id==='key')m.awakeningKeys=N(m.awakeningKeys)+1;if(id==='chrono'){m.chronoFragments=N(m.chronoFragments)+1;m.stats=m.stats||{};m.stats.chronoFragmentsCollected=N(m.stats.chronoFragmentsCollected)+1;}if(id==='relic')m.relicShards=N(m.relicShards)+25;if(id==='core')m.riftPerm.coreHp=N(m.riftPerm.coreHp)+1;if(id==='area')m.riftPerm.buildArea=N(m.riftPerm.buildArea)+1;if(id==='turret')m.riftPerm.turretLimit=N(m.riftPerm.turretLimit)+1;if(id==='gold')m.riftPerm.startGold=N(m.riftPerm.startGold)+1;if(id==='blessing')m.riftPerm.goldBlessing=N(m.riftPerm.goldBlessing)+1;save(m);if(id==='chest'){if(window.ChronoChestSingle622?.openRift)window.ChronoChestSingle622.openRift(()=>renderStore(stats));else openRiftChest(stats);return;}renderStore(stats);}
   function openRiftChest(stats){ensureStyle();const state={rarity:'epic',used:0,maxUses:3,animating:false,readyOpen:false,lastChanged:false};function render(){const r=RARITIES[state.rarity];overlay.classList.remove('hidden');overlayCard.className=`card riftChestStage581 rarity-${state.rarity}`;overlayCard.style.setProperty('--c',r.color);const hidden=state.rarity==='mythic';const msg=state.readyOpen||state.used>=state.maxUses||hidden?'Clique para abrir!':(state.lastChanged?'Raridade aumentou!':'Me Clique!');overlayCard.innerHTML=`<h1>BAÚ CHRONAL DA FISSURA</h1><p class="riftChestSub581">Este baú começa Épico e tem 3 tentativas para subir de raridade. Ele nunca regride.</p><div class="riftChestRarity581">${r.emoji} ${r.name}</div><div class="riftChestBox581 ${state.lastChanged?'up581':''}" id="riftChestBox581"><div class="riftChestLid581"></div><div class="riftChestBase581"></div><div class="riftChestLock581"></div></div><div class="riftChestPrompt581">${msg}</div><div class="riftOrbs581">${Array.from({length:state.maxUses},(_,i)=>`<i class="riftOrb581 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div><p class="muted">Raro 30% • Épico 15% • Lendário 3.5% • Mítico 1%</p>`;const box=q('#riftChestBox581');if(box)box.onclick=click;if(state.lastChanged)setTimeout(()=>{state.lastChanged=false;const b=q('#riftChestBox581');if(b)b.classList.remove('up581');},720);}function click(){if(state.animating)return;if(state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic'){const box=q('#riftChestBox581');if(box)box.classList.add('open581');setTimeout(()=>showRewards(state,stats),660);return;}state.animating=true;state.used++;const before=state.rarity;const rolled=rollUpgrade();const next=higher(before,rolled);const box=q('#riftChestBox581');if(box){box.classList.remove('shake581','up581');void box.offsetWidth;box.classList.add('shake581');}const p=q('.riftChestPrompt581');if(p)p.textContent='...';setTimeout(()=>{state.rarity=next;state.animating=false;state.lastChanged=before!==next;if(state.rarity==='mythic'||state.used>=state.maxUses)state.readyOpen=true;render();},650);}render();}
   function showRewards(state,stats){const r=RARITIES[state.rarity],rewards=[];for(let i=0;i<3;i++)rewards.push(applyReward(rewardType(state.rarity),state.rarity));try{updateHUD?.()}catch{}overlay.classList.remove('hidden');overlayCard.className=`card riftChestStage581 riftChestReward581 rarity-${state.rarity}`;overlayCard.style.setProperty('--c',r.color);overlayCard.innerHTML=`<h1>BAÚ CHRONAL ABERTO</h1><p class="riftChestSub581">Raridade final: <span class="riftChestRarity581">${r.emoji} ${r.name}</span></p><div class="riftRewardGrid581">${rewards.map(x=>`<div class="riftRewardCard581 ${x.rare?'rareLoot620':''}" style="--c:${x.color||r.color}"><i>${x.icon}</i><strong>${esc(x.title)}</strong><span>${esc(x.desc)}</span></div>`).join('')}</div><button class="main-btn" id="backRiftStore581">Voltar para loja</button>`;q('#backRiftStore581').onclick=()=>renderStore(stats);}
   function exitRiftEnd(){window.__riftCleanEndStage518='none';window.__riftSuppressOldEnd518=performance.now()+1500;const g=curGame();if(g){try{g.riftBuild50=g.riftBuild505=g.riftBuild507=g.riftBuild508=g.riftBuild509=null;}catch{}try{if(g.rift50){g.rift50.shopOpen=false;g.rift50.endAwarded50=true;g.rift50.endAwarded507=true;}}catch{}g.riftMode50=false;g.running=false;g.shopPending=false;g.betweenWaves=false;g.enemyBullets=[];g.enemies=[];}overlay.classList.remove('hidden');overlayCard.className='card';}
@@ -20567,7 +20656,6 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     updateColonelJets609(dt);
     updateArcherFX609(dt);
     updateShadow609(dt,hpBefore);
-    replaceArcherTexts609(overlayCard||document);
     return r;
   };
 
@@ -20592,7 +20680,6 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     const r=oldUpdateHUD609();
     try{
       if(game?.classKey===ARCHER){
-        replaceArcherTexts609(document);
         const ult=document.getElementById('awakUltEmoji480')||document.querySelector('.awak-ult-emoji,.ultimate-emoji');
         if(ult)ult.textContent='🌠';
       }
@@ -21807,13 +21894,41 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     animation:rareLootPulse622 1.45s ease-in-out infinite alternate;
   }
   @keyframes rareLootPulse622{to{filter:brightness(1.14);transform:translateY(-2px)}}
+  .singleLootGuard622[data-chest-phase828="rolling"] #chestBox56,
+  .singleLootGuard622[data-chest-phase828="rolling"] #riftChestBox581,
+  .singleLootGuard622[data-chest-phase828="opening"] #chestBox56,
+  .singleLootGuard622[data-chest-phase828="opening"] #riftChestBox581{cursor:progress!important}
+  .singleLootGuard622 #chestBox56,.singleLootGuard622 #riftChestBox581{pointer-events:auto!important;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+  .singleLootGuard622[data-chest-phase828="idle"] #chestBox56,.singleLootGuard622[data-chest-phase828="idle"] #riftChestBox581{cursor:pointer!important}
+  .chestEvolution828{position:absolute;inset:0;z-index:4;overflow:hidden;pointer-events:none;border-radius:inherit}
+  .chestEvolution828 i{position:absolute;left:50%;top:47%;display:block;pointer-events:none}
+  .chestEvolution828.legendary828:before{content:'✦';position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-size:190px;color:rgba(255,220,92,.20);text-shadow:0 0 24px #ffd166,0 0 70px rgba(255,177,0,.62);animation:legendSeal828 1.15s cubic-bezier(.16,.82,.18,1) both}
+  .chestEvolution828.legendary828:after{content:'';position:absolute;inset:-35%;background:conic-gradient(from 0deg,transparent 0 8deg,rgba(255,230,135,.55) 9deg 12deg,transparent 13deg 30deg);mix-blend-mode:screen;animation:legendRays828 1.2s ease-out both}
+  .chestEvolution828.legendary828 i{width:9px;height:9px;border-radius:50%;background:#fff3a8;box-shadow:0 0 9px #fff,0 0 22px #ffd166;transform:translate(-50%,-50%) rotate(var(--a)) translateX(20px);animation:legendStar828 1.05s cubic-bezier(.15,.75,.24,1) var(--delay) both}
+  .chestEvolution828.mythic828{background:radial-gradient(circle at 50% 47%,rgba(255,255,255,.18),rgba(255,31,77,.18) 18%,transparent 48%);animation:mythicScreen828 1.35s ease-out both}
+  .chestEvolution828.mythic828:before{content:'⛧';position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.35) rotate(-35deg);font:900 210px Orbitron,sans-serif;color:rgba(255,255,255,.22);text-shadow:0 0 18px #fff,0 0 42px #ff304f,0 0 90px #b000ff;animation:mythicSeal828 1.35s cubic-bezier(.13,.86,.18,1) both}
+  .chestEvolution828.mythic828:after{content:'';position:absolute;inset:-30%;background:repeating-conic-gradient(from 0deg,transparent 0 15deg,rgba(255,48,79,.58) 16deg 18deg,transparent 19deg 35deg);filter:blur(2px);mix-blend-mode:screen;animation:mythicRift828 1.35s ease-out both}
+  .chestEvolution828.mythic828 i{width:5px;height:34px;border-radius:999px;background:linear-gradient(#fff,#ff304f,transparent);box-shadow:0 0 12px #fff,0 0 28px #ff304f;transform-origin:50% 100%;transform:translate(-50%,-100%) rotate(var(--a)) translateY(-24px) scaleY(.2);animation:mythicShard828 1.2s cubic-bezier(.12,.8,.2,1) var(--delay) both}
+  .singleLootGuard622.chestRevealLegendary828{box-shadow:0 0 90px rgba(255,209,102,.32),0 24px 80px rgba(0,0,0,.55)!important}
+  .singleLootGuard622.chestRevealMythic828{box-shadow:0 0 110px rgba(255,48,79,.42),0 0 46px rgba(183,0,255,.22),0 24px 80px rgba(0,0,0,.58)!important}
+  #chestBox56.chestAscendLegendary828,#riftChestBox581.chestAscendLegendary828{animation:chestAscendLegendary828 1.08s cubic-bezier(.16,.86,.18,1.18) both!important}
+  #chestBox56.chestAscendMythic828,#riftChestBox581.chestAscendMythic828{animation:chestAscendMythic828 1.3s cubic-bezier(.13,.86,.18,1.14) both!important}
+  @keyframes legendSeal828{0%{opacity:0;transform:translate(-50%,-50%) scale(.25) rotate(-35deg)}48%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.35) rotate(18deg)}}
+  @keyframes legendRays828{0%{opacity:0;transform:scale(.3) rotate(-18deg)}45%{opacity:.9}100%{opacity:0;transform:scale(1.2) rotate(20deg)}}
+  @keyframes legendStar828{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateX(16px) scale(.2)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--a)) translateX(var(--d)) scale(.5)}}
+  @keyframes mythicScreen828{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+  @keyframes mythicSeal828{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-50deg)}38%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(8deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.65) rotate(32deg)}}
+  @keyframes mythicRift828{0%{opacity:0;transform:scale(.25) rotate(-30deg)}36%{opacity:.95}100%{opacity:0;transform:scale(1.3) rotate(42deg)}}
+  @keyframes mythicShard828{0%{opacity:0;transform:translate(-50%,-100%) rotate(var(--a)) translateY(-18px) scaleY(.15)}28%{opacity:1}100%{opacity:0;transform:translate(-50%,-100%) rotate(var(--a)) translateY(calc(var(--d) * -1)) scaleY(1.15)}}
+  @keyframes chestAscendLegendary828{0%{transform:translateY(0) scale(1)}30%{transform:translateY(-18px) scale(1.09)}55%{transform:translateY(-8px) scale(1.18)}100%{transform:translateY(0) scale(1)}}
+  @keyframes chestAscendMythic828{0%{transform:translateY(0) scale(1) rotate(0)}20%{transform:translateY(7px) scale(.94) rotate(-1deg)}43%{transform:translateY(-25px) scale(1.2) rotate(2deg)}62%{transform:translateY(-8px) scale(1.12) rotate(-1deg)}100%{transform:translateY(0) scale(1) rotate(0)}}
 </style>
 <script>
 /* ────────────────────────────────────────────────────────────────
-   Chrono Shards 6.2.2 — Baús com loot único/final
-   - Intercepta cliques antigos de baú antes dos patches anteriores
-   - Aplica somente a tabela atual de recompensas
-   - Impede múltiplos setTimeouts/handlers de concederem loots duplicados
+   Chrono Shards 8.2.10 — Baús Chronais com avanço automático real
+   - Um clique consome uma chance e conclui toda a animação sozinho
+   - Progressão por requestAnimationFrame, sem depender de timers disputados
+   - Abertura final também conclui e mostra os itens com um único clique
 ──────────────────────────────────────────────────────────────── */
 (()=>{
   if(window.__chronoChestSingleLoot622)return; window.__chronoChestSingleLoot622=true;
@@ -21842,7 +21957,87 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     key:{rare:[1,1],epic:[2,3],legendary:[3,4],mythic:[4,8]},
     chrono:{epic:[1,1],legendary:[2,4],mythic:[5,10]}
   };
-  let current=null, suppressUntil=0;
+  let current=null, suppressUntil=0, sessionSeq828=0;
+
+  function makeState828(mode,rarity,maxUses,onBack=null){
+    return {mode,rarity,used:0,maxUses,readyOpen:false,animating:false,claimed:false,lastChanged:false,
+      phase:'idle',session:++sessionSeq828,busySince:0,pendingRarity:null,timer:0,watchdog:0,revealTimer:0,
+      phaseEndsAt:0,phaseCallback:null,phaseScheduleToken:0,onBack};
+  }
+  function clearTimers828(state){
+    if(!state)return;
+    // Compatibilidade com sessões antigas que ainda possam ter IDs nativos.
+    if(state.timer){clearTimeout(state.timer);state.timer=0}
+    if(state.watchdog){clearTimeout(state.watchdog);state.watchdog=0}
+    state.phaseCallback=null;state.phaseEndsAt=0;state.phaseScheduleToken=N(state.phaseScheduleToken)+1;
+  }
+  function active828(state){return !!state&&current===state&&!state.claimed}
+  function setPhase828(state,phase){
+    if(!state)return;
+    state.phase=phase;state.animating=phase!=='idle';state.busySince=phase==='idle'?0:performance.now();
+    if(current===state&&overlayCard){
+      overlayCard.dataset.chestPhase828=phase;overlayCard.dataset.chestSession828=String(state.session);
+      const box=overlayCard.querySelector('#chestBox56,#riftChestBox581');
+      if(box){box.setAttribute('aria-busy',phase==='idle'?'false':'true');box.style.pointerEvents='auto';}
+    }
+  }
+  let phasePumpRunning828=false;
+  function ensurePhasePump828(){
+    if(phasePumpRunning828)return;
+    phasePumpRunning828=true;
+    const tick=now=>{
+      const state=current;
+      if(state&&!state.claimed&&state.phase!=='idle'&&typeof state.phaseCallback==='function'){
+        if(now>=N(state.phaseEndsAt,Infinity)){
+          const fn=state.phaseCallback;
+          state.phaseCallback=null;state.phaseEndsAt=0;
+          try{fn()}catch(e){console.warn('Baú Chronal 8.2.10 avanço automático',e)}
+        }
+      }
+      if(current&&!current.claimed&&current.phase!=='idle'&&typeof current.phaseCallback==='function'){
+        requestAnimationFrame(tick);
+      }else phasePumpRunning828=false;
+    };
+    requestAnimationFrame(tick);
+  }
+  function schedule828(state,fn,delay){
+    clearTimers828(state);
+    const token=N(state.phaseScheduleToken),session=state.session;
+    state.phaseEndsAt=performance.now()+Math.max(0,N(delay));
+    state.phaseCallback=()=>{
+      if(!active828(state)||state.session!==session||N(state.phaseScheduleToken)!==token)return;
+      fn();
+    };
+    ensurePhasePump828();
+  }
+  function recoverStale828(state){
+    if(!state||state.phase==='idle')return false;
+    if(typeof state.phaseCallback==='function'&&performance.now()>=N(state.phaseEndsAt,Infinity)){
+      const fn=state.phaseCallback;state.phaseCallback=null;state.phaseEndsAt=0;fn();return true;
+    }
+    // Segurança extrema: uma etapa nunca fica presa além de 2,2 segundos.
+    if(performance.now()-N(state.busySince)<=2200)return false;
+    if(state.phase==='rolling'&&state.pendingRarity){finishRoll828(state);return true;}
+    if(state.phase==='opening'){finishOpen828(state);return true;}
+    clearTimers828(state);setPhase828(state,'idle');refreshChest828(state);return true;
+  }
+  function rarityFx828(state){
+    if(!state.lastChanged||!['legendary','mythic'].includes(state.rarity))return '';
+    const mythic=state.rarity==='mythic',count=mythic?18:14,cls=mythic?'mythic828':'legendary828';
+    return `<div class="chestEvolution828 ${cls}" aria-hidden="true">${Array.from({length:count},(_,i)=>`<i style="--a:${Math.round(i*360/count)}deg;--d:${mythic?58+(i%5)*9:82+(i%4)*12}px;--delay:${(i%6)*.025}s"></i>`).join('')}</div>`;
+  }
+  function clearReveal828(state){
+    if(!state)return;
+    if(state.revealTimer)clearTimeout(state.revealTimer);
+    const session=state.session;
+    state.revealTimer=setTimeout(()=>{
+      if(current!==state||state.session!==session)return;
+      state.lastChanged=false;
+      overlayCard?.classList.remove('chestRevealLegendary828','chestRevealMythic828');
+      overlayCard?.querySelector('.chestEvolution828')?.remove();
+      overlayCard?.querySelector('#chestBox56,#riftChestBox581')?.classList.remove('chestAscendLegendary828','chestAscendMythic828');
+    },1450);
+  }
 
   function meta(){let m={};try{m=JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}}catch{};m.relicShards=N(m.relicShards);m.chronoFragments=N(m.chronoFragments);m.awakeningKeys=N(m.awakeningKeys);m.stats=m.stats||{};return m;}
   function save(m){try{localStorage.setItem(META_KEY,JSON.stringify(m));if(window.game?.meta)game.meta=m;}catch{}return m;}
@@ -21926,7 +22121,8 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     return `<h1>BAÚ CHRONAL</h1>
       <p class="shopSub56">Clique no baú para tentar aumentar a raridade.</p>
       <div class="chestRarity56">${meta.emoji} ${meta.name}</div>
-      <div class="chestBox56 rarity-${state.rarity} ${state.lastChanged?'rarityUp56':''}" id="chestBox56" data-single622="1"><div class="chestLid56"></div><div class="chestBase56"></div><div class="chestLock56"></div></div>
+      <div class="chestBox56 rarity-${state.rarity} ${state.lastChanged?'rarityUp56 ':''}${state.lastChanged&&state.rarity==='legendary'?'chestAscendLegendary828':''}${state.lastChanged&&state.rarity==='mythic'?'chestAscendMythic828':''}" id="chestBox56" role="button" tabindex="0" aria-label="Interagir com o Baú Chronal" data-single622="1" data-chest828="1" data-rarity="${state.rarity}"><div class="chestLid56"></div><div class="chestBase56"></div><div class="chestLock56"></div></div>
+      ${rarityFx828(state)}
       <div class="chestPrompt56">${msg}</div>
       <div class="orbs56">${Array.from({length:state.maxUses},(_,i)=>`<i class="orb56 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div>
       <p class="muted">Raro 30% • Épico 15% • Lendário 3.5% • Mítico 1%</p>`;
@@ -21938,24 +22134,69 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     return `<h1>BAÚ CHRONAL DA FISSURA</h1>
       <p class="riftChestSub581">Este baú começa Épico e tem 3 tentativas para subir de raridade. Ele nunca regride.</p>
       <div class="riftChestRarity581">${meta.emoji} ${meta.name}</div>
-      <div class="riftChestBox581 ${state.lastChanged?'up581':''}" id="riftChestBox581" data-single622="1"><div class="riftChestLid581"></div><div class="riftChestBase581"></div><div class="riftChestLock581"></div></div>
+      <div class="riftChestBox581 ${state.lastChanged?'up581 ':''}${state.lastChanged&&state.rarity==='legendary'?'chestAscendLegendary828':''}${state.lastChanged&&state.rarity==='mythic'?'chestAscendMythic828':''}" id="riftChestBox581" role="button" tabindex="0" aria-label="Interagir com o Baú Chronal da Fissura" data-single622="1" data-chest828="1" data-rarity="${state.rarity}"><div class="riftChestLid581"></div><div class="riftChestBase581"></div><div class="riftChestLock581"></div></div>
+      ${rarityFx828(state)}
       <div class="riftChestPrompt581">${msg}</div>
       <div class="riftOrbs581">${Array.from({length:state.maxUses},(_,i)=>`<i class="riftOrb581 ${hidden?'hide':i<state.used?'used':''}"></i>`).join('')}</div>
       <p class="muted">Raro 30% • Épico 15% • Lendário 3.5% • Mítico 1%</p>`;
   }
   function renderChest(state){
+    if(!state)return;
     current=state; const meta=R[state.rarity];
+    window.__ChronoUIRoute827?.enter?.('chronal-chest','chest-render-829');
     overlay.classList.remove('hidden');
+    overlayCard.dataset.chestSession828=String(state.session);
+    overlayCard.dataset.chestPhase828=state.phase||'idle';
     if(state.mode==='rift'){
-      overlayCard.className=`card riftChestStage581 rarity-${state.rarity} singleLootGuard622`;
+      overlayCard.className=`card riftChestStage581 rarity-${state.rarity} singleLootGuard622 ${state.lastChanged&&state.rarity==='legendary'?'chestRevealLegendary828':''} ${state.lastChanged&&state.rarity==='mythic'?'chestRevealMythic828':''}`;
       overlayCard.style.setProperty('--c',meta.color);
       overlayCard.innerHTML=riftChestHTML(state);
     }else{
       try{overlay.classList.add('chestMode56')}catch{}
-      overlayCard.className=`card chestStage56 rarity-${state.rarity} singleLootGuard622`;
+      overlayCard.className=`card chestStage56 rarity-${state.rarity} singleLootGuard622 ${state.lastChanged&&state.rarity==='legendary'?'chestRevealLegendary828':''} ${state.lastChanged&&state.rarity==='mythic'?'chestRevealMythic828':''}`;
       overlayCard.style.setProperty('--c',meta.color);
       overlayCard.innerHTML=normalChestHTML(state);
     }
+    overlayCard.dataset.chestSession828=String(state.session);
+    overlayCard.dataset.chestPhase828=state.phase||'idle';
+    if(state.lastChanged)clearReveal828(state);
+  }
+  // Atualiza a etapa sem substituir o elemento sob o ponteiro. Isso evita que o
+  // navegador mantenha o clique preso até um mouseleave/mouseenter.
+  function refreshChest828(state){
+    if(!active828(state))return;
+    const isRift=state.mode==='rift';
+    const box=q(isRift?'#riftChestBox581':'#chestBox56');
+    if(!box||String(box.dataset.chest828||'')!=='1'){renderChest(state);return;}
+    const meta=R[state.rarity],hidden=state.rarity==='mythic';
+    overlayCard.className=isRift
+      ?`card riftChestStage581 rarity-${state.rarity} singleLootGuard622 ${state.lastChanged&&state.rarity==='legendary'?'chestRevealLegendary828':''} ${state.lastChanged&&state.rarity==='mythic'?'chestRevealMythic828':''}`
+      :`card chestStage56 rarity-${state.rarity} singleLootGuard622 ${state.lastChanged&&state.rarity==='legendary'?'chestRevealLegendary828':''} ${state.lastChanged&&state.rarity==='mythic'?'chestRevealMythic828':''}`;
+    overlayCard.style.setProperty('--c',meta.color);
+    overlayCard.dataset.chestSession828=String(state.session);
+    overlayCard.dataset.chestPhase828=state.phase||'idle';
+    const rarityEl=q(isRift?'.riftChestRarity581':'.chestRarity56');
+    if(rarityEl)rarityEl.textContent=`${meta.emoji} ${meta.name}`;
+    box.dataset.rarity=state.rarity;
+    box.className=isRift
+      ?`riftChestBox581 ${state.lastChanged?'up581 ':''}${state.lastChanged&&state.rarity==='legendary'?'chestAscendLegendary828':''}${state.lastChanged&&state.rarity==='mythic'?'chestAscendMythic828':''}`
+      :`chestBox56 rarity-${state.rarity} ${state.lastChanged?'rarityUp56 ':''}${state.lastChanged&&state.rarity==='legendary'?'chestAscendLegendary828':''}${state.lastChanged&&state.rarity==='mythic'?'chestAscendMythic828':''}`;
+    const ready=state.readyOpen||state.used>=state.maxUses||hidden;
+    const prompt=q(isRift?'.riftChestPrompt581':'.chestPrompt56');
+    if(prompt)prompt.textContent=ready?'Clique para abrir!':(state.lastChanged?'Raridade aumentou! • Próxima chance pronta':'Raridade mantida • Próxima chance pronta');
+    const orbs=[...document.querySelectorAll(isRift?'.riftOrb581':'.orb56')];
+    orbs.forEach((orb,i)=>{
+      orb.classList.toggle(isRift?'hide':'hide',hidden);
+      orb.classList.toggle('used',!hidden&&i<state.used);
+    });
+    overlayCard.querySelector('.chestEvolution828')?.remove();
+    const fx=rarityFx828(state);
+    if(fx)box.insertAdjacentHTML('afterend',fx);
+    // Força o hit-test a voltar ao estado clicável sem exigir movimento do mouse.
+    box.style.pointerEvents='auto';
+    box.setAttribute('aria-busy','false');
+    requestAnimationFrame(()=>{if(active828(state)&&state.phase==='idle'){box.style.pointerEvents='auto';overlayCard.dataset.chestPhase828='idle';}});
+    if(state.lastChanged)clearReveal828(state);
   }
   function openRewards(state){
     const rewards=grantOnce(state), meta=R[state.rarity];
@@ -21964,7 +22205,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
       overlayCard.className=`card riftChestStage581 riftChestReward581 rarity-${state.rarity} singleLootGuard622`;
       overlayCard.style.setProperty('--c',meta.color);
       overlayCard.innerHTML=`<h1>BAÚ CHRONAL ABERTO</h1><p class="riftChestSub581">Raridade final: <span class="riftChestRarity581">${meta.emoji} ${meta.name}</span></p><div class="riftRewardGrid581">${rewards.map(x=>`<div class="riftRewardCard581 ${x.rare?'rareLoot620':''}" style="--c:${x.color||meta.color}"><i>${x.icon}</i><strong>${esc(x.title)}</strong><span>${esc(x.desc)}</span></div>`).join('')}</div><button class="main-btn" id="backRiftStore622">Voltar</button>`;
-      q('#backRiftStore622').onclick=()=>{try{(window.openStartMenu||window.openStartMenu461)?.()}catch{}};
+      q('#backRiftStore622').onclick=()=>{try{if(typeof state.onBack==='function')state.onBack();else (window.openStartMenu||window.openStartMenu461)?.()}catch{}};
     }else{
       overlayCard.className=`card chestStage56 chestRewardStage56 rarity-${state.rarity} singleLootGuard622`;
       overlayCard.style.setProperty('--c',meta.color);
@@ -21972,32 +22213,45 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
       q('#backShop622').onclick=()=>{try{overlay.classList.remove('chestMode56')}catch{};try{openShopMenu?.()}catch{}};
     }
   }
+  function finishRoll828(state){
+    if(!active828(state))return;
+    clearTimers828(state);
+    const before=state.rarity,next=state.pendingRarity||state.rarity;
+    state.pendingRarity=null;state.rarity=next;state.lastChanged=before!==next;
+    if(state.rarity==='mythic'||state.used>=state.maxUses)state.readyOpen=true;
+    setPhase828(state,'idle');refreshChest828(state);
+  }
+  function finishOpen828(state){
+    if(!active828(state))return;
+    clearTimers828(state);openRewards(state);
+  }
   function chestClick(state){
-    if(!state||state.animating||state.claimed)return;
+    if(!state||state.claimed)return;
+    if(state.phase!=='idle'){recoverStale828(state);return;}
     const ready=state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic';
     if(ready){
-      state.animating=true;
+      setPhase828(state,'opening');
       const box=state.mode==='rift'?q('#riftChestBox581'):q('#chestBox56');
-      if(box)box.classList.add(state.mode==='rift'?'open581':'open');
-      setTimeout(()=>openRewards(state),620);
+      if(box){box.classList.remove('shake','shake581','rarityUp56','up581');void box.offsetWidth;box.classList.add(state.mode==='rift'?'open581':'open')}
+      schedule828(state,()=>finishOpen828(state),620);
       return;
     }
-    state.animating=true;state.used++;
-    const before=state.rarity, rolled=rollUp();
-    state.rarity=higher(state.rarity,rolled);
-    state.lastChanged=before!==state.rarity;
+    state.used++;
+    state.pendingRarity=higher(state.rarity,rollUp());
+    setPhase828(state,'rolling');
     const box=state.mode==='rift'?q('#riftChestBox581'):q('#chestBox56');
-    if(box){box.classList.remove('shake','shake581','rarityUp56','up581');void box.offsetWidth;box.classList.add(state.mode==='rift'?'shake581':'shake');}
-    const p=q(state.mode==='rift'?'.riftChestPrompt581':'.chestPrompt56'); if(p)p.textContent='...';
-    setTimeout(()=>{state.animating=false;if(state.rarity==='mythic'||state.used>=state.maxUses)state.readyOpen=true;renderChest(state);setTimeout(()=>{state.lastChanged=false;},700);},640);
+    if(box){box.classList.remove('shake','shake581','rarityUp56','up581','chestRarityJump731');void box.offsetWidth;box.classList.add(state.mode==='rift'?'shake581':'shake')}
+    const p=q(state.mode==='rift'?'.riftChestPrompt581':'.chestPrompt56');if(p)p.textContent='TECENDO A RARIDADE...';
+    schedule828(state,()=>finishRoll828(state),640);
   }
   function openNormal(){
     if(!window.game)return;
-    game.running=false;game.betweenWaves=true;
-    renderChest({mode:'normal',rarity:'common',used:0,maxUses:5,readyOpen:false,animating:false,claimed:false,lastChanged:false});
+    clearTimers828(current);game.running=false;game.betweenWaves=true;
+    renderChest(makeState828('normal','common',5));
   }
-  function openRift(){
-    renderChest({mode:'rift',rarity:'epic',used:0,maxUses:3,readyOpen:false,animating:false,claimed:false,lastChanged:false});
+  function openRift(onBack=null){
+    clearTimers828(current);
+    renderChest(makeState828('rift','epic',3,onBack));
   }
   function buyNormalChestFromShop(ev,btn){
     ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
@@ -22020,46 +22274,62 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     openRift();
   }
 
-  document.addEventListener('click',ev=>{
+  function routeChestInput828(ev){
+    if(ev.type==='pointerdown'&&Number.isFinite(ev.button)&&ev.button!==0)return false;
     const t=ev.target;
-    const normalBtn=t?.closest?.('.shopItem56[data-shop56]');
-    if(normalBtn && /Ba[uú]\s+Chronal/i.test(normalBtn.textContent||'')){
-      buyNormalChestFromShop(ev,normalBtn);return;
-    }
-    const riftBtn=t?.closest?.('[data-rift-buy581="chest"]');
-    if(riftBtn){buyRiftChest(ev);return;}
-    const normalBox=t?.closest?.('#chestBox56');
+    const normalBox=t?.closest?.('#chestBox56[data-chest828="1"]');
     if(normalBox){
       ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
-      if(!current||current.mode!=='normal'||!normalBox.dataset.single622){
+      if(!current||current.mode!=='normal'){
         const rarity=normalBox.dataset.rarity||normalBox.className.match(/rarity-([a-z]+)/)?.[1]||'common';
-        current={mode:'normal',rarity:R[rarity]?rarity:'common',used:0,maxUses:5,readyOpen:false,animating:false,claimed:false,lastChanged:false};
+        const used=document.querySelectorAll('.orb56.used').length;
+        current=makeState828('normal',R[rarity]?rarity:'common',5);current.used=Math.min(5,used);
       }
-      chestClick(current);return;
+      chestClick(current);return true;
     }
-    const riftBox=t?.closest?.('#riftChestBox581');
+    const riftBox=t?.closest?.('#riftChestBox581[data-chest828="1"]');
     if(riftBox){
       ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
-      if(!current||current.mode!=='rift'||!riftBox.dataset.single622){
-        const rarity=overlayCard?.className?.match(/rarity-([a-z]+)/)?.[1]||'epic';
-        current={mode:'rift',rarity:R[rarity]?rarity:'epic',used:0,maxUses:3,readyOpen:false,animating:false,claimed:false,lastChanged:false};
+      if(!current||current.mode!=='rift'){
+        const rarity=riftBox.dataset.rarity||overlayCard?.className?.match(/rarity-([a-z]+)/)?.[1]||'epic';
+        const used=document.querySelectorAll('.riftOrb581.used').length;
+        current=makeState828('rift',R[rarity]?rarity:'epic',3);current.used=Math.min(3,used);
       }
-      chestClick(current);return;
+      chestClick(current);return true;
+    }
+    return false;
+  }
+  // pointerdown não depende de um novo hover para reconhecer a etapa seguinte.
+  document.addEventListener('pointerdown',routeChestInput828,true);
+  // Suprime o click sintético posterior, evitando que listeners antigos gastem outra chance.
+  document.addEventListener('click',ev=>{
+    if(ev.target?.closest?.('#chestBox56[data-chest828="1"],#riftChestBox581[data-chest828="1"]')){
+      ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
     }
   },true);
+  document.addEventListener('keydown',ev=>{
+    if((ev.key==='Enter'||ev.key===' ')&&ev.target?.matches?.('#chestBox56[data-chest828="1"],#riftChestBox581[data-chest828="1"]'))routeChestInput828(ev);
+  },true);
 
-  // Se um patch antigo ainda conseguir trocar para a tela de recompensas, bloqueia cliques duplicados seguintes.
+  // Guarda de sessão: renders antigos não assumem o baú atual e animações presas são recuperadas.
   new MutationObserver(()=>{
     try{
       const title=(overlayCard?.querySelector('h1')?.textContent||'').toUpperCase();
       if(title.includes('BAÚ CHRONAL ABERTO')&&performance.now()<suppressUntil){
         overlayCard.querySelectorAll('#chestBox56,#riftChestBox581').forEach(b=>b.onclick=null);
       }
+      if(current&&!current.claimed&&title.includes('BAÚ CHRONAL')){
+        const domSession=N(overlayCard?.dataset?.chestSession828,-1);
+        if(domSession!==current.session&&!overlayCard.querySelector('[data-chest828="1"]')){
+          queueMicrotask(()=>{if(current&&!current.claimed)renderChest(current)});
+        }
+      }
     }catch{}
   }).observe(document.body,{childList:true,subtree:true});
 
-  window.ChronoChestSingle622={openNormal,openRift,applyReward,rollType};
-  console.log('Chrono Shards 6.2.2 — Baús com loot único carregado');
+  window.ChronoChestSingle622={openNormal,openRift,applyReward,rollType,getState:()=>current,
+    interact:()=>current&&chestClick(current),recover:()=>current&&recoverStale828(current)};
+  console.log('Chrono Shards 8.2.10 — Baús Chronais com avanço automático carregados');
 })();
 </script>
 
@@ -23002,6 +23272,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   }
   function renderSafeHub704(){
     try{
+      if(window.__ChronoUIRoute827&&!window.__ChronoUIRoute827.hubAllowed())return false;
       const ov=document.getElementById('overlay'), card=document.getElementById('overlayCard');
       if(!ov||!card) return false;
       ov.classList.remove('hidden');
@@ -23017,6 +23288,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     return !!card && /CONQUISTAS\s*(?:&|E)\s*MISSÕES/i.test(card.textContent||'');
   }
   function hardOpenHub704(){
+    window.__ChronoUIRoute827?.permitHub?.('mauro-back',1200);
     let tried=false;
     try{ if(typeof window.openHub461==='function'){tried=true; window.openHub461();} }catch(e){console.warn('openHub461 falhou',e)}
     setTimeout(()=>{ if(!isOnHub704()) renderSafeHub704(); else wireSafeHub704(); },0);
@@ -23891,8 +24163,10 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
       Object.defineProperty(window,'game',{configurable:true,get(){try{return game}catch{return undefined}},set(v){try{game=v}catch{}}});
     }
   }catch{}
+  let refs711=null,xpSig711='',lastTick711=0;
   function stats711(){return document.querySelector('.hud .left-panel .stats')||document.querySelector('.stats');}
   function ensureXp711(){
+    if(refs711?.row?.isConnected&&refs711?.fill?.isConnected&&refs711?.level?.isConnected)return refs711.row;
     const stats=stats711(); if(!stats)return null;
     let levelRow=document.getElementById('levelHudRow825');
     if(!levelRow){levelRow=document.createElement('div');levelRow.id='levelHudRow825';levelRow.className='levelHudRow825';levelRow.innerHTML='<span>LVL</span><div class="levelHudBadge825"><b id="levelHudValue825">1</b><small>RANK TEMPORAL</small></div>';}
@@ -23902,16 +24176,20 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     const shieldRow=shield?.closest('.stats > div')||shield?.closest('div')?.parentElement;
     if(levelRow.parentElement!==stats){if(shieldRow&&shieldRow.parentElement===stats)shieldRow.after(levelRow);else stats.prepend(levelRow);}
     if(row.parentElement!==stats||levelRow.nextElementSibling!==row)levelRow.after(row);
+    refs711={row,fill:document.getElementById('xpHudFill711'),text:document.getElementById('xpHudText825'),level:document.getElementById('levelHudValue825')};
     return row;
   }
-  function updateXp711(){
+  function updateXp711(force=false){
     const row=ensureXp711(); if(!row)return;
-    const fill=document.getElementById('xpHudFill711'),text=document.getElementById('xpHudText825'),level=document.getElementById('levelHudValue825'); if(!fill)return;
+    const {fill,text,level}=refs711||{};if(!fill)return;
     const g=getGame711();
-    if(!g){fill.style.width='0%';if(text)text.textContent='0 / 0';if(level)level.textContent='-';row.style.opacity='.65';return;}
-    const current=Math.floor(N(g.xp)), next=Math.floor(Math.max(1,N(g.xpNext,1))), pct=clamp(current/next*100,0,100);
-    fill.style.width=pct.toFixed(2)+'%';row.style.opacity='1';if(text)text.textContent=`${current} / ${next}`;if(level)level.textContent=Math.max(1,Math.floor(N(g.level,1)));
-    row.title=`XP: ${current} / ${next}`;
+    if(!g){
+      if(force||xpSig711!=='none'){fill.style.width='0%';if(text)text.textContent='0 / 0';if(level)level.textContent='-';row.style.opacity='.65';xpSig711='none'}
+      return;
+    }
+    const current=Math.floor(N(g.xp)),next=Math.floor(Math.max(1,N(g.xpNext,1))),lvl=Math.max(1,Math.floor(N(g.level,1))),pct=clamp(current/next*100,0,100),sig=current+'|'+next+'|'+lvl;
+    if(!force&&sig===xpSig711)return;
+    xpSig711=sig;fill.style.width=pct.toFixed(2)+'%';row.style.opacity='1';if(text)text.textContent=`${current} / ${next}`;if(level)level.textContent=lvl;row.title=`XP: ${current} / ${next}`;
   }
   function ensureBlood711(){let el=document.getElementById('lowHpBlood711');if(!el){el=document.createElement('div');el.id='lowHpBlood711';document.body.appendChild(el)}return el;}
   function overlayVisible711(){try{return !!overlay && !overlay.classList.contains('hidden')}catch{return false}}
@@ -23932,7 +24210,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     el.style.setProperty('--bloodA',String(clamp(alpha,.10,.92)));
     el.classList.add('show');el.classList.toggle('critical',pct<=.15);
   }
-  function tick711(){try{updateXp711();updateBlood711()}catch(e){console.warn('xp/blood 711',e)}}
+  function tick711(force=false){const now=performance.now();if(!force&&now-lastTick711<110)return;lastTick711=now;try{updateXp711(force);updateBlood711()}catch(e){console.warn('xp/blood 711',e)}}
   function insideZone711(p,z){return !!(p&&z&&Math.hypot(N(p.x)-N(z.x),N(p.y)-N(z.y))<N(p.r,14)+N(z.r));}
   function drawPlayerDebuffs711(){
     const g=getGame711(),p=g?.player;if(!g||!p||!g.running)return;
@@ -23947,11 +24225,20 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     if(sealed){ctx.strokeStyle='#ff304f';ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(0,0,p.r+19,0,6.28);ctx.stroke();ctx.setLineDash([]);labels.push(['SELADO!','#ff5a70']);}
     ctx.restore();if(!labels.length)return;ctx.save();ctx.textAlign='center';ctx.font='900 10px Orbitron,Arial';for(let i=0;i<labels.length;i++){const [txt,col]=labels[i];ctx.fillStyle=col;ctx.shadowBlur=8;ctx.shadowColor=col;ctx.globalAlpha=.82+.18*Math.sin(t*6+i);ctx.fillText(txt,p.x,p.y-p.r-30-i*13);}ctx.restore();
   }
-  function wrap711(name){const old=window[name]||globalThis[name];if(typeof old!=='function'||old.__xpBlood711)return;const fn=function(){const r=old.apply(this,arguments);if(name==='render')try{drawPlayerDebuffs711()}catch(e){console.warn('debuff FX 825',e)}tick711();return r};fn.__xpBlood711=true;window[name]=fn;try{globalThis[name]=fn}catch{}try{eval(name+'=fn')}catch{}}
-  ['updateHUD','gainXP','resetGame','openUpgradeMenu','updatePlayer','render','draw','updateFX'].forEach(wrap711);
-  try{new MutationObserver(()=>setTimeout(tick711,20)).observe(document.body,{childList:true,subtree:true})}catch{}
-  window.__ChronoUIScheduler820.interval(tick711,70);
-  setTimeout(tick711,80);
+  function wrap711(name){
+    const old=window[name]||globalThis[name];if(typeof old!=='function'||old.__xpBlood711)return;
+    const fn=function(){
+      const r=old.apply(this,arguments);
+      if(name==='render'){try{drawPlayerDebuffs711();updateBlood711()}catch(e){console.warn('debuff FX 825',e)}}
+      else tick711(true);
+      return r;
+    };
+    fn.__xpBlood711=true;window[name]=fn;try{globalThis[name]=fn}catch{}try{eval(name+'=fn')}catch{}
+  }
+  ['gainXP','resetGame','openUpgradeMenu','render'].forEach(wrap711);
+  try{const stats=stats711();if(stats)new MutationObserver(()=>tick711(true)).observe(stats,{childList:true})}catch{}
+  window.__ChronoUIScheduler820.interval(()=>tick711(false),140);
+  setTimeout(()=>tick711(true),80);
   console.log('Chrono Shards 7.1.1 — XP HUD e sangue 35/15 carregados');
 })();
 </script>
@@ -24435,36 +24722,62 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   function openMauroChest(item,shopIndex){
     const start=item.startRarity||'common';
     const maxUses=start==='common'?5:3;
-    const state={rarity:start,used:0,maxUses,animating:false,readyOpen:false,lastChanged:false};
+    const state={rarity:start,used:0,maxUses,animating:false,readyOpen:false,lastChanged:false,claimed:false,phase:'idle',busySince:0,pendingRarity:null,timer:0,watchdog:0,phaseEndsAt:0,phaseCallback:null,phaseToken:0,pump:false};
     try{overlay.classList.remove('hidden')}catch{}
+    function clearTimers(){if(state.timer){clearTimeout(state.timer);state.timer=0}if(state.watchdog){clearTimeout(state.watchdog);state.watchdog=0}state.phaseCallback=null;state.phaseEndsAt=0;state.phaseToken++}
+    function setPhase(v){state.phase=v;state.animating=v!=='idle';state.busySince=v==='idle'?0:performance.now();overlayCard.dataset.chestPhase828=v}
+    function schedule(fn,delay){
+      clearTimers();const token=state.phaseToken;state.phaseEndsAt=performance.now()+Math.max(0,N(delay));
+      state.phaseCallback=()=>{if(state.claimed||state.phaseToken!==token)return;fn()};
+      if(state.pump)return;state.pump=true;
+      const tick=now=>{if(state.claimed){state.pump=false;return}if(typeof state.phaseCallback==='function'&&now>=state.phaseEndsAt){const cb=state.phaseCallback;state.phaseCallback=null;state.phaseEndsAt=0;try{cb()}catch(e){console.warn('Baú Mauro 8.2.10 avanço automático',e)}}if(typeof state.phaseCallback==='function')requestAnimationFrame(tick);else state.pump=false};
+      requestAnimationFrame(tick);
+    }
+    function fxHTML(){
+      if(!state.lastChanged||!['legendary','mythic'].includes(state.rarity))return '';
+      const mythic=state.rarity==='mythic',count=mythic?18:14,cls=mythic?'mythic828':'legendary828';
+      return `<div class="chestEvolution828 ${cls}" aria-hidden="true">${Array.from({length:count},(_,i)=>`<i style="--a:${Math.round(i*360/count)}deg;--d:${mythic?58+(i%5)*9:82+(i%4)*12}px;--delay:${(i%6)*.025}s"></i>`).join('')}</div>`;
+    }
     function render(){
       const r=RARITIES[state.rarity]||RARITIES.common;
-      overlayCard.className=`card chestStage56 mauroChest714 rarity-${state.rarity}`;
+      overlayCard.className=`card chestStage56 mauroChest714 rarity-${state.rarity} ${state.lastChanged&&state.rarity==='legendary'?'chestRevealLegendary828':''} ${state.lastChanged&&state.rarity==='mythic'?'chestRevealMythic828':''}`;
+      overlayCard.dataset.chestPhase828=state.phase;
       overlayCard.style.setProperty('--c',r.color);
-      const msg=state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic'?'Clique para abrir!':(state.lastChanged?'Raridade aumentou!':'Me Clique!');
+      const msg=state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic'?'Clique para abrir!':(state.used>0?(state.lastChanged?'Raridade aumentou! • Próxima chance pronta':'Raridade mantida • Próxima chance pronta'):'Me Clique!');
       overlayCard.innerHTML=`<h1>${esc(item.title||'BAÚ CHRONAL')}</h1>
         <div class="mauroChestSource714">LOJINHA DO SEU MAURO</div>
         <p class="shopSub56">${start==='common'?'Começa Comum com 5 tentativas.':'Começa '+(RARITIES[start]?.name||start)+' com 3 tentativas.'}</p>
         <div class="chestRarity56">${r.emoji} ${r.name}</div>
-        <div class="chestBox56 rarity-${state.rarity} ${state.lastChanged?'rarityUp56':''}" id="mauroChestBox714" data-rarity="${state.rarity}">
+        <div class="chestBox56 rarity-${state.rarity} ${state.lastChanged?'rarityUp56 ':''}${state.lastChanged&&state.rarity==='legendary'?'chestAscendLegendary828':''}${state.lastChanged&&state.rarity==='mythic'?'chestAscendMythic828':''}" id="mauroChestBox714" role="button" tabindex="0" aria-label="Interagir com o Baú Chronal do Mauro" data-rarity="${state.rarity}" data-chest828="mauro">
           <div class="chestLid56"></div><div class="chestBase56"></div><div class="chestLock56"></div>
         </div>
+        ${fxHTML()}
         <div class="chestPrompt56">${msg}</div>
         <div class="orbs56">${Array.from({length:state.maxUses},(_,i)=>`<i class="orb56 ${state.rarity==='mythic'?'hide':i<state.used?'used':''}"></i>`).join('')}</div>
         <p class="muted">Raro 30% • Épico 15% • Lendário 3.5% • Mítico 1%</p>`;
-      const box=q('#mauroChestBox714');if(box)box.onclick=click;
-      if(state.lastChanged)setTimeout(()=>{state.lastChanged=false;const b=q('#mauroChestBox714');if(b)b.classList.remove('rarityUp56')},720);
+      const box=q('#mauroChestBox714');if(box){box.onpointerdown=e=>{if(Number.isFinite(e.button)&&e.button!==0)return;e.preventDefault();e.stopPropagation();click()};box.onclick=e=>{e.preventDefault();e.stopPropagation()};box.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();click()}};}
+      if(state.lastChanged)setTimeout(()=>{state.lastChanged=false;overlayCard.classList.remove('chestRevealLegendary828','chestRevealMythic828');q('.chestEvolution828')?.remove();q('#mauroChestBox714')?.classList.remove('rarityUp56','chestAscendLegendary828','chestAscendMythic828')},1450);
+    }
+    function finishRoll(){
+      clearTimers();const before=state.rarity;state.rarity=state.pendingRarity||state.rarity;state.pendingRarity=null;state.lastChanged=before!==state.rarity;if(state.rarity==='mythic'||state.used>=state.maxUses)state.readyOpen=true;setPhase('idle');render();
     }
     function click(){
-      if(state.animating)return;
-      if(state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic'){const box=q('#mauroChestBox714');if(box)box.classList.add('open');setTimeout(showRewards,620);return;}
-      state.animating=true;state.used++;
-      const before=state.rarity, next=higher(before,rollUpgrade());
-      const box=q('#mauroChestBox714');if(box){box.classList.remove('shake');void box.offsetWidth;box.classList.add('shake')}
-      const p=q('.chestPrompt56');if(p)p.textContent='...';
-      setTimeout(()=>{state.rarity=next;state.animating=false;state.lastChanged=before!==next;if(state.rarity==='mythic'||state.used>=state.maxUses)state.readyOpen=true;render()},640);
+      if(state.claimed)return;
+      if(state.phase!=='idle'){
+        if(performance.now()-state.busySince>1850){if(state.phase==='rolling'&&state.pendingRarity)finishRoll();else if(state.phase==='opening')showRewards();else{clearTimers();setPhase('idle');render()}}
+        return;
+      }
+      if(state.readyOpen||state.used>=state.maxUses||state.rarity==='mythic'){
+        setPhase('opening');const box=q('#mauroChestBox714');if(box)box.classList.add('open');
+        schedule(showRewards,620);return;
+      }
+      state.used++;state.pendingRarity=higher(state.rarity,rollUpgrade());setPhase('rolling');
+      const box=q('#mauroChestBox714');if(box){box.classList.remove('shake','rarityUp56','chestRarityJump731');void box.offsetWidth;box.classList.add('shake')}
+      const p=q('.chestPrompt56');if(p)p.textContent='TECENDO A RARIDADE...';
+      schedule(finishRoll,640);
     }
     function showRewards(){
+      if(state.claimed)return;state.claimed=true;clearTimers();setPhase('reward');
       const r=RARITIES[state.rarity]||RARITIES.common;
       const rewards=[];for(let i=0;i<3;i++)rewards.push(applyReward(rewardType(state.rarity),state.rarity));
       try{updateHUD?.()}catch{}
@@ -28450,7 +28763,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   function scanChests(){
     try{
       document.querySelectorAll('.chestBox56,#mauroChestBox714,.riftChestBox581,[id*="ChestBox"]').forEach(el=>{
-        if(!(el instanceof HTMLElement))return;
+        if(!(el instanceof HTMLElement)||el.dataset.chest828)return;
         const r=getRarity(el);if(!r)return;
         const prev=lastRarity.get(el);
         if(prev&&prev!==r&&N(rarityRank[r])>N(rarityRank[prev]))sparkChest(el,r);
@@ -32083,13 +32396,19 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   // Conservative UI audit: remove duplicate singleton HUD/shop elements and keep class-only HUDs scoped.
   function uiAudit745(){
     try{
+      const g=G(),playing=!!(g?.running&&document.getElementById('overlay')?.classList.contains('hidden'));
+      const soul=document.getElementById('reaperSoulRow744');if(soul&&g&&g.classKey!=='reaper')soul.style.display='none';
+      if(playing)return;
       for(const id of ['reaperSoulRow744','relicFloat702','chronoFloat702']){const els=[...document.querySelectorAll('#'+id)];els.slice(1).forEach(el=>el.remove())}
-      const g=G(),soul=document.getElementById('reaperSoulRow744');if(soul&&g&&g.classKey!=='reaper')soul.style.display='none';
       patchMauroFace745();
       const card=document.getElementById('overlayCard');if(card&&/CONQUISTAS\s*(?:&|E)\s*MISSÕES/i.test(card.textContent||'')&&!/LOJA DO MAURO|LOJINHA DO SEU MAURO/i.test(card.textContent||''))card.querySelectorAll('#mauroBack704,#mauroBack703,#mauroBack702,.mauroBackWrap704').forEach(el=>(el.closest('.mauroBackWrap704')||el).remove());
     }catch(e){console.warn(PATCH+' UI audit',e)}
   }
-  try{new MutationObserver(()=>setTimeout(uiAudit745,0)).observe(document.body,{childList:true,subtree:true});window.__ChronoUIScheduler820.interval(uiAudit745,500)}catch{}
+  try{
+    const auditRoot=document.getElementById('overlayCard');
+    if(auditRoot)new MutationObserver(()=>requestAnimationFrame(uiAudit745)).observe(auditRoot,{childList:true,subtree:true});
+    window.__ChronoUIScheduler820.interval(uiAudit745,900);
+  }catch{}
   setTimeout(uiAudit745,0);
 
   // Update final descriptions to match actual behavior.
@@ -33091,7 +33410,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   function openCurrentHome801(){return callMenu801('openStartMenu',['openStartMenu461']);}
   function openCurrentHub801(){exposeMenuFns801();return callMenu801('openHub461',['openDuneHub461','openHub40','openHubMenu37']);}
   function openCurrentMissions801(){exposeMenuFns801();return callMenu801('openMissions483',['openMissions482','openMissions461','openMissions40']);}
-  const HOME_BACK_IDS801=new Set(['hubBack461','hubBack37','hubBack40','backMainBtn23','backStart27','backStart28','backStart29','backStart377','backMainBtn','backStartBtn','backCode27','homeBtn','home27','home56','riftHome50','riftHome507','riftHome509','riftHome518','riftHome581','doomHome800','modeBack50','backRiftStore581','backRiftStore622','backCfg37','cfgBack461','cfgBack529']);
+  const HOME_BACK_IDS801=new Set(['hubBack461','hubBack37','hubBack40','backMainBtn23','backStart27','backStart28','backStart29','backStart377','backMainBtn','backStartBtn','backCode27','homeBtn','home27','home56','riftHome50','riftHome507','riftHome509','riftHome518','riftHome581','doomHome800','modeBack50','backRiftStore581','backCfg37','cfgBack461','cfgBack529']);
   const HUB_BACK_IDS801=new Set(['fallbackRelic37','backMission37','backMis39','backMis40','relicBack23','backRelic27','relicBack461','bookHubBackO','bookHubBackP','bookHubBack455','bookHubBack464','bookHubBackSafe540','bookBack461','bookBack464','bookBack531','bookBack530','bookBackRift529','powerBack544','mauroBack702','mauroBack703','mauroBack704','misBack461']);
   document.addEventListener('click',e=>{
     const b=e.target?.closest?.('button');if(!b)return;const id=b.id||'';
@@ -34090,6 +34409,38 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   }
   if(typeof originalDrawGrid==='function'){window.drawGrid=drawGrid820;try{drawGrid=drawGrid820}catch{}}
 
+  // Prepara os caminhos frios antes do primeiro frame jogável.
+  let coreWarm820=false;
+  function prewarmCore820(){
+    if(coreWarm820)return;coreWarm820=true;
+    try{
+      const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+      drawAmbient(x,W,H);drawVignette(x,W,H);drawInfernalVignette(x,W,H);
+      ['#ff4d2e','#ff8a28','#7fe9ff','#c6a0ff','#4ce0b3'].forEach(radialGlowTexture);
+      x.font='900 18px Orbitron,Arial';x.fillText('HP ESCUDO LVL XP WAVE KILLS OURO COMBO BOSS CRÍTICO',8,28);
+      x.font='700 15px Rajdhani,Arial';x.fillText('CHRONO SHARDS DOOM FISSURAS',8,52);
+    }catch(e){console.warn('Chrono prewarm 8.2.11',e)}
+  }
+  const idleWarm=()=>{try{document.fonts?.ready?.then(prewarmCore820).catch(prewarmCore820)}catch{prewarmCore820()}};
+  if('requestIdleCallback'in window)requestIdleCallback(idleWarm,{timeout:900});else setTimeout(idleWarm,180);
+
+  const waveBeforeWarm820=window.startNextWave||globalThis.startNextWave;
+  if(typeof waveBeforeWarm820==='function'&&!waveBeforeWarm820.__startupWarm8211){
+    const waveWarm8211=function(){const out=waveBeforeWarm820.apply(this,arguments);try{window.__prepareWaveAnnounce8211?.()}catch{}return out};
+    waveWarm8211.__startupWarm8211=true;window.startNextWave=waveWarm8211;try{startNextWave=waveWarm8211}catch{}
+  }
+  const resetBeforeWarm820=window.resetGame||globalThis.resetGame;
+  if(typeof resetBeforeWarm820==='function'&&!resetBeforeWarm820.__startupWarm8211){
+    const resetWarm8211=function(){
+      prewarmCore820();
+      const out=resetBeforeWarm820.apply(this,arguments),g=G();
+      try{if(g?.mapDecor?.theme&&!g.riftMode50&&!g.doom800&&!g.secretArena&&!g.secretEvent&&!g.duneMap)buildMapCache(g.mapDecor)}catch(e){console.warn('Chrono map prewarm 8.2.11',e)}
+      window.__chronoRunStarted8211=performance.now();
+      return out;
+    };
+    resetWarm8211.__startupWarm8211=true;window.resetGame=resetWarm8211;try{resetGame=resetWarm8211}catch{}
+  }
+
   // F8 diagnostics overlay: performance telemetry without changing gameplay.
   const style=document.createElement('style');
   style.id='chronoDiag820Style';
@@ -34134,9 +34485,81 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   },250);
 
   document.addEventListener('visibilitychange',()=>{if(document.hidden){try{mouse.down=false}catch{}}});
-  console.log('Chrono Shards 8.2.0 — Performance Forge carregada: spatial hash, pools, caches, batching, static layers, scheduler e diagnóstico F8');
+  console.log('Chrono Shards 8.2.11 — Performance Forge: inicialização estabilizada, observers de menu suspensos em gameplay e caches pré-aquecidos');
 })();
 </script>
 
+
+<script>
+/* Chrono Shards 8.2.7 — transações de interface e rotas estáveis */
+(()=>{
+  if(window.__chronoUITransactions827)return;window.__chronoUITransactions827=true;
+  const route=window.__ChronoUIRoute827;
+  const card=()=>document.getElementById('overlayCard');
+  const title=()=>((card()?.querySelector('h1')?.textContent||'').trim().toUpperCase());
+  const isMission=()=>title()==='MISSÕES'&&!!card()?.querySelector('.missionGrid461,.awakGrid461');
+  const isHub=()=>/CONQUISTAS\s*(?:&|E)\s*MISSÕES/i.test(title());
+
+  // Consolida todas as rotas públicas na versão mais recente ativa.
+  const latestMission=window.openMissions461||window.openMissions||window.openMissions488||window.openMissions483;
+  let openingMission=false;
+  function openMissions827(){
+    if(openingMission)return;openingMission=true;
+    try{latestMission?.apply(this,arguments)}finally{openingMission=false}
+    if(route&&route.current!=='missions')route.enter('missions','openMissions827');
+    const c=card();if(c)c.dataset.uiScreen827='missions';
+  }
+  ['openMissions','openMissions461','openMissions465','openMissions482','openMissions483','openMissions488'].forEach(n=>{window[n]=openMissions827;try{globalThis[n]=openMissions827}catch{}});
+  window.openMissions827=openMissions827;
+
+  // Hub não substitui Missões sozinho. Somente o Voltar concede permissão.
+  const hubNames=['openHub461','openDuneHub461','openHub40','openHubMenu37'];
+  for(const name of hubNames){
+    const old=window[name];if(typeof old!=='function'||old.__ui827)continue;
+    const wrapped=function(){
+      if(route&&!route.hubAllowed())return false;
+      const r=old.apply(this,arguments);route?.enter?.('hub','hub-'+name);return r;
+    };
+    wrapped.__ui827=true;window[name]=wrapped;
+    try{globalThis[name]=wrapped}catch{}
+  }
+
+  function explicitBack(ev){
+    const b=ev.target?.closest?.('#misBack461,#misBack40,#misBack37,[data-missions-back]');
+    if(!b||!isMission())return;
+    route?.permitHub?.('missions-back',1400);route.current='leaving-missions';
+  }
+  window.addEventListener('pointerdown',explicitBack,true);
+  window.addEventListener('click',explicitBack,true);
+
+  // Defesa final contra versões antigas que tentem redesenhar o Hub depois.
+  let restoreQueued=false;
+  const observer=new MutationObserver(()=>{
+    if(isMission()){
+      if(route.current!=='missions')route.enter('missions','mission-dom');
+      return;
+    }
+    if(isHub()&&route.current==='missions'&&!route.hubAllowed()&&!restoreQueued){
+      restoreQueued=true;
+      requestAnimationFrame(()=>{restoreQueued=false;if(route.current==='missions'&&!route.hubAllowed())openMissions827()});
+    }
+  });
+  try{observer.observe(card(),{childList:true,subtree:true})}catch{}
+
+  // Elementos exclusivos do Bestiário não sobrevivem em dossiês ou outras interfaces.
+  function cleanForeignUI827(){
+    if(document.getElementById('overlay')?.classList.contains('hidden'))return;
+    const c=card();if(!c)return;
+    const detail=!!c.querySelector('.bookDetail464,#bookDetailBack531,#bookDetailBack530,#bookBackO,#bookBackP');
+    if(detail)c.dataset.bookview531='detail';
+    const inBook=String(c.className||'').toLowerCase().includes('bestiary')||title().includes('BESTIÁRIO')||!!c.dataset.bookview531;
+    if(!inBook)document.querySelectorAll('#bookSideNav531,.bookTickets529,.bookTickets530').forEach(el=>el.remove());
+    if(detail||c.dataset.bookview531==='detail')c.querySelectorAll('.riftBookGeneral531,.newBook529,.newBook530,.riftElitesMerged531').forEach(el=>el.remove());
+  }
+  try{const root=card();if(root)new MutationObserver(cleanForeignUI827).observe(root,{childList:true,subtree:true})}catch{}
+  window.__ChronoUIScheduler820?.interval?.(cleanForeignUI827,700);
+  console.log('Chrono Shards 8.2.7 — interfaces transacionais e Missões protegidas');
+})();
+</script>
 </body>
 </html>
