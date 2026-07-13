@@ -33454,7 +33454,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
 (()=>{
   if(window.__doomInfernalGate810)return;
   window.__doomInfernalGate810=true;
-  const PATCH='Chrono Shards 8.2.1 — Infernal Key Event + Boss Wave Deferral';
+  const PATCH='Chrono Shards 8.2.2 — Infernal Event Evolution';
   const META_KEY=(typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta');
   const DOOM_UNLOCK='doomModeUnlocked810';
   const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
@@ -33485,13 +33485,13 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
       .doomLockBadge810{display:grid;gap:7px;place-items:center;text-align:center;padding:18px 17px;border-radius:20px;background:rgba(12,1,4,.91);border:1px solid rgba(255,42,62,.38);box-shadow:0 0 34px rgba(255,18,44,.17),inset 0 0 24px rgba(255,10,34,.04)}
       .doomLockBadge810 b{font-size:38px;line-height:1;filter:drop-shadow(0 0 12px #ff243e)}.doomLockBadge810 span{font:900 13px Orbitron,sans-serif;letter-spacing:.12em;color:#fff}.doomLockBadge810 small{max-width:255px;color:#ff9aa7;line-height:1.35;font-weight:700}
       #infernalHud810{position:absolute;left:50%;top:76px;transform:translateX(-50%);z-index:12;pointer-events:none;width:min(520px,46vw);display:none;text-align:center;filter:drop-shadow(0 12px 24px rgba(0,0,0,.7))}
-      #infernalHud810.show{display:block}#infernalHud810 .ihTitle{font:900 14px Orbitron,sans-serif;letter-spacing:.15em;color:#ff7560;text-shadow:0 0 12px #ff1f39;margin-bottom:6px}#infernalHud810 .ihBar{height:12px;border-radius:999px;padding:2px;background:rgba(8,0,2,.9);border:1px solid rgba(255,52,73,.4);overflow:hidden}#infernalHud810 .ihBar i{display:block;width:100%;height:100%;border-radius:999px;background:linear-gradient(90deg,#4b0009,#ff1738,#ff7a48);box-shadow:0 0 12px #ff1738;transition:width .13s linear}#infernalHud810 .ihMeta{display:flex;justify-content:center;gap:12px;margin-top:5px;font:800 9px Orbitron,sans-serif;letter-spacing:.08em;color:#ffc0c6}
+      #infernalHud810.show{display:block}#infernalHud810 .ihTitle{font:900 14px Orbitron,sans-serif;letter-spacing:.15em;color:#ff7560;text-shadow:0 0 12px #ff1f39;margin-bottom:6px}#infernalHud810 .ihBar{height:12px;border-radius:999px;padding:2px;background:rgba(8,0,2,.9);border:1px solid rgba(255,52,73,.4);overflow:hidden}#infernalHud810 .ihBar i{display:block;width:100%;height:100%;border-radius:999px;background:linear-gradient(90deg,#4b0009,#ff1738,#ff7a48);box-shadow:0 0 12px #ff1738;transition:width .13s linear}#infernalHud810 .ihMeta{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:5px;font:800 9px Orbitron,sans-serif;letter-spacing:.08em;color:#ffc0c6}#infernalHud810 .ihWave{color:#ffb36b;text-shadow:0 0 8px rgba(255,74,35,.65)}#infernalHud810 .ihShield{display:none;color:#ffe28a;text-shadow:0 0 10px #ff7a1e}#infernalHud810.shielded .ihShield{display:inline}#infernalHud810.shielded .ihBar{border-color:rgba(255,216,82,.85);box-shadow:0 0 18px rgba(255,115,30,.45)}#infernalHud810.shielded .ihBar i{filter:saturate(1.25) brightness(1.15)}
     `; document.head.appendChild(st);
   }
   function ensureUI(){
     ensureStyle(); const shell=document.querySelector('.game-shell')||document.body;
     if(!document.getElementById('infernalBanner810')){const e=document.createElement('div');e.id='infernalBanner810';shell.appendChild(e)}
-    if(!document.getElementById('infernalHud810')){const e=document.createElement('div');e.id='infernalHud810';e.innerHTML=`<div class="ihTitle">DEVORADOR INFERNAL</div><div class="ihBar"><i></i></div><div class="ihMeta"><span class="ihLevel">NÍVEL 1</span><span class="ihSouls">ALMAS 0/10</span></div>`;shell.appendChild(e)}
+    if(!document.getElementById('infernalHud810')){const e=document.createElement('div');e.id='infernalHud810';e.innerHTML=`<div class="ihTitle">DEVORADOR INFERNAL</div><div class="ihBar"><i></i></div><div class="ihMeta"><span class="ihLevel">NÍVEL 1</span><span class="ihSouls">ALMAS 0/10</span><span class="ihWave">HORDA SEM FIM</span><span class="ihShield">ESCUDO 80%</span></div>`;shell.appendChild(e)}
   }
   function banner(title,sub=''){
     ensureUI();const e=document.getElementById('infernalBanner810');if(!e)return;e.className='';void e.offsetWidth;e.innerHTML=`${title}${sub?`<small>${sub}</small>`:''}`;e.className='show';
@@ -33500,10 +33500,13 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   function boss(){const s=state();return s?.boss&&game?.enemies?.includes(s.boss)&&s.boss.hp>0?s.boss:null}
   function ensureState(){
     if(!window.game)return null;
-    if(!game.infernalEvent810)game.infernalEvent810={rolledWaves:{},active:false,boss:null,souls:[],lava:[],projectiles:[],keyDrops:[],burn:0,burnTick:0,redPulse:0,deferredWave810:0,deferredFrom810:0};
-    if(!Number.isFinite(Number(game.infernalEvent810.deferredWave810)))game.infernalEvent810.deferredWave810=0;
-    if(!Number.isFinite(Number(game.infernalEvent810.deferredFrom810)))game.infernalEvent810.deferredFrom810=0;
-    return game.infernalEvent810;
+    if(!game.infernalEvent810)game.infernalEvent810={rolledWaves:{},active:false,boss:null,souls:[],lava:[],lavaPops:[],projectiles:[],keyDrops:[],burn:0,burnTick:0,redPulse:0,deferredWave810:0,deferredFrom810:0,endlessWave810:false,eventWave810:0};
+    const s=game.infernalEvent810;
+    if(!Array.isArray(s.souls))s.souls=[];if(!Array.isArray(s.lava))s.lava=[];if(!Array.isArray(s.lavaPops))s.lavaPops=[];if(!Array.isArray(s.projectiles))s.projectiles=[];if(!Array.isArray(s.keyDrops))s.keyDrops=[];
+    if(!Number.isFinite(Number(s.deferredWave810)))s.deferredWave810=0;
+    if(!Number.isFinite(Number(s.deferredFrom810)))s.deferredFrom810=0;
+    if(typeof s.endlessWave810!=='boolean')s.endlessWave810=false;
+    return s;
   }
 
   function edgeSpawn(){const side=RI(0,3);if(side===0)return{x:R(80,W-80),y:-95};if(side===1)return{x:W+95,y:R(70,H-70)};if(side===2)return{x:R(80,W-80),y:H+95};return{x:-95,y:R(70,H-70)}}
@@ -33516,13 +33519,30 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     return{x:R(120,W-120),y:R(110,H-110)};
   }
   function oracleHp(){return 5200+N(game?.wave,1)*95}
+  const SHIELD_THRESHOLDS810=[.8,.6,.4,.2];
+  function triggerInfernalShield(e){
+    e.damageShieldTime810=3;e.shieldPulse810=1;
+    try{addRing(e.x,e.y,'#ffcf55',e.r+92,9);addParticles(e.x,e.y,'#ff9d32',34,1.25);addFloatingText(e.x,e.y-e.r-34,'ESCUDO INFERNAL — 80%','#ffe17a',16);game.flash=.22;game.flashColor='#ff9f24';game.shake=Math.max(N(game.shake),13)}catch{}
+    banner('ESCUDO INFERNAL','80% DO DANO BLOQUEADO POR 3 SEGUNDOS');
+  }
+  function initializeShieldThresholds810(e){
+    if(N(e.level810)<4)return;const pct=N(e.hp)/Math.max(1,N(e.maxHp));e.shieldTriggered810=e.shieldTriggered810||{};
+    for(const t of SHIELD_THRESHOLDS810)if(pct<=t)e.shieldTriggered810[String(t)]=true;
+  }
+  function crossedShieldThreshold810(e,prevHp,nextHp){
+    if(N(e.level810)<4||nextHp>=prevHp||N(e.maxHp)<=0)return 0;e.shieldTriggered810=e.shieldTriggered810||{};const pp=prevHp/e.maxHp,np=nextHp/e.maxHp;
+    for(const t of SHIELD_THRESHOLDS810){const k=String(t);if(!e.shieldTriggered810[k]&&pp>t&&np<=t){e.shieldTriggered810[k]=true;return t}}return 0;
+  }
+  function installInfernalHpGuard810(e,initialHp){
+    let value=Math.max(0,N(initialHp,1));Object.defineProperty(e,'hp',{enumerable:true,configurable:true,get(){return value},set(v){let next=N(v,value),prev=value;if(next<prev&&N(e.damageShieldTime810)>0){const raw=prev-next;next=prev-raw*.20;e.shieldAbsorbed810=N(e.shieldAbsorbed810)+raw*.80}const threshold=crossedShieldThreshold810(e,prev,next);if(threshold)next=Math.max(next,N(e.maxHp)*threshold);value=Math.max(0,next);if(threshold)triggerInfernalShield(e)}});
+  }
   function spawnInfernal(){
     const s=ensureState(); if(!s||s.active||doomUnlocked()||!normalMode())return false;
     const p=edgeSpawn(); const hp=Math.floor(oracleHp()*.55);
-    const e={x:p.x,y:p.y,vx:0,vy:0,r:44,baseR810:44,speed:86+N(game.wave)*.8,hp,maxHp:hp,type:'infernalBoss810',name:'DEVORADOR INFERNAL',value:0,color:'#d4142f',elite:false,wobble:R(0,6.28),hitFlash:0,shotTimer:1.1,shieldHp:0,marked:false,markedTimer:0,frozenTime:0,poison:0,infernalBoss810:true,_noReward810:true,level810:1,souls810:0,damageMul810:1,cadenceMul810:1,shotCd810:1.2,minionCd810:5,lavaCd810:8,teleportCd810:3.5,teleportFx810:0};
-    game.enemies.push(e); s.active=true;s.boss=e;s.souls.length=0;s.lava.length=0;s.projectiles.length=0;s.redPulse=1;
+    const e={x:p.x,y:p.y,vx:0,vy:0,r:44,baseR810:44,speed:86+N(game.wave)*.8,maxHp:hp,type:'infernalBoss810',name:'DEVORADOR INFERNAL',value:0,color:'#d4142f',elite:false,wobble:R(0,6.28),hitFlash:0,shotTimer:1.1,shieldHp:0,marked:false,markedTimer:0,frozenTime:0,poison:0,infernalBoss810:true,_noReward810:true,level810:1,souls810:0,damageMul810:1,cadenceMul810:1,shotCd810:1.2,minionCd810:5,lavaCd810:5.5,teleportCd810:3.5,teleportFx810:0,damageShieldTime810:0,shieldTriggered810:{},shieldPulse810:0,soulSuckFx810:0};
+    installInfernalHpGuard810(e,hp);game.enemies.push(e);s.active=true;s.boss=e;s.souls.length=0;s.lava.length=0;s.lavaPops.length=0;s.projectiles.length=0;s.redPulse=1;s.endlessWave810=true;s.eventWave810=N(game.wave);game.enemiesToSpawn=Math.max(N(game.enemiesToSpawn),N(game.enemiesSpawnedThisWave)+1);game.spawnTimer=Math.min(N(game.spawnTimer,.35),.35);
     try{game.flash=.6;game.flashColor='#8a0012';game.shake=22;addRing(e.x,e.y,'#ff1738',150,7);addParticles(e.x,e.y,'#ff243e',36,1.2)}catch{}
-    banner('UMA PRESENÇA INFERNAL SURGIU','AS ALMAS DOS MORTOS O ALIMENTAM');
+    banner('UMA PRESENÇA INFERNAL SURGIU','HORDA SEM FIM — AS ALMAS DOS MORTOS O ALIMENTAM');
     return true;
   }
   function maybeRollWave(){
@@ -33557,21 +33577,28 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     e.level810=N(e.level810,1)+1;e.souls810=0;
     const oldMax=N(e.maxHp,1);e.maxHp=Math.max(1,Math.round(oldMax*1.02));e.hp=Math.min(e.maxHp,N(e.hp)+e.maxHp-oldMax);
     e.damageMul810=N(e.damageMul810,1)*1.0025;e.cadenceMul810=N(e.cadenceMul810,1)*1.0125;e.r=e.baseR810*(1+.035*(e.level810-1));
+    if(e.level810===4){initializeShieldThresholds810(e);try{addFloatingText(e.x,e.y-e.r-48,'ESCUDOS DESPERTOS','#ffe17a',15)}catch{}}
     try{addRing(e.x,e.y,'#ffb04d',105+e.level810*3,7);addParticles(e.x,e.y,'#ff412d',28,1.2);game.flash=.28;game.flashColor='#ff162f';game.shake=Math.max(N(game.shake),14)}catch{}
-    banner(`DEVORADOR — NÍVEL ${e.level810}`,'DANO, VIDA, CADÊNCIA E TAMANHO AUMENTARAM');
+    banner(`DEVORADOR — NÍVEL ${e.level810}`,e.level810>=4?'ESCUDOS INFERNAIS DESPERTARAM':'DANO, VIDA, CADÊNCIA E TAMANHO AUMENTARAM');
   }
-  function spawnSoul(x,y){const s=state(),b=boss();if(!s||!b)return;s.souls.push({x,y,vx:R(-20,20),vy:R(-20,20),life:7,pulse:R(0,6.28)})}
+  function spawnSoul(x,y){const s=state(),b=boss();if(!s||!b)return;s.souls.push({x,y,vx:R(-30,30),vy:R(-90,-45),life:8,pulse:R(0,6.28),rise:.34,trail:[],curve:R(-1,1),size:R(6.5,9.5)})}
   function updateSouls(dt){
     const s=state(),b=boss();if(!s)return;if(!b){s.souls.length=0;return}
-    for(let i=s.souls.length-1;i>=0;i--){const q=s.souls[i];q.life-=dt;q.pulse+=dt*7;const a=Math.atan2(b.y-q.y,b.x-q.x);q.vx+=(Math.cos(a)*250-q.vx)*dt*3.5;q.vy+=(Math.sin(a)*250-q.vy)*dt*3.5;q.x+=q.vx*dt;q.y+=q.vy*dt;if(D(q,b)<b.r+12){s.souls.splice(i,1);b.souls810=N(b.souls810)+1;try{addParticles(b.x,b.y,'#ff5468',6,.45)}catch{};if(b.souls810>=10)levelUp(b)}else if(q.life<=0)s.souls.splice(i,1)}
+    for(let i=s.souls.length-1;i>=0;i--){const q=s.souls[i];q.life-=dt;q.pulse+=dt*7;q.trail=q.trail||[];q.trail.unshift({x:q.x,y:q.y});if(q.trail.length>12)q.trail.pop();
+      if(q.rise>0){q.rise-=dt;q.vy+=95*dt;q.x+=q.vx*dt;q.y+=q.vy*dt}else{const a=Math.atan2(b.y-q.y,b.x-q.x),d=D(q,b),pull=290+Math.max(0,360-d)*.8,side=Math.sin(q.pulse*1.4)*55*q.curve;q.vx+=(Math.cos(a)*pull+Math.cos(a+Math.PI/2)*side-q.vx)*dt*4.2;q.vy+=(Math.sin(a)*pull+Math.sin(a+Math.PI/2)*side-q.vy)*dt*4.2;q.x+=q.vx*dt;q.y+=q.vy*dt}
+      if(D(q,b)<b.r+16){s.souls.splice(i,1);b.souls810=N(b.souls810)+1;b.soulSuckFx810=.58;try{addRing(b.x,b.y,'#ff7580',b.r+32,4);addParticles(b.x,b.y,'#ff5468',12,.7);addFloatingText(b.x,b.y-b.r-24,'+1 ALMA','#ff9b9f',12)}catch{};if(b.souls810>=10)levelUp(b)}else if(q.life<=0)s.souls.splice(i,1)}
   }
   function infernalShoot(e){
     const s=state(),p=game.player;if(!s||!p)return;const count=Math.min(14,1+N(e.level810,1));const base=Math.atan2(p.y-e.y,p.x-e.x);const spread=Math.min(.62,.11*(count-1));
     for(let i=0;i<count;i++){const off=count===1?0:(i/(count-1)-.5)*spread;const a=base+off;const sp=285+Math.min(90,e.level810*4);s.projectiles.push({x:e.x+Math.cos(a)*(e.r+8),y:e.y+Math.sin(a)*(e.r+8),vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:7,life:4,damage:(11+e.level810*.5)*N(e.damageMul810,1),pulse:R(0,6.28)})}
     try{addRing(e.x,e.y,'#ff304b',54,3)}catch{}
   }
+  function addLavaPool810(s,x,y,r){s.lava.push({x:C(x,r+8,W-r-8),y:C(y,r+8,H-r-8),r,life:5.4,maxLife:5.4,pulse:R(0,6.28),damageCd:0,bubbleCd:R(.04,.18),heat:R(0,6.28)})}
   function lavaCast(e){
-    const s=state();if(!s)return;const arms=3;for(let arm=0;arm<arms;arm++){const a=R(0,6.28);const len=R(90,175);for(let j=1;j<=3;j++){const t=j/3;s.lava.push({x:C(e.x+Math.cos(a)*len*t+R(-15,15),30,W-30),y:C(e.y+Math.sin(a)*len*t+R(-15,15),30,H-30),r:R(24,36),life:3,maxLife:3,pulse:R(0,6.28),damageCd:0})}}try{addRing(e.x,e.y,'#ff6b25',135,5)}catch{}
+    const s=state(),p=game?.player;if(!s)return;const level=N(e.level810,1);
+    for(let arm=0;arm<4;arm++){const a=R(0,6.28),len=R(155,285);for(let j=1;j<=2;j++){const t=j/2;addLavaPool810(s,e.x+Math.cos(a)*len*t+R(-24,24),e.y+Math.sin(a)*len*t+R(-24,24),R(42,58))}}
+    const scattered=5+Math.min(3,Math.floor(level/2));for(let i=0;i<scattered;i++){let pos=safeArenaPos(null);if(p&&D(pos,p)<85){const a=R(0,6.28);pos={x:C(p.x+Math.cos(a)*R(120,260),75,W-75),y:C(p.y+Math.sin(a)*R(120,260),75,H-75)}}addLavaPool810(s,pos.x,pos.y,R(48,68))}
+    try{addRing(e.x,e.y,'#ff6b25',190,7);addParticles(e.x,e.y,'#ff7a28',28,1.15);game.shake=Math.max(N(game.shake),9)}catch{}
   }
   function spawnImps(e){
     const count=Math.min(10,1+N(e.level810,1));for(let i=0;i<count;i++){const a=R(0,6.28),rr=R(e.r+35,e.r+80);game.enemies.push({x:e.x+Math.cos(a)*rr,y:e.y+Math.sin(a)*rr,vx:0,vy:0,r:9,speed:185+e.level810*3,hp:18+N(game.wave)*1.2+e.level810*2,maxHp:18+N(game.wave)*1.2+e.level810*2,type:'infernalImp810',value:0,color:'#ff4a38',elite:false,wobble:R(0,6.28),hitFlash:0,shotTimer:1,shieldHp:0,marked:false,frozenTime:0,poison:0,infernalImp810:true,_noReward810:true,_noAllLoot810:true})}try{addFloatingText(e.x,e.y-35,'SERVOS DO ABISMO','#ff734f',13)}catch{}
@@ -33579,15 +33606,16 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   function teleportInfernal(e){
     const p=game.player;try{addRing(e.x,e.y,'#ff1738',e.r+45,6);addParticles(e.x,e.y,'#5a0010',26,1.1)}catch{};const pos=safeArenaPos(p);e.x=pos.x;e.y=pos.y;e.vx=0;e.vy=0;e.teleportFx810=.7;try{addRing(e.x,e.y,'#ff7b4a',e.r+55,7);addParticles(e.x,e.y,'#ff243e',34,1.3);game.shake=Math.max(N(game.shake),10)}catch{}
   }
+  function levelOrOne810(e){return Math.max(1,N(e?.level810,1))}
   function updateInfernalAI(dt){
     const s=state(),e=boss(),p=game?.player;if(!s||!e||!p)return;
-    const d=D(e,p),a=Math.atan2(p.y-e.y,p.x-e.x);e.shotCd810-=dt;e.minionCd810-=dt;e.lavaCd810-=dt;e.teleportCd810-=dt;e.teleportFx810=Math.max(0,N(e.teleportFx810)-dt);
+    const d=D(e,p),a=Math.atan2(p.y-e.y,p.x-e.x);e.shotCd810-=dt;e.minionCd810-=dt;e.lavaCd810-=dt;e.teleportCd810-=dt;e.teleportFx810=Math.max(0,N(e.teleportFx810)-dt);e.damageShieldTime810=Math.max(0,N(e.damageShieldTime810)-dt);e.shieldPulse810=Math.max(0,N(e.shieldPulse810)-dt*2.4);e.soulSuckFx810=Math.max(0,N(e.soulSuckFx810)-dt);
     if(d<145&&e.teleportCd810<=0){teleportInfernal(e);e.teleportCd810=Math.max(2.2,5.2-e.level810*.08)}
     else if(d>360){e.vx=Math.cos(a)*e.speed;e.vy=Math.sin(a)*e.speed}
     else if(d<255){e.vx=-Math.cos(a)*e.speed*.52;e.vy=-Math.sin(a)*e.speed*.52}
     else{const side=Math.sin(N(e.wobble))>0?1:-1;e.vx=Math.cos(a+Math.PI/2*side)*e.speed*.28;e.vy=Math.sin(a+Math.PI/2*side)*e.speed*.28}
     if(e.shotCd810<=0){infernalShoot(e);e.shotCd810=Math.max(.42,1.55/N(e.cadenceMul810,1))}
-    if(e.lavaCd810<=0){lavaCast(e);e.lavaCd810=8}
+    if(e.lavaCd810<=0){lavaCast(e);e.lavaCd810=Math.max(6.4,8.4-levelOrOne810(e)*.12)}
     if(e.minionCd810<=0){spawnImps(e);e.minionCd810=Math.max(1.5,5-.5*(e.level810-1))}
   }
   function updateImpsAI(dt){const p=game?.player;if(!p)return;for(const e of game.enemies||[]){if(!e?.infernalImp810)continue;const a=Math.atan2(p.y-e.y,p.x-e.x);const wig=Math.sin(N(e.wobble)+now()*5)*.35;e.vx=Math.cos(a+wig)*e.speed;e.vy=Math.sin(a+wig)*e.speed}}
@@ -33597,20 +33625,21 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     const s=state(),p=game?.player;if(!s||!p)return;for(let i=s.projectiles.length-1;i>=0;i--){const b=s.projectiles[i];b.life-=dt;b.pulse+=dt*8;b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.life<=0||b.x<-70||b.x>W+70||b.y<-70||b.y>H+70){s.projectiles.splice(i,1);continue}if(D(b,p)<b.r+p.r&&p.hurtCd<=0&&p.dashTime<=0){try{dealDamageToPlayer(b.damage)}catch{}applyConfusion();s.projectiles.splice(i,1)}}
   }
   function updateLava(dt){
-    const s=state(),p=game?.player;if(!s||!p)return;for(let i=s.lava.length-1;i>=0;i--){const h=s.lava[i];h.life-=dt;h.pulse+=dt*5;h.damageCd=Math.max(0,N(h.damageCd)-dt);if(h.life<=0){s.lava.splice(i,1);continue}if(D(h,p)<h.r+p.r&&h.damageCd<=0&&p.hurtCd<=0&&p.dashTime<=0){try{dealDamageToPlayer(8)}catch{}s.burn=3;s.burnTick=.55;h.damageCd=.55}}
-    if(s.burn>0){s.burn-=dt;s.burnTick-=dt;if(s.burnTick<=0){s.burnTick=.6;try{dealDamageToPlayer(4)}catch{};try{addParticles(p.x,p.y,'#ff6b25',5,.35)}catch{}}}
+    const s=state(),p=game?.player;if(!s)return;for(let i=s.lava.length-1;i>=0;i--){const h=s.lava[i];h.life-=dt;h.pulse+=dt*5;h.heat+=dt*3.2;h.damageCd=Math.max(0,N(h.damageCd)-dt);h.bubbleCd-=dt;if(h.bubbleCd<=0){h.bubbleCd=R(.10,.28);const count=Math.random()<.28?2:1;for(let j=0;j<count;j++){const a=R(0,6.28),rr=Math.sqrt(Math.random())*h.r*.72;s.lavaPops.push({x:h.x+Math.cos(a)*rr,y:h.y+Math.sin(a)*rr,vx:R(-18,18),vy:R(-115,-62),life:R(.38,.65),maxLife:.65,r:R(3.5,7.5),pulse:R(0,6.28)})}}if(h.life<=0){s.lava.splice(i,1);continue}if(p&&D(h,p)<h.r+p.r&&h.damageCd<=0&&p.hurtCd<=0&&p.dashTime<=0){try{dealDamageToPlayer(8)}catch{}s.burn=3;s.burnTick=.55;h.damageCd=.55}}
+    for(let i=s.lavaPops.length-1;i>=0;i--){const q=s.lavaPops[i];q.life-=dt;q.pulse+=dt*9;q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=210*dt;if(q.life<=0)s.lavaPops.splice(i,1)}
+    if(p&&s.burn>0){s.burn-=dt;s.burnTick-=dt;if(s.burnTick<=0){s.burnTick=.6;try{dealDamageToPlayer(4)}catch{};try{addParticles(p.x,p.y,'#ff6b25',5,.35)}catch{}}}
   }
   function updateKeyDrops(dt){
     const s=state(),p=game?.player;if(!s||!p)return;for(let i=s.keyDrops.length-1;i>=0;i--){const k=s.keyDrops[i];k.pulse+=dt*4;k.rot+=dt*1.8;if(D(k,p)<120){const a=Math.atan2(p.y-k.y,p.x-k.x);k.x+=Math.cos(a)*260*dt;k.y+=Math.sin(a)*260*dt}if(D(k,p)<p.r+14){s.keyDrops.splice(i,1);unlockDoom();banner('O INFERNO ACORDA','MODO DOOM DESBLOQUEADO');try{game.flash=.82;game.flashColor='#ff102d';game.shake=30;addRing(p.x,p.y,'#ff1738',230,10);addParticles(p.x,p.y,'#ff2d45',70,1.8)}catch{};setTimeout(()=>{try{if(document.getElementById('doomMode800'))lockDoomCard()}catch{}},0)}}
   }
   function updateSystem(dt){
-    const s=state();if(!s)return; if(s.active){updateInfernalAI(dt);updateSouls(dt);updateProjectiles(dt);updateLava(dt);updateImpsAI(dt);s.redPulse+=dt*1.4}else{s.souls.length=0;s.projectiles.length=0;s.lava.length=0;s.burn=0}
+    const s=state();if(!s)return; if(s.active){updateInfernalAI(dt);updateSouls(dt);updateProjectiles(dt);updateLava(dt);updateImpsAI(dt);s.redPulse+=dt*1.4}else{s.souls.length=0;s.projectiles.length=0;s.lava.length=0;s.lavaPops.length=0;s.burn=0}
     updateKeyDrops(dt); if(game.infernalConfusion810>0)game.infernalConfusion810=Math.max(0,game.infernalConfusion810-dt); updateHud();
   }
-  function updateHud(){ensureUI();const e=boss(),hud=document.getElementById('infernalHud810');if(!hud)return;hud.classList.toggle('show',!!e);if(!e)return;const pct=C(N(e.hp)/Math.max(1,N(e.maxHp))*100,0,100);hud.querySelector('.ihBar i').style.width=pct+'%';hud.querySelector('.ihLevel').textContent='NÍVEL '+N(e.level810,1);hud.querySelector('.ihSouls').textContent='ALMAS '+N(e.souls810,0)+'/10'}
+  function updateHud(){ensureUI();const e=boss(),hud=document.getElementById('infernalHud810');if(!hud)return;hud.classList.toggle('show',!!e);hud.classList.toggle('shielded',!!e&&N(e.damageShieldTime810)>0);if(!e)return;const pct=C(N(e.hp)/Math.max(1,N(e.maxHp))*100,0,100);hud.querySelector('.ihBar i').style.width=pct+'%';hud.querySelector('.ihLevel').textContent='NÍVEL '+N(e.level810,1);hud.querySelector('.ihSouls').textContent='ALMAS '+N(e.souls810,0)+'/10';const sh=hud.querySelector('.ihShield');if(sh)sh.textContent='ESCUDO 80% • '+N(e.damageShieldTime810).toFixed(1)+'s'}
 
   function onInfernalDeath(e){
-    const s=state();if(!s)return;const level=N(e.level810,1);s.active=false;s.boss=null;s.souls.length=0;s.projectiles.length=0;s.lava.length=0;s.burn=0;
+    const s=state();if(!s)return;const level=N(e.level810,1);s.active=false;s.boss=null;s.endlessWave810=false;s.souls.length=0;s.projectiles.length=0;s.lava.length=0;s.lavaPops.length=0;s.burn=0;game.enemiesToSpawn=N(game.enemiesSpawnedThisWave);game.spawnTimer=999;
     game.enemies=(game.enemies||[]).filter(x=>!x?.infernalImp810);
     const gold=Math.round(40+level*10),xp=Math.round(55+level*12);try{gainXP(xp);spawnGold(e.x,e.y,gold);addFloatingText(e.x,e.y-38,`+${gold} OURO • +${xp} XP`,'#ffb36b',15)}catch{}
     const chance=.0125+.005*(level-1);if(Math.random()<chance){s.keyDrops.push({x:e.x,y:e.y,r:13,rot:0,pulse:0});banner('A CHAVE CAIU',`CHANCE FINAL: ${(chance*100).toFixed(2)}%`)}else banner('DEVORADOR ABATIDO',`A CHAVE NÃO CAIU • CHANCE ${(chance*100).toFixed(2)}%`);
@@ -33629,9 +33658,10 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   }
 
   // Custom AI is set before the existing update so normal collision/movement remains compatible.
+  // During the event there is no total spawn quota: one new slot is continuously opened while the Devourer lives.
   const prevEnemies=window.updateEnemies||globalThis.updateEnemies;
   if(typeof prevEnemies==='function'){
-    const wrapped=function(dt){if(normalMode()&&state()?.active){updateInfernalAI(0);updateImpsAI(0)}return prevEnemies.apply(this,arguments)};window.updateEnemies=wrapped;try{updateEnemies=wrapped}catch{}
+    const wrapped=function(dt){const s=state();if(normalMode()&&s?.active){updateInfernalAI(0);updateImpsAI(0);const alive=(game.enemies||[]).filter(e=>e&&!e.infernalBoss810).length,softCap=34+Math.min(8,Math.floor(N(game.wave)/4));if(alive<softCap){game.enemiesToSpawn=Math.max(N(game.enemiesToSpawn),N(game.enemiesSpawnedThisWave)+1);game.spawnTimer=Math.min(N(game.spawnTimer,.45),.58)}else game.enemiesToSpawn=N(game.enemiesSpawnedThisWave)}return prevEnemies.apply(this,arguments)};window.updateEnemies=wrapped;try{updateEnemies=wrapped}catch{}
   }
   const prevFX=window.updateFX||globalThis.updateFX;
   if(typeof prevFX==='function'){
@@ -33669,23 +33699,24 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     };window.enemyDeath=wrapped;try{enemyDeath=wrapped}catch{}
   }
 
-  // A dropped DOOM key must be collected before the wave is allowed to advance.
+  // The event wave cannot advance while the Devourer lives. A dropped key also blocks advancement until collected.
   const prevWave=window.updateWaveState||globalThis.updateWaveState;
   if(typeof prevWave==='function'){
-    const wrapped=function(){if(normalMode()&&state()?.keyDrops?.length){game.shopPending=false;game.betweenWaves=false;return}return prevWave.apply(this,arguments)};window.updateWaveState=wrapped;try{updateWaveState=wrapped}catch{}
+    const wrapped=function(){const s=state();if(normalMode()&&(s?.active||s?.keyDrops?.length)){game.shopPending=false;game.betweenWaves=false;return}return prevWave.apply(this,arguments)};window.updateWaveState=wrapped;try{updateWaveState=wrapped}catch{}
   }
 
   function drawLavaAndSouls(){
     const s=state();if(!s)return;ctx.save();
-    for(const h of s.lava||[]){const a=C(h.life/h.maxLife,0,1),rr=h.r*(1+.08*Math.sin(h.pulse));ctx.globalAlpha=a;window.__ChronoOptimizer820.drawRadialProfile(ctx,h.x,h.y,rr,'infernalLava',[[0,'rgba(255,235,105,.75)'],[.34,'rgba(255,83,24,.72)'],[.72,'rgba(120,8,5,.58)'],[1,'rgba(20,0,2,0)']],.03);ctx.globalAlpha=1;ctx.strokeStyle=`rgba(255,73,29,${.75*a})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,rr*.72,0,6.28);ctx.stroke()}
-    ctx.globalCompositeOperation='lighter';for(const q of s.souls||[]){ctx.shadowBlur=18;ctx.shadowColor='#ff4560';ctx.fillStyle='rgba(255,110,125,.78)';ctx.beginPath();ctx.arc(q.x,q.y,5+Math.sin(q.pulse)*1.5,0,6.28);ctx.fill();ctx.strokeStyle='rgba(255,205,190,.65)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.quadraticCurveTo(q.x-8,q.y+12,q.x+Math.sin(q.pulse)*8,q.y+20);ctx.stroke()}
+    for(const h of s.lava||[]){const a=C(h.life/h.maxLife,0,1),rr=h.r*(1+.07*Math.sin(h.pulse));ctx.globalAlpha=a;window.__ChronoOptimizer820.drawRadialProfile(ctx,h.x,h.y,rr,'infernalLava',[[0,'rgba(255,244,132,.90)'],[.28,'rgba(255,108,24,.86)'],[.68,'rgba(132,9,4,.72)'],[1,'rgba(20,0,2,0)']],.03);ctx.globalAlpha=1;ctx.strokeStyle=`rgba(255,112,30,${.82*a})`;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(h.x,h.y,rr*.76,0,6.28);ctx.stroke();ctx.strokeStyle=`rgba(255,190,70,${(.18+.14*Math.sin(h.heat))*a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(h.x,h.y,rr*(1.02+.05*Math.sin(h.heat)),0,6.28);ctx.stroke()}
+    ctx.globalCompositeOperation='lighter';for(const q of s.lavaPops||[]){const a=C(q.life/q.maxLife,0,1),r=q.r*(.65+.45*a);ctx.shadowBlur=16;ctx.shadowColor='#ff5a16';ctx.fillStyle=`rgba(255,224,86,${a})`;ctx.beginPath();ctx.arc(q.x,q.y,r,0,6.28);ctx.fill();ctx.strokeStyle=`rgba(255,72,20,${a})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(q.x,q.y,r*1.5,0,6.28);ctx.stroke()}
+    const b=boss();for(const q of s.souls||[]){const a=C(q.life/8,0,1);ctx.shadowBlur=24;ctx.shadowColor='#ff4560';if(b&&q.rise<=0){const mx=(q.x+b.x)/2+Math.sin(q.pulse)*34*q.curve,my=(q.y+b.y)/2-35;ctx.strokeStyle=`rgba(255,69,96,${.18+.28*a})`;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.quadraticCurveTo(mx,my,b.x,b.y);ctx.stroke()}const tr=q.trail||[];for(let i=tr.length-1;i>0;i--){ctx.strokeStyle=`rgba(255,80,105,${(1-i/tr.length)*.36*a})`;ctx.lineWidth=Math.max(1,4*(1-i/tr.length));ctx.beginPath();ctx.moveTo(tr[i].x,tr[i].y);ctx.lineTo(tr[i-1].x,tr[i-1].y);ctx.stroke()}ctx.save();ctx.translate(q.x,q.y);const sz=q.size||8;ctx.fillStyle=`rgba(255,132,145,${.82*a})`;ctx.beginPath();ctx.arc(0,-sz*.25,sz*.62,0,6.28);ctx.moveTo(-sz*.55,0);ctx.quadraticCurveTo(-sz*.8,sz,0,sz*1.55);ctx.quadraticCurveTo(sz*.8,sz,sz*.55,0);ctx.fill();ctx.fillStyle='rgba(255,240,220,.9)';ctx.beginPath();ctx.arc(-sz*.20,-sz*.35,1.2,0,6.28);ctx.arc(sz*.20,-sz*.35,1.2,0,6.28);ctx.fill();ctx.restore()}
     for(const b of s.projectiles||[]){ctx.shadowBlur=18;ctx.shadowColor='#ff1639';ctx.fillStyle='#4b0011';ctx.strokeStyle='#ff5a55';ctx.lineWidth=2;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.pulse);ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,r=i%2?b.r*.55:b.r;const px=Math.cos(a)*r,py=Math.sin(a)*r;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
     ctx.restore();
   }
   function drawInfernalModels(){
     const s=state();if(!s)return;ctx.save();for(const e of game.enemies||[]){if(!e?.infernalBoss810&&!e?.infernalImp810)continue;ctx.save();ctx.translate(e.x,e.y);
       if(e.infernalImp810){ctx.rotate(Math.sin(now()*5+e.wobble)*.18);ctx.shadowBlur=16;ctx.shadowColor='#ff2d3f';ctx.fillStyle='#220006';ctx.strokeStyle='#ff5a42';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(0,-e.r-4);ctx.lineTo(e.r,0);ctx.lineTo(0,e.r+4);ctx.lineTo(-e.r,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(-e.r*.6,-e.r*.4);ctx.lineTo(-e.r*1.2,-e.r*1.15);ctx.lineTo(-e.r*.1,-e.r*.7);ctx.moveTo(e.r*.6,-e.r*.4);ctx.lineTo(e.r*1.2,-e.r*1.15);ctx.lineTo(e.r*.1,-e.r*.7);ctx.stroke();ctx.fillStyle='#ffd36d';ctx.beginPath();ctx.arc(-3,-1,1.7,0,6.28);ctx.arc(3,-1,1.7,0,6.28);ctx.fill()}
-      else{const r=e.r,pulse=1+Math.sin(now()*4)*.035;ctx.scale(pulse,pulse);ctx.shadowBlur=30;ctx.shadowColor='#ff1738';ctx.fillStyle='#160006';ctx.strokeStyle='#ff3b42';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(r*.74,-r*.42);ctx.lineTo(r,0);ctx.lineTo(r*.62,r*.86);ctx.lineTo(0,r);ctx.lineTo(-r*.62,r*.86);ctx.lineTo(-r,0);ctx.lineTo(-r*.74,-r*.42);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='#ff8b55';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-r*.38,-r*.58);ctx.quadraticCurveTo(-r*1.15,-r*1.25,-r*.95,-r*.05);ctx.moveTo(r*.38,-r*.58);ctx.quadraticCurveTo(r*1.15,-r*1.25,r*.95,-r*.05);ctx.stroke();ctx.fillStyle='#ffcf72';ctx.shadowBlur=20;ctx.shadowColor='#ff5533';ctx.beginPath();ctx.ellipse(0,-r*.12,r*.28,r*.16,0,0,6.28);ctx.fill();ctx.fillStyle='#230006';ctx.beginPath();ctx.ellipse(0,-r*.12,r*.10,r*.16,0,0,6.28);ctx.fill();ctx.strokeStyle='rgba(255,100,78,.8)';ctx.lineWidth=2;for(let i=0;i<6;i++){const a=now()*.45+i*Math.PI/3;ctx.beginPath();ctx.arc(0,0,r*1.22,a,a+.34);ctx.stroke()}ctx.font='900 10px Orbitron';ctx.textAlign='center';ctx.fillStyle='#ff8066';ctx.shadowBlur=8;ctx.fillText('NÍVEL '+N(e.level810,1),0,-r-22)}
+      else{const r=e.r,pulse=1+Math.sin(now()*4)*.035;ctx.scale(pulse,pulse);ctx.shadowBlur=30;ctx.shadowColor='#ff1738';ctx.fillStyle='#160006';ctx.strokeStyle='#ff3b42';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(r*.74,-r*.42);ctx.lineTo(r,0);ctx.lineTo(r*.62,r*.86);ctx.lineTo(0,r);ctx.lineTo(-r*.62,r*.86);ctx.lineTo(-r,0);ctx.lineTo(-r*.74,-r*.42);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='#ff8b55';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-r*.38,-r*.58);ctx.quadraticCurveTo(-r*1.15,-r*1.25,-r*.95,-r*.05);ctx.moveTo(r*.38,-r*.58);ctx.quadraticCurveTo(r*1.15,-r*1.25,r*.95,-r*.05);ctx.stroke();ctx.fillStyle='#ffcf72';ctx.shadowBlur=20;ctx.shadowColor='#ff5533';ctx.beginPath();ctx.ellipse(0,-r*.12,r*.28,r*.16,0,0,6.28);ctx.fill();ctx.fillStyle='#230006';ctx.beginPath();ctx.ellipse(0,-r*.12,r*.10,r*.16,0,0,6.28);ctx.fill();ctx.strokeStyle='rgba(255,100,78,.8)';ctx.lineWidth=2;for(let i=0;i<6;i++){const a=now()*.45+i*Math.PI/3;ctx.beginPath();ctx.arc(0,0,r*1.22,a,a+.34);ctx.stroke()}ctx.font='900 10px Orbitron';ctx.textAlign='center';ctx.fillStyle='#ff8066';ctx.shadowBlur=8;ctx.fillText('NÍVEL '+N(e.level810,1),0,-r-22);if(N(e.soulSuckFx810)>0){const sa=C(e.soulSuckFx810/.58,0,1);ctx.strokeStyle=`rgba(255,155,115,${sa})`;ctx.lineWidth=3;for(let i=0;i<3;i++){const aa=-now()*5+i*2.094;ctx.beginPath();ctx.arc(0,0,r*(.38+i*.18),aa,aa+1.2);ctx.stroke()}}if(N(e.damageShieldTime810)>0){const sa=.45+.25*Math.sin(now()*12);ctx.shadowBlur=28;ctx.shadowColor='#ffbd3f';ctx.strokeStyle=`rgba(255,222,100,${sa})`;ctx.lineWidth=5;ctx.beginPath();for(let i=0;i<12;i++){const aa=-Math.PI/2+i*Math.PI/6,rr=r*1.48,px=Math.cos(aa)*rr,py=Math.sin(aa)*rr;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath();ctx.stroke();ctx.strokeStyle=`rgba(255,112,35,${sa*.65})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,r*(1.62+.05*Math.sin(now()*9)),0,6.28);ctx.stroke()}}
       ctx.restore()}ctx.restore();
   }
   function drawKeys(){const s=state();if(!s)return;ctx.save();for(const k of s.keyDrops||[]){ctx.save();ctx.translate(k.x,k.y);ctx.rotate(k.rot);const pulse=1+Math.sin(k.pulse)*.08;ctx.scale(pulse,pulse);ctx.shadowBlur=28;ctx.shadowColor='#ff1738';ctx.strokeStyle='#ff453f';ctx.fillStyle='#220006';ctx.lineWidth=3.2;ctx.beginPath();ctx.arc(-8,0,8,0,6.28);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(25,0);ctx.lineTo(25,6);ctx.lineTo(18,6);ctx.lineTo(18,11);ctx.lineTo(11,11);ctx.lineTo(11,3);ctx.lineTo(0,3);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='#ffb05c';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(-8,0,3,0,6.28);ctx.stroke();ctx.restore()}ctx.restore()}
@@ -33704,8 +33735,8 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   if(typeof prevMode==='function'){window.openModeChoice50=function(){const out=prevMode.apply(this,arguments);setTimeout(lockDoomCard,0);setTimeout(lockDoomCard,100);setTimeout(lockDoomCard,240);return out}}
   setTimeout(()=>{try{if(document.getElementById('doomMode800'))lockDoomCard()}catch{}},50);
 
-  window.__InfernalGate810={spawnInfernal,maybeRollWave,state,boss,doomUnlocked,unlockDoom,lockDoomCard};
-  console.log(PATCH+' — DOOM gate, Devourador Infernal, Chave do DOOM, adiamento de boss wave e reward integrity carregados');
+  window.__InfernalGate810={spawnInfernal,maybeRollWave,state,boss,doomUnlocked,unlockDoom,lockDoomCard,lavaCast,spawnSoul,triggerInfernalShield};
+  console.log(PATCH+' — horda infinita, lava ampliada, sucção de almas e escudo por limiares carregados');
 })();
 </script>
 
