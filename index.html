@@ -277,63 +277,48 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
 
 
 <script>
-/* Chrono Shards 8.2.0 — centralized scheduling & observer multiplexing */
+/* Chrono Shards 8.2.6 — scheduler de-phasing & native observer routing */
 (()=>{
   if(window.__chronoPerfCore820)return;
   window.__chronoPerfCore820=true;
   const NativeMO=window.MutationObserver;
   const observers=new Set();
-  let central=null,nextObserverId=1;
-  function recordMatches(reg,rec){
-    const o=reg.options||{},t=reg.target;
-    if(!t)return false;
-    const inScope=rec.target===t || (!!o.subtree && typeof t.contains==='function' && t.contains(rec.target));
-    if(!inScope)return false;
-    if(rec.type==='childList'&&!o.childList)return false;
-    if(rec.type==='attributes'){
-      if(!o.attributes)return false;
-      if(Array.isArray(o.attributeFilter)&&o.attributeFilter.length&&!o.attributeFilter.includes(rec.attributeName))return false;
-    }
-    if(rec.type==='characterData'&&!o.characterData)return false;
-    return true;
-  }
-  function ensureCentral(){
-    if(central||!NativeMO)return;
-    central=new NativeMO(records=>{
-      if(!records?.length)return;
-      for(const inst of [...observers]){
-        if(!inst._regs.length)continue;
-        const hit=[];
-        for(const rec of records){
-          if(inst._regs.some(reg=>recordMatches(reg,rec)))hit.push(rec);
-        }
-        if(hit.length){try{inst._cb(hit,inst)}catch(e){console.warn('Chrono observer 8.2.0',e)}}
-      }
-    });
-    central.observe(document.documentElement||document,{childList:true,subtree:true,attributes:true,characterData:true});
-  }
+  let nextObserverId=1;
   class ChronoMutationObserver820{
-    constructor(cb){this._cb=typeof cb==='function'?cb:()=>{};this._regs=[];this._id=nextObserverId++;observers.add(this);ensureCentral()}
-    observe(target,options={}){if(!target)return;const ex=this._regs.find(r=>r.target===target);if(ex)ex.options={...options};else this._regs.push({target,options:{...options}});ensureCentral()}
-    disconnect(){this._regs.length=0;observers.delete(this)}
-    takeRecords(){return []}
+    constructor(cb){
+      this._cb=typeof cb==='function'?cb:()=>{};
+      this._id=nextObserverId++;
+      this._native=NativeMO?new NativeMO((records)=>{if(!records?.length)return;try{this._cb(records,this)}catch(e){console.warn('Chrono observer 8.2.6',e)}}):null;
+      observers.add(this);
+    }
+    observe(target,options={}){if(target&&this._native){observers.add(this);this._native.observe(target,options)}}
+    disconnect(){this._native?.disconnect();observers.delete(this)}
+    takeRecords(){return this._native?.takeRecords?.()||[]}
   }
+  // Usa a filtragem nativa do navegador. O multiplexador anterior observava atributos e texto
+  // da página inteira e comparava cada mutação com todos os observers, causando picos no início da run.
   if(NativeMO)window.MutationObserver=ChronoMutationObserver820;
 
   const tasks=new Map();let nextTaskId=1;
   function interval(fn,ms=0,...args){
     if(typeof fn!=='function')return 0;
     const id=nextTaskId++,period=Math.max(16,Number(ms)||16),now=performance.now();
-    tasks.set(id,{fn,args,period,next:now+period,active:true});
+    // Espalha tarefas criadas juntas para elas não vencerem todas no mesmo frame.
+    const phase=period>32?((id%11)/11)*Math.min(period*.82,420):0;
+    tasks.set(id,{fn,args,period,next:now+period+phase,active:true});
     return id;
   }
   function clear(id){tasks.delete(Number(id)||id)}
   function schedulerTick(now){
     if(!document.hidden){
+      const started=performance.now(),budgetMs=3.2;
       for(const [id,t] of tasks){
         if(!t.active||now<t.next)continue;
-        t.next=now+t.period;
-        try{t.fn(...t.args)}catch(e){console.warn('Chrono scheduler 8.2.0 task '+id,e)}
+        // Tarefas de interface podem aguardar o frame seguinte; tarefas de alta frequência continuam prioritárias.
+        if(t.period>32&&performance.now()-started>budgetMs)continue;
+        const missed=Math.max(1,Math.floor((now-t.next)/t.period)+1);
+        t.next+=missed*t.period;
+        try{t.fn(...t.args)}catch(e){console.warn('Chrono scheduler 8.2.6 task '+id,e)}
       }
     }else{
       for(const t of tasks)t.next=now+t.period;
@@ -17375,13 +17360,14 @@ function killKey37(e){
 
   const oldUpdateFX541=window.updateFX||updateFX;
   window.updateFX=function(dt){
-    if(game){ensureRico541();const mp=game.ricoPrev541;for(const b of game.ricoBullets529||[])mp.set(b,{x:b.x,y:b.y,bounces:N(b.bounces),hits:b.hitIds?.size||0,sp:Math.hypot(b.vx||0,b.vy||0)});}
+    const ricoActive=isRico541();
+    if(ricoActive){ensureRico541();const mp=game.ricoPrev541;for(const b of game.ricoBullets529||[])mp.set(b,{x:b.x,y:b.y,bounces:N(b.bounces),hits:b.hitIds?.size||0,sp:Math.hypot(b.vx||0,b.vy||0)});}
     const out=oldUpdateFX541.apply(this,arguments);
-    if(game){postRico541(dt);updateArcherChargeFireRate541(dt);updateSynergyHud541();}
+    if(game){if(ricoActive)postRico541(dt);updateArcherChargeFireRate541(dt);updateSynergyHud541();}
     return out;
   };try{if(typeof updateFX!=='undefined')updateFX=window.updateFX;}catch{}
 
-  function postRico541(dt){ensureRico541();
+  function postRico541(dt){if(!isRico541())return;ensureRico541();
     for(let i=(game.ricoWalls541||[]).length-1;i>=0;i--){const w=game.ricoWalls541[i];w.life-=dt;w.pulse+=dt*6;if(w.life<=0)game.ricoWalls541.splice(i,1);}
     for(const nail of game.ricoNails529||[]){if(nail.strong541){nail.wave541-=dt;if(nail.wave541<=0){nail.wave541=1.18;pullWave541(nail.x,nail.y,(nail.r||245)+112,150);}}}
     for(const b of game.ricoBullets529||[]){
@@ -17393,8 +17379,8 @@ function killKey37(e){
       if(prev&&b.q541&&N(b.bounces)>prev.bounces){const sp=Math.max(480,Math.hypot(b.vx||0,b.vy||0))*1.3;const t=target541(b,850);const a=t?ang541(b,t):Math.atan2(b.vy||0,b.vx||1);b.vx=Math.cos(a)*sp;b.vy=Math.sin(a)*sp;b.life=Math.max(b.life||0,1.05);pullWave541(b.x,b.y,112,82);}
       if(b.orbit){b.life=Math.max(b.life||0,.5);orbitDamage541(b,dt);}
     }
-    // Legado: se algum texto de info antigo abrir, corrige em tempo real.
-    const html=document.body?.innerHTML||'';if(html.includes('Mesa de Sinuca'))setTimeout(()=>{document.querySelectorAll('.skillRow461').forEach(el=>{if(/Mesa de Sinuca/.test(el.textContent||'')){el.innerHTML='<b>Habilidade 3 — 🪞Refletor Prismático</b><br><span>Cria um espelho refletor no chão, cada tiro que o jogador acertar no espelho, vai refletir em 3 raios prismáticos além de fazer o tiro ricochetear.</span>';}});},0);
+    // O texto legado já é corrigido quando a interface de informações é construída.
+    // Nunca varrer document.body.innerHTML durante a partida: isso serializa toda a página a cada frame.
   }
   function orbitDamage541(b,dt){
     b._orbitHits541=b._orbitHits541||new WeakMap();
@@ -17586,7 +17572,10 @@ function killKey37(e){
   try{if(typeof updateFX!=='undefined')updateFX=window.updateFX;}catch{}
 
   function updateReflectors(dt){
-    if(!game)return;ensure();
+    if(!game)return;
+    const hasRicoRuntime=game.classKey===RICO||(game.ricoReflectors543?.length>0)||(game.ricoLaserVfx543?.length>0);
+    if(!hasRicoRuntime)return;
+    ensure();
     for(let i=game.ricoReflectors543.length-1;i>=0;i--){
       const ref=game.ricoReflectors543[i];
       ref.life-=dt;ref.spin+=dt*2.8;ref.pulse=Math.max(0,(ref.pulse||0)-dt);ref.cool=Math.max(0,(ref.cool||0)-dt);
@@ -17598,10 +17587,7 @@ function killKey37(e){
     }
     for(let i=game.ricoLaserVfx543.length-1;i>=0;i--){const v=game.ricoLaserVfx543[i];v.life-=dt;if(v.life<=0)game.ricoLaserVfx543.splice(i,1);}
 
-    // Corrige textos de info antigos que ainda falavam do Castelo Inflável.
-    if(document.body&&(document.body.innerHTML||'').includes('Castelo Inflável')){
-      setTimeout(()=>{document.querySelectorAll('.skillRow461').forEach(el=>{if(/Castelo Inflável|Mesa de Sinuca/.test(el.textContent||'')){el.innerHTML='<b>Habilidade 3 — 🔷 Ponto de Rebate</b><br><span>Instala um refletor por 8s. Tiros normais que ricocheteiam nele são redirecionados e disparam 3 raios grandes em cone, como laser refletido por espelho.</span>';}});},0);
-    }
+    // A interface recebe o texto atualizado na abertura; nenhuma busca global no DOM é feita por frame.
   }
 
   const oldDraw=window.drawBullets||drawBullets;
