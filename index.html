@@ -610,7 +610,7 @@ const RELICS = [
   {id:'focus_prism',name:'Prisma de foco',desc:'+30 foco máximo.',cost:9,apply:g=>{g.player.maxFocus+=30;g.player.focus+=30}},
   {id:'armor_lattice',name:'Malha de Armadura',desc:'+10% armadura.',cost:10,apply:g=>g.upgrades.armor+=0.1},
   {id:'drone_seed',name:'Ajuda do Artífice',desc:'Começa com drone.',cost:14,apply:g=>g.upgrades.droneUnlocked=true},
-  {id:'vampiric_core',name:'Núcleo Vampírico',desc:'Kills curam 1% do HP máximo.',cost:12,apply:g=>{g.upgrades.killHealPct=0.01;g.upgrades.killHeal=0}},
+  {id:'vampiric_core',name:'Núcleo Vampírico',desc:'Kills curam 0,5% do HP máximo.',cost:12,apply:g=>{g.upgrades.killHealPct=0.005;g.upgrades.killHeal=0}},
   {id:'crit_matrix',name:'Matrix Crítica',desc:'+15% chance crítico.',cost:11,apply:g=>g.upgrades.critChance+=0.15},
   {id:'shield_cell',name:'Célula de Escudo',desc:'+25 escudo máx.',cost:10,apply:g=>{g.player.maxShield+=25;g.player.shield+=25}},
   {id:'combo_amp',name:'Amplificador de Escudo',desc:'Combo máximo +2 nível bônus.',cost:13,apply:g=>g.upgrades.comboBonus+=2}
@@ -893,8 +893,9 @@ function shoot(){
       
       // Hit if within range and swing arc
       if(distToEnemy<=range+e.r&&angleDiff<=swingArc/2+0.3){
-        const crit=Math.random()<game.upgrades.critChance;
+        const crit=Math.random()<(game.upgrades.critChance+(window.__InfernalShop830?.critBonusFor?.(e)||0));
         let finalDmg=crit?dmg*2:dmg;
+        finalDmg=window.__InfernalShop830?.targetDamage?.(e,finalDmg)??finalDmg;
         if(e._reaperMarked)finalDmg*=1.35;
         
         if(e.shieldHp>0){
@@ -3852,8 +3853,9 @@ render = function(){
         if(j<0||!circleCollide(b,e))continue;
         if(typeof lineBlockedByMap==='function'&&lineBlockedByMap(b,e,(b.r||3)))continue;
         if(game.timeStopActive>0&&e.frozenTime>0)e.frozenTime=game.timeStopActive;
-        const crit=Math.random()<game.upgrades.critChance;
+        const crit=Math.random()<(game.upgrades.critChance+(window.__InfernalShop830?.critBonusFor?.(e)||0));
         let dmg=crit?b.damage*2:b.damage;
+        dmg=window.__InfernalShop830?.targetDamage?.(e,dmg)??dmg;
         if(e._reaperMarked)dmg*=1.35;
         if(e.shieldHp>0){e.shieldHp-=dmg;if(e.shieldHp<0){e.hp+=e.shieldHp;e.shieldHp=0}}else e.hp-=dmg;
         e.hitFlash=0.1;
@@ -3874,7 +3876,7 @@ render = function(){
             if(ek===e)continue;
             const k=game.enemies.indexOf(ek);if(k<0)continue;
             if(dist(b,ek)<55&&!(typeof lineBlockedByMap==='function'&&lineBlockedByMap(b,ek,3))){
-              ek.hp-=dmg*0.4;ek.hitFlash=0.08;if(ek.hp<=0)enemyDeath(k,ek);
+              {const splash=window.__InfernalShop830?.targetDamage?.(ek,dmg*.4)??dmg*.4;ek.hp-=splash;}ek.hitFlash=0.08;if(ek.hp<=0)enemyDeath(k,ek);
             }
           }
           const pos=game.bullets.indexOf(b);if(pos>=0)O.removeBullet(game.bullets,pos);
@@ -19247,7 +19249,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   function patchInfoButtons(){try{document.querySelectorAll('[data-info461],[data-info-rico529],[data-info-archer470]').forEach(b=>{if(b.dataset.latestInfo581)return;b.dataset.latestInfo581='1';b.title='Informações mais recentes';b.onclick=e=>{e.preventDefault();e.stopPropagation();openLatestInfo(infoKeyFrom(b));};});}catch{}}
   try{new MutationObserver(()=>setTimeout(patchInfoButtons,30)).observe(document.body,{childList:true,subtree:true});setTimeout(patchInfoButtons,300);}catch{}
   // Núcleo Vampírico permanente: 1% do HP máximo por kill, sem manter a cura fixa antiga.
-  try{if(typeof RELICS!=='undefined'){const r=RELICS.find(x=>x.id==='vampiric_core');if(r){r.desc='Kills curam 1% do HP máximo.';r.apply=g=>{g.upgrades.killHealPct=0.01;g.upgrades.killHeal=0;};}}}catch{}
+  try{if(typeof RELICS!=='undefined'){const r=RELICS.find(x=>x.id==='vampiric_core');if(r){r.desc='Kills curam 0,5% do HP máximo.';r.apply=g=>{g.upgrades.killHealPct=0.005;g.upgrades.killHeal=0;};}}}catch{}
   const prevEnemyDeath=window.enemyDeath||globalThis.enemyDeath;
   if(typeof prevEnemyDeath==='function'){
     window.enemyDeath=function(index,en){const beforeHp=N(curGame()?.player?.hp);const out=prevEnemyDeath.apply(this,arguments);try{const g=curGame(),p=g?.player,pct=N(g?.upgrades?.killHealPct);if(p&&pct>0){const heal=Math.max(1,Math.round(N(p.maxHp)*pct));p.hp=Math.min(N(p.maxHp),N(p.hp)+heal);if(N(p.hp)>beforeHp)try{addFloatingText(p.x,p.y-36,`+${heal} HP`,'#ff7b9c',14)}catch{}}}catch(e){console.warn('vampiric pct 581',e)}return out;};
@@ -31298,6 +31300,8 @@ const SAVE_KEYS = [
   'chrono_v4_meta_skins_clean_702',
   'chrono_v4_meta_power_catalog_unlocks_544',
   'chrono_v4_meta_mauro_shop_clean_702',
+  'chrono_v4_meta_infernal_shop_830',
+  'chrono_v4_meta_doom_mode_v1',
   'chrono_rift_tutorial_skip_v1',
   'chrono_doom_tutorial_skip_v1'
 ];
@@ -32796,8 +32800,18 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     {id:'corruptDash',title:'CEIFADOR DE CORROMPIDOS',desc:'Mate Corrompidos durante o Dash.',metric:'corruptDashKills',target:6,time:40,min:2}
   ];
 
-  function rawMeta(){try{return JSON.parse(localStorage.getItem(DOOM_META_KEY)||'{}')||{}}catch{return {}}}
-  function writeRaw(m){try{localStorage.setItem(DOOM_META_KEY,JSON.stringify(m||{}))}catch{}}
+  function rawMeta(){
+    let d={},main={};try{d=JSON.parse(localStorage.getItem(DOOM_META_KEY)||'{}')||{}}catch{}try{main=JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}}catch{}
+    d.highScore=Math.max(N(d.highScore),N(main.highScore));d.relicShards=N(main.relicShards,N(d.relicShards));
+    d.sinnerTears830=Math.max(N(d.sinnerTears830),N(d.doomFragments),N(main.sinnerTears830),N(main.doomFragments));d.doomFragments=d.sinnerTears830;
+    return d;
+  }
+  function writeRaw(m){
+    try{
+      m=m||{};m.sinnerTears830=N(m.sinnerTears830,N(m.doomFragments));m.doomFragments=m.sinnerTears830;localStorage.setItem(DOOM_META_KEY,JSON.stringify(m));
+      let main={};try{main=JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}}catch{}main.highScore=Math.max(N(main.highScore),N(m.highScore));main.relicShards=N(m.relicShards,N(main.relicShards));main.sinnerTears830=m.sinnerTears830;main.doomFragments=m.sinnerTears830;localStorage.setItem(META_KEY,JSON.stringify(main));if(G()?.meta)G().meta=Object.assign(G().meta||{},main)
+    }catch{}
+  }
   function fmtTime(sec){sec=Math.max(0,Math.floor(N(sec)));const m=Math.floor(sec/60),s=sec%60;return `${m}:${String(s).padStart(2,'0')}`}
   function stageOf(v){if(v>=100)return 5;if(v>80)return 4;if(v>60)return 3;if(v>40)return 2;if(v>20)return 1;return 0}
   function state(){const g=G();return g?.doom800||null}
@@ -32877,7 +32891,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
       metrics:metrics(),killTimes:[],resurrections:[],portals:[],hellGusts:[],meteors:[],soulPickups:[],seals:[],map:makeMapDecor(),
       lastDamageAt:-999,lastDashAt:-999,lastSkillAt:-999,movingTime:0,lowHpTime:0,noDashKills:0,skilllessTime:0,
       minibossKills:0,bossKills:0,totalBossSpawns:0,totalMiniSpawns:0,endAwarded:false,score:0,lastStage:0,
-      quake:0,stageFlash:0
+      tearsEarned830:0,tearMilestones830:{},quake:0,stageFlash:0
     };
     if(g.player){g.player.x=W/2;g.player.y=H/2;g.player.vx=0;g.player.vy=0;}
     const wr=document.getElementById('wave');if(wr?.parentElement){wr.parentElement.dataset.doomOldLabel='Wave: ';const n=wr.parentElement.childNodes[0];if(n&&n.nodeType===3)n.nodeValue='Tempo: ';}
@@ -32898,8 +32912,13 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     if(m&&panel){panel.querySelector('.doomMissionName800').textContent=m.title;panel.querySelector('.doomMissionDesc800').textContent=m.desc;panel.querySelector('.doomMissionCount800').textContent=`${formatMissionProgress(m)}/${m.target}`;panel.querySelector('.doomMissionTime800').textContent=`${Math.max(0,m.time).toFixed(1)}s`;const bar=panel.querySelector('.doomMissionTimerShell800 i');if(bar)bar.style.width=`${C(m.time/m.maxTime*100,0,100)}%`;}
   }
 
+  function earnTears830(amount,label=''){
+    const g=G(),d=state(),q=Math.max(0,Math.floor(N(amount)));if(!g||!d||q<=0)return 0;d.tearsEarned830=N(d.tearsEarned830)+q;
+    try{addFloatingText(g.player?.x||W/2,(g.player?.y||H/2)-58,`+${q} LÁGRIMA${q>1?'S':''}`,'#ff7891',15);if(label)addFloatingText(g.player?.x||W/2,(g.player?.y||H/2)-78,label,'#ffd5dd',10)}catch{}return q;
+  }
+  function checkTearMilestones830(oldValue,newValue){const d=state();if(!d)return;for(const [mark,reward] of [[25,2],[50,4],[75,7],[100,12]])if(oldValue<mark&&newValue>=mark&&!d.tearMilestones830[mark]){d.tearMilestones830[mark]=true;earnTears830(reward,`DOOMETER ${mark}%`)}}
   function setValue(v,reason=''){
-    const g=G(),d=state();if(!g||!d)return;const oldStage=d.stage,old=d.value;d.value=C(v,0,100);d.peakValue825=Math.max(N(d.peakValue825),d.value);d.stage=stageOf(d.value);
+    const g=G(),d=state();if(!g||!d)return;const oldStage=d.stage,old=d.value;d.value=C(v,0,100);d.peakValue825=Math.max(N(d.peakValue825),d.value);d.stage=stageOf(d.value);checkTearMilestones830(old,d.value);
     if(d.stage!==oldStage){applyStageToExisting(d.stage);stageTransition(oldStage,d.stage);}
     if(old<40&&d.value>=40&&!d.bossUnlocked){d.bossUnlocked=true;d.bossTimer=60;}
     if(old<100&&d.value>=100)triggerDoomArrival();
@@ -32944,7 +32963,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   }
 
   function spawnDoomEnemy(type=null,pos=null,opts={}){
-    const g=G(),d=state();if(!g||!d||doomSlots()<=0)return null;const stage=d.stage;type=type||chooseWeighted(typeWeights(stage));const b=COMMON_BASES[type]||COMMON_BASES.chaser;const p=pos||edgePos();const elite=opts.elite??(Math.random()<STAGES[stage].elite);const timeHp=1+Math.min(.9,d.elapsed/700),timeSp=1+Math.min(.18,d.elapsed/1500);const hp=Math.floor(b.hp*STAGES[stage].hp*timeHp*(elite?1.9:1));const sp=R(b.speed[0],b.speed[1])*STAGES[stage].speed*timeSp*(elite?1.18:1);
+    const g=G(),d=state();if(!g||!d||doomSlots()<=0)return null;const stage=d.stage;type=type||chooseWeighted(typeWeights(stage));const b=COMMON_BASES[type]||COMMON_BASES.chaser;const p=pos||edgePos();const elite=opts.elite??(Math.random()<STAGES[stage].elite);const timeHp=1+Math.min(.9,d.elapsed/700),timeSp=1+Math.min(.18,d.elapsed/1500);let hp=Math.floor(b.hp*STAGES[stage].hp*timeHp*(elite?1.9:1));if(g.doomShopBuff830?.greed)hp=Math.round(hp*1.10);const sp=R(b.speed[0],b.speed[1])*STAGES[stage].speed*timeSp*(elite?1.18:1);
     const e={x:p.x,y:p.y,vx:0,vy:0,r:elite?b.r+4:b.r,speed:sp,hp,maxHp:hp,type,value:elite?b.value*2:b.value,color:b.color,elite,wobble:R(0,6.28),hitFlash:0,shotTimer:R(1,2.2),shieldHp:elite?Math.floor(b.hp*.35):0,marked:false,markedTimer:0,frozenTime:0,leapCd:R(1,2.2),healPulse:0,aimTimer:R(1,2.2),poison:0,doomBaseMaxHp800:b.hp*(elite?1.9:1),doomBaseSpeed800:sp/(STAGES[stage].speed*timeSp),doomScaled800:true};
     if(opts.corrupted){e.doomCorrupted800=true;e.color='#8f1022';e.maxHp=Math.round(e.maxHp*1.5);e.hp=e.maxHp;e.speed*=1.2;e.r+=2;e.value=Math.round(e.value*1.7);}
     g.enemies.push(e);return e;
@@ -32956,7 +32975,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   function spawnTotem(){const g=G(),d=state();if(!g||!d)return null;const hp=Math.round(360*STAGES[d.stage].hp*(1+d.elapsed/1000));const e={x:R(120,W-120),y:R(100,H-100),vx:0,vy:0,r:24,speed:0,hp,maxHp:hp,type:'doomTotem800',value:70,color:'#ff612f',elite:true,wobble:R(0,6.28),hitFlash:0,shieldHp:0,marked:false,frozenTime:0,doomTotem800:true,doomPulseCd800:1.4};g.enemies.push(e);return e;}
 
   function spawnMiniboss(kind=null){
-    const g=G(),d=state();if(!g||!d||doomSlots()<=0)return null;kind=kind||['butcher','priest','harvester','carrier'][RI(0,3)];const p=edgePos(),tm=1+d.elapsed/700;const def={butcher:{name:'DOOM BUTCHER',r:34,hp:1150,sp:64,col:'#ff3a2f'},priest:{name:'HELL PRIEST',r:27,hp:880,sp:74,col:'#b719ff'},harvester:{name:'THE HARVESTER',r:29,hp:980,sp:112,col:'#ff174f'},carrier:{name:'DOOM CARRIER',r:33,hp:1250,sp:54,col:'#ff7b27'}}[kind];const hp=Math.round(def.hp*STAGES[d.stage].hp*tm*.72);
+    const g=G(),d=state();if(!g||!d||doomSlots()<=0)return null;kind=kind||['butcher','priest','harvester','carrier'][RI(0,3)];const p=edgePos(),tm=1+d.elapsed/700;const def={butcher:{name:'DOOM BUTCHER',r:34,hp:1150,sp:64,col:'#ff3a2f'},priest:{name:'HELL PRIEST',r:27,hp:880,sp:74,col:'#b719ff'},harvester:{name:'THE HARVESTER',r:29,hp:980,sp:112,col:'#ff174f'},carrier:{name:'DOOM CARRIER',r:33,hp:1250,sp:54,col:'#ff7b27'}}[kind];let hp=Math.round(def.hp*STAGES[d.stage].hp*tm*.72);if(g.doomShopBuff830?.greed)hp=Math.round(hp*1.10);
     const e={x:p.x,y:p.y,vx:0,vy:0,r:def.r,speed:def.sp*STAGES[d.stage].speed,hp,maxHp:hp,type:`doomMini_${kind}800`,value:180,color:def.col,elite:true,wobble:R(0,6.28),hitFlash:0,shieldHp:0,marked:false,frozenTime:0,doomMini800:true,doomMiniKind800:kind,name:def.name,doomActionCd800:R(1.4,3),doomStacks800:0};g.enemies.push(e);d.totalMiniSpawns++;try{addFloatingText(e.x,C(e.y,80,H-80),def.name,def.col,20);addRing(C(e.x,50,W-50),C(e.y,50,H-50),def.col,110,5)}catch{}return e;
   }
 
@@ -32966,12 +32985,13 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     if(bossType==='titan')data={r:64,speed:38,hp:Math.round(5600*scale),value:560,color:'#7b61ff',shotTimer:1,summonTimer:3.8,slamTimer:2.7,laserTimer:5.2,phase:1};
     else if(bossType==='oracle')data={r:56,speed:43,hp:Math.round(5300*scale),value:650,color:'#b6ff7a',shotTimer:1,summonTimer:3.2,riftTimer:2.5,beamTimer:5.5,phase:1};
     else data={r:46,speed:62,hp:Math.round(4300*scale),value:360,color:'#ff2e63',shotTimer:1,summonTimer:2.8,phase:1,burstTimer:4.2};
+    if(g.doomShopBuff830?.greed)data.hp=Math.round(data.hp*1.10);
     const e={bossType,x:p.x,y:p.y,vx:0,vy:0,r:data.r,speed:data.speed,hp:data.hp,maxHp:data.hp,type:'boss',value:data.value,color:data.color,elite:false,wobble:0,hitFlash:0,shieldHp:0,marked:false,frozenTime:0,auraAngle:0,...data,doomBoss800:true};g.enemies.push(e);g.bossActive=true;d.totalBossSpawns++;try{addRing(C(p.x,70,W-70),C(p.y,70,H-70),data.color,150,7)}catch{};return e;
   }
   function spawnBossEncounter(){const g=G(),d=state();if(!g||!d)return;const count=d.stage>=4?2:1;if(doomSlots()<count)return;const sides=[0,1,2,3].sort(()=>Math.random()-.5),types=['archon','titan','oracle'].sort(()=>Math.random()-.5);let spawned=0;for(let i=0;i<count;i++)if(spawnDoomBoss(types[i%types.length],sides[i]))spawned++;if(spawned!==count)return;d.bossEncounter=true;d.bossTimer=60;showAlert(count===2?'DOIS BOSSES ENTRARAM':'UM BOSS ENTROU',count===2?'ELES VIERAM DE LADOS DIFERENTES':'O CONTADOR PAROU ATÉ ELE MORRER','fail');}
 
   function triggerDoomArrival(){
-    const g=G(),d=state();if(!g||!d||d.emperorSpawned)return;if(!freeDoomSlots(1))return;d.emperorSpawned=true;d.timeAtDoom=0;const hp=Math.round((11500+d.elapsed*11)*1.25),side=RI(0,3),p=bossPos(side);g.enemies.push({type:'boss',bossType:'lostEmperor',name:'Emperador das Trevas',x:p.x,y:p.y,vx:0,vy:0,r:74,speed:78,hp,maxHp:hp,value:1500,color:'#ff101f',elite:false,wobble:0,hitFlash:0,phase:1,shotTimer:.72,ghostTimer:2.0,bombTimer:2.8,slashTimer:3.5,teleportTimer:4.5,voidRuptureTimer:7,auraAngle:0,doomEmperor800:true});g.bossActive=true;g.lostBossBullets=g.lostBossBullets||[];g.shadowFire=g.shadowFire||[];g.flash=.85;g.flashColor='#ff001f';g.shake=34;showAlert('☠ DOOM ☠','O EMPERADOR DAS TREVAS CHEGOU — NADA PAROU','fail');try{addRing(C(p.x,80,W-80),C(p.y,80,H-80),'#ff102d',210,10);addParticles(C(p.x,80,W-80),C(p.y,80,H-80),'#ff102d',90,1.8)}catch{}
+    const g=G(),d=state();if(!g||!d||d.emperorSpawned)return;if(!freeDoomSlots(1))return;d.emperorSpawned=true;d.timeAtDoom=0;let hp=Math.round((11500+d.elapsed*11)*1.25);if(g.doomShopBuff830?.greed)hp=Math.round(hp*1.10);const side=RI(0,3),p=bossPos(side);g.enemies.push({type:'boss',bossType:'lostEmperor',name:'Emperador das Trevas',x:p.x,y:p.y,vx:0,vy:0,r:74,speed:78,hp,maxHp:hp,value:1500,color:'#ff101f',elite:false,wobble:0,hitFlash:0,phase:1,shotTimer:.72,ghostTimer:2.0,bombTimer:2.8,slashTimer:3.5,teleportTimer:4.5,voidRuptureTimer:7,auraAngle:0,doomEmperor800:true});g.bossActive=true;g.lostBossBullets=g.lostBossBullets||[];g.shadowFire=g.shadowFire||[];g.flash=.85;g.flashColor='#ff001f';g.shake=34;showAlert('☠ DOOM ☠','O EMPERADOR DAS TREVAS CHEGOU — NADA PAROU','fail');try{addRing(C(p.x,80,W-80),C(p.y,80,H-80),'#ff102d',210,10);addParticles(C(p.x,80,W-80),C(p.y,80,H-80),'#ff102d',90,1.8)}catch{}
   }
 
   function updateBossSystem(dt){
@@ -32995,7 +33015,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   function spawnNextSeal(){const d=state();if(!d)return;d.seals=[{x:R(105,W-105),y:R(95,H-95),r:34,p:R(0,6.28)}];}
   function missionProgress(m){const d=state();if(!d||!m)return 0;if(m.metric)return Math.max(0,N(d.metrics[m.metric])-N(m.baseline[m.metric]));if(m.special==='noDamage')return Math.max(0,d.elapsed-d.lastDamageAt);if(m.special==='moving')return d.movingTime;if(m.special==='lowHp')return d.lowHpTime;if(m.special==='streak'){const now=d.elapsed;d.killTimes=d.killTimes.filter(t=>now-t<=6);return d.killTimes.length;}if(m.special==='noDash')return d.noDashKills;if(m.special==='skillless')return d.skilllessTime;return 0}
   function formatMissionProgress(m){const p=missionProgress(m);return m.special&&['noDamage','moving','lowHp','skillless'].includes(m.special)?p.toFixed(1):Math.floor(p)}
-  function finishMission(success){const d=state();if(!d?.mission)return;const m=d.mission;d.mission=null;d.soulPickups=[];d.seals=[];if(success){d.missionsCompleted++;addDoom(-10,'mission');showAlert('MISSÃO CONCLUÍDA','DOOM -10%','success');}else{d.missionsFailed++;addDoom(10,'missionFail');showAlert('DOOM PIOROU','MISSÃO FALHOU — DOOM +10%','fail');const g=G();if(g){g.flash=Math.max(N(g.flash),.55);g.flashColor='#1b0007';g.shake=Math.max(N(g.shake),22);try{addParticles(g.player.x,g.player.y,'#ff102d',55,1.25);addRing(g.player.x,g.player.y,'#1b0007',180,9)}catch{}}}d.nextMissionCd=success?2.2:2.8;}
+  function finishMission(success){const d=state();if(!d?.mission)return;const m=d.mission;d.mission=null;d.soulPickups=[];d.seals=[];if(success){d.missionsCompleted++;addDoom(-10,'mission');const tears=8+d.stage*4+RI(0,4);earnTears830(tears,'CONTRATO CUMPRIDO');showAlert('MISSÃO CONCLUÍDA',`DOOM -10% • +${tears} LÁGRIMAS`,'success');}else{d.missionsFailed++;addDoom(10,'missionFail');showAlert('DOOM PIOROU','MISSÃO FALHOU — DOOM +10%','fail');const g=G();if(g){g.flash=Math.max(N(g.flash),.55);g.flashColor='#1b0007';g.shake=Math.max(N(g.shake),22);try{addParticles(g.player.x,g.player.y,'#ff102d',55,1.25);addRing(g.player.x,g.player.y,'#1b0007',180,9)}catch{}}}d.nextMissionCd=success?2.2:2.8;}
 
   function updateMission(dt){
     const g=G(),d=state();if(!g||!d)return;if(!d.mission){d.nextMissionCd-=dt;if(d.nextMissionCd<=0)startMission();return;}const m=d.mission;m.time-=dt;
@@ -33056,7 +33076,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     if(e.doomCorrupted800){m.corruptKills++;if(dash)m.corruptDashKills++;}
     if(e.elite&&e.type!=='boss'&&!e.doomMini800&&!e.doomPortal800&&!e.doomTotem800)m.eliteKills++;
     if(e.type==='medic')m.medicKills++;if(dash)m.dashKills++;if(['sentinel','sniperDrone'].includes(e.type))m.rangedKills++;if(e.type==='tank')m.tankKills++;if(e.type==='bomber')m.bomberKills++;if(e.type==='swarmer')m.swarmerKills++;
-    if(e.doomMini800){m.minibossKills++;d.minibossKills++;}if(e.type==='boss'){m.bossKills++;d.bossKills++;}if(e.doomPortal800)m.portalKills++;if(e.doomTotem800)m.totemKills++;
+    if(e.doomMini800){m.minibossKills++;d.minibossKills++;earnTears830(RI(2,4),'MINIBOSS DOOM');}if(e.type==='boss'){m.bossKills++;d.bossKills++;earnTears830(e.doomEmperor800?RI(18,25):RI(5,8),e.doomEmperor800?'EMPERADOR DAS TREVAS':'BOSS DOOM');}if(e.doomPortal800)m.portalKills++;if(e.doomTotem800)m.totemKills++;
     if(Math.hypot(x-W/2,y-H/2)<210)m.centerKills++;if(x<150||x>W-150||y<120||y>H-120)m.edgeKills++;d.killTimes.push(d.elapsed);d.noDashKills++;
     if(e.doomMini800&&e.doomMiniKind800==='harvester')return;
     for(const h of g.enemies||[]){if(h?.doomMiniKind800==='harvester'&&D2(h,{x,y})<240){h.doomStacks800=C(N(h.doomStacks800)+1,0,15);try{addParticles(h.x,h.y,'#ff174f',6,.45)}catch{}}}
@@ -33101,12 +33121,12 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     const m=rawMeta(),finalScore=Math.max(N(d.score),N(g.score)),previousHigh=N(m.highScore),isNewHigh=finalScore>previousHigh,finalGold=N(g.gold),remainingGold=finalGold%50;
     let reward=N(d.lastReward),converted=N(g.__goldConvertedAmount56);
     if(!d.endAwarded){
-      reward=Math.max(1,Math.floor(d.elapsed/28)+d.missionsCompleted*2+d.metrics.bossKills*3+d.metrics.minibossKills+Math.floor(d.timeAtDoom/22));
-      m.doomFragments=N(m.doomFragments)+reward;m.doomRecord=m.doomRecord||{};m.doomRecord.bestTime=Math.max(N(m.doomRecord.bestTime),d.elapsed);m.doomRecord.bestScore=Math.max(N(m.doomRecord.bestScore),finalScore);m.doomRecord.bestDoomTime=Math.max(N(m.doomRecord.bestDoomTime),d.timeAtDoom);m.doomRecord.runs=N(m.doomRecord.runs)+1;d.endAwarded=true;d.lastReward=reward;
+      reward=Math.max(1,N(d.tearsEarned830)+Math.floor(d.elapsed/120));if(g.doomShopBuff830?.greed)reward=Math.max(1,Math.floor(reward*1.25));
+      m.sinnerTears830=N(m.sinnerTears830,N(m.doomFragments))+reward;m.doomFragments=m.sinnerTears830;m.doomRecord=m.doomRecord||{};m.doomRecord.bestTime=Math.max(N(m.doomRecord.bestTime),d.elapsed);m.doomRecord.bestScore=Math.max(N(m.doomRecord.bestScore),finalScore);m.doomRecord.bestDoomTime=Math.max(N(m.doomRecord.bestDoomTime),d.timeAtDoom);m.doomRecord.runs=N(m.doomRecord.runs)+1;d.endAwarded=true;d.lastReward=reward;
     }
     if(!g.__goldConverted56){converted=Math.floor(finalGold/50);if(converted>0)m.relicShards=N(m.relicShards)+converted;g.__goldConvertedAmount56=converted;g.__goldConverted56=true;}
     m.highScore=Math.max(previousHigh,finalScore);writeRaw(m);
-    const totalDoom=N(m.doomFragments),best=N(m.doomRecord?.bestTime),cls=CLASSES?.[g.classKey]?.name||g.classKey,weapon=WEAPONS?.[g.weaponKey]?.name||g.weaponKey,p=g.player||{};
+    const totalDoom=N(m.sinnerTears830,N(m.doomFragments)),best=N(m.doomRecord?.bestTime),cls=CLASSES?.[g.classKey]?.name||g.classKey,weapon=WEAPONS?.[g.weaponKey]?.name||g.weaponKey,p=g.player||{};
     overlay.classList.remove('hidden');overlayCard.className='card death-card56 doomDeath825';overlayCard.innerHTML=`
       <div class="deathHero56"><div class="deathSigil56">☠</div><div class="deathEyebrow56">REGISTRO DO INFERNO TEMPORAL</div><h1>DOOM SURVIVAL</h1><p>${reason} A arena registrou cada segundo sobrevivido, cada monstro abatido e toda recompensa permanente conquistada.</p>${isNewHigh?'<div class="deathHigh56">🏆 NOVO HIGH SCORE</div>':''}</div>
       <div class="deathSection56">DESEMPENHO NO DOOM</div>
@@ -33122,7 +33142,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
       </div>
       <div class="deathSection56">CONVERSÃO E RECOMPENSAS</div>
       <div class="conversion56"><div class="conversionSide56"><small>OURO DA RUN</small><b>🪙 ${finalGold}</b></div><div class="conversionArrow56">⇒</div><div class="conversionSide56"><small>RELÍQUIAS OBTIDAS</small><b>✦ +${converted}</b></div><div class="conversionNote56">Taxa permanente: 50 ouro = 1 relíquia${remainingGold?` • ${remainingGold} ouro sem completar uma nova unidade`:''}. Total atual: <b>${N(m.relicShards)} relíquias</b>.</div></div>
-      <div class="deathResources56"><div class="deathResource56"><i>☠</i><div><small>FRAGMENTOS DOOM OBTIDOS</small><b>+${reward}</b></div></div><div class="deathResource56"><i>🔥</i><div><small>FRAGMENTOS DOOM TOTAIS</small><b>${totalDoom}</b></div></div><div class="deathResource56"><i>✦</i><div><small>RELÍQUIAS TOTAIS</small><b>${N(m.relicShards)}</b></div></div></div>
+      <div class="deathResources56"><div class="deathResource56"><i>☠</i><div><small>LÁGRIMAS DOS PECADORES OBTIDAS</small><b>+${reward}</b></div></div><div class="deathResource56"><i>🔥</i><div><small>LÁGRIMAS DOS PECADORES TOTAIS</small><b>${totalDoom}</b></div></div><div class="deathResource56"><i>✦</i><div><small>RELÍQUIAS TOTAIS</small><b>${N(m.relicShards)}</b></div></div></div>
       <div class="deathSection56">RAIO-X DA RUN</div>
       <div class="build56"><div class="buildCols56"><div class="buildGroup56"><strong>IDENTIDADE</strong><b>Classe:</b> ${cls}<br><b>Arma:</b> ${weapon}<br><b>Nível:</b> ${N(g.level,1)}</div><div class="buildGroup56"><strong>SOBREVIVÊNCIA</strong><b>HP máximo:</b> ${Math.round(N(p.maxHp))}<br><b>Escudo máximo:</b> ${Math.round(N(p.maxShield))}<br><b>DOOM máximo:</b> ${Math.round(N(d.peakValue825,d.value))}%</div><div class="buildGroup56"><strong>REGISTRO PERMANENTE</strong><b>Runs DOOM:</b> ${N(m.doomRecord?.runs)}<br><b>Melhor score:</b> ${N(m.doomRecord?.bestScore).toLocaleString()}<br><b>High score global:</b> ${N(m.highScore).toLocaleString()}</div></div></div>
       <div class="deathActions56"><button class="main-btn" id="doomAgain800">Jogar DOOM novamente</button><button class="main-btn" id="doomModes800" style="background:linear-gradient(135deg,#ff4b2b,#ff304f)">Escolher modo</button><button class="main-btn" id="doomHome800" style="background:linear-gradient(135deg,#9f6cff,#61dafb)">Menu inicial</button></div>`;
@@ -33182,7 +33202,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   // HUD sync after the normal HUD so Tempo cannot be overwritten by Wave.
   const prevHUD800=window.updateHUD||globalThis.updateHUD;if(typeof prevHUD800==='function'){const wrapped=function(){const out=prevHUD800.apply(this,arguments);if(isDoom())syncUI();return out;};window.updateHUD=wrapped;try{updateHUD=wrapped}catch{}}
 
-  window.__DoomMode800={initDoom,setValue,addDoom,startMission,finishMission,spawnDoomEnemy,spawnPortal,spawnTotem,spawnMiniboss,spawnBossEncounter,triggerDoomArrival,updateDoom,stageOf,STAGES,MISSION_POOL,state,isDoom,openTutorial};
+  window.__DoomMode800={initDoom,setValue,addDoom,startMission,finishMission,spawnDoomEnemy,spawnPortal,spawnTotem,spawnMiniboss,spawnBossEncounter,triggerDoomArrival,updateDoom,stageOf,STAGES,MISSION_POOL,state,isDoom,openTutorial,earnTears830};
   setTimeout(()=>{try{if(document.querySelector('.riftModeChoice50'))injectModeCard()}catch{}},0);
   console.log(PATCH+' — spawner contínuo, DOOMETER, mapa evolutivo, 25 contratos, Minibosses, Bosses e Emperador carregados');
 })();
@@ -33980,7 +34000,7 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
     const s=state(),p=game?.player;if(!s||!p)return;for(let i=s.projectiles.length-1;i>=0;i--){const b=s.projectiles[i];b.life-=dt;b.pulse+=dt*8;b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.life<=0||b.x<-70||b.x>W+70||b.y<-70||b.y>H+70){s.projectiles.splice(i,1);continue}if(D(b,p)<b.r+p.r&&p.hurtCd<=0&&p.dashTime<=0){try{dealDamageToPlayer(b.damage)}catch{}applyConfusion();s.projectiles.splice(i,1)}}
   }
   function updateLava(dt){
-    const s=state(),p=game?.player;if(!s)return;for(let i=s.lava.length-1;i>=0;i--){const h=s.lava[i];h.life-=dt;h.pulse+=dt*4.2;h.heat+=dt*2.7;h.damageCd=Math.max(0,N(h.damageCd)-dt);h.bubbleCd-=dt;if(h.bubbleCd<=0&&s.lavaPops.length<MAX_LAVA_POPS810){h.bubbleCd=R(.28,.54);const count=Math.min(MAX_LAVA_POPS810-s.lavaPops.length,Math.random()<.12?2:1);for(let j=0;j<count;j++){const a=R(0,6.28),rr=Math.sqrt(Math.random())*h.r*.7,life=R(.42,.68),q=s.lavaPopPool.pop()||{};Object.assign(q,{x:h.x+Math.cos(a)*rr,y:h.y+Math.sin(a)*rr,vx:R(-15,15),vy:R(-105,-58),life,maxLife:life,r:R(4,8),pulse:R(0,6.28)});s.lavaPops.push(q)}}if(h.life<=0){s.lava.splice(i,1);continue}if(p&&D(h,p)<h.r+p.r&&h.damageCd<=0&&p.hurtCd<=0&&p.dashTime<=0){try{dealDamageToPlayer(8)}catch{}s.burn=3;s.burnTick=.55;h.damageCd=.55}}
+    const s=state(),p=game?.player;if(!s)return;for(let i=s.lava.length-1;i>=0;i--){const h=s.lava[i];h.life-=dt;h.pulse+=dt*4.2;h.heat+=dt*2.7;h.damageCd=Math.max(0,N(h.damageCd)-dt);h.bubbleCd-=dt;if(h.bubbleCd<=0&&s.lavaPops.length<MAX_LAVA_POPS810){h.bubbleCd=R(.28,.54);const count=Math.min(MAX_LAVA_POPS810-s.lavaPops.length,Math.random()<.12?2:1);for(let j=0;j<count;j++){const a=R(0,6.28),rr=Math.sqrt(Math.random())*h.r*.7,life=R(.42,.68),q=s.lavaPopPool.pop()||{};Object.assign(q,{x:h.x+Math.cos(a)*rr,y:h.y+Math.sin(a)*rr,vx:R(-15,15),vy:R(-105,-58),life,maxLife:life,r:R(4,8),pulse:R(0,6.28)});s.lavaPops.push(q)}}if(h.life<=0){s.lava.splice(i,1);continue}if(p&&D(h,p)<h.r+p.r&&h.damageCd<=0&&p.hurtCd<=0&&p.dashTime<=0){try{dealDamageToPlayer(window.__InfernalShop830?.lavaDamage?.(8)??8)}catch{}s.burn=3;s.burnTick=.55;h.damageCd=.55}}
     for(let i=s.lavaPops.length-1;i>=0;i--){const q=s.lavaPops[i];q.life-=dt;q.pulse+=dt*8;q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=195*dt;if(q.life<=0){const dead=q,last=s.lavaPops.pop();if(i<s.lavaPops.length)s.lavaPops[i]=last;recycleLavaPop810(s,dead)}}
     if(p&&s.burn>0){s.burn-=dt;s.burnTick-=dt;if(s.burnTick<=0){s.burnTick=.6;try{dealDamageToPlayer(4)}catch{};try{addParticles(p.x,p.y,'#ff6b25',4,.32)}catch{}}}
   }
@@ -34561,5 +34581,425 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
   console.log('Chrono Shards 8.2.7 — interfaces transacionais e Missões protegidas');
 })();
 </script>
+
+<style id="infernalShop830Style">
+  :root{--infernal-red:#ff304f;--infernal-blood:#68000e;--infernal-black:#070104;--infernal-bone:#e9d7bd;--infernal-gold:#ffd166}
+  .infernalToast830{position:fixed;left:50%;top:24px;z-index:2147483500;transform:translateX(-50%);min-width:min(88vw,420px);padding:14px 18px;border-radius:18px;text-align:center;pointer-events:none;background:linear-gradient(145deg,rgba(18,1,6,.98),rgba(4,0,2,.98));border:1px solid color-mix(in srgb,var(--c) 55%,transparent);box-shadow:0 0 34px color-mix(in srgb,var(--c) 30%,transparent),0 20px 55px rgba(0,0,0,.58);animation:infernalToast830 2.6s ease both}.infernalToast830 b{display:block;color:#fff;font:900 13px Orbitron,sans-serif;letter-spacing:.08em}.infernalToast830 span{display:block;margin-top:5px;color:color-mix(in srgb,var(--c) 68%,#fff);font-weight:700}@keyframes infernalToast830{0%{opacity:0;transform:translate(-50%,-18px) scale(.96)}12%,82%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-12px) scale(.98)}}
+  .doomPortal830{position:relative!important;width:min(92vw,760px)!important;overflow:hidden!important;text-align:center!important;background:radial-gradient(circle at 50% 8%,rgba(255,48,79,.22),transparent 34%),linear-gradient(150deg,#170106,#030102 70%)!important;border-color:rgba(255,68,82,.45)!important;box-shadow:0 0 80px rgba(255,0,40,.15),0 28px 85px rgba(0,0,0,.75)!important}.doomPortal830:before,.doomPortal830:after{content:'';position:absolute;inset:-45%;pointer-events:none;border:1px solid rgba(255,48,79,.12);border-radius:50%;animation:doomPortalSpin830 18s linear infinite}.doomPortal830:after{inset:-25%;animation-direction:reverse;animation-duration:11s}@keyframes doomPortalSpin830{to{transform:rotate(360deg)}}.doomGateSigil830{position:relative;z-index:1;width:150px;height:150px;margin:0 auto 8px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,73,85,.44);box-shadow:0 0 45px rgba(255,20,55,.24),inset 0 0 38px rgba(255,20,55,.13);animation:doomGatePulse830 2.2s ease-in-out infinite alternate}.doomGateSigil830:before{content:'';position:absolute;inset:17px;border:2px dashed rgba(255,115,100,.32);border-radius:50%;animation:doomPortalSpin830 9s linear infinite}.doomGateSigil830 span{font-size:82px;color:#ff344c;text-shadow:0 0 20px #ff1738,0 0 48px #57000b}@keyframes doomGatePulse830{to{transform:scale(1.035);filter:brightness(1.15)}}.doomGateEye830{position:relative;z-index:1;color:#ff8a77;font:900 10px Orbitron,sans-serif;letter-spacing:.3em}.doomPortal830 h1{position:relative;z-index:1;margin-top:8px!important;background:linear-gradient(90deg,#fff,#ff7c63,#ff1738)!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important}.doomPortal830 p{position:relative;z-index:1}.doomGateActions830{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px auto;max-width:620px}.infernalPrimary830,.infernalShopBtn830,.infernalBack830,.infernalTopBack830,.infernalBottomBack830{border-radius:999px!important;padding:13px 21px!important;font:900 12px Orbitron,sans-serif!important;letter-spacing:.06em!important}.infernalPrimary830{background:linear-gradient(135deg,#ff7a32,#ff1738)!important;color:#fff!important;box-shadow:0 0 25px rgba(255,44,52,.25)!important}.infernalShopBtn830{background:linear-gradient(135deg,#390008,#9a001a,#ff304f)!important;color:#fff!important;border:1px solid rgba(255,101,91,.42)!important;box-shadow:0 0 28px rgba(255,20,50,.22)!important}.infernalBack830,.infernalTopBack830,.infernalBottomBack830{background:rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.15)!important;color:#d9c5ca!important}.doomPortal830>.infernalBack830{position:relative;z-index:1}
+  .infernalShop830{position:relative!important;width:min(97vw,1260px)!important;max-height:94vh!important;padding:0 28px 34px!important;text-align:left!important;background:radial-gradient(circle at 50% -5%,rgba(255,48,79,.18),transparent 28%),radial-gradient(circle at 12% 14%,rgba(125,0,23,.16),transparent 27%),linear-gradient(155deg,rgba(17,1,6,.995),rgba(3,1,3,.995) 56%,rgba(16,3,7,.99))!important;border-color:rgba(255,52,75,.35)!important;box-shadow:0 0 100px rgba(255,0,40,.12),0 34px 100px rgba(0,0,0,.72),inset 0 0 70px rgba(255,20,48,.04)!important;scroll-behavior:smooth}.infernalShop830::-webkit-scrollbar{width:11px}.infernalShop830::-webkit-scrollbar-thumb{background:linear-gradient(#53000d,#ff304f,#53000d);border-radius:999px;border:3px solid #080104}.infernalTopBack830{position:sticky;top:8px;z-index:30;margin:12px 0 0;background:rgba(11,1,4,.88)!important;backdrop-filter:blur(12px)}
+  .infernalHero830{position:relative;min-height:535px;margin:0 -28px 18px;padding:0 28px 26px;display:grid;justify-items:center;align-content:start;overflow:hidden;background:radial-gradient(circle at 50% 15%,rgba(255,68,24,.16),transparent 18%),radial-gradient(ellipse at 50% 24%,rgba(255,30,55,.22),transparent 42%),linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.65));border-bottom:1px solid rgba(255,63,78,.22)}.infernalHero830:before,.infernalHero830:after{content:'';position:absolute;width:420px;height:420px;border-radius:50%;border:1px dashed rgba(255,48,79,.12);top:15px;animation:infernalOrbit830 22s linear infinite}.infernalHero830:after{width:330px;height:330px;animation-direction:reverse;animation-duration:13s}@keyframes infernalOrbit830{to{transform:rotate(360deg)}}.infernalAsh830{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,rgba(255,102,62,.65) 0 1px,transparent 1.7px),radial-gradient(circle,rgba(255,255,255,.22) 0 1px,transparent 1.4px);background-size:57px 67px,83px 91px;animation:infernalAsh830 13s linear infinite;opacity:.35}.infernalAsh830:before{content:'';position:absolute;left:50%;top:4px;transform:translateX(-50%);width:180px;height:180px;background:radial-gradient(circle,rgba(255,180,88,.72) 0 10%,rgba(255,81,35,.55) 16%,rgba(255,18,42,.18) 42%,transparent 70%);filter:blur(8px);animation:infernalCorePulse831 2.5s ease-in-out infinite alternate}@keyframes infernalAsh830{to{background-position:120px -220px,-90px -180px}}@keyframes infernalCorePulse831{to{transform:translateX(-50%) scale(1.08);filter:blur(13px) brightness(1.12)}}
+  .infernalSkull830{position:relative;z-index:2;width:min(690px,87vw);height:300px;margin-top:-6px;overflow:visible;filter:drop-shadow(0 0 30px rgba(255,41,55,.24))}.infernalSkull830 .hornCore831{fill:url(#horn831);stroke:#120103;stroke-width:4}.infernalSkull830 .hornRidge831{fill:none;stroke:rgba(255,141,101,.58);stroke-width:2}.infernalSkull830 .horn830.left{animation:hornBreathe830 2.9s ease-in-out infinite alternate;transform-origin:164px 94px}.infernalSkull830 .horn830.right{animation:hornBreathe830 2.9s ease-in-out infinite alternate-reverse;transform-origin:356px 94px}@keyframes hornBreathe830{to{transform:scale(1.03);filter:brightness(1.16)}}.infernalSkull830 .skullBone830,.infernalSkull830 .jaw830,.infernalSkull830 .fang831{fill:url(#bone830);stroke:#2c1010;stroke-width:4}.infernalSkull830 .brow831{fill:#2a090b;opacity:.92}.infernalSkull830 .eye830{fill:#210007;stroke:#ff304f;stroke-width:3;animation:skullEye830 1.75s ease-in-out infinite alternate}.infernalSkull830 .eyeCore831{fill:#ff2e20;filter:drop-shadow(0 0 12px #ff2e20)}.infernalSkull830 .nose830{fill:#120005}.infernalSkull830 .teeth830{fill:none;stroke:#2d1513;stroke-width:5}.infernalSkull830 .pentaFore830{fill:none;stroke:#ff304f;stroke-width:2.5;animation:pentaFore830 6s linear infinite;transform-origin:260px 73px}.infernalSkull830 .pentaFore830 circle{stroke-dasharray:8 6}.infernalSkull830 .crownFlame831{fill:url(#flame831);opacity:.92;filter:drop-shadow(0 0 12px rgba(255,84,33,.6));animation:flameFlicker831 1.6s ease-in-out infinite alternate}.infernalSkull830 .cheekRune831{fill:none;stroke:rgba(255,72,101,.42);stroke-width:2}.infernalSkull830 .chinRib831{fill:none;stroke:#3b1713;stroke-width:4;stroke-linecap:round}.infernalSkull830 .spineGlow831{fill:none;stroke:rgba(255,255,255,.18);stroke-width:2}.infernalSkull830 .pupil831{fill:#fff2db;opacity:.92}.infernalSkull830 .ember831{fill:#ff5f39;opacity:.66;animation:emberFloat831 3.2s ease-in-out infinite}.infernalSkull830 .ember831.e2{animation-delay:.8s}.infernalSkull830 .ember831.e3{animation-delay:1.35s}@keyframes skullEye830{to{fill:#ff1738;filter:drop-shadow(0 0 9px #ff1738)}}@keyframes pentaFore830{to{transform:rotate(360deg)}}@keyframes flameFlicker831{to{transform:translateY(-2px) scale(1.06);filter:drop-shadow(0 0 16px rgba(255,124,52,.8))}}@keyframes emberFloat831{0%,100%{transform:translateY(0) scale(1);opacity:.45}50%{transform:translateY(-11px) scale(1.18);opacity:.88}}
+  .infernalShopTitle830{position:relative;z-index:3;text-align:center;margin-top:-36px}.infernalShopTitle830 small{font:900 10px Orbitron,sans-serif;letter-spacing:.28em;color:#ff8978}.infernalShopTitle830 h1{margin:8px 0 7px!important;font-size:clamp(38px,7vw,74px)!important;background:linear-gradient(90deg,#fff3e7,#ff8b6b,#ff1738,#52000d,#fff3e7)!important;background-size:260% auto!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important;animation:infernalTitleFlow830 5s linear infinite!important;text-shadow:none!important;filter:drop-shadow(0 0 20px rgba(255,42,55,.38))}.infernalShopTitle830 p{margin:0!important;color:#dcbec4!important}@keyframes infernalTitleFlow830{to{background-position:260% center}}
+  .infernalWallet830{position:relative;z-index:3;display:grid;grid-template-columns:repeat(3,minmax(170px,1fr));gap:10px;width:min(820px,95%);margin-top:18px}.infernalWalletCard830{display:flex;align-items:center;gap:12px;padding:11px 15px;border-radius:17px;background:rgba(5,1,3,.75);border:1px solid color-mix(in srgb,var(--c,#fff) 34%,transparent);box-shadow:inset 0 0 22px rgba(255,255,255,.025)}.infernalWalletCard830 i{font-style:normal;font-size:28px;filter:drop-shadow(0 0 10px currentColor)}.infernalWalletCard830 small{display:block;font:900 8px Orbitron,sans-serif;letter-spacing:.13em;color:#cdbcc1}.infernalWalletCard830 b{display:block;margin-top:2px;font:900 21px Orbitron,sans-serif;color:#fff}.infernalWalletCard830.tears{--c:#ff304f}.infernalWalletCard830.relics{--c:#ff8fe8}.infernalWalletCard830.chrono{--c:#ffd166}.infernalRotation830{position:relative;z-index:3;margin-top:13px;padding:8px 14px;border-radius:999px;display:flex;align-items:center;gap:11px;flex-wrap:wrap;justify-content:center;border:1px solid rgba(255,80,78,.23);background:rgba(45,0,8,.35)}.infernalRotation830 span,.infernalRotation830 em{font-size:10px;color:#c7adb4;font-style:normal}.infernalRotation830 b{font:900 13px Orbitron,sans-serif;color:#ff8b6b}
+  .infernalJump830{position:sticky;top:60px;z-index:28;display:flex;gap:7px;overflow-x:auto;align-items:center;padding:10px;margin:0 0 16px;border-radius:18px;background:linear-gradient(145deg,rgba(7,1,4,.92),rgba(18,1,7,.96));border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(14px);box-shadow:0 14px 35px rgba(0,0,0,.35),inset 0 0 18px rgba(255,48,79,.06)}.infernalJump830 a{white-space:nowrap;text-decoration:none;padding:7px 11px;border-radius:999px;color:#ead8dc;background:rgba(255,255,255,.045);font:800 10px Orbitron,sans-serif;border:1px solid rgba(255,255,255,.09)}.infernalJump830 a:hover{background:rgba(255,48,79,.16);border-color:rgba(255,48,79,.36)}.infernalJumpWallet831{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}.infernalJumpWallet831 span{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);font:900 10px Orbitron,sans-serif}.infernalJumpWallet831 b{color:#fff}.infernalJumpWallet831 .tears{color:#ff90a3}.infernalJumpWallet831 .relics{color:#ffc9f5}
+  .infernalSection830{scroll-margin-top:120px;margin:18px 0;padding:20px;border-radius:26px;background:radial-gradient(circle at 100% 0,rgba(255,48,79,.07),transparent 28%),rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 0 38px rgba(255,255,255,.018)}.infernalSectionHead830{display:flex;gap:13px;align-items:center;margin-bottom:16px}.infernalSectionHead830>span{display:grid;place-items:center;width:45px;height:45px;border-radius:50%;color:#ff405f;background:rgba(255,48,79,.11);border:1px solid rgba(255,48,79,.32);font-size:24px;text-shadow:0 0 13px #ff1738}.infernalSectionHead830 h2{margin:0;color:#fff;font:900 17px Orbitron,sans-serif;letter-spacing:.08em}.infernalSectionHead830 p{margin:4px 0 0!important;color:#bca8af!important;font-size:12px!important}.infernalSub830{margin:18px 0 9px;color:#ff8a75;font:900 11px Orbitron,sans-serif;letter-spacing:.13em}.infernalGrid830{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .infernalOffer830{position:relative;min-height:250px;padding:15px;border-radius:21px;display:flex;flex-direction:column;overflow:hidden;background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--c) 20%,transparent),transparent 42%),linear-gradient(150deg,rgba(28,3,9,.94),rgba(7,2,5,.97));border:1px solid color-mix(in srgb,var(--c) 35%,rgba(255,255,255,.08));box-shadow:inset 0 0 26px rgba(255,255,255,.025),0 10px 28px rgba(0,0,0,.22);transition:.16s}.infernalOffer830:not(.disabled):hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--c) 65%,#fff);box-shadow:0 0 30px color-mix(in srgb,var(--c) 18%,transparent),0 15px 36px rgba(0,0,0,.36)}.infernalOffer830.disabled{filter:saturate(.55);opacity:.66}.infernalOffer830.disabled:after{content:'ESGOTADO';position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:rgba(3,0,2,.62);color:#ffd166;font:900 15px Orbitron,sans-serif;letter-spacing:.15em}.infernalOffer830.owned830:after{content:'ADQUIRIDO';color:#86ffb0}.infernalOffer830.empty830:after{content:'INDISPONÍVEL';color:#aaa1ad}.infernalOffer830.sold830:after{content:'ESGOTADO';color:#ffd166}.infernalOfferIcon830{width:64px;height:64px;display:grid;place-items:center;border-radius:20px;font-size:31px;color:#fff;background:radial-gradient(circle,color-mix(in srgb,var(--c) 66%,#fff),color-mix(in srgb,var(--c) 18%,#050105) 45%,#050105 75%);box-shadow:0 0 24px color-mix(in srgb,var(--c) 24%,transparent)}.infernalOfferBody830{margin-top:11px}.infernalOfferBody830 small{font:900 8px Orbitron,sans-serif;letter-spacing:.13em;color:var(--c)}.infernalOfferBody830 strong{display:block;margin-top:5px;color:#fff;font:900 14px Orbitron,sans-serif;line-height:1.3}.infernalOfferBody830 p{margin:7px 0 12px!important;color:#bfaeb4!important;font-size:12px!important;line-height:1.45!important}.infernalOfferFoot830{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:auto}.infernalOfferFoot830 button{padding:8px 11px;border-radius:999px;background:linear-gradient(135deg,var(--c),#fff);color:#130308;font:900 9px Orbitron,sans-serif}.infernalOfferFoot830 button:disabled{opacity:.45}.infernalPrice830{display:inline-flex;gap:6px;align-items:center;font:900 11px Orbitron,sans-serif;color:#ffb2bc}.infernalPrice830.relics{color:#ff8fe8}.infernalPrice830 del{opacity:.45;font-size:9px}.infernalQty830{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,48,79,.12));border:1px solid rgba(255,255,255,.08);box-shadow:0 0 20px rgba(255,48,79,.08)}.infernalQty830 b{font:900 18px Orbitron,sans-serif;color:#fff}.infernalQty830 i{font-style:normal;font-size:18px;color:var(--c)}.infernalQty830.chrono i{color:#ffd166}.demonSkinCanvas830{display:block;width:100%;height:140px;border-radius:18px;background:radial-gradient(circle,rgba(255,48,79,.12),rgba(0,0,0,.25));border:1px solid rgba(255,255,255,.08)}
+  .legacyGrid830{display:grid;gap:10px}.legacyCard830{display:grid;grid-template-columns:62px 1fr auto;align-items:center;gap:14px;padding:14px;border-radius:20px;background:linear-gradient(145deg,rgba(31,4,10,.82),rgba(7,2,5,.92));border:1px solid color-mix(in srgb,var(--c) 28%,rgba(255,255,255,.07))}.legacyIcon830{width:55px;height:55px;border-radius:18px;display:grid;place-items:center;font-size:26px;color:#fff;background:radial-gradient(circle,color-mix(in srgb,var(--c) 55%,#fff),rgba(3,1,3,.9) 68%);box-shadow:0 0 22px color-mix(in srgb,var(--c) 20%,transparent)}.legacyCard830 small{font:900 8px Orbitron;color:var(--c);letter-spacing:.13em}.legacyCard830 strong{display:block;color:#fff;font:900 13px Orbitron;margin-top:3px}.legacyCard830 p{margin:5px 0!important;font-size:11px!important;color:#bcaab0!important}.legacyCard830 em{font-style:normal;font-size:10px;color:#e0cfd3}.legacyCard830>button{min-width:150px;padding:10px 12px;border-radius:999px;background:linear-gradient(135deg,var(--c),#fff);font:900 9px Orbitron;color:#160308}.legacyCard830>button:disabled{opacity:.44}.legacyPips830{display:flex;gap:4px;margin:6px 0}.legacyPips830 i{width:22px;height:5px;border-radius:999px;background:rgba(255,255,255,.08)}.legacyPips830 i.on{background:var(--c);box-shadow:0 0 9px var(--c)}
+  .infernalChestMini830{position:relative;width:150px;height:118px;margin:0 auto 8px;filter:drop-shadow(0 0 16px color-mix(in srgb,var(--c) 30%,transparent));transition:transform .28s ease,filter .28s ease}.infernalChestMini830:after{content:'';position:absolute;inset:-14px;border-radius:26px;pointer-events:none;border:1px solid color-mix(in srgb,var(--c) 26%,transparent);opacity:.2}.infernalChestMini830.rarity-profane{filter:drop-shadow(0 0 14px rgba(114,227,137,.22))}.infernalChestMini830.rarity-cursed{filter:drop-shadow(0 0 18px rgba(185,140,255,.28))}.infernalChestMini830.rarity-infernal{filter:drop-shadow(0 0 22px rgba(255,112,67,.33))}.infernalChestMini830.rarity-abyssal{filter:drop-shadow(0 0 24px rgba(193,60,255,.36))}.infernalChestMini830.rarity-apocalyptic{filter:drop-shadow(0 0 28px rgba(255,209,102,.44))}.infernalChestMini830.rarity-heretic{filter:drop-shadow(0 0 34px rgba(255,255,255,.55))}.infernalChestMini830.rarity-cursed .chestBody830{background:linear-gradient(145deg,#3b1446,#130112)!important}.infernalChestMini830.rarity-infernal .chestBody830{background:linear-gradient(145deg,#63130c,#180103)!important}.infernalChestMini830.rarity-abyssal .chestBody830{background:linear-gradient(145deg,#4a0f6a,#120112)!important}.infernalChestMini830.rarity-apocalyptic .chestBody830{background:linear-gradient(145deg,#735100,#2a0900)!important}.infernalChestMini830.rarity-heretic .chestBody830{background:linear-gradient(145deg,#f7ebd4,#8d6b6b 45%,#2a0810 90%)!important}.infernalChestMini830.rarity-apocalyptic .chestRune830,.infernalChestMini830.rarity-heretic .chestRune830{animation:rarityRune831 .9s ease-in-out infinite alternate}.infernalChestMini830.rarity-heretic .chestRune830{color:#fff;text-shadow:0 0 24px #fff,0 0 30px rgba(255,48,79,.55)}.infernalChestMini830.up830{animation:rarityRise831 .72s ease}.infernalChestMini830.up830:after{animation:rarityHalo831 .72s ease}@keyframes rarityRise831{0%{transform:scale(1)}30%{transform:scale(1.12) rotate(-2deg)}55%{transform:scale(1.08) rotate(2deg)}100%{transform:scale(1)}}@keyframes rarityHalo831{0%{opacity:.1;transform:scale(.88)}100%{opacity:.62;transform:scale(1.18)}}@keyframes rarityRune831{to{transform:translateY(-2px) scale(1.08);filter:brightness(1.16)}}.chestBody830{position:absolute;left:24px;right:24px;bottom:8px;height:62px;border-radius:10px 10px 18px 18px;background:linear-gradient(145deg,color-mix(in srgb,var(--a) 80%,#000),#080204);border:3px solid var(--c);display:grid;place-items:center}.chestBody830 b{font-size:27px}.chestLid830{position:absolute;left:16px;right:16px;top:18px;height:39px;border-radius:21px 21px 7px 7px;background:linear-gradient(145deg,#2b0a0d,var(--a));border:3px solid var(--c);transform-origin:50% 100%}.chestRune830{position:absolute;left:50%;top:47px;transform:translateX(-50%);width:33px;height:33px;border-radius:50%;display:grid;place-items:center;color:var(--c);background:#080104;border:2px solid var(--c);font-size:19px;z-index:3}.chestHorn830{position:absolute;top:16px;width:48px;height:32px;border-top:7px solid var(--c);border-radius:50%;z-index:2}.chestHorn830.l{left:3px;transform:rotate(-28deg)}.chestHorn830.r{right:3px;transform:scaleX(-1) rotate(-28deg)}.infernalChestMini830.blood .chestBody830:before,.infernalChestMini830.blood .chestBody830:after{content:'';position:absolute;top:12px;width:12px;height:17px;background:#fff0dc;clip-path:polygon(50% 100%,0 0,100% 0)}.infernalChestMini830.blood .chestBody830:before{left:22px}.infernalChestMini830.blood .chestBody830:after{right:22px}.infernalChestMini830.throne:after{content:'♛';position:absolute;left:50%;top:-4px;transform:translateX(-50%);color:#ffd166;font-size:29px;text-shadow:0 0 12px #ffd166}
+  .nefalemShop830{display:grid;grid-template-columns:minmax(100px,1fr) minmax(300px,560px) minmax(100px,1fr);align-items:center;gap:12px;min-height:360px;padding:18px;border-radius:28px;overflow:hidden;background:radial-gradient(circle at 50% 42%,rgba(255,48,79,.18),transparent 35%),linear-gradient(150deg,#090104,#1b0207,#050103);border:1px solid rgba(255,60,79,.26)}.nefalemCore830{text-align:center}.nefalemCore830 small{font:900 9px Orbitron;color:#ff8a75;letter-spacing:.22em}.nefalemCore830 strong{display:block;margin:7px 0;font:900 34px Orbitron;color:#fff;text-shadow:0 0 18px #ff304f}.nefalemCore830 p{max-width:500px;margin:0 auto 14px!important}.nefalemCore830>span{display:block;margin:8px}.nefalemCore830>button{padding:12px 22px;border-radius:999px;background:linear-gradient(135deg,#ff1738,#7a0013);color:#fff;font:900 11px Orbitron}.nefalemCore830>button:disabled{opacity:.6}.nefalemSilhouette830{position:relative;width:120px;height:150px;margin:0 auto 12px}.nefalemSilhouette830:before{content:'';position:absolute;left:50%;top:7px;transform:translateX(-50%);width:54px;height:54px;border-radius:50% 50% 42% 42%;background:#120106;border:2px solid #ff304f;box-shadow:0 0 28px rgba(255,48,79,.35)}.nefalemSilhouette830:after{content:'';position:absolute;left:50%;top:51px;transform:translateX(-50%);width:84px;height:92px;clip-path:polygon(50% 0,90% 22%,100% 85%,72% 100%,50% 84%,28% 100%,0 85%,10% 22%);background:linear-gradient(#1e0208,#050104);border:2px solid #ff304f}.nefalemSilhouette830 i:before,.nefalemSilhouette830 i:after{content:'';position:absolute;top:2px;width:46px;height:55px;border-top:6px solid #ff304f;border-radius:50%;z-index:2}.nefalemSilhouette830 i:before{left:3px;transform:rotate(-32deg)}.nefalemSilhouette830 i:after{right:3px;transform:scaleX(-1) rotate(-32deg)}.nefalemSilhouette830 b{position:absolute;z-index:3;left:50%;bottom:29px;transform:translateX(-50%);font-size:32px}.nefalemDark830{min-height:280px;display:grid;place-items:center;font-size:64px;color:rgba(255,48,79,.28);text-shadow:0 0 25px #ff1738;position:relative}.nefalemDark830 i{position:absolute;width:80%;height:1px;background:linear-gradient(90deg,transparent,#ff304f,transparent);animation:darkLine830 2.3s ease-in-out infinite alternate}.nefalemDark830 i+ i{transform:rotate(70deg);animation-delay:.5s}@keyframes darkLine830{to{filter:brightness(1.7);width:100%}}
+  .infernalFooter830{display:grid;gap:15px;justify-items:center;text-align:center;padding:24px 10px 4px;color:#ad979e}.infernalBottomBack830{min-width:300px;background:linear-gradient(135deg,#320007,#840017)!important;color:#fff!important;border-color:rgba(255,75,75,.3)!important}
+  .infernalChestPage830,.infernalChestResult830{width:min(94vw,870px)!important;text-align:center!important;background:radial-gradient(circle at 50% 23%,color-mix(in srgb,var(--ch,#ff304f) 20%,transparent),transparent 35%),linear-gradient(150deg,#160106,#030102)!important;border-color:color-mix(in srgb,var(--c,#ff304f) 45%,transparent)!important;overflow:hidden!important}.chestRitual830{position:relative}.chestRitualSigil830{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-size:340px;color:color-mix(in srgb,var(--c) 8%,transparent);animation:doomPortalSpin830 16s linear infinite;pointer-events:none}.chestRitual830>small,.chestRitual830>h1,.chestRitual830>p,.chestRitual830>button,.chestBigWrap830,.chestRarity830{position:relative;z-index:2}.chestRitual830>small{font:900 10px Orbitron;letter-spacing:.2em;color:var(--c)}.chestRitual830>h1{margin-top:8px!important}.chestBigWrap830{width:340px;height:270px;margin:0 auto;display:grid;place-items:center}.chestBigWrap830 .infernalChestMini830{transform:scale(1.85)}.chestSealRing830{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between}.chestSealRing830 i{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:#080104;border:2px solid var(--c);box-shadow:0 0 22px color-mix(in srgb,var(--c) 30%,transparent);transition:.25s}.chestSealRing830 i.broken{transform:scale(.76) rotate(30deg);opacity:.45;filter:grayscale(1)}.chestRarity830{display:inline-grid;gap:3px;padding:9px 20px;border-radius:999px;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);background:rgba(0,0,0,.35);box-shadow:0 0 22px color-mix(in srgb,var(--c) 18%,transparent)}.chestRarity830 small{font:900 8px Orbitron;color:#cdbcc1}.chestRarity830 b{font:900 15px Orbitron;color:var(--c);text-shadow:0 0 12px var(--c)}.chestAction830{display:block;margin:15px auto 10px;padding:13px 28px;border-radius:999px;background:linear-gradient(135deg,var(--c),#fff);color:#170307;font:900 12px Orbitron}.infernalChestPage830.weaving830 .chestBigWrap830{animation:chestWeave830 .7s ease}.infernalChestPage830.opening830 .chestLid830{animation:chestLid830 .85s ease forwards}@keyframes chestWeave830{20%{transform:translateX(-8px) rotate(-1deg)}40%{transform:translateX(8px) rotate(1deg)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}@keyframes chestLid830{to{transform:rotateX(115deg) translateY(-12px);filter:brightness(2)}}.chestResultBurst830{position:relative;padding:30px}.chestResultBurst830:before{content:'';position:absolute;inset:-30%;background:conic-gradient(from 0deg,transparent,var(--c),transparent,var(--c),transparent);opacity:.12;animation:doomPortalSpin830 10s linear infinite}.chestResultBurst830>*{position:relative;z-index:1}.resultSigil830{font-size:110px;color:var(--c);text-shadow:0 0 28px var(--c);animation:doomGatePulse830 1.2s ease-in-out infinite alternate}.chestResultBurst830 small{font:900 11px Orbitron;letter-spacing:.17em;color:var(--c)}.rewardIcon830{width:120px;height:120px;margin:14px auto;display:grid;place-items:center;border-radius:50%;font-size:58px;background:radial-gradient(circle,#fff,color-mix(in srgb,var(--c) 70%,#fff) 13%,rgba(0,0,0,.72) 64%);box-shadow:0 0 45px color-mix(in srgb,var(--c) 45%,transparent)}.resultWallet830{margin:14px auto;padding:9px 16px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);font:900 11px Orbitron;color:#eadde1}
+  .demonSkinPage830{width:min(94vw,920px)!important;text-align:center!important;background:radial-gradient(circle at 50% 18%,rgba(255,48,79,.18),transparent 36%),linear-gradient(150deg,#160106,#030102)!important;border-color:rgba(255,48,79,.35)!important}.demonSkinHero830 small{font:900 10px Orbitron;letter-spacing:.2em;color:#ff806b}.demonSkinViewer830{display:grid;grid-template-columns:60px 1fr 60px;gap:12px;align-items:center}.demonSkinViewer830>button{height:110px;border-radius:20px;background:rgba(255,255,255,.05);color:#fff;font-size:35px;border:1px solid rgba(255,255,255,.1)}.demonSkinLarge830{display:block;width:min(100%,500px);height:280px;margin:auto;border-radius:26px;background:radial-gradient(circle,rgba(255,48,79,.14),rgba(0,0,0,.3));border:1px solid rgba(255,255,255,.09)}.demonSkinViewer830 span{display:inline-block;margin-top:12px;padding:5px 10px;border-radius:999px;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 40%,transparent);font:900 9px Orbitron}.demonSkinViewer830 h2{margin:9px 0 5px;color:#fff;font:900 22px Orbitron}.demonSkinViewer830 p{max-width:560px;margin:0 auto 14px!important}
+  .uniqueNefalem830{margin-top:22px;padding:20px;border-radius:28px;background:radial-gradient(circle at 50% 50%,rgba(255,48,79,.16),transparent 38%),linear-gradient(145deg,rgba(17,1,6,.98),rgba(3,1,3,.98));border:1px solid rgba(255,48,79,.28)}.uniqueHead830{text-align:center}.uniqueHead830 span{font:900 9px Orbitron;color:#ff806b;letter-spacing:.2em}.uniqueHead830 h2{margin:5px 0;color:#fff;font:900 23px Orbitron}.uniqueHead830 p{margin:0!important}.uniqueStage830{display:grid;grid-template-columns:1fr minmax(280px,470px) 1fr;align-items:center;gap:12px;margin-top:14px}.uniqueStage830 article{text-align:center;padding:18px;border-radius:24px;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.08)}.uniqueStage830 article small{font:900 8px Orbitron;color:#ff806b;letter-spacing:.16em}.uniqueStage830 article strong{display:block;margin:7px;color:#fff;font:900 25px Orbitron}.uniqueStage830 article button{padding:10px 17px;border-radius:999px;background:#25030a;color:#ff98a6;border:1px solid rgba(255,48,79,.28);font:900 10px Orbitron}.uniqueModel830{position:relative;width:105px;height:120px;margin:auto}.uniqueModel830:before{content:'';position:absolute;left:50%;top:10px;transform:translateX(-50%);width:48px;height:48px;border-radius:50%;background:#0b0104;border:2px solid #ff304f;box-shadow:0 0 22px rgba(255,48,79,.3)}.uniqueModel830:after{content:'';position:absolute;left:50%;top:50px;transform:translateX(-50%);width:74px;height:62px;background:linear-gradient(#190207,#030103);clip-path:polygon(50% 0,100% 26%,86% 100%,50% 80%,14% 100%,0 26%);border:2px solid #ff304f}.uniqueModel830 b{position:absolute;z-index:2;left:50%;bottom:19px;transform:translateX(-50%);font-size:28px}.uniqueModel830 span{position:absolute;z-index:3;left:50%;top:19px;transform:translateX(-50%);color:#ff304f}.uniqueSide830{height:220px;display:grid;place-items:center;position:relative;font-size:55px;color:rgba(255,48,79,.22);text-shadow:0 0 22px #ff1738}.uniqueSide830 i{position:absolute;width:75%;height:1px;background:linear-gradient(90deg,transparent,#ff304f,transparent);transform:rotate(35deg)}.uniqueSide830 i+i{transform:rotate(-35deg)}
+  @media(max-width:980px){.infernalGrid830{grid-template-columns:repeat(2,minmax(0,1fr))}.infernalWallet830{grid-template-columns:1fr}.nefalemShop830,.uniqueStage830{grid-template-columns:1fr}.nefalemDark830,.uniqueSide830{display:none}.legacyCard830{grid-template-columns:55px 1fr}.legacyCard830>button{grid-column:1/-1}.infernalHero830{min-height:570px}}
+  @media(max-width:650px){.infernalShop830{padding:0 14px 24px!important}.infernalHero830{margin:0 -14px 14px;padding:0 14px 24px}.infernalGrid830{grid-template-columns:1fr}.doomGateActions830{grid-template-columns:1fr}.infernalJump830{top:54px}.infernalJumpWallet831{margin-left:0;width:100%;justify-content:center}.demonSkinViewer830{grid-template-columns:42px 1fr 42px}.demonSkinViewer830>button{height:80px}.chestBigWrap830{width:280px}.chestBigWrap830 .infernalChestMini830{transform:scale(1.5)}.chestSealRing830 i{width:48px;height:48px}.infernalSkull830{height:235px}.infernalShopTitle830{margin-top:-20px}}
+</style>
+
+<script>
+/* Chrono Shards 8.3.1 — Loja Infernal refinada, demônio esquelético, HUD extra e código ALLIN expandido */
+(()=>{
+  'use strict';
+  if(window.__infernalShop830)return;
+  window.__infernalShop830=true;
+
+  const PATCH='Chrono Shards 8.3.1';
+  const META_KEY=(()=>{try{return typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta'}catch{return 'chrono_v4_meta'}})();
+  const SHOP_KEY=META_KEY+'_infernal_shop_830';
+  const DOOM_META_KEY=META_KEY+'_doom_mode_v1';
+  const AUG_KEY=META_KEY+'_chrono_augments_620';
+  const SKIN_KEY=META_KEY+'_skins_clean_702';
+  const DOOM_SKIP='chrono_doom_tutorial_skip_v1';
+  const REFRESH=10*60*1000;
+  const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const C=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const pick=a=>a?.length?a[Math.floor(Math.random()*a.length)]:null;
+  const shuffled=a=>[...(a||[])].sort(()=>Math.random()-.5);
+  const fmt=n=>N(n).toLocaleString('pt-BR');
+  const fmtTime=ms=>{const t=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(t/60),s=t%60;return `${m}:${String(s).padStart(2,'0')}`};
+  const overlayEl=()=>document.getElementById('overlay');
+  const cardEl=()=>document.getElementById('overlayCard');
+
+  const RELIC_PACKS=[
+    {id:'relic12',name:'Punhado de Relíquias',qty:12,cost:12,icon:'🜂',tag:'PACOTE DE RELÍQUIAS',display:'12 🜂',desc:'Doze relíquias arrancadas de viajantes que não voltaram.'},
+    {id:'relic30',name:'Urna de Relíquias',qty:30,cost:26,icon:'⚱️',tag:'PACOTE DE RELÍQUIAS',display:'30 🜂',desc:'Uma reserva equilibrada de relíquias para sua progressão.'},
+    {id:'relic70',name:'Tributo dos Condenados',qty:70,cost:52,icon:'♜',tag:'PACOTE DE RELÍQUIAS',display:'70 🜂',desc:'Um grande tributo permanente recolhido pelo inferno.'}
+  ];
+  const CHRONO_PACKS=[
+    {id:'chrono3',name:'Cacos Temporais',qty:3,cost:20,icon:'✦',tag:'PACOTE CHRONO',display:'3 ✦',desc:'Três Fragmentos Chrono. Pequeno, raro e controlado.'},
+    {id:'chrono10',name:'Nódulo Chronal',qty:10,cost:55,icon:'⧖',tag:'PACOTE CHRONO',display:'10 ✦',desc:'Dez Fragmentos Chrono estabilizados por runas infernais.'},
+    {id:'chrono30',name:'Coração da Linha Temporal',qty:30,cost:135,icon:'◈',tag:'PACOTE CHRONO',display:'30 ✦',desc:'Trinta Fragmentos Chrono. Uma oferta cara e excepcional.'}
+  ];
+  const INFERNAL_RELICS=[
+    {id:'heart_ashes',name:'Coração de Cinzas',cost:180,icon:'🫀',color:'#ff5a3c',desc:'Após sofrer dano, recebe +15% de dano por 4 segundos.'},
+    {id:'butcher_horn',name:'Chifre do Carrasco',cost:200,icon:'𖤐',color:'#ffd166',desc:'+10% de chance crítica contra elites, minibosses e bosses.'},
+    {id:'hungry_seal',name:'Selo Faminto',cost:240,icon:'◉',color:'#ff304f',desc:'Kills curam 0,4% do HP máximo, mas a regeneração de escudo fica 15% mais lenta.'},
+    {id:'abyss_eye',name:'Olho do Abismo',cost:220,icon:'👁',color:'#b719ff',desc:'Inimigos abaixo de 15% do HP recebem +25% de dano.'},
+    {id:'profane_chain',name:'Corrente Profana',cost:200,icon:'⛓',color:'#86ffb0',desc:'Matar com uma habilidade especial concede +10% de velocidade por 4 segundos. Novas kills renovam a duração.'}
+  ];
+  const DOOM_BUFFS=[
+    {id:'boiling_blood',name:'Sangue em Ebulição',cost:20,icon:'🩸',color:'#ff405f',desc:'+12% de dano durante a próxima invasão DOOM.'},
+    {id:'ash_step',name:'Passo sobre as Cinzas',cost:18,icon:'🔥',color:'#ff9a52',desc:'+10% de velocidade e 30% de resistência à lava na próxima invasão.'},
+    {id:'tyrant_hunter',name:'Caçador de Tiranos',cost:30,icon:'⚔',color:'#ffd166',desc:'+20% de dano contra bosses e minibosses no próximo DOOM.'},
+    {id:'executioner_pact',name:'Pacto do Carrasco',cost:35,icon:'☠',color:'#ff1738',desc:'+25% de dano, mas −12% de HP máximo na próxima invasão.'},
+    {id:'greed_seal',name:'Selo da Ganância',cost:25,icon:'🜏',color:'#d8ff6a',desc:'+25% de Lágrimas recebidas, mas inimigos do DOOM ganham +10% de HP.'},
+    {id:'last_prophecy',name:'Última Profecia',cost:45,icon:'✥',color:'#ffffff',desc:'Uma vez na run, sobrevive ao dano fatal com 1 HP e 1,5 s de invulnerabilidade.'},
+    {id:'endless_fury',name:'Fúria Ininterrupta',cost:28,icon:'⚡',color:'#9bedff',desc:'O combo demora 2 segundos adicionais para desaparecer.'}
+  ];
+  const LEGACY=[
+    {id:'ancestral_blood',name:'Sangue Ancestral',icon:'🩸',color:'#ff657d',max:5,values:[1,2,3,4,5],unit:'% HP máximo',prices:[180,300,480,700,950],desc:'Cada nível concede +1% de HP máximo em todos os modos.'},
+    {id:'chrono_conductor',name:'Condutor Chronal',icon:'⧖',color:'#9f6cff',max:5,values:[1.5,3,4.5,6,7.5],unit:'% XP',prices:[160,270,420,620,850],desc:'Cada nível concede +1,5% de experiência em todos os modos.'},
+    {id:'golden_pact',name:'Pacto Dourado',icon:'🪙',color:'#ffd166',max:5,values:[1,2,3,4,5],unit:'% ouro',prices:[150,250,390,580,800],desc:'Cada nível concede +1% de ouro recebido.'},
+    {id:'soul_magnet',name:'Ímã de Almas',icon:'🧲',color:'#61dafb',max:4,values:[6,12,18,24],unit:'% coleta',prices:[140,240,380,600],desc:'Cada nível amplia em 6% o alcance de coleta.'},
+    {id:'merchant_favor',name:'Favor dos Mercadores',icon:'⚖',color:'#86ffb0',max:5,values:[1,2,3,4,5],unit:'% desconto',prices:[200,340,520,760,1050],desc:'Cada nível reduz em 1% os preços das lojas.'},
+    {id:'forbidden_spark',name:'Faísca Proibida',icon:'✹',color:'#ffffff',max:1,values:[1],unit:'sobrevivência',prices:[1200],desc:'Uma vez por partida, um dano fatal deixa você com 1 HP e concede 0,75 s de invulnerabilidade.'}
+  ];
+  const CHESTS=[
+    {id:'profane',name:'Cofre Profano',icon:'⛓',currency:'relics',cost:300,start:0,color:'#72e389',accent:'#163b27',desc:'Ferro gasto, correntes e runas verdes. Bom para recursos e recompensas menores.'},
+    {id:'blood',name:'Caixa de Sangue',icon:'🩸',currency:'tears',cost:95,start:1,color:'#ff3f55',accent:'#48000b',desc:'Carapaça viva, veias e dentes. Pode entregar relíquias raras, ampliações e skins.'},
+    {id:'throne',name:'Relicário do Trono',icon:'♛',currency:'tears',cost:180,start:2,color:'#ffd166',accent:'#2b0710',desc:'Obsidiana, ouro e almas aprisionadas. Recompensa épica ou superior com frequência maior.'}
+  ];
+  const RARITIES=[
+    {id:'profane',name:'PROFANO',color:'#72e389'},
+    {id:'cursed',name:'AMALDIÇOADO',color:'#b98cff'},
+    {id:'infernal',name:'INFERNAL',color:'#ff7043'},
+    {id:'abyssal',name:'ABISSAL',color:'#c13cff'},
+    {id:'apocalyptic',name:'APOCALÍPTICO',color:'#ffd166'},
+    {id:'heretic',name:'HERÉTICO',color:'#ffffff'}
+  ];
+  const DEMON_RARITIES={
+    demon_common:{label:'DEMONÍACA COMUM',price:180,color:'#ff5a52',accent:'#2d0007',rank:0,prefix:'Marca das Cinzas'},
+    demon_rare:{label:'DEMONÍACA RARA',price:260,color:'#c73cff',accent:'#160021',rank:1,prefix:'Sangue do Fosso'},
+    demon_epic:{label:'DEMONÍACA ÉPICA',price:360,color:'#ff6b22',accent:'#3d0900',rank:2,prefix:'Legião Profana'},
+    demon_legendary:{label:'DEMONÍACA LENDÁRIA',price:480,color:'#ffd166',accent:'#3e1700',rank:3,prefix:'Arauto Apocalíptico'},
+    demon_heretic:{label:'DEMONÍACA HERÉTICA',price:650,color:'#f7f2ff',accent:'#31000d',rank:4,prefix:'Heresia Absoluta'}
+  };
+
+  function readMeta(){
+    let m={},doom={};try{m=JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}}catch{}try{doom=JSON.parse(localStorage.getItem(DOOM_META_KEY)||'{}')||{}}catch{}
+    m.relicShards=N(m.relicShards);m.chronoFragments=N(m.chronoFragments);
+    const migrated=Math.max(N(m.sinnerTears830),N(m.doomFragments),N(doom.sinnerTears830),N(doom.doomFragments));
+    m.sinnerTears830=migrated;m.doomFragments=migrated;
+    m.infernalRelics830=Array.isArray(m.infernalRelics830)?m.infernalRelics830:[];
+    m.doomRunBuffs830=Array.isArray(m.doomRunBuffs830)?m.doomRunBuffs830.slice(0,2):[];
+    m.infernalLegacy830=m.infernalLegacy830&&typeof m.infernalLegacy830==='object'?m.infernalLegacy830:{};
+    m.nefalemPurchased830=!!m.nefalemPurchased830;
+    return m;
+  }
+  function writeMeta(m){
+    m=m||{};m.sinnerTears830=N(m.sinnerTears830,N(m.doomFragments));m.doomFragments=m.sinnerTears830;
+    try{
+      localStorage.setItem(META_KEY,JSON.stringify(m));
+      const doom=readJSON(DOOM_META_KEY,{});doom.sinnerTears830=m.sinnerTears830;doom.doomFragments=m.sinnerTears830;localStorage.setItem(DOOM_META_KEY,JSON.stringify(doom));
+      if(window.game?.meta)game.meta=Object.assign(game.meta||{},m)
+    }catch{}
+    return m;
+  }
+  function readJSON(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||'null')||fallback}catch{return fallback}}
+  function writeJSON(key,v){try{localStorage.setItem(key,JSON.stringify(v))}catch{}if(key===SKIN_KEY)skinCache830=v;return v}
+  let skinCache830=null,demonCatalog830=null;
+  function skinState(force=false){if(!force&&skinCache830)return skinCache830;const s=readJSON(SKIN_KEY,{});s.unlocked=s.unlocked||{};s.selected=s.selected||{};skinCache830=s;return s}
+  function augState(){const d=readJSON(AUG_KEY,{});d.unlocked=d.unlocked||{};d.selected=d.selected||{};return d}
+  function classKeys(){try{return Object.keys(CLASSES||{})}catch{return []}}
+  function classTitle(k){try{return String(CLASSES?.[k]?.name||k).replace(/[\u{1F300}-\u{1FAFF}]/gu,'').trim()}catch{return k}}
+  function classColor(k){try{return CLASSES?.[k]?.tagColor||CLASSES?.[k]?.color||'#ff405f'}catch{return '#ff405f'}}
+  function demonSkins(){
+    if(demonCatalog830)return demonCatalog830;const out=[];
+    for(const k of classKeys())for(const [rarity,r] of Object.entries(DEMON_RARITIES))out.push({id:`demon_${k}_${rarity.replace('demon_','')}`,classKey:k,rarity,name:`${r.prefix} — ${classTitle(k)}`,cost:r.price,color:r.color,accent:r.accent,rank:r.rank,desc:`Skin ${r.label.toLowerCase()} com chifres, runas, fogo negro e efeitos próprios para ${classTitle(k)}.`});
+    demonCatalog830=out;return out;
+  }
+  function demonSkinById(id){return demonSkins().find(s=>s.id===id)||null}
+  function selectedDemonSkin(k=window.game?.classKey){const s=skinState(),id=s.selected?.[k];return s.unlocked?.[id]?demonSkinById(id):null}
+  function ownedDemon(id){return !!skinState().unlocked?.[id]}
+  function infernalOwned(id){return readMeta().infernalRelics830.includes(id)}
+  function legacyLevel(id,m=readMeta()){return Math.max(0,Math.floor(N(m.infernalLegacy830?.[id])))}
+  function discountRate(m=readMeta()){return C(legacyLevel('merchant_favor',m)*.01,0,.05)}
+  function discounted(cost,m=readMeta()){return Math.max(1,Math.ceil(N(cost)*(1-discountRate(m))))}
+  function wallet(){const m=readMeta();return {tears:N(m.sinnerTears830),relics:N(m.relicShards),chrono:N(m.chronoFragments)}}
+  function spend(currency,cost){const m=readMeta(),c=discounted(cost,m);if(currency==='relics'){if(m.relicShards<c)return false;m.relicShards-=c}else{if(m.sinnerTears830<c)return false;m.sinnerTears830-=c}writeMeta(m);return true}
+  function addCurrency(kind,qty){const m=readMeta();if(kind==='relics')m.relicShards+=qty;if(kind==='chrono')m.chronoFragments+=qty;if(kind==='tears')m.sinnerTears830+=qty;writeMeta(m)}
+  function hasRelic(id){const cached=window.game?.infernalRelics830;if(cached?.has)return cached.has(id);return readMeta().infernalRelics830.includes(id)}
+
+  function augEntries(){
+    const A=window.ChronoAug620?.AUGS||{},out=[],seen=new Set();
+    for(const [k,list] of Object.entries(A))for(const a of list||[]){if(!a?.id||seen.has(a.id))continue;seen.add(a.id);out.push({...a,classKey:k})}
+    return out;
+  }
+  function availableAugs(){const d=augState();return augEntries().filter(a=>!d.unlocked[a.id])}
+  function chooseUnique(pool,count){return shuffled(pool).slice(0,count)}
+  function generateRotation(){
+    const m=readMeta(),skins=skinState(),augs=availableAugs();
+    const skinPool=demonSkins().filter(s=>!skins.unlocked[s.id]);
+    return {
+      version:1,created:Date.now(),next:Date.now()+REFRESH,rotationId:`${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+      offers:{
+        relics:shuffled(RELIC_PACKS.map(x=>x.id)),
+        chrono:shuffled(CHRONO_PACKS.map(x=>x.id)),
+        augments:chooseUnique(augs,3).map(x=>x.id),
+        permanent:chooseUnique(INFERNAL_RELICS.filter(x=>!m.infernalRelics830.includes(x.id)),3).map(x=>x.id),
+        doomBuffs:chooseUnique(DOOM_BUFFS,3).map(x=>x.id),
+        chests:shuffled(CHESTS.map(x=>x.id)),
+        skins:chooseUnique(skinPool,3).map(x=>x.id)
+      },sold:{},pity:{apoc:0,heretic:0}
+    };
+  }
+  function shop(force=false){
+    let s=readJSON(SHOP_KEY,null);
+    if(force||!s||!s.offers||Date.now()>=N(s.next)){const pity=s?.pity||{apoc:0,heretic:0};s=generateRotation();s.pity={apoc:N(pity.apoc),heretic:N(pity.heretic)};writeJSON(SHOP_KEY,s)}
+    s.sold=s.sold||{};s.pity=s.pity||{apoc:0,heretic:0};return s;
+  }
+  function saveShop(s){return writeJSON(SHOP_KEY,s)}
+  function sold(section,index,s=shop()){return !!s.sold?.[`${section}:${index}`]}
+  function markSold(section,index,s=shop()){s.sold=s.sold||{};s.sold[`${section}:${index}`]=true;saveShop(s)}
+  function findBy(list,id){return list.find(x=>x.id===id)||null}
+  function toast(title,desc='',color='#ff405f'){
+    document.querySelectorAll('.infernalToast830').forEach(e=>e.remove());const e=document.createElement('div');e.className='infernalToast830';e.style.setProperty('--c',color);e.innerHTML=`<b>${esc(title)}</b>${desc?`<span>${esc(desc)}</span>`:''}`;document.body.appendChild(e);setTimeout(()=>e.remove(),2600);
+  }
+  function grantAllinTears831(show=false){
+    try{
+      const m=readMeta();
+      if(m.allinTears831)return false;
+      m.tears830=N(m.tears830)+9999;
+      m.allinTears831=true;
+      writeMeta(m);
+      if(show)toast('ALLIN ABSOLUTO','+9.999 Lágrimas dos Pecadores','#ffffff');
+      return true;
+    }catch(e){console.warn(PATCH+' ALLIN tears',e);return false}
+  }
+
+  let doomOriginalClick830=null;
+  let shopOrigin830='portal';
+  function doomUnlocked(){try{return !!window.__InfernalGate810?.doomUnlocked?.()}catch{return false}}
+  function goodLuck830(){
+    const card=document.getElementById('doomMode800');const fn=card?.__doomOriginal830||doomOriginalClick830;
+    if(typeof fn==='function'){try{return fn.call(card,{preventDefault(){},stopPropagation(){},stopImmediatePropagation(){}})}catch(e){console.warn(PATCH+' rota DOOM',e)}}
+    (window.openClassMenu461||window.openClassMenu)?.();
+  }
+  function openDoomPortal830(){
+    if(!doomUnlocked()){window.openModeChoice50?.();return}
+    overlayEl()?.classList.remove('hidden');const c=cardEl();if(!c)return;c.className='card doomPortal830';
+    c.innerHTML=`<div class="doomGateSigil830"><span>𖤐</span></div><div class="doomGateEye830">PORTÕES DO INFERNO</div><h1>O ABISMO ESPERA</h1><p>Entre na invasão ou negocie com aquilo que vive atrás do trono.</p><div class="doomGateActions830"><button class="infernalPrimary830" id="doomGood830">BOA SORTE</button><button class="infernalShopBtn830" id="doomShop830">LOJA INFERNAL</button></div><button class="infernalBack830" id="doomPortalBack830">← Escolha de modos</button>`;
+    document.getElementById('doomGood830').onclick=goodLuck830;
+    document.getElementById('doomShop830').onclick=()=>openInfernalShop830('portal');
+    document.getElementById('doomPortalBack830').onclick=()=>window.openModeChoice50?.();
+  }
+  function patchTutorial830(){
+    const c=cardEl();if(!c?.classList.contains('doomTutorial800')||document.getElementById('doomTutShop830'))return;
+    const actions=c.querySelector('.duneActions461');if(!actions)return;const b=document.createElement('button');b.id='doomTutShop830';b.className='duneBtn461 infernalShopBtn830';b.textContent='Loja Infernal';b.onclick=e=>{e.preventDefault();e.stopPropagation();if(document.getElementById('skipDoomTut800')?.checked)try{localStorage.setItem(DOOM_SKIP,'1')}catch{};openInfernalShop830('tutorial')};actions.insertBefore(b,document.getElementById('doomTutGo800')||null);
+  }
+  function patchDoomCard830(){
+    const card=document.getElementById('doomMode800');if(!card||card.classList.contains('locked810')||!doomUnlocked())return;
+    if(!card.__doomOriginal830){card.__doomOriginal830=card.onclick;doomOriginalClick830=card.onclick}
+    card.onclick=e=>{e?.preventDefault?.();e?.stopPropagation?.();e?.stopImmediatePropagation?.();const skip=localStorage.getItem(DOOM_SKIP)==='1';if(skip)openDoomPortal830();else card.__doomOriginal830?.call(card,e)};
+  }
+  function returnFromStore830(){
+    const skip=localStorage.getItem(DOOM_SKIP)==='1';if(skip)return openDoomPortal830();
+    if(shopOrigin830==='tutorial'&&typeof window.__DoomMode800?.openTutorial==='function')return window.__DoomMode800.openTutorial();
+    window.openModeChoice50?.();
+  }
+
+  function skullSVG830(){return `<svg class="infernalSkull830" viewBox="0 0 520 280" aria-hidden="true"><defs><filter id="glow830"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><linearGradient id="bone830" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff6e3"/><stop offset=".46" stop-color="#d6b99c"/><stop offset="1" stop-color="#26120f"/></linearGradient><linearGradient id="horn831" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#160204"/><stop offset=".52" stop-color="#4a0d12"/><stop offset="1" stop-color="#090103"/></linearGradient><radialGradient id="flame831" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#ffe0a3"/><stop offset=".2" stop-color="#ffbb52"/><stop offset=".48" stop-color="#ff5d29"/><stop offset="1" stop-color="#6c0014" stop-opacity="0"/></radialGradient></defs><g filter="url(#glow830)"><path class="crownFlame831" d="M260 0c14 20 28 29 28 49 0 17-12 30-28 36-16-6-28-19-28-36 0-19 14-28 28-49z"/><g class="horn830 left"><path class="hornCore831" d="M198 92C155 48 99 22 39 25 17 26 6 38 9 58c20-11 47-10 73 2 38 17 69 55 79 105 8-33 22-60 37-77z"/><path class="hornRidge831" d="M41 31c40 5 74 26 100 61M31 49c35-1 69 16 99 49M28 71c28 1 58 15 87 42"/></g><g class="horn830 right"><path class="hornCore831" d="M322 92c43-44 99-70 159-67 22 1 33 13 30 33-20-11-47-10-73 2-38 17-69 55-79 105-8-33-22-60-37-77z"/><path class="hornRidge831" d="M479 31c-40 5-74 26-100 61M489 49c-35-1-69 16-99 49M492 71c-28 1-58 15-87 42"/></g><path class="brow831" d="M165 98c22-26 54-37 95-39 41 2 73 13 95 39l-18 14c-20-19-45-29-77-31-31 2-56 12-77 31z"/><path class="skullBone830" d="M175 86c20-34 150-34 170 0 22 35 18 108-16 130l-21 14-11-20-15 44h-44l-15-44-11 20-21-14c-34-22-38-95-16-130z"/><path class="cheekRune831" d="M179 150l-22 11m29 7-24 14m177-32 22 11m-29 7 24 14"/><path class="eye830" d="M183 118l53 10-32 39-34-20z"/><path class="eye830" d="M337 118l-53 10 32 39 34-20z"/><path class="eyeCore831" d="M197 136l18 3-13 15-10-6z"/><path class="eyeCore831" d="M323 136l-18 3 13 15 10-6z"/><circle class="pupil831" cx="206" cy="144" r="2.6"/><circle class="pupil831" cx="314" cy="144" r="2.6"/><path class="nose830" d="M260 144l-19 37h38z"/><path class="jaw830" d="M208 185h104l-9 56h-86z"/><path class="fang831" d="M206 181l14 10-14 27-10-16zm108 0l-14 10 14 27 10-16z"/><path class="chinRib831" d="M227 195v37m16-37v40m17-40v41m17-41v40m16-37v37"/><g class="pentaFore830"><circle cx="260" cy="73" r="31"/><path d="M260 42l8 22h23l-18 14 7 23-20-13-20 13 7-23-18-14h23z"/><path d="M260 42l20 59m-40 0 51-37m-62 0 51 37m-40 0 20-59"/></g><circle class="ember831 e1" cx="120" cy="118" r="4"/><circle class="ember831 e2" cx="398" cy="134" r="3.6"/><circle class="ember831 e3" cx="260" cy="18" r="4.5"/></g></svg>`}
+  function resourceCard830(icon,label,value,cls){return `<div class="infernalWalletCard830 ${cls}"><i>${icon}</i><span><small>${label}</small><b>${fmt(value)}</b></span></div>`}
+  function priceHTML830(currency,cost){const m=readMeta(),final=discounted(cost,m),disc=final<N(cost);return `<span class="infernalPrice830 ${currency}">${currency==='relics'?'🜂':'💧'} ${fmt(final)}${disc?` <del>${fmt(cost)}</del>`:''}</span>`}
+  function offerCard830(o,{section,index,currency='tears',owned=false,empty=false,skin=false}={}){
+    const isSold=sold(section,index),disabled=isSold||owned||empty,stateClass=isSold?'sold830':owned?'owned830':empty?'empty830':'';
+    const isPack=section==='relics'||section==='chrono';
+    const qtyBlock=isPack&&o?`<strong><span class="infernalQty830 ${section==='chrono'?'chrono':''}"><b>${fmt(o.qty||0)}</b><i>${section==='chrono'?'✦':'🜂'}</i></span></strong>`:`<strong>${esc(o?.name||'Indisponível')}</strong>`;
+    return `<article class="infernalOffer830 ${disabled?'disabled':''} ${stateClass} ${skin?'skinOffer830':''}" style="--c:${esc(o?.color||'#ff405f')}">${skin?`<canvas class="demonSkinCanvas830" data-demon-preview830="${esc(o?.id||'')}" width="220" height="150"></canvas>`:`<div class="infernalOfferIcon830">${esc(o?.icon||'𖤐')}</div>`}<div class="infernalOfferBody830"><small>${esc(o?.tag||'OFERTA DA ROTAÇÃO')}</small>${qtyBlock}<p>${esc(o?.desc||'Não há ofertas disponíveis nesta rotação.')}</p></div><div class="infernalOfferFoot830">${empty?'':priceHTML830(currency,o.cost)}<button data-infernal-buy830="${esc(section)}:${index}" ${disabled?'disabled':''}>${isSold?'ESGOTADO':owned?'ADQUIRIDO':empty?'INDISPONÍVEL':'COMPRAR'}</button></div></article>`}
+  function legacyCard830(x){const m=readMeta(),lv=legacyLevel(x.id,m),max=lv>=x.max,next=x.prices[lv],value=lv?x.values[lv-1]:0;return `<article class="legacyCard830" style="--c:${x.color}"><div class="legacyIcon830">${x.icon}</div><div><small>LEGADO ${lv}/${x.max}</small><strong>${esc(x.name)}</strong><p>${esc(x.desc)}</p><div class="legacyPips830">${Array.from({length:x.max},(_,i)=>`<i class="${i<lv?'on':''}"></i>`).join('')}</div><em>${lv?`Bônus atual: ${value} ${x.unit}`:'Ainda não adquirido.'}</em></div><button data-legacy-buy830="${x.id}" ${max?'disabled':''}>${max?'MÁXIMO':`EVOLUIR • 💧 ${fmt(discounted(next,m))}`}</button></article>`}
+  function chestVisual830(ch,rarityIndex=null,up=false){const r=RARITIES[Math.max(0,Math.min(RARITIES.length-1,N(rarityIndex,ch.start||0)))]||RARITIES[0];return `<div class="infernalChestMini830 ${ch.id} rarity-${r.id} ${up?'up830':''}" style="--c:${r.color};--a:${ch.accent};--base:${ch.color}"><i class="chestHorn830 l"></i><i class="chestHorn830 r"></i><div class="chestLid830"></div><div class="chestBody830"><b>${ch.icon}</b></div><div class="chestRune830">𖤐</div></div>`}
+  function chestCard830(ch,index){const isSold=sold('chests',index);return `<article class="infernalOffer830 chestOffer830 ${isSold?'disabled sold830':''}" style="--c:${ch.color}">${chestVisual830(ch)}<div class="infernalOfferBody830"><small>BAÚ DEMONÍACO</small><strong>${ch.name}</strong><p>${ch.desc}</p></div><div class="infernalOfferFoot830">${priceHTML830(ch.currency,ch.cost)}<button data-infernal-buy830="chests:${index}" ${isSold?'disabled':''}>${isSold?'ESGOTADO':'COMPRAR E SELAR'}</button></div></article>`}
+  function section830(id,title,sub,html){return `<section class="infernalSection830" id="${id}"><div class="infernalSectionHead830"><span>𖤐</span><div><h2>${title}</h2><p>${sub}</p></div></div>${html}</section>`}
+
+  function openInfernalShop830(origin='portal'){
+    shopOrigin830=origin;const s=shop(),m=readMeta(),w=wallet(),augs=augEntries(),skins=demonSkins();
+    const relicHTML=s.offers.relics.map((id,i)=>offerCard830(findBy(RELIC_PACKS,id),{section:'relics',index:i})).join('');
+    const chronoHTML=s.offers.chrono.map((id,i)=>offerCard830(findBy(CHRONO_PACKS,id),{section:'chrono',index:i})).join('');
+    const augHTML=Array.from({length:3},(_,i)=>{const id=s.offers.augments[i],a=augs.find(x=>x.id===id),o=a?{...a,name:a.name,cost:120,icon:a.icon||'⧖',color:a.color||'#9f6cff',desc:`Ampliação Chronal exclusiva de ${classTitle(a.classKey)}.`}:{name:'Sem Ampliações disponíveis',icon:'∅',color:'#6f6875',cost:0,desc:'Todas as Ampliações existentes já foram adquiridas.'};return offerCard830(o,{section:'augments',index:i,empty:!a,owned:!!a&&augState().unlocked[a.id]})}).join('');
+    const permHTML=Array.from({length:3},(_,i)=>{const o=findBy(INFERNAL_RELICS,s.offers.permanent[i]);return offerCard830(o||{name:'Relíquia Infernal indisponível',icon:'∅',color:'#6f6875',desc:'Nenhuma Relíquia Infernal nova nesta rotação.'},{section:'permanent',index:i,empty:!o,owned:!!o&&infernalOwned(o.id)})}).join('');
+    const buffHTML=s.offers.doomBuffs.map((id,i)=>{const o=findBy(DOOM_BUFFS,id);return offerCard830(o,{section:'doomBuffs',index:i,owned:m.doomRunBuffs830.includes(id)})}).join('');
+    const chestHTML=s.offers.chests.map((id,i)=>chestCard830(findBy(CHESTS,id),i)).join('');
+    const skinHTML=Array.from({length:3},(_,i)=>{const o=skins.find(x=>x.id===s.offers.skins[i]);return offerCard830(o||{name:'Skin indisponível',color:'#6f6875',cost:0,desc:'Todas as skins sorteáveis já foram adquiridas.'},{section:'skins',index:i,empty:!o,owned:!!o&&ownedDemon(o.id),skin:true})}).join('');
+    const nefalem=m.nefalemPurchased830;
+    overlayEl()?.classList.remove('hidden');const c=cardEl();if(!c)return;c.className='card infernalShop830';
+    c.innerHTML=`<button class="infernalTopBack830" id="infernalBackTop830">← Voltar aos Portões</button><header class="infernalHero830"><div class="infernalAsh830"></div>${skullSVG830()}<div class="infernalShopTitle830"><small>O MERCADO ABAIXO DO TEMPO</small><h1>LOJA INFERNAL</h1><p>Os condenados pagam com aquilo que ainda conseguem chorar.</p></div><div class="infernalWallet830">${resourceCard830('💧','LÁGRIMAS DOS PECADORES',w.tears,'tears')}${resourceCard830('🜂','RELÍQUIAS',w.relics,'relics')}${resourceCard830('✦','FRAGMENTOS CHRONO',w.chrono,'chrono')}</div><div class="infernalRotation830"><span>OFERTAS RENOVADAS EM</span><b id="infernalTimer830">${fmtTime(s.next-Date.now())}</b><em>Compras ficam esgotadas até a próxima rotação.</em></div></header>
+      <nav class="infernalJump830"><a href="#infernalRelics830">Relíquias</a><a href="#infernalChrono830">Chrono</a><a href="#infernalPerm830">Permanentes</a><a href="#infernalBuffs830">Buffs DOOM</a><a href="#infernalLegacy830">Legado</a><a href="#infernalChests830">Baús & Skins</a><a href="#infernalNefalem830">Nefalem</a><div class="infernalJumpWallet831"><span class="tears">💧 <b>${fmt(w.tears)}</b></span><span class="relics">🜂 <b>${fmt(w.relics)}</b></span></div></nav>
+      ${section830('infernalRelics830','1. RELÍQUIAS','Três pacotes sorteados por rotação. Cada slot pode ser comprado uma única vez.',`<div class="infernalGrid830">${relicHTML}</div>`)}
+      ${section830('infernalChrono830','2. FRAGMENTOS CHRONO','Pacotes nerfados e Ampliações existentes sorteadas pela mesma lógica da Loja do Mauro.',`<h3 class="infernalSub830">PACOTES CHRONO</h3><div class="infernalGrid830">${chronoHTML}</div><h3 class="infernalSub830">AMPLIAÇÕES CHRONAIS • PREÇO FIXO DE 120 LÁGRIMAS</h3><div class="infernalGrid830">${augHTML}</div>`)}
+      ${section830('infernalPerm830','3. BUFFS PERMANENTES','Relíquias Infernais exclusivas desta loja, aplicadas em todos os modos.',`<div class="infernalGrid830">${permHTML}</div>`)}
+      ${section830('infernalBuffs830','4. BUFFS EXCLUSIVOS DO DOOM',`Valem para a próxima invasão. Você pode carregar no máximo 2. Preparados: ${m.doomRunBuffs830.length}/2.`,`<div class="infernalGrid830">${buffHTML}</div>`)}
+      ${section830('infernalLegacy830','5. LEGADO','Uma árvore fixa de melhorias pequenas e permanentes. O Legado não participa da rotação.',`<div class="legacyGrid830">${LEGACY.map(legacyCard830).join('')}</div>`)}
+      ${section830('infernalChests830','6. BAÚS E SKINS DEMONÍACAS',`Quebre três selos e abra o baú. Pity Apocalíptico: ${N(s.pity.apoc)}/8 • Pity Herético: ${N(s.pity.heretic)}/25.`,`<h3 class="infernalSub830">BAÚS DA ROTAÇÃO</h3><div class="infernalGrid830">${chestHTML}</div><h3 class="infernalSub830">SKINS DEMONÍACAS DA ROTAÇÃO</h3><div class="infernalGrid830">${skinHTML}</div>`)}
+      ${section830('infernalNefalem830','7. NEFALEM','O Herdeiro dos Dois Sangues. O personagem será implementado em uma atualização futura.',`<article class="nefalemShop830 ${nefalem?'owned':''}"><div class="nefalemDark830 left">☠</div><div class="nefalemCore830"><div class="nefalemSilhouette830"><i></i><b>⚔</b></div><small>PERSONAGEM ÚNICO</small><strong>NEFALEM</strong><p>Compra permanente. Após adquirido, seu card aparece numa seção exclusiva da seleção de personagens, marcado como <b>Em desenvolvimento</b>.</p><span>${nefalem?'ADQUIRIDO':priceHTML830('tears',500)}</span><button id="buyNefalem830" ${nefalem?'disabled':''}>${nefalem?'VÍNCULO CONCLUÍDO':'COMPRAR NEFALEM'}</button></div><div class="nefalemDark830 right">𖤐</div></article>`)}
+      <footer class="infernalFooter830"><div>💧 Lágrimas dos Pecadores são obtidas sobrevivendo, cumprindo contratos e derrotando horrores no modo DOOM.</div><button class="infernalBottomBack830" id="infernalBackBottom830">← Voltar aos Portões do Inferno</button></footer>`;
+    c.querySelectorAll('[data-infernal-buy830]').forEach(b=>b.onclick=()=>{const [sec,idx]=b.dataset.infernalBuy830.split(':');buyOffer830(sec,Number(idx))});
+    c.querySelectorAll('[data-legacy-buy830]').forEach(b=>b.onclick=()=>buyLegacy830(b.dataset.legacyBuy830));
+    document.getElementById('buyNefalem830').onclick=buyNefalem830;
+    document.getElementById('infernalBackTop830').onclick=returnFromStore830;document.getElementById('infernalBackBottom830').onclick=returnFromStore830;
+    drawDemonPreviews830();startDemonPreviewLoop830();
+  }
+  window.openInfernalShop830=openInfernalShop830;
+
+  function buyOffer830(section,index){
+    const s=shop();if(sold(section,index,s))return;let o=null,currency='tears';
+    if(section==='relics')o=findBy(RELIC_PACKS,s.offers.relics[index]);
+    if(section==='chrono')o=findBy(CHRONO_PACKS,s.offers.chrono[index]);
+    if(section==='augments'){o=augEntries().find(x=>x.id===s.offers.augments[index]);if(o)o={...o,cost:120}}
+    if(section==='permanent')o=findBy(INFERNAL_RELICS,s.offers.permanent[index]);
+    if(section==='doomBuffs')o=findBy(DOOM_BUFFS,s.offers.doomBuffs[index]);
+    if(section==='skins')o=demonSkinById(s.offers.skins[index]);
+    if(section==='chests'){o=findBy(CHESTS,s.offers.chests[index]);currency=o?.currency||'tears'}
+    if(!o)return toast('Oferta indisponível','A rotação não encontrou um item válido.','#8b8494');
+    const m=readMeta();
+    if(section==='augments'&&augState().unlocked[o.id])return toast('Ampliação já possuída','A oferta foi anulada.','#ffd166');
+    if(section==='permanent'&&m.infernalRelics830.includes(o.id))return toast('Relíquia já adquirida','Ela funciona permanentemente.','#ffd166');
+    if(section==='skins'&&ownedDemon(o.id))return toast('Skin já possuída','Ela está na coleção demoníaca.','#ffd166');
+    if(section==='doomBuffs'&&(m.doomRunBuffs830.includes(o.id)||m.doomRunBuffs830.length>=2))return toast(m.doomRunBuffs830.length>=2?'Limite de pactos atingido':'Buff já preparado','Use os buffs na próxima invasão DOOM.','#ff8fa3');
+    if(!spend(currency,o.cost))return toast(currency==='relics'?'Relíquias insuficientes':'Lágrimas insuficientes',`Custa ${fmt(discounted(o.cost))} ${currency==='relics'?'relíquias':'Lágrimas dos Pecadores'}.`,'#ff8fa3');
+    markSold(section,index,s);
+    if(section==='relics')addCurrency('relics',o.qty);
+    if(section==='chrono')addCurrency('chrono',o.qty);
+    if(section==='augments'){const d=augState();d.unlocked[o.id]=true;writeJSON(AUG_KEY,d)}
+    if(section==='permanent'){const mm=readMeta();mm.infernalRelics830=Array.from(new Set(mm.infernalRelics830.concat(o.id)));writeMeta(mm)}
+    if(section==='doomBuffs'){const mm=readMeta();mm.doomRunBuffs830=mm.doomRunBuffs830.concat(o.id).slice(0,2);writeMeta(mm)}
+    if(section==='skins'){const ss=skinState();ss.unlocked[o.id]=true;writeJSON(SKIN_KEY,ss)}
+    if(section==='chests'){toast('Os selos foram comprados',o.name,o.color);return openInfernalChest830(o)}
+    toast('Compra concluída',o.name,o.color||'#ff405f');openInfernalShop830(shopOrigin830);
+  }
+  function buyLegacy830(id){
+    const x=findBy(LEGACY,id),m=readMeta();if(!x)return;const lv=legacyLevel(id,m);if(lv>=x.max)return;const price=x.prices[lv];if(!spend('tears',price))return toast('Lágrimas insuficientes',`O próximo nível custa ${fmt(discounted(price))}.`,'#ff8fa3');const mm=readMeta();mm.infernalLegacy830[id]=lv+1;writeMeta(mm);toast('Legado fortalecido',`${x.name} agora está no nível ${lv+1}.`,x.color);openInfernalShop830(shopOrigin830)
+  }
+  function buyNefalem830(){const m=readMeta();if(m.nefalemPurchased830)return;if(!spend('tears',500))return toast('Lágrimas insuficientes','Nefalem exige 500 Lágrimas dos Pecadores.','#ff8fa3');const mm=readMeta();mm.nefalemPurchased830=true;writeMeta(mm);toast('O sangue respondeu','Nefalem agora aparece na seção ÚNICO.','#ffffff');openInfernalShop830(shopOrigin830)}
+
+  let chestSession830=0;
+  function chestAdvance830(ch,rar){const chance=ch.id==='throne'?.72:ch.id==='blood'?.58:.44,r=Math.random();if(r<chance*.14)return Math.min(5,rar+2);if(r<chance)return Math.min(5,rar+1);return rar}
+  function afterFrames830(ms,token,fn){const st=performance.now();function tick(t){if(token!==chestSession830)return;if(t-st>=ms)return fn();requestAnimationFrame(tick)}requestAnimationFrame(tick)}
+  function openInfernalChest830(ch){
+    const token=++chestSession830;let seals=0,rar=C(ch.start,0,5),busy=false,opened=false;
+    function render(msg='QUEBRE O PRIMEIRO SELO'){
+      overlayEl()?.classList.remove('hidden');const c=cardEl();if(!c)return;c.className=`card infernalChestPage830 chest-${ch.id}`;const r=RARITIES[rar];
+      c.innerHTML=`<div class="chestRitual830" style="--c:${r.color};--ch:${ch.color}"><div class="chestRitualSigil830">𖤐</div><small>RITUAL DO BAÚ</small><h1>${ch.name}</h1><div class="chestBigWrap830">${chestVisual830(ch,rar,!!window.__infernalChestRaised830)}<div class="chestSealRing830">${[0,1,2].map(i=>`<i class="${i<seals?'broken':''}">${i<seals?'✦':'🔒'}</i>`).join('')}</div></div><div class="chestRarity830" style="--c:${r.color}"><small>RARIDADE ATUAL</small><b>${r.name}</b></div>${window.__infernalChestRaised830?'<span class="rarityShift831">CHAMAS DA RARIDADE ASCENDERAM</span>':''}<p id="chestMsg830">${msg}</p><button class="chestAction830" id="chestAction830">${seals<3?'ROMPER SELO':'ABRIR O BAÚ'}</button><button class="infernalBack830" id="chestBack830">Voltar à Loja</button></div>`;
+      document.getElementById('chestBack830').onclick=()=>{chestSession830++;openInfernalShop830(shopOrigin830)};
+      document.getElementById('chestAction830').onclick=()=>{
+        if(busy||opened)return;busy=true;const btn=document.getElementById('chestAction830');btn.disabled=true;
+        if(seals<3){const before=rar;document.getElementById('chestMsg830').textContent='O INFERNO ESTÁ JULGANDO A OFERTA...';cardEl()?.classList.add('weaving830');afterFrames830(720,token,()=>{rar=chestAdvance830(ch,rar);seals++;window.__infernalChestRaised830=rar>before;busy=false;render(rar>before?`O selo elevou a raridade para ${RARITIES[rar].name}.`:'O selo se partiu, mas a raridade resistiu.');setTimeout(()=>{window.__infernalChestRaised830=false},760)})}
+        else{opened=true;document.getElementById('chestMsg830').textContent='A TAMPA ESTÁ CEDENDO...';cardEl()?.classList.add('opening830');afterFrames830(900,token,()=>finishChest830(ch,rar))}
+      };
+    }
+    render();
+  }
+  function forcePity830(ch,rar,s){
+    if(N(s.pity.heretic)>=24&&ch.currency==='tears')rar=5;else if(N(s.pity.apoc)>=7)rar=Math.max(rar,4);
+    if(rar>=4)s.pity.apoc=0;else s.pity.apoc=N(s.pity.apoc)+1;
+    if(ch.currency==='tears'){if(rar>=5)s.pity.heretic=0;else s.pity.heretic=N(s.pity.heretic)+1}
+    saveShop(s);return rar;
+  }
+  function randomUnownedSkin830(minRank=0,maxRank=4){const ss=skinState(),pool=demonSkins().filter(s=>!ss.unlocked[s.id]&&s.rank>=minRank&&s.rank<=maxRank);return pick(pool)}
+  function unlockSkin830(s){if(!s)return false;const st=skinState();st.unlocked[s.id]=true;writeJSON(SKIN_KEY,st);return true}
+  function unlockAug830(){const a=pick(availableAugs());if(!a)return null;const d=augState();d.unlocked[a.id]=true;writeJSON(AUG_KEY,d);return a}
+  function rewardChest830(rar){
+    const roll=Math.random();let title='',desc='',icon='✦',color=RARITIES[rar].color;
+    if(rar===0){if(roll<.68){const q=80+Math.floor(Math.random()*61);addCurrency('relics',q);title=`+${q} Relíquias`;desc='Recursos arrancados do Cofre Profano.'}else{addCurrency('chrono',1);title='+1 Fragmento Chrono';desc='Um caco temporal sobreviveu ao ritual.'}}
+    else if(rar===1){if(roll<.55){const q=140+Math.floor(Math.random()*91);addCurrency('relics',q);title=`+${q} Relíquias`;desc='A maldição condensou recursos permanentes.'}else if(roll<.84){addCurrency('chrono',2);title='+2 Fragmentos Chrono';desc='Dois fragmentos foram estabilizados.'}else{addCurrency('tears',8);title='+8 Lágrimas';desc='O baú devolveu parte do sofrimento.';icon='💧'}}
+    else if(rar===2){if(roll<.38){const q=230+Math.floor(Math.random()*121);addCurrency('relics',q);title=`+${q} Relíquias`;desc='Uma reserva infernal de relíquias.'}else if(roll<.66){addCurrency('chrono',3);title='+3 Fragmentos Chrono';desc='Energia Chronal resgatada do fogo.'}else{const s=randomUnownedSkin830(0,1);if(s){unlockSkin830(s);title=s.name;desc='Nova skin demoníaca adicionada à coleção.';icon='👕'}else{addCurrency('tears',14);title='+14 Lágrimas';desc='Skin repetida convertida em Lágrimas.';icon='💧'}}}
+    else if(rar===3){if(roll<.25){const q=380+Math.floor(Math.random()*151);addCurrency('relics',q);title=`+${q} Relíquias`;desc='Tributo de uma entidade abissal.'}else if(roll<.47){addCurrency('chrono',5);title='+5 Fragmentos Chrono';desc='Um nódulo Chronal completo.'}else if(roll<.68){addCurrency('tears',22);title='+22 Lágrimas';desc='Sofrimento líquido, ainda quente.';icon='💧'}else if(roll<.83){const a=unlockAug830();if(a){title=`Ampliação: ${a.name}`;desc=`Ampliação de ${classTitle(a.classKey)} desbloqueada.`;icon=a.icon||'⧖'}else{addCurrency('relics',420);title='+420 Relíquias';desc='Ampliação repetida convertida.'}}else{const s=randomUnownedSkin830(1,2);if(s){unlockSkin830(s);title=s.name;desc='Skin demoníaca rara ou épica desbloqueada.';icon='👕'}else{addCurrency('tears',26);title='+26 Lágrimas';desc='Skin repetida convertida.';icon='💧'}}}
+    else if(rar===4){if(roll<.20){addCurrency('relics',700);title='+700 Relíquias';desc='O tributo de uma legião inteira.'}else if(roll<.38){addCurrency('chrono',10);title='+10 Fragmentos Chrono';desc='Uma reserva temporal apocalíptica.'}else if(roll<.56){addCurrency('tears',48);title='+48 Lágrimas';desc='O sofrimento transbordou do baú.';icon='💧'}else if(roll<.76){const s=randomUnownedSkin830(2,3);if(s){unlockSkin830(s);title=s.name;desc='Skin demoníaca épica ou lendária desbloqueada.';icon='👕'}else{addCurrency('tears',55);title='+55 Lágrimas';desc='Skin repetida convertida.';icon='💧'}}else{const pool=INFERNAL_RELICS.filter(x=>!infernalOwned(x.id)),x=pick(pool);if(x){const m=readMeta();m.infernalRelics830.push(x.id);writeMeta(m);title=x.name;desc='Relíquia Infernal permanente desbloqueada.';icon=x.icon}else{addCurrency('chrono',12);title='+12 Fragmentos Chrono';desc='Relíquia repetida convertida.'}}}
+    else{if(roll<.22){addCurrency('relics',1200);title='+1.200 Relíquias';desc='Um tesouro proibido pelo próprio trono.'}else if(roll<.40){addCurrency('chrono',20);title='+20 Fragmentos Chrono';desc='Um coração temporal inteiro.'}else if(roll<.57){addCurrency('tears',90);title='+90 Lágrimas';desc='Uma chuva de pecadores condenados.';icon='💧'}else{const s=randomUnownedSkin830(3,4);if(s){unlockSkin830(s);title=s.name;desc='Skin demoníaca lendária ou herética desbloqueada.';icon='👕'}else{const a=unlockAug830();if(a){title=`Ampliação: ${a.name}`;desc='Ampliação Chronal desbloqueada pela heresia.';icon=a.icon||'⧖'}else{addCurrency('tears',110);title='+110 Lágrimas';desc='Recompensas repetidas convertidas.';icon='💧'}}}}
+    return {title,desc,icon,color};
+  }
+  function finishChest830(ch,rar){const s=shop();rar=forcePity830(ch,rar,s);const rw=rewardChest830(rar),r=RARITIES[rar],w=wallet();const c=cardEl();if(!c)return;c.className=`card infernalChestResult830 rarity-${r.id}`;c.innerHTML=`<div class="chestResultBurst830" style="--c:${r.color}"><div class="resultSigil830">𖤐</div><small>BAÚ ABERTO • ${r.name}</small><h1>${esc(rw.title)}</h1><div class="rewardIcon830">${rw.icon}</div><p>${esc(rw.desc)}</p><div class="resultWallet830">💧 ${fmt(w.tears)} &nbsp; 🜂 ${fmt(w.relics)} &nbsp; ✦ ${fmt(w.chrono)}</div><button class="infernalPrimary830" id="chestResultBack830">Voltar à Loja</button></div>`;document.getElementById('chestResultBack830').onclick=()=>openInfernalShop830(shopOrigin830)}
+
+  function drawDemonPreview830(cv,s){
+    const x=cv.getContext('2d'),w=cv.width,h=cv.height,t=performance.now()/1000;x.clearRect(0,0,w,h);x.save();x.translate(w/2,h/2+12);const pulse=1+Math.sin(t*3+s.rank)*.035;x.scale(pulse,pulse);const col=s.color,acc=s.accent;x.globalCompositeOperation='lighter';x.globalAlpha=.18+.04*s.rank;x.fillStyle=col;x.beginPath();x.arc(0,0,55+s.rank*7,0,Math.PI*2);x.fill();x.globalAlpha=.9;x.shadowBlur=18+s.rank*5;x.shadowColor=col;x.fillStyle=acc;x.strokeStyle=col;x.lineWidth=3;x.beginPath();x.moveTo(0,-43);x.lineTo(25,-18);x.lineTo(23,28);x.lineTo(0,43);x.lineTo(-23,28);x.lineTo(-25,-18);x.closePath();x.fill();x.stroke();x.beginPath();x.moveTo(-15,-33);x.quadraticCurveTo(-48,-60,-42,-9);x.moveTo(15,-33);x.quadraticCurveTo(48,-60,42,-9);x.stroke();x.fillStyle=col;x.beginPath();x.arc(-8,-12,4,0,Math.PI*2);x.arc(8,-12,4,0,Math.PI*2);x.fill();if(s.rank>=2){x.globalAlpha=.65;x.strokeStyle=col;for(let i=0;i<4+s.rank;i++){const a=t*(.7+s.rank*.1)+i*Math.PI*2/(4+s.rank);x.beginPath();x.arc(0,0,50+s.rank*5,a,a+.6);x.stroke()}}if(s.rank>=3){x.font='28px serif';x.textAlign='center';x.fillStyle=col;x.globalAlpha=.75;x.fillText('𖤐',0,10)}x.restore();
+  }
+  function drawDemonPreviews830(){document.querySelectorAll('canvas[data-demon-preview830]').forEach(cv=>{const s=demonSkinById(cv.dataset.demonPreview830);if(s)drawDemonPreview830(cv,s)})}
+  let previewRaf830=0,previewLast830=0;
+  function startDemonPreviewLoop830(){if(previewRaf830)return;const loop=t=>{const visible=!overlayEl()?.classList.contains('hidden')&&document.querySelector('canvas[data-demon-preview830]');if(!visible){previewRaf830=0;return}if(t-previewLast830>=33){previewLast830=t;drawDemonPreviews830()}previewRaf830=requestAnimationFrame(loop)};previewRaf830=requestAnimationFrame(loop)}
+
+  function openDemonSkinMenu830(k,idx=0){
+    const all=demonSkins().filter(s=>s.classKey===k),ss=skinState();if(!all.length)return;idx=(idx+all.length)%all.length;const s=all[idx],own=!!ss.unlocked[s.id],sel=ss.selected[k]===s.id;
+    overlayEl()?.classList.remove('hidden');const c=cardEl();if(!c)return;c.className='card demonSkinPage830';c.innerHTML=`<div class="demonSkinHero830"><small>COLEÇÃO DEMONÍACA</small><h1>${esc(classTitle(k))}</h1><p>Skins exclusivas da Loja Infernal e dos Baús Demoníacos.</p></div><div class="demonSkinViewer830"><button id="demonPrev830">‹</button><div><canvas class="demonSkinLarge830" data-demon-preview830="${s.id}" width="360" height="260"></canvas><span style="--c:${s.color}">${esc(DEMON_RARITIES[s.rarity].label)}</span><h2>${own?esc(s.name):'???'}</h2><p>${own?esc(s.desc):'Skin bloqueada. Ela pode surgir na Loja Infernal ou em Baús Demoníacos.'}</p><button class="infernalPrimary830" id="demonSelect830" ${own?'':'disabled'}>${own?(sel?'SELECIONADA':'SELECIONAR'):'BLOQUEADA'}</button></div><button id="demonNext830">›</button></div><button class="infernalBack830" id="demonSkinBack830">← Skins normais</button>`;
+    document.getElementById('demonPrev830').onclick=()=>openDemonSkinMenu830(k,idx-1);document.getElementById('demonNext830').onclick=()=>openDemonSkinMenu830(k,idx+1);document.getElementById('demonSkinBack830').onclick=()=>window.openSkinMenu702?.(k,0);const b=document.getElementById('demonSelect830');if(own)b.onclick=()=>{const st=skinState();st.selected[k]=s.id;writeJSON(SKIN_KEY,st);toast('Skin selecionada',s.name,s.color);openDemonSkinMenu830(k,idx)};drawDemonPreviews830();startDemonPreviewLoop830();
+  }
+  function patchSkinPage830(){
+    const c=cardEl();if(!c?.classList.contains('skinPage702')||document.getElementById('openDemonSkins830'))return;const cv=c.querySelector('canvas[data-class-key]'),k=cv?.dataset.classKey;if(!k)return;const actions=c.querySelector('.skinActions702');if(!actions)return;const b=document.createElement('button');b.id='openDemonSkins830';b.className='duneBtn461 infernalShopBtn830';b.textContent='Skins Demoníacas';b.onclick=()=>openDemonSkinMenu830(k,0);actions.appendChild(b);
+  }
+  function patchUniqueClass830(){
+    const m=readMeta(),c=cardEl();if(!m.nefalemPurchased830||!c||!/SELEÇÃO DE PERSONAGEM/i.test(c.textContent||'')||c.querySelector('.uniqueNefalem830'))return;
+    const wrap=c.querySelector('.classGroups461')||c.querySelector('.class-grid37')?.parentElement||c.querySelector('.class-grid27')?.parentElement||c;
+    const sec=document.createElement('section');sec.className='uniqueNefalem830';sec.innerHTML=`<div class="uniqueHead830"><span>PERSONAGEM ÚNICO</span><h2>ÚNICO</h2><p>Um vínculo comprado no mercado abaixo do tempo.</p></div><div class="uniqueStage830"><div class="uniqueSide830 left">⛓<i></i><i></i></div><article><div class="uniqueModel830"><b>⚔</b><span>𖤐</span></div><small>HERDEIRO DOS DOIS SANGUES</small><strong>NEFALEM</strong><p>O contrato foi concluído, mas o personagem ainda está sendo forjado.</p><button disabled>EM DESENVOLVIMENTO</button></article><div class="uniqueSide830 right">☠<i></i><i></i></div></div>`;wrap.appendChild(sec);
+  }
+
+  function drawDemonPlayerOverlay830(){
+    const s=selectedDemonSkin();if(!s||!window.game?.player)return;const p=game.player,t=N(game.time),r=N(p.r,14);ctx.save();ctx.translate(p.x,p.y);ctx.globalCompositeOperation='lighter';ctx.shadowBlur=16+s.rank*5;ctx.shadowColor=s.color;ctx.globalAlpha=.18+.04*s.rank;ctx.fillStyle=s.color;ctx.beginPath();ctx.arc(0,0,r*2.2+s.rank*3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.9;ctx.strokeStyle=s.color;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(-r*.55,-r*.65);ctx.quadraticCurveTo(-r*1.55,-r*1.75,-r*1.35,-r*.15);ctx.moveTo(r*.55,-r*.65);ctx.quadraticCurveTo(r*1.55,-r*1.75,r*1.35,-r*.15);ctx.stroke();if(s.rank>=1){ctx.fillStyle=s.color;ctx.beginPath();ctx.arc(-r*.35,-r*.18,2.5,0,6.28);ctx.arc(r*.35,-r*.18,2.5,0,6.28);ctx.fill()}if(s.rank>=2){ctx.globalAlpha=.45;for(let i=0;i<3+s.rank;i++){const a=t*(.8+s.rank*.1)+i*Math.PI*2/(3+s.rank);ctx.beginPath();ctx.arc(Math.cos(a)*(r*1.8+s.rank*2),Math.sin(a)*(r*1.5+s.rank*2),2+s.rank*.4,0,6.28);ctx.fill()}}if(s.rank>=3){ctx.globalAlpha=.55;ctx.strokeStyle=s.color;ctx.beginPath();ctx.arc(0,0,r*2.8+Math.sin(t*4)*3,0,6.28);ctx.stroke()}if(s.rank>=4){ctx.globalAlpha=.65;ctx.font=`${r*1.7}px serif`;ctx.textAlign='center';ctx.fillStyle=s.color;ctx.fillText('𖤐',0,r*.55)}ctx.restore();
+  }
+
+  function applyPermanent830(g){
+    if(!g?.player||g.__infernalPermanent830)return;g.__infernalPermanent830=true;const m=readMeta(),u=g.upgrades||{},p=g.player,legacy=m.infernalLegacy830;
+    const hpLv=legacyLevel('ancestral_blood',m);if(hpLv){const add=Math.round(p.maxHp*hpLv*.01);p.maxHp+=add;p.hp+=add}
+    const magnetLv=legacyLevel('soul_magnet',m);if(magnetLv)u.magnet=N(u.magnet)+magnetLv*6.6;
+    const merchantLv=legacyLevel('merchant_favor',m);if(merchantLv)u.shopDiscount=N(u.shopDiscount)+merchantLv*.01;
+    g.infernalRelics830=new Set(m.infernalRelics830);g.infernalLegacyRuntime830={xp:legacyLevel('chrono_conductor',m)*.015,gold:legacyLevel('golden_pact',m)*.01,forbiddenSpark:legacyLevel('forbidden_spark',m)>0};
+    g.infernalHeart830={timer:0,applied:false};g.infernalChain830={timer:0,applied:false};g.infernalInvuln830=0;g.infernalSparkUsed830=false;
+  }
+  function applyDoomBuffs830(g){
+    if(!g?.doom800||g.__doomStoreBuffsApplied830)return;g.__doomStoreBuffsApplied830=true;const m=readMeta(),ids=m.doomRunBuffs830.slice(0,2);m.doomRunBuffs830=[];writeMeta(m);g.doomShopBuff830={ids,bossHunter:ids.includes('tyrant_hunter'),lavaResist:ids.includes('ash_step')?.30:0,greed:ids.includes('greed_seal'),prophecy:ids.includes('last_prophecy'),prophecyUsed:false,endlessFury:ids.includes('endless_fury')};
+    if(ids.includes('boiling_blood'))g.upgrades.damage=N(g.upgrades.damage,1)+.12;
+    if(ids.includes('ash_step'))g.upgrades.speed=N(g.upgrades.speed,1)+.10;
+    if(ids.includes('executioner_pact')){g.upgrades.damage=N(g.upgrades.damage,1)+.25;g.player.maxHp=Math.max(1,Math.round(g.player.maxHp*.88));g.player.hp=Math.min(g.player.hp,g.player.maxHp)}
+    try{if(ids.length){addFloatingText(g.player.x,g.player.y-60,'PACTOS DOOM ATIVOS','#ff5a3c',18);addRing(g.player.x,g.player.y,'#ff304f',115,5)}}catch{}
+  }
+  function targetMultiplier830(e){let mult=1;if(!e)return mult;const g=window.game;if(hasRelic('abyss_eye')&&N(e.hp)/Math.max(1,N(e.maxHp,e.hp))<=.15)mult*=1.25;if(g?.doom800&&g.doomShopBuff830?.bossHunter&&(e.type==='boss'||e.doomMini800||e.infernalBoss810))mult*=1.20;return mult}
+  function targetDamage830(e,dmg){return N(dmg)*targetMultiplier830(e)}
+  function critBonusFor830(e){return hasRelic('butcher_horn')&&(e?.elite||e?.type==='boss'||e?.doomMini800||e?.infernalBoss810)?.10:0}
+  function lavaDamage830(amount){return N(amount)*(1-C(N(window.game?.doomShopBuff830?.lavaResist),0,.8))}
+
+  const oldReset830=window.resetGame||globalThis.resetGame;
+  if(typeof oldReset830==='function'&&!oldReset830.__infernalStore830){const wrapped=function(){const r=oldReset830.apply(this,arguments);try{applyPermanent830(window.game);applyDoomBuffs830(window.game)}catch(e){console.warn(PATCH+' reset',e)}return r};wrapped.__infernalStore830=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}}
+  const oldGainXP830=window.gainXP||globalThis.gainXP;
+  if(typeof oldGainXP830==='function'&&!oldGainXP830.__infernalStore830){const wrapped=function(v){const bonus=N(window.game?.infernalLegacyRuntime830?.xp);return oldGainXP830.call(this,N(v)*(1+bonus))};wrapped.__infernalStore830=true;window.gainXP=wrapped;try{gainXP=wrapped}catch{}}
+  const oldSpawnGold830=window.spawnGold||globalThis.spawnGold;
+  if(typeof oldSpawnGold830==='function'&&!oldSpawnGold830.__infernalStore830){const wrapped=function(x,y,v){const bonus=N(window.game?.infernalLegacyRuntime830?.gold);return oldSpawnGold830.call(this,x,y,Math.max(1,Math.round(N(v)*(1+bonus))))};wrapped.__infernalStore830=true;window.spawnGold=wrapped;try{spawnGold=wrapped}catch{}}
+  const oldDamagePlayer830=window.dealDamageToPlayer||globalThis.dealDamageToPlayer;
+  if(typeof oldDamagePlayer830==='function'&&!oldDamagePlayer830.__infernalStore830){const wrapped=function(amount){const g=window.game,p=g?.player;if(!g||!p)return oldDamagePlayer830.apply(this,arguments);if(N(g.cloakActive)>0)return oldDamagePlayer830.apply(this,arguments);if(N(g.infernalInvuln830)>0)return;const armor=1-Math.min(N(g.upgrades?.armor),.55),raw=N(amount)*armor,after=Math.max(0,raw-N(p.shield)),fatal=N(p.hp)-after<=0;if(fatal){let dur=0,label='';if(g.doom800&&g.doomShopBuff830?.prophecy&&!g.doomShopBuff830.prophecyUsed){g.doomShopBuff830.prophecyUsed=true;dur=1.5;label='ÚLTIMA PROFECIA'}else if(g.infernalLegacyRuntime830?.forbiddenSpark&&!g.infernalSparkUsed830){g.infernalSparkUsed830=true;dur=.75;label='FAÍSCA PROIBIDA'}if(dur){p.shield=0;p.hp=1;p.hurtCd=Math.max(N(p.hurtCd),dur);g.infernalInvuln830=dur;g.flash=.45;g.flashColor='#ffffff';g.shake=Math.max(N(g.shake),20);try{addRing(p.x,p.y,'#ffffff',150,8);addParticles(p.x,p.y,'#ff304f',45,1.2);addFloatingText(p.x,p.y-48,label,'#ffffff',20)}catch{};return}}
+      const hp=N(p.hp),sh=N(p.shield),r=oldDamagePlayer830.apply(this,arguments);if((N(p.hp)<hp||N(p.shield)<sh)&&hasRelic('heart_ashes'))activateHeart830();return r};wrapped.__infernalStore830=true;window.dealDamageToPlayer=wrapped;try{dealDamageToPlayer=wrapped}catch{}}
+  function activateHeart830(){const g=window.game,s=g?.infernalHeart830;if(!g||!s)return;if(!s.applied){g.upgrades.damage=N(g.upgrades.damage,1)+.15;s.applied=true} s.timer=4}
+  const oldEnemyDeath830=window.enemyDeath||globalThis.enemyDeath;
+  if(typeof oldEnemyDeath830==='function'&&!oldEnemyDeath830.__infernalStore830){const wrapped=function(i,e){const g=window.game,p=g?.player,special=N(g?.infernalAbilityWindow830)>0,r=oldEnemyDeath830.apply(this,arguments);if(g&&p&&hasRelic('hungry_seal'))p.hp=C(N(p.hp)+N(p.maxHp)*.004,0,N(p.maxHp));if(g?.doom800&&g.doomShopBuff830?.endlessFury)g.comboTimer=Math.max(N(g.comboTimer),5.5);if(g&&special&&hasRelic('profane_chain'))activateChain830();return r};wrapped.__infernalStore830=true;window.enemyDeath=wrapped;try{enemyDeath=wrapped}catch{}}
+  function activateChain830(){const g=window.game,s=g?.infernalChain830;if(!g||!s)return;if(!s.applied){g.upgrades.speed=N(g.upgrades.speed,1)+.10;s.applied=true}s.timer=4}
+  const oldUseSkill830=window.useSkill||globalThis.useSkill;
+  if(typeof oldUseSkill830==='function'&&!oldUseSkill830.__infernalStore830){const wrapped=function(idx){const g=window.game,p=g?.player,beforeCd=N(g?.skillCds?.[idx]),beforeFocus=N(p?.focus),eligible=!!(g&&p&&beforeCd<=0),snap=(g?.enemies||[]).map(e=>[e,N(e.hp)+N(e.shieldHp)]);if(eligible)g.infernalAbilityWindow830=Math.max(N(g.infernalAbilityWindow830),1.1);const r=oldUseSkill830.apply(this,arguments),used=g&&p&&eligible&&(N(g.skillCds?.[idx])>0||N(p.focus)<beforeFocus);if(!used&&eligible)g.infernalAbilityWindow830=0;if(used){g.infernalAbilityWindow830=Math.max(N(g.infernalAbilityWindow830),1.1);for(const [e,before] of snap){if(!e||!g.enemies.includes(e))continue;const after=N(e.hp)+N(e.shieldHp),delta=Math.max(0,before-after),mult=targetMultiplier830(e);if(delta>0&&mult>1){const extra=delta*(mult-1);if(e.shieldHp>0){e.shieldHp-=extra;if(e.shieldHp<0){e.hp+=e.shieldHp;e.shieldHp=0}}else e.hp-=extra;const pos=g.enemies.indexOf(e);if(pos>=0&&e.hp<=0)enemyDeath(pos,e)}}}return r};wrapped.__infernalStore830=true;window.useSkill=wrapped;try{useSkill=wrapped}catch{}}
+  const oldUpdatePlayer830=window.updatePlayer||globalThis.updatePlayer;
+  if(typeof oldUpdatePlayer830==='function'&&!oldUpdatePlayer830.__infernalStore830){const wrapped=function(dt){const g=window.game,p=g?.player,before=N(p?.shield),r=oldUpdatePlayer830.apply(this,arguments);if(g&&p&&hasRelic('hungry_seal')&&N(p.shield)>before&&N(p.hurtCd)<=0)p.shield=before+(N(p.shield)-before)*.85;return r};wrapped.__infernalStore830=true;window.updatePlayer=wrapped;try{updatePlayer=wrapped}catch{}}
+  const oldFX830=window.updateFX||globalThis.updateFX;
+  if(typeof oldFX830==='function'&&!oldFX830.__infernalStore830){const wrapped=function(dt){const r=oldFX830.apply(this,arguments),g=window.game,d=C(N(dt,.016),0,.08);if(g){g.infernalInvuln830=Math.max(0,N(g.infernalInvuln830)-d);g.infernalAbilityWindow830=Math.max(0,N(g.infernalAbilityWindow830)-d);for(const key of ['infernalHeart830','infernalChain830']){const s=g[key];if(!s)continue;s.timer=Math.max(0,N(s.timer)-d);if(s.applied&&s.timer<=0){g.upgrades[key==='infernalHeart830'?'damage':'speed']=Math.max(.05,N(g.upgrades[key==='infernalHeart830'?'damage':'speed'],1)-(key==='infernalHeart830'?.15:.10));s.applied=false}}}return r};wrapped.__infernalStore830=true;window.updateFX=wrapped;try{updateFX=wrapped}catch{}}
+  const oldRender830=window.render||globalThis.render;
+  if(typeof oldRender830==='function'&&!oldRender830.__infernalStore830){const wrapped=function(){const r=oldRender830.apply(this,arguments);try{drawDemonPlayerOverlay830()}catch{}return r};wrapped.__infernalStore830=true;window.render=wrapped;try{render=wrapped}catch{}}
+  const oldShoot830=window.shoot||globalThis.shoot;
+  if(typeof oldShoot830==='function'&&!oldShoot830.__infernalStore830){const wrapped=function(){const s=selectedDemonSkin(),before=N(window.game?.bullets?.length),r=oldShoot830.apply(this,arguments);if(s)for(let i=before;i<(game.bullets||[]).length;i++){const b=game.bullets[i];b._demonSkin830=s.id;b.identityColor=s.color;b._skinColor702=s.color;b._skinAccent702=s.accent;b._skinRarity702=s.rank>=3?'epic':'rare'}return r};wrapped.__infernalStore830=true;window.shoot=wrapped;try{shoot=wrapped}catch{}}
+
+  window.__InfernalShop830={open:openInfernalShop830,portal:openDoomPortal830,readMeta,writeMeta,shop,demonSkins,targetDamage:targetDamage830,critBonusFor:critBonusFor830,lavaDamage:lavaDamage830,hasRelic,applyDoomBuffs:applyDoomBuffs830,catalogs:{relicPacks:RELIC_PACKS,chronoPacks:CHRONO_PACKS,infernalRelics:INFERNAL_RELICS,doomBuffs:DOOM_BUFFS,legacy:LEGACY,chests:CHESTS,rarities:RARITIES}};
+
+  function tick830(){
+    try{skinState(true);patchTutorial830();patchDoomCard830();patchSkinPage830();patchUniqueClass830();drawDemonPreviews830();const timer=document.getElementById('infernalTimer830');if(timer){const s=shop();if(Date.now()>=N(s.next))openInfernalShop830(shopOrigin830);else timer.textContent=fmtTime(s.next-Date.now())}}catch(e){console.warn(PATCH+' tick',e)}
+  }
+  try{const root=cardEl();if(root)new MutationObserver(()=>requestAnimationFrame(tick830)).observe(root,{childList:true,subtree:true});window.__ChronoUIScheduler820?.interval?.(tick830,900)}catch{}
+  setTimeout(tick830,120);
+  ['input','change','keyup'].forEach(type=>document.addEventListener(type,e=>{if((e.target?.value||'').trim().toLowerCase()==='allin')setTimeout(()=>grantAllinTears831(false),30);},true));
+  document.addEventListener('click',e=>{const raw=(document.querySelector('#codeInput529,#codeInput461,#code37,#codeInput27,#codeInput')?.value||'').trim().toLowerCase();if(raw==='allin')setTimeout(()=>grantAllinTears831(true),40);},true);
+  console.log(PATCH+' — Loja Infernal e progressão carregadas');
+})();
+</script>
+
 </body>
 </html>
