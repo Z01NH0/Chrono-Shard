@@ -12577,14 +12577,14 @@ function killKey37(e){
   }
   function ensureStyle(){if(document.getElementById('missionRework489Style'))return;const st=document.createElement('style');st.id='missionRework489Style';st.textContent=`
     .card.mission489{
-      --missionText:#f8eef2;--missionMuted:#c1aeb7;--missionLine:rgba(255,83,118,.18);
+      --missionText:#f3f1ff;--missionMuted:#bec7e6;--missionLine:rgba(168,109,255,.20);
       position:relative;width:min(97vw,1320px);max-height:95vh;padding:22px 72px 20px 24px;
       text-align:left;overflow:auto;background:
-      radial-gradient(circle at 50% -16%,rgba(255,44,82,.17),transparent 35%),
-      radial-gradient(circle at 2% 35%,rgba(123,0,30,.20),transparent 29%),
-      linear-gradient(150deg,rgba(18,3,9,.995),rgba(5,3,8,.995) 60%,rgba(24,2,8,.99));
-      border:1px solid rgba(255,63,99,.36);
-      box-shadow:0 0 90px rgba(255,24,69,.10),0 26px 80px rgba(0,0,0,.64),inset 0 0 90px rgba(255,35,75,.035)
+      radial-gradient(circle at 50% -16%,rgba(168,109,255,.20),transparent 35%),
+      radial-gradient(circle at 2% 35%,rgba(66,107,235,.15),transparent 29%),
+      linear-gradient(150deg,rgba(13,9,36,.995),rgba(5,8,24,.995) 60%,rgba(20,9,43,.99));
+      border:1px solid rgba(168,109,255,.40);
+      box-shadow:0 0 90px rgba(116,76,235,.14),0 26px 80px rgba(0,0,0,.64),inset 0 0 90px rgba(111,220,255,.04)
     }
     .missionHead489{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start;margin-bottom:15px;padding-bottom:14px;border-bottom:1px solid rgba(255,85,119,.14)}
     .missionHead489 h1{margin:0!important;text-align:left!important;font-size:31px!important;background:linear-gradient(90deg,#fff5f7,#ff839b,#ff315d);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -12784,7 +12784,8 @@ function killKey37(e){
   function renderMissionScreen(view=currentView){
     ensureStyle();stopTimers();document.querySelectorAll('body > .rankModal489').forEach(el=>el.remove());currentView=view==='awakening'?'awakening':'general';let m=ensureMissionState(read());
     const route=window.__ChronoUIRoute827;route?.enter?.('missions','missions-8.4.21');
-    overlay.classList.remove('hidden');overlayCard.className='card mission489';overlayCard.dataset.uiScreen827='missions';
+    try{document.body.classList.remove('doomUi801');overlay.classList.add('masteryOverlay837')}catch{}
+    overlay.classList.remove('hidden');overlayCard.className='card mission489 masteryTheme837 masteryUpdateTheme835';overlayCard.dataset.uiScreen827='missions';
     overlayCard.innerHTML=`${headerHtml(m)}${currentView==='general'?generalHtml(m):awakeningHtml(m)}<div class="missionBottom489"><button class="missionBack489" id="misBack461" data-missions-back>← Conquistas & Missões</button></div>`;
     overlayCard.querySelectorAll('[data-view489]').forEach(b=>b.onclick=()=>renderMissionScreen(b.dataset.view489));
     const back=document.getElementById('misBack461');if(back)back.onclick=()=>{route?.permitHub?.('missions-back',1400);try{(window.openHub461||window.openDuneHub461||window.openHub40)?.()}catch{overlay.classList.add('hidden')}};
