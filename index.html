@@ -226,6 +226,13 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
   html.chrono-latest-ready849 #overlay{visibility:visible;opacity:1}
 </style>
 
+
+<style id="archerLegacyUpgrade851Style">
+.classCard461[data-card461="archer"]>.classStats551,
+.classCard461[data-card461="archer"]>.classStats702:not(.archerMasterySentinel851),
+.classCard461[data-card461="archer"]>[data-stats551]:not(.archerMasterySentinel851){display:none!important}
+.archerMasterySentinel851{display:none!important}
+</style>
 </head>
 <body>
 <script id="missionPersistenceEarly8433">
@@ -2286,6 +2293,25 @@ function render(){
   drawHints();
   ctx.restore();
 
+  // Time Slow universal 8.4.56: mesma leitura visual do laboratório.
+  // Escurece a arena e destaca o espaço temporal ao redor do jogador sem
+  // substituir mapas, HUDs ou renderizadores específicos dos personagens.
+  const slowVisual856=clamp(Number(game.slowVisual856||0),0,1);
+  if(slowVisual856>.001&&game.player){
+    const p=game.player;
+    ctx.save();
+    ctx.fillStyle=`rgba(2,5,17,${(.30*slowVisual856).toFixed(3)})`;
+    ctx.fillRect(0,0,W,H);
+    const sg=ctx.createRadialGradient(p.x,p.y,28,p.x,p.y,285);
+    sg.addColorStop(0,`rgba(112,226,255,${(.105*slowVisual856).toFixed(3)})`);
+    sg.addColorStop(.38,`rgba(104,164,255,${(.045*slowVisual856).toFixed(3)})`);
+    sg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle=`rgba(126,226,255,${(.46*slowVisual856).toFixed(3)})`;
+    ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(p.x,p.y,88+Math.sin(game.time*5.5)*7,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  }
+
   // flash overlay
   if(game.flash>0){
     ctx.save();ctx.globalAlpha=game.flash*0.32;ctx.fillStyle=game.flashColor||'#fff';ctx.fillRect(0,0,W,H);ctx.restore();
@@ -2303,19 +2329,22 @@ function loop(ts){
   window.__ChronoOptimizer820?.frameStart(dt);
 
   if(game.running){
-    game.time+=dt;
-    const sDt=dt*game.dtScale;
     updatePlayer(dt);
+    const slowHeld856=!!(keys[' ']&&game.player?.focus>0&&game.dtScale<.999);
+    const targetSlow856=slowHeld856?1:0;
+    game.slowVisual856=Number(game.slowVisual856||0)+(targetSlow856-Number(game.slowVisual856||0))*Math.min(1,dt*(slowHeld856?11:7));
+    const sDt=dt*game.dtScale;
+    game.time+=sDt;
     window.__ChronoOptimizer820?.beginFrame();
-    updateBullets(dt);
+    updateBullets(sDt);
     updateEnemyBullets(sDt);
     updateEnemies(sDt);
     window.__ChronoOptimizer820?.refreshHash();
     updateLoot(sDt);
-    updateHazards(dt);
-    updateDrones(dt);
+    updateHazards(sDt);
+    updateDrones(sDt);
     updateWaveState();
-    updateFX(dt);
+    updateFX(sDt);
     updateHUD();
   }
   render();
@@ -5467,6 +5496,7 @@ render = function(){
     ctx.shadowBlur=12; ctx.shadowColor='#c6a0ff'; ctx.strokeStyle='#c6a0ff'; ctx.strokeRect(x,y,bw*pct,bh);
     ctx.restore();
   }
+  window.__drawFocusUnderPlayerLatest854=drawFocusUnderPlayer;
   const _uiRender=render;
   render=function(){_uiRender();drawFocusUnderPlayer();};
 
@@ -8991,10 +9021,8 @@ requestAnimationFrame(loop);
     ctx.restore();
   }
 
-  const renderBefore34=render;
-  render=function(){
-    renderBefore34();
-    if(!game) return;
+  function drawAssaultGrenades34(){
+    if(!game)return;
     ctx.save();
     for(const g of game.assaultGrenades34||[]){
       if(g.delay>0){
@@ -9014,6 +9042,12 @@ requestAnimationFrame(loop);
     }
     /* 3.5: coffin model disabled */
     ctx.restore();
+  }
+  window.__drawAssaultGrenadesLatest854=drawAssaultGrenades34;
+  const renderBefore34=render;
+  render=function(){
+    renderBefore34();
+    drawAssaultGrenades34();
   };
 
   console.log(PATCH+' carregado');
@@ -11226,14 +11260,543 @@ function killKey37(e){
   function setCard(){ensureStyle();ensureExtraStyle462();overlay.classList.remove('hidden');overlayCard.className='card dune461';}
   function rewardBurst(amount,label='RELÍQUIAS',color='#ffd166'){const div=document.createElement('div');div.className='rewardBurst461';div.style.background=`linear-gradient(135deg,${color},rgba(255,255,255,.96))`;div.textContent=(amount?`+${amount} `:'')+label;document.body.appendChild(div);setTimeout(()=>div.remove(),1200);}
 
-  function openStartMenu461(){game=null;mouse.down=false;setCard();const m=meta();overlayCard.innerHTML=`<div class="startStage461"><div class="startInner461"><div class="duneTop461"><div class="duneUpdate461">RIFT UPDATE</div><div class="duneTitle461">CHRONO<br>SHARDS</div></div><p class="duneSub461">As Fissuras Chrono abriram novas rotas, criaturas e poderes refletidos. Escolha sua classe, colete relíquias, recupere ${CHRONO} Fragmentos Chrono e sobreviva aos ecos que acordaram entre galáxias partidas.</p><div class="duneStats461" style="grid-template-columns:repeat(3,1fr)"><div class="duneStat461"><small>HIGH SCORE</small><b>${fmt(m.highScore)}</b></div><div class="duneStat461"><small>RELÍQUIAS</small><b>${fmt(m.relicShards)}</b></div><div class="duneStat461"><small>${CHRONO} FRAGMENTOS</small><b>${fmt(m.chronoFragments)}</b></div></div><div class="startButtonsMain462"><button class="duneBtn461" id="play461">JOGAR</button><button class="duneBtn461 blue" id="hub461">CONQUISTAS & MISSÕES</button><button class="duneBtn461 purple" id="cfg461">CONFIGURAÇÕES</button></div><div class="startTutorial462"><button class="duneBtn461 dark" id="tutorial461">TUTORIAL</button></div></div></div>`;document.getElementById('play461').onclick=openClassMenu461;document.getElementById('hub461').onclick=openHub461;document.getElementById('tutorial461').onclick=openTutorial461;document.getElementById('cfg461').onclick=openSettings461;}
-    function openTutorial461(){setCard();overlayCard.innerHTML=`<h1 style="text-align:center">TUTORIAL</h1><p class="duneSub461">Guia completo do jogo separado por categoria. Entenda o básico do jogo!</p><div class="duneGrid461"><div class="dunePanel461"><span class="badge461" style="--co:#61dafb">MOVIMENTAÇÃO E COMANDOS</span><strong>Controle da arena</strong><span><b>WASD/Setas</b> movem o seu personagem. <b>Mouse</b> mira. <b>Clicar e segurar</b> faz você atirar. <b>Shift</b> você utliza o dash. <b>Espaço</b> ativa modo câmera lenta, mas consume foco. <b>E/Q/R</b> usam habilidades conforme a classe, mas as habilidades também consumem foco. Classes especiais podem ter <b>X</b> como ultimate. <b>FOCO:</b> O foco é uma barrinha roxa que fica embaixo de seu personagem, ela funciona como uma stamina, usada para utilização de habilidades e câmera lenta</span></div><div class="dunePanel461"><span class="badge461" style="--co:#ffd166">MOEDAS E RECOMPENSAS</span><strong>Relíquias, ouro e ${CHRONO} Fragmentos Chrono</strong><span><b>Ouro</b> é um drop de monstros/bosses, que é utilizado somente para upgrades em uma loja que aparece após a derrota do boss de 5 em 5 waves. <b>Relíquias</b> vêm de códigos, missões, bosses, monstros e recompensas do bestiário. Ela é a moeda principal do jogo, servindo para compra de personagens e buffs permanentes. <b>${CHRONO} Fragmentos Chrono</b> são raros: aparecem em bosses, bosses raros e eventos especiais. Atualmente esses fragmentos servem somente para liberar um personagem muito forte. <b>Chaves de Awakening</b> são drop de bosses, mais comuns do que os fragmento, essas chaves servem especialmente para liberar as missões de awakening de personagens no menu de missões.</span></div><div class="dunePanel461"><span class="badge461" style="--co:#c6a0ff">PROGRESSÃO</span><strong>Waves, bosses e níveis</strong><span>Seu objetivo aqui é sobreviver e ir cada vez mais adiante nas waves, com cada wave seguinte sendo mais dificil. A partir das waves avançadas surgem, bosses raros e recompensas maiores. <b>Nível:</b> Durante a partida, você irá ganhar XP, com esse XP acontecerá um upgrade de nível no meio da partida, podendo escolher entre 3 upgrades, mas se você morrer, vai começar tudo novamente. Existem poderes míticos incríveis!</span></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="tutBack461">← Início</button></div>`;document.getElementById('tutBack461').onclick=()=>window.openStartMenu?.();}
-  function openSettings461(){setCard();const m=meta();overlayCard.innerHTML=`<h1 style="text-align:center">CONFIGURAÇÕES</h1><p class="duneSub461">Ajustes do jogo e área de códigos. Ative o modo leve se seu PC for uma batata.</p><div class="duneGrid461"><div class="dunePanel461 settingsLow462" id="lowBox461" style="border-color:${m.gfxLow?'#86ffb0':'rgba(255,255,255,.14)'}"><span class="badge461" style="--co:${m.gfxLow?'#86ffb0':'#ffd166'}">LOW GFX ${m.gfxLow?'ATIVO':'DESATIVADO'}</span><strong>Modo visual leve</strong><span>Simplifica projéteis, modelos e efeitos para deixar o jogo mais leve.</span><button class="lowSwitch462 ${m.gfxLow?'':'off'}" id="lowGfx461">${m.gfxLow?'Desativar Low GFX':'Ativar Low GFX'}</button></div><div class="dunePanel461 codeClean462"><span class="badge461" style="--co:#9f6cff">CÓDIGOS</span><strong>Resgate recompensas secretas</strong><span>Digite um código válido para receber uma recompensa. Cada código só pode ser usado uma vez.</span><div class="codeRow461"><input id="codeInput461" placeholder="Digite o código"><button class="duneBtn461" id="redeem461">Resgatar</button></div><div id="codeMsg461" style="margin-top:10px;color:#bcd6ff"></div></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="cfgBack461">← Início</button></div>`;document.getElementById('cfgBack461').onclick=()=>window.openStartMenu?.();document.getElementById('lowGfx461').onclick=()=>{const mm=meta();mm.gfxLow=!mm.gfxLow;save(mm);openSettings461();};document.getElementById('redeem461').onclick=()=>{const raw=(document.getElementById('codeInput461').value||'').trim().toLowerCase();const msg=document.getElementById('codeMsg461');const used=usedCodes();if(!raw){msg.textContent='Digite um código.';return;}if(used.includes(raw)){msg.style.color='#ffd166';msg.textContent='Esse código já foi usado.';return;}if(false&&raw==='legacy_reward_a_disabled'){addRelics(100);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent='+100 relíquias recebidas!';rewardBurst(100,'RELÍQUIAS');return;}if(false&&raw==='legacy_reward_b_disabled'){addRelics(250);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent='+250 relíquias recebidas!';rewardBurst(250,'RELÍQUIAS');return;}if(false&&raw==='legacy_reward_c_disabled'){addChrono(7);used.push(raw);saveCodes(used);msg.style.color='#86ffb0';msg.textContent=`+7 ${CHRONO} Fragmentos Chrono!`;rewardBurst(7,`${CHRONO} FRAGMENTOS`,'#9be6ff');return;}msg.style.color='#ff8fa3';msg.textContent='Código inválido.';};}
+  function openStartMenu461(){game=null;mouse.down=false;setCard();const m=meta();overlayCard.innerHTML=`<div class="startStage461"><div class="startInner461"><div class="duneTop461"><div class="duneUpdate461">RIFT UPDATE</div><div class="duneTitle461">CHRONO<br>SHARDS</div></div><p class="duneSub461">As Fissuras Chrono abriram novas rotas, criaturas e poderes refletidos. Escolha sua classe, colete relíquias, recupere ${CHRONO} Fragmentos Chrono e sobreviva aos ecos que acordaram entre galáxias partidas.</p><div class="duneStats461" style="grid-template-columns:repeat(3,1fr)"><div class="duneStat461"><small>HIGH SCORE</small><b>${fmt(m.highScore)}</b></div><div class="duneStat461"><small>RELÍQUIAS</small><b>${fmt(m.relicShards)}</b></div><div class="duneStat461"><small>${CHRONO} FRAGMENTOS</small><b>${fmt(m.chronoFragments)}</b></div></div><div class="startButtonsMain462"><button class="duneBtn461" id="play461">JOGAR</button><button class="duneBtn461 blue" id="hub461">CONQUISTAS & MISSÕES</button><button class="duneBtn461 purple" id="cfg461">CONFIGURAÇÕES</button></div><div class="startTutorial462"><button class="duneBtn461 dark" id="tutorial461">TUTORIAL</button></div></div></div>`;document.getElementById('play461').onclick=openClassMenu461;document.getElementById('hub461').onclick=openHub461;document.getElementById('tutorial461').onclick=openTutorial461;document.getElementById('cfg461').onclick=()=>openSettings461();}
+    const TUTORIAL_MODULES849=[
+      {n:1,icon:'⌖',color:'#63ddff',title:'Movimentação e especiais',desc:'Aprenda o básico de Chrono Shards.'},
+      {n:2,icon:'◫',color:'#8f7cff',title:'Modos de Jogo',desc:'Aprenda sobre como o jogo funciona e sobre seus modos.'},
+      {n:3,icon:'✦',color:'#ffd36b',title:'Relíquias e outras moedas',desc:'Gerencie seus recursos de forma correta.'},
+      {n:4,icon:'✓',color:'#77f1ad',title:'Missões',desc:'Veja como funciona o sistema de missões e como despertar seus personagens favoritos.'},
+      {n:5,icon:'◉',color:'#ff83bc',title:'Bestiário',desc:'Veja as monstruosidades do jogo.'},
+      {n:6,icon:'⬢',color:'#ff9d65',title:'Sistema de Power-Ups',desc:'Veja os power-ups do jogo e sobre como eles funcionam.'},
+      {n:7,icon:'✧',color:'#bd8cff',title:'Ampliações Chronais',desc:'Aprenda a gerenciar suas ampliações chronais.'},
+      {n:8,icon:'◇',color:'#74dfff',title:'Informações dos Personagens',desc:'Verifique as informações dos personagens, seu sistema de upgrade e também skins.'}
+    ];
+    function ensureTutorial849Style(){if(document.getElementById('tutorialModules849Style'))return;const st=document.createElement('style');st.id='tutorialModules849Style';st.textContent=`
+      .card.tutorialModules849{width:min(97vw,1480px)!important;max-height:94vh!important;padding:28px 28px 24px!important;overflow:hidden!important;background:radial-gradient(circle at 50% -18%,rgba(151,105,255,.20),transparent 35%),radial-gradient(circle at 8% 55%,rgba(80,211,255,.12),transparent 31%),linear-gradient(150deg,#0d0b25,#070a1e 58%,#120926)!important;border:1px solid rgba(173,144,255,.24)!important;box-shadow:0 28px 90px rgba(0,0,0,.55),inset 0 0 70px rgba(112,215,255,.025)!important}
+      .tutorialHead849{display:flex;justify-content:space-between;gap:22px;align-items:flex-start;padding:2px 4px 20px}.tutorialHead849 small{display:block;color:#78ddff;font:900 9px Orbitron,sans-serif;letter-spacing:.18em}.tutorialHead849 h1{margin:6px 0 7px;font:900 clamp(28px,4vw,48px) Orbitron,sans-serif;letter-spacing:.04em;background:linear-gradient(90deg,#fff,#78ddff,#ae79ff);-webkit-background-clip:text;color:transparent}.tutorialHead849 p{margin:0;color:#aeb7d5;max-width:760px;line-height:1.55}.tutorialCount849{min-width:176px;padding:13px 15px;border:1px solid rgba(157,129,255,.18);border-radius:17px;background:linear-gradient(145deg,rgba(133,91,255,.10),rgba(75,204,255,.05));text-align:right}.tutorialCount849 small{color:#999fbe}.tutorialCount849 b{display:block;margin-top:5px;color:#fff;font:900 24px Orbitron,sans-serif}
+      .tutorialShell849{border:1px solid rgba(255,255,255,.075);border-radius:24px;background:linear-gradient(150deg,rgba(255,255,255,.028),rgba(255,255,255,.008));overflow:hidden}.tutorialTools849{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);color:#9da7c7;font-size:10px}.tutorialTools849>div{display:flex;gap:8px}.tutorialArrow849{width:40px;height:36px;border-radius:12px;border:1px solid rgba(157,129,255,.28);background:linear-gradient(145deg,rgba(125,79,255,.13),rgba(74,205,255,.07));color:#fff;cursor:pointer;font-size:18px}.tutorialArrow849:hover{border-color:#78ddff;box-shadow:0 0 18px rgba(120,221,255,.16)}
+      .tutorialViewport849{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;cursor:grab;touch-action:pan-y;padding:30px 30px 36px;scroll-snap-type:x proximity}.tutorialViewport849::-webkit-scrollbar{display:none}.tutorialViewport849.dragging{cursor:grabbing;scroll-snap-type:none}.tutorialTrack849{display:flex;gap:18px;width:max-content;min-width:100%;align-items:stretch}.tutorialCard849{--tc:#78ddff;position:relative;width:300px;min-height:360px;flex:0 0 300px;padding:18px;border-radius:23px;border:1px solid color-mix(in srgb,var(--tc) 25%,rgba(255,255,255,.07));background:radial-gradient(circle at 78% 8%,color-mix(in srgb,var(--tc) 14%,transparent),transparent 34%),linear-gradient(155deg,rgba(24,22,57,.96),rgba(7,9,25,.98));scroll-snap-align:center;overflow:hidden;display:flex;flex-direction:column;box-shadow:inset 0 0 34px rgba(255,255,255,.018)}.tutorialCard849:before{content:"";position:absolute;inset:auto -18% -42% -18%;height:62%;background:radial-gradient(circle,color-mix(in srgb,var(--tc) 15%,transparent),transparent 68%);pointer-events:none}.tutorialCard849:after{content:"";position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,var(--tc),transparent);opacity:.8}.tutorialCard849:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--tc) 55%,white);box-shadow:0 16px 38px rgba(0,0,0,.30),0 0 25px color-mix(in srgb,var(--tc) 13%,transparent)}
+      .tutorialModuleNum849{display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;z-index:2}.tutorialModuleNum849 span{color:var(--tc);font:900 9px Orbitron,sans-serif;letter-spacing:.13em}.tutorialModuleNum849 em{font-style:normal;color:#858daa;font:900 9px Orbitron,sans-serif}.tutorialIcon849{position:relative;z-index:2;width:112px;height:112px;margin:31px auto 24px;border-radius:33px;display:grid;place-items:center;color:#fff;font:900 44px Orbitron,sans-serif;background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.16),transparent 35%),linear-gradient(145deg,color-mix(in srgb,var(--tc) 25%,#17172e),#090b1b);border:1px solid color-mix(in srgb,var(--tc) 46%,transparent);box-shadow:0 0 30px color-mix(in srgb,var(--tc) 18%,transparent),inset 0 0 24px color-mix(in srgb,var(--tc) 9%,transparent)}.tutorialIcon849:before,.tutorialIcon849:after{content:"";position:absolute;inset:-12px;border:1px solid color-mix(in srgb,var(--tc) 20%,transparent);border-radius:39px;transform:rotate(10deg)}.tutorialIcon849:after{inset:-20px;border-style:dashed;opacity:.45;transform:rotate(-13deg)}.tutorialCard849 h2{position:relative;z-index:2;margin:0;color:#fff;font:900 18px/1.18 Orbitron,sans-serif}.tutorialCard849 p{position:relative;z-index:2;margin:11px 0 20px;color:#b7bfd9;font-size:12px;line-height:1.55}.tutorialFuture849{position:relative;z-index:2;margin-top:auto;padding:10px 12px;border-radius:13px;border:1px dashed color-mix(in srgb,var(--tc) 35%,transparent);color:var(--tc);font:900 9px Orbitron,sans-serif;letter-spacing:.11em;text-align:center;background:color-mix(in srgb,var(--tc) 6%,transparent)}
+      .tutorialFooter849{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 4px 0}.tutorialProgress849{display:grid;grid-template-columns:repeat(4,38px);align-items:center;gap:8px}.tutorialDot849{width:38px;height:7px;border:0;border-radius:99px;background:rgba(255,255,255,.09);padding:0;cursor:pointer}.tutorialDot849.active{background:linear-gradient(90deg,#8970ff,#72ddff);box-shadow:0 0 12px rgba(114,221,255,.25)}.tutorialBack849{padding:11px 17px;border-radius:13px;border:1px solid rgba(157,129,255,.25);background:linear-gradient(135deg,#1a1736,#30245e 58%,#16465e);color:#fff;font:900 10px Orbitron,sans-serif;cursor:pointer}
+      @media(max-width:760px){.card.tutorialModules849{padding:20px 14px!important}.tutorialHead849{display:block}.tutorialCount849{margin-top:12px;text-align:left}.tutorialViewport849{padding:24px 15px 30px}.tutorialCard849{width:270px;flex-basis:270px;min-height:340px}.tutorialFooter849{align-items:flex-end}.tutorialProgress849{max-width:70%;flex-wrap:wrap}}
+    `;document.head.appendChild(st)}
+    function ensureTutorialModuleOne851Style(){if(document.getElementById('tutorialModuleOne851Style'))return;const st=document.createElement('style');st.id='tutorialModuleOne851Style';st.textContent=`
+      .tutorialCard849{appearance:none;text-align:left;color:inherit}.tutorialCard849.moduleReady851{cursor:pointer}.tutorialCard849.moduleReady851 .tutorialFuture849{border-style:solid;background:linear-gradient(135deg,color-mix(in srgb,var(--tc) 18%,transparent),rgba(255,255,255,.025));box-shadow:0 0 20px color-mix(in srgb,var(--tc) 12%,transparent)}.tutorialCard849.moduleReady851:focus-visible{outline:2px solid var(--tc);outline-offset:3px}.tutorialCard849.moduleDone851:before{opacity:.9}.tutorialDoneBadge851{position:absolute;right:16px;bottom:15px;z-index:4;padding:5px 8px;border-radius:999px;background:rgba(108,255,181,.11);border:1px solid rgba(108,255,181,.34);color:#8fffc4;font:900 8px Orbitron,sans-serif;letter-spacing:.09em}
+      .tutorialConfirm851{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:20px;background:rgba(2,3,12,.80);backdrop-filter:blur(13px)}.tutorialConfirmBox851{width:min(92vw,490px);padding:27px;border-radius:25px;border:1px solid rgba(115,221,255,.30);background:radial-gradient(circle at 50% 0,rgba(116,221,255,.13),transparent 44%),linear-gradient(155deg,#151337,#070918);box-shadow:0 30px 90px rgba(0,0,0,.62),0 0 38px rgba(116,221,255,.10);text-align:center}.tutorialConfirmBox851 small{color:#78ddff;font:900 9px Orbitron,sans-serif;letter-spacing:.17em}.tutorialConfirmBox851 h2{margin:9px 0 7px;color:#fff;font:900 25px Orbitron,sans-serif}.tutorialConfirmBox851 p{margin:0;color:#aeb7d5;font-size:12px;line-height:1.55}.tutorialConfirmActions851{display:flex;justify-content:center;gap:10px;margin-top:22px}.tutorialConfirmActions851 button{min-width:132px;padding:12px 16px;border-radius:13px;border:1px solid rgba(255,255,255,.13);color:#fff;font:900 10px Orbitron,sans-serif;cursor:pointer}.tutorialConfirmActions851 .yes{background:linear-gradient(135deg,#7d62ff,#3abfe5)}.tutorialConfirmActions851 .no{background:rgba(255,255,255,.055)}
+      .tutScene851{position:fixed;inset:0;z-index:15000;background:#000;overflow:hidden;user-select:none}.tutGameStage855{position:absolute;left:50%;top:50%;width:min(98vw,1320px);aspect-ratio:1360/780;transform:translate(-50%,-50%);overflow:hidden;border-radius:16px;border:1px solid rgba(120,200,255,.15);background:#000;box-shadow:0 0 80px rgba(80,140,255,.12),inset 0 0 40px rgba(0,0,0,.6)}.tutGameStage855 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}.tutGameStage855 #skillBar.tutSkillBar854{position:absolute!important;left:50%!important;bottom:18px!important;transform:translateX(-50%)!important;z-index:12!important;display:flex;opacity:1;pointer-events:none!important;filter:drop-shadow(0 0 13px rgba(128,105,255,.50));animation:tutSkillHudGlow854 1.65s ease-in-out infinite alternate}.tutScene851 #skillBar.tutSkillBar854 .skill-icon{box-shadow:0 0 17px rgba(117,221,255,.16),inset 0 0 18px rgba(157,129,255,.08)}@keyframes tutSkillHudGlow854{to{filter:drop-shadow(0 0 23px rgba(117,221,255,.72))}}.tutSupreme854{display:inline-block;color:#ff9f43;text-shadow:0 0 13px rgba(255,159,67,.80);font-weight:1000;animation:tutWordWave851 .72s ease-in-out infinite}.tutPauseButton851[hidden]{display:none}.tutPauseButton851{position:absolute;right:24px;top:22px;z-index:6;width:46px;height:42px;border-radius:13px;border:1px solid rgba(117,221,255,.30);background:rgba(7,11,25,.80);color:#fff;font:900 14px Orbitron,sans-serif;cursor:pointer;box-shadow:0 0 22px rgba(117,221,255,.12)}
+      .tutTaskTop851{position:absolute;left:24px;top:auto;bottom:105px;z-index:5;min-width:250px;max-width:390px;padding:13px 15px;border-radius:16px;border:1px solid rgba(117,221,255,.20);background:rgba(7,12,27,.82);box-shadow:0 12px 36px rgba(0,0,0,.25);opacity:0;transform:translateY(-8px);transition:.2s;pointer-events:none}.tutTaskTop851.show{opacity:1;transform:none}.tutTaskTop851 small{display:block;color:#73ddff;font:900 8px Orbitron,sans-serif;letter-spacing:.15em}.tutTaskTop851 b{display:block;margin-top:5px;color:#fff;font:900 13px Orbitron,sans-serif}.tutTaskTop851 span{display:block;margin-top:5px;color:#aebad2;font-size:10px;line-height:1.4}
+      .tutDialogue851{position:absolute;z-index:7;left:50%;top:20px;bottom:auto;transform:translateX(-50%);width:min(94vw,1080px);min-height:160px;padding:18px 22px 16px 150px;border-radius:25px;border:1px solid rgba(144,116,255,.34);background:radial-gradient(circle at 12% 0,rgba(120,221,255,.10),transparent 30%),linear-gradient(150deg,rgba(17,16,46,.96),rgba(5,7,19,.98));box-shadow:0 28px 80px rgba(0,0,0,.58),inset 0 0 46px rgba(132,92,255,.035);cursor:pointer}.tutPortrait851{position:absolute;left:21px;bottom:19px;width:104px;height:116px;border-radius:25px;border:1px solid rgba(117,221,255,.31);background:radial-gradient(circle at 50% 22%,rgba(117,221,255,.16),transparent 42%),linear-gradient(155deg,#1b1a3c,#080a19);overflow:hidden;box-shadow:0 0 26px rgba(117,221,255,.12)}.tutPortrait851 .hair{position:absolute;left:18px;top:13px;width:68px;height:46px;border-radius:45% 55% 35% 55%;background:linear-gradient(135deg,#eefbff,#73d9ff 58%,#7f63ff);transform:rotate(-8deg)}.tutPortrait851 .face{position:absolute;left:25px;top:34px;width:58px;height:64px;border-radius:44% 44% 48% 48%;background:linear-gradient(145deg,#f6d6b2,#be8067);border:2px solid rgba(255,255,255,.18)}.tutPortrait851 .goggles{position:absolute;left:26px;top:49px;width:57px;height:19px;border-top:5px solid #29314e}.tutPortrait851 .goggles:before,.tutPortrait851 .goggles:after{content:"";position:absolute;top:-7px;width:21px;height:16px;border-radius:8px;border:3px solid #76ddff;background:#10182d;box-shadow:inset 0 0 8px #76ddff}.tutPortrait851 .goggles:before{left:1px}.tutPortrait851 .goggles:after{right:1px}.tutPortrait851 .mouth{position:absolute;left:46px;top:80px;width:20px;height:9px;border-bottom:3px solid #5c2d38;border-radius:0 0 18px 18px}.tutPortrait851 .coat{position:absolute;left:14px;bottom:-22px;width:78px;height:58px;border-radius:28px 28px 0 0;background:linear-gradient(90deg,#eefaff 0 38%,#161a36 39% 61%,#eefaff 62%)}
+      .tutSpeaker851{display:flex;align-items:center;gap:9px;color:#7ce1ff;font:900 10px Orbitron,sans-serif;letter-spacing:.15em}.tutSpeaker851:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(124,225,255,.36),transparent)}.tutText851{margin-top:11px;color:#f7f7ff;font-size:clamp(14px,1.45vw,18px);line-height:1.55}.tutHint851{margin-top:12px;color:#8e96b7;font:900 9px Orbitron,sans-serif;letter-spacing:.10em}.tutKey851{display:inline-block;color:#bd8cff;text-shadow:0 0 12px rgba(189,140,255,.55);font-weight:900;animation:tutWordWave851 1.35s ease-in-out infinite}.tutKey851.cyan{color:#75ddff;text-shadow:0 0 12px rgba(117,221,255,.55)}.tutKey851.gold{color:#ffd36b;text-shadow:0 0 12px rgba(255,211,107,.55)}@keyframes tutWordWave851{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}.tutReq851{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:7px;margin-top:12px}.tutReq851 div{padding:8px 10px;border-radius:11px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);color:#b7bfd6;font-size:10px}.tutReq851 div.done{border-color:rgba(110,255,181,.30);color:#8fffc4;background:rgba(110,255,181,.055)}.tutReq851 b{float:right;color:#fff}
+      .tutPause851{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:rgba(0,0,0,.72);backdrop-filter:blur(11px)}.tutPause851[hidden]{display:none}.tutPauseBox851{width:min(90vw,420px);padding:25px;border-radius:23px;border:1px solid rgba(135,112,255,.30);background:linear-gradient(155deg,#171438,#080a1b);text-align:center;box-shadow:0 30px 90px rgba(0,0,0,.65)}.tutPauseBox851 h2{margin:0 0 7px;font:900 24px Orbitron,sans-serif}.tutPauseBox851 p{color:#aeb7d2;font-size:11px}.tutPauseBox851 button{width:100%;margin-top:9px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.055);color:#fff;font:900 10px Orbitron,sans-serif;cursor:pointer}.tutPauseBox851 button.primary{background:linear-gradient(135deg,#795dff,#38bfe4)}
+      .tutFinishToast851{position:fixed;left:50%;top:50%;z-index:17000;transform:translate(-50%,-50%);padding:18px 24px;border-radius:18px;border:1px solid rgba(111,255,184,.38);background:rgba(6,15,23,.95);color:#9effca;font:900 13px Orbitron,sans-serif;letter-spacing:.08em;box-shadow:0 0 42px rgba(111,255,184,.17)}
+      @media(max-width:760px){.tutDialogue851{padding:14px 15px 14px 108px;bottom:12px;min-height:150px}.tutPortrait851{left:12px;bottom:13px;width:82px;height:103px}.tutPortrait851 .hair{transform:scale(.8) rotate(-8deg);transform-origin:top left}.tutPortrait851 .face,.tutPortrait851 .goggles,.tutPortrait851 .mouth,.tutPortrait851 .coat{transform:scale(.8);transform-origin:top left}.tutReq851{grid-template-columns:1fr}.tutTaskTop851{left:12px;top:12px;max-width:calc(100vw - 80px)}}
+    `;document.head.appendChild(st)}
+    const TUT_SAVE851='chrono_tutorial_modules_851';
+    function tutorialProgress851(){try{return JSON.parse(localStorage.getItem(TUT_SAVE851)||'{}')||{}}catch{return {}}}
+    function saveTutorialProgress851(p){try{localStorage.setItem(TUT_SAVE851,JSON.stringify(p||{}))}catch{}}
+    function bindTutorial849(){
+      const vp=document.getElementById('tutorialViewport849'),cards=[...vp?.querySelectorAll('.tutorialCard849')||[]],dots=[...document.querySelectorAll('.tutorialDot849')];
+      if(!vp||cards.length!==TUTORIAL_MODULES849.length||dots.length!==4)return;
+      let down=false,startX=0,startScroll=0,dragging=false,suppressClick=false,pointerId=null,scrollRaf=0;
+      const clampPage=p=>Math.max(0,Math.min(3,Number(p)||0));
+      const maxScroll=()=>Math.max(0,vp.scrollWidth-vp.clientWidth);
+      const pageTarget=p=>{
+        const card=cards[clampPage(p)*2];if(!card)return 0;
+        const vr=vp.getBoundingClientRect(),cr=card.getBoundingClientRect();
+        return Math.max(0,Math.min(maxScroll(),vp.scrollLeft+(cr.left-vr.left)-30));
+      };
+      const pageFor=()=>{
+        const targets=[0,1,2,3].map(pageTarget);let page=0,dist=Infinity;
+        targets.forEach((x,i)=>{const d=Math.abs(vp.scrollLeft-x);if(d<dist){dist=d;page=i}});
+        dots.forEach((d,i)=>{const active=i===page;d.classList.toggle('active',active);d.setAttribute('aria-current',active?'page':'false')});
+        return page;
+      };
+      const goPage=p=>{p=clampPage(p);vp.scrollTo({left:pageTarget(p),behavior:'smooth'});setTimeout(pageFor,360)};
+      vp.addEventListener('pointerdown',e=>{
+        if(e.button!==undefined&&e.button!==0)return;
+        down=true;dragging=false;suppressClick=false;pointerId=e.pointerId;startX=e.clientX;startScroll=vp.scrollLeft;
+      });
+      vp.addEventListener('pointermove',e=>{
+        if(!down)return;const dx=e.clientX-startX;
+        if(!dragging&&Math.abs(dx)>10){dragging=true;suppressClick=true;vp.classList.add('dragging');try{vp.setPointerCapture?.(pointerId)}catch{}}
+        if(dragging){vp.scrollLeft=startScroll-dx;e.preventDefault()}
+      });
+      const end=e=>{
+        if(!down)return;down=false;
+        if(dragging){try{vp.releasePointerCapture?.(pointerId)}catch{};vp.classList.remove('dragging');requestAnimationFrame(pageFor)}
+        dragging=false;pointerId=null;
+        setTimeout(()=>{suppressClick=false},0);
+      };
+      vp.addEventListener('pointerup',end);vp.addEventListener('pointercancel',end);vp.addEventListener('lostpointercapture',end);
+      vp.addEventListener('click',e=>{
+        const card=e.target.closest?.('.tutorialCard849');if(!card||!vp.contains(card))return;
+        if(suppressClick){e.preventDefault();e.stopPropagation();return}
+        const module=Number(card.dataset.module849||0);
+        if(module===1||module===2){e.preventDefault();e.stopPropagation();showTutorialConfirm851(module)}
+      });
+      vp.addEventListener('scroll',()=>{cancelAnimationFrame(scrollRaf);scrollRaf=requestAnimationFrame(pageFor)},{passive:true});
+      document.querySelector('[data-tutarrow849="left"]')?.addEventListener('click',e=>{e.preventDefault();goPage(pageFor()-1)});
+      document.querySelector('[data-tutarrow849="right"]')?.addEventListener('click',e=>{e.preventDefault();goPage(pageFor()+1)});
+      dots.forEach((d,i)=>{d.dataset.page849=String(i);d.onclick=e=>{e.preventDefault();goPage(i)}});
+      requestAnimationFrame(()=>{vp.scrollLeft=0;pageFor()});
+    }
+    function showTutorialConfirm851(module){
+      ensureTutorialModuleOne851Style();
+      if(module===2)ensureTutorialModuleTwo857Style();
+      document.getElementById('tutorialConfirm851')?.remove();
+      const el=document.createElement('div');el.id='tutorialConfirm851';el.className='tutorialConfirm851';
+      el.innerHTML=`<div class="tutorialConfirmBox851"><small>ARQUIVO DE TREINAMENTO</small><h2>Começar Módulo ${module}?</h2><p>O progresso da partida atual não será utilizado. Você poderá sair a qualquer momento com ESC.</p><div class="tutorialConfirmActions851"><button class="no" id="tutNo851">NÃO</button><button class="yes" id="tutYes851">SIM</button></div></div>`;
+      document.body.appendChild(el);
+      document.getElementById('tutNo851').onclick=()=>el.remove();
+      document.getElementById('tutYes851').onclick=()=>{
+        try{
+          el.remove();
+          if(module===1)startTutorialModuleOne851();
+          else if(module===2)startTutorialModuleTwo857();
+        }catch(err){
+          console.error(`Falha ao iniciar o Módulo ${module}`,err);el.remove();
+          const fail=document.createElement('div');fail.className='tutorialConfirm851';
+          fail.innerHTML=`<div class="tutorialConfirmBox851"><small>ERRO DE TREINAMENTO</small><h2>Não foi possível iniciar o módulo ${module}</h2><p>O erro foi registrado no console. Confira se os arquivos necessários estão na mesma pasta do jogo e tente novamente.</p><div class="tutorialConfirmActions851"><button class="yes" type="button">VOLTAR</button></div></div>`;
+          document.body.appendChild(fail);fail.querySelector('button').onclick=()=>fail.remove();
+        }
+      };
+      el.onclick=e=>{if(e.target===el)el.remove()};
+    }
+    function openTutorial461(){
+      ensureTutorial849Style();ensureTutorialModuleOne851Style();ensureTutorialModuleTwo857Style();setCard();
+      overlayCard.classList.add('tutorialModules849','masteryTheme837','masteryUpdateTheme835');
+      const progress=tutorialProgress851(),done1=!!progress.module1,done2=!!progress.module2;
+      const cards=TUTORIAL_MODULES849.map(m=>{
+        const ready=m.n===1||m.n===2,done=m.n===1?done1:m.n===2?done2:false;
+        const footer=ready?(done?'REJOGAR MÓDULO CONCLUÍDO':m.n===1?'INICIAR TREINAMENTO':'INICIAR TRANSMISSÃO'):'CONTEÚDO RESERVADO PARA ATUALIZAÇÕES FUTURAS';
+        return `<button type="button" class="tutorialCard849 ${ready?'moduleReady851':''} ${done?'moduleDone851':''}" data-module849="${m.n}" style="--tc:${m.color}"><div class="tutorialModuleNum849"><span>MÓDULO ${m.n}</span><em>${String(m.n).padStart(2,'0')} / ${String(TUTORIAL_MODULES849.length).padStart(2,'0')}</em></div><div class="tutorialIcon849">${m.icon}</div><h2>${esc(m.title)}</h2><p>${esc(m.desc)}</p><div class="tutorialFuture849">${footer}</div>${done?'<span class="tutorialDoneBadge851">CONCLUÍDO</span>':''}</button>`;
+      }).join('');
+      overlayCard.innerHTML=`<header class="tutorialHead849"><div><small>ARQUIVO DE TREINAMENTO CHRONAL</small><h1>TUTORIAL</h1><p>Explore os módulos da esquerda para a direita. Os módulos 1 e 2 já estão disponíveis para treinamento.</p></div></header><section class="tutorialShell849"><div class="tutorialTools849"><span>Segure e arraste, use o toque ou as setas.</span><div><button class="tutorialArrow849" data-tutarrow849="left" aria-label="Página anterior">←</button><button class="tutorialArrow849" data-tutarrow849="right" aria-label="Próxima página">→</button></div></div><div class="tutorialViewport849" id="tutorialViewport849"><div class="tutorialTrack849">${cards}</div></div></section><footer class="tutorialFooter849"><div class="tutorialProgress849">${[0,1,2,3].map((_,i)=>`<button type="button" class="tutorialDot849 ${i===0?'active':''}" data-page849="${i}" aria-label="Mostrar módulos ${i*2+1} e ${i*2+2}" aria-current="${i===0?'page':'false'}"></button>`).join('')}</div><button class="tutorialBack849" id="tutorialBack849">← Voltar ao início</button></footer>`;
+      bindTutorial849();document.getElementById('tutorialBack849').onclick=()=>window.openStartMenu?.();
+    }
+
+    function ensureTutorialModuleTwo857Style(){
+      if(document.getElementById('tutorialModuleTwo857Style'))return;
+      const st=document.createElement('style');st.id='tutorialModuleTwo857Style';st.textContent=`
+        .tut2Scene857{position:fixed;inset:0;z-index:15000;overflow:hidden;background:#000;user-select:none;color:#fff;font-family:Rajdhani,Segoe UI,sans-serif}
+        .tut2Room857{position:absolute;inset:0;background:radial-gradient(circle at 50% 58%,rgba(55,68,96,.12),transparent 38%),linear-gradient(#010204,#000);overflow:hidden}
+        .tut2Room857:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 89px,rgba(255,255,255,.012) 90px),repeating-linear-gradient(0deg,transparent 0 89px,rgba(255,255,255,.01) 90px);opacity:.35}
+        .tut2TvWrap857{position:absolute;left:50%;top:59%;width:min(88vw,1060px);transform:translate(-50%,-50%);filter:drop-shadow(0 36px 55px rgba(0,0,0,.85));transition:filter .3s ease}
+        .tut2TvWrap857.powered{filter:drop-shadow(0 36px 55px rgba(0,0,0,.85)) drop-shadow(0 0 30px rgba(116,221,255,.16))}
+        .tut2Tv857{position:relative;aspect-ratio:16/9.9;padding:3.3% 8.8% 4.8% 4.3%;border-radius:55px 60px 44px 48px;background:linear-gradient(145deg,#555963,#1d2028 44%,#0c0e13 78%,#343842);border:3px solid #686d77;box-shadow:inset 0 0 0 5px #171a21,inset 18px 20px 40px rgba(255,255,255,.06),inset -25px -30px 45px rgba(0,0,0,.65)}
+        .tut2Tv857:before{content:"C.C — UNIDADE DE TRANSMISSÃO 02";position:absolute;left:6.4%;bottom:1.9%;color:#adb3bc;font:800 9px Orbitron,sans-serif;letter-spacing:.13em;text-shadow:0 1px #000}
+        .tut2ScreenBezel857{position:relative;width:100%;height:100%;padding:2.1%;border-radius:42px/32px;background:linear-gradient(145deg,#08090d,#292d36 52%,#07080b);box-shadow:inset 0 0 0 4px #020204,inset 0 0 36px #000}
+        .tut2Screen857{position:relative;width:100%;height:100%;overflow:hidden;border-radius:34px/27px;background:#010101;box-shadow:inset 0 0 58px #000,0 0 0 1px rgba(255,255,255,.06)}
+        .tut2Screen857 canvas{display:block;width:100%;height:100%;filter:contrast(1.08) saturate(.92)}
+        .tut2Screen857:before{content:"";position:absolute;z-index:4;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,rgba(255,255,255,.025) 2px 3px);mix-blend-mode:overlay;opacity:.8}
+        .tut2Screen857:after{content:"";position:absolute;z-index:5;inset:-4%;pointer-events:none;background:radial-gradient(ellipse at center,transparent 47%,rgba(0,0,0,.36) 77%,rgba(0,0,0,.88) 100%);border-radius:42px/32px}
+        .tut2ChannelFlash857{position:absolute;z-index:6;inset:0;pointer-events:none;opacity:0;background:linear-gradient(transparent 45%,#fff 49%,#fff 51%,transparent 55%);transform:scaleY(.08);mix-blend-mode:screen}
+        .tut2TvWrap857.switching .tut2ChannelFlash857{animation:tut2Channel857 .55s ease}
+        @keyframes tut2Channel857{0%{opacity:0;transform:scaleY(.05)}20%{opacity:.95;transform:scaleY(.08)}55%{opacity:.48;transform:scaleY(1)}100%{opacity:0;transform:scaleY(1)}}
+        .tut2Control857{position:absolute;right:2.2%;top:17%;bottom:17%;width:5.3%;display:flex;flex-direction:column;align-items:center;gap:18px}
+        .tut2Knob857{width:48px;max-width:100%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9da2aa,#383c44 42%,#08090c 72%);border:3px solid #111319;box-shadow:0 5px 10px #000,inset 0 0 0 2px rgba(255,255,255,.08)}
+        .tut2Knob857:after{content:"";display:block;width:3px;height:38%;margin:8% auto 0;background:#d8dde5;border-radius:5px;transform:rotate(35deg);transform-origin:50% 100%}
+        .tut2Speaker857{flex:1;width:100%;border-radius:13px;background:repeating-linear-gradient(0deg,#06070a 0 5px,#343842 6px 8px);border:2px solid #15171d;box-shadow:inset 0 0 15px #000}
+        .tut2Led857{width:12px;height:12px;border-radius:50%;background:#320e12;border:1px solid #701d27;box-shadow:0 0 0 transparent}.powered .tut2Led857{background:#ff4c5f;box-shadow:0 0 13px #ff3048}
+        .tut2Dialogue857{position:absolute;z-index:12;left:50%;top:18px;transform:translateX(-50%);width:min(94vw,1080px);min-height:160px;padding:18px 22px 16px 150px;border-radius:25px;border:1px solid rgba(144,116,255,.34);background:radial-gradient(circle at 12% 0,rgba(120,221,255,.10),transparent 30%),linear-gradient(150deg,rgba(17,16,46,.96),rgba(5,7,19,.98));box-shadow:0 28px 80px rgba(0,0,0,.58),inset 0 0 46px rgba(132,92,255,.035);cursor:pointer}
+        .tut2Dialogue857 .tutPortrait851{left:21px;bottom:19px}.tut2Dialogue857 .tutSpeaker851{color:#78ddff}.tut2Text857{min-height:58px;color:#eef2ff;font-size:16px;line-height:1.48}.tut2Hint857{margin-top:10px;color:#8a92b3;font:900 8px Orbitron,sans-serif;letter-spacing:.13em}
+        .tut2Word857{display:inline-block;color:#78ddff;font-weight:900;text-shadow:0 0 13px currentColor;animation:tut2WordWave857 1.45s ease-in-out infinite}.tut2Word857.purple{color:#b887ff}.tut2Word857.gold{color:#ffd166}.tut2Word857.orange{color:#ff9f43}.tut2Word857.red{color:#ff5671}.tut2Word857.green{color:#75f0ae}.tut2Word857.pink{color:#ff86c2}
+        @keyframes tut2WordWave857{0%,100%{transform:translateY(0)}25%{transform:translateY(-2px) rotate(-.4deg)}70%{transform:translateY(1px) rotate(.4deg)}}
+        .tut2Status857{position:absolute;z-index:8;left:50%;bottom:25px;transform:translateX(-50%);padding:8px 13px;border-radius:999px;border:1px solid rgba(120,221,255,.20);background:rgba(3,5,11,.78);color:#9fe8ff;font:900 8px Orbitron,sans-serif;letter-spacing:.13em;opacity:0;transition:opacity .2s}.tut2Status857.show{opacity:1}
+        .tut2PauseBtn857{position:absolute;z-index:15;right:24px;top:24px;width:48px;height:42px;border-radius:13px;border:1px solid rgba(139,112,255,.30);background:rgba(13,12,34,.88);color:#fff;font:900 16px Orbitron,sans-serif;cursor:pointer}
+        .tut2Pause857{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:rgba(0,0,0,.76);backdrop-filter:blur(11px)}.tut2Pause857[hidden]{display:none}
+        @media(max-width:760px){.tut2Dialogue857{top:10px;width:96vw;min-height:145px;padding:13px 14px 13px 108px}.tut2Dialogue857 .tutPortrait851{left:12px;bottom:12px;width:82px;height:103px}.tut2Text857{font-size:13px}.tut2TvWrap857{top:62%;width:96vw}.tut2Control857{gap:8px}.tut2Knob857{width:30px}}
+      `;document.head.appendChild(st);
+    }
+
+    const TUT2_STEPS857=[
+      {text:'Ooopaaa meu garotão, você voltou! Pronto para mais uma dose insana de conhecimento?'},
+      {text:'Bom, primeiramente, deixa eu ligar essa lata velha aqui...'},
+      {image:1,power:true,text:'Olha aqui meu garotão, nessa transmissão da Cazé TV, nós podemos analisar que no jogo, existem 3 modos no total. Aqui, eu vou te explicar o funcionamento de somente o único liberado atualmente, que é o clássico.'},
+      {image:2,text:'Como você pode ver, esse modo funciona em waves, ou seja, rodadas que cada mais vezes que você avança, mais difícil o jogo vai ficando.'},
+      {image:3,text:'Além disso tudo, a cada 5 waves, vai aparecer uma ameaça formidável para você enfrentar, não subestime esse monstros, eles são insanos!'},
+      {image:3,text:'Nós, aqui da confederação Chronal, ou para os íntimos, a C.C, chamamos esses monstrengos de Bosses. Acho que você já deve ter ouvido isso de algum lugar, mas eles sempre vão aparece de tempos para te infernizar e atrapalhar sua jornada meu guerreiro, mas não desanime! Eu sei que você consegue derrota-los!'},
+      {image:4,text:'Aqui meu garotão, nós podemos ver um tipo de loja, aonde você pode comprar seus buffs, algumas ajudinhas e até tentar a sorte, hehe.'},
+      {image:4,text:'Mas essa loja sempre vai aparecer após a derrota de um boss, ou seja, quando você derrotar esses trecos imensos, você vai ter um tempinho para descansar meu garotão.'},
+      {image:5,text:'E bem, como podemos ver aqui, essa é uma tela de morte. Mas não se preocupe! Caso você morra, nós podemos te reimprimir usando nossa tecnologia. Isso te deixará sempre voltar nas aventuras para conquistar o maior dos tesouros!'},
+      {image:5,finish:true,text:'Você já deve ter dado uma olhada, mas aqui aparece os seus status finais e suas outras carambolas. Além disso, como podemos ver, ali está um tipo de conversão de recursos, mas isso fica para uma explicação próxima meu garotão, por enquanto é só. Boa sorte!'}
+    ];
+
+    function startTutorialModuleTwo857(){
+      ensureTutorialModuleOne851Style();ensureTutorialModuleTwo857Style();
+      document.getElementById('tutorialModuleTwo857')?.remove();
+      mouse.down=false;
+      const previousGame857=game,previousMouse857={x:mouse.x,y:mouse.y,down:mouse.down};
+      game=null;
+      const root=document.createElement('div');root.id='tutorialModuleTwo857';root.className='tut2Scene857';
+      root.innerHTML=`<div class="tut2Room857"><div class="tut2TvWrap857" id="tut2TvWrap857"><div class="tut2Tv857"><div class="tut2ScreenBezel857"><div class="tut2Screen857"><canvas id="tut2Canvas857" width="960" height="540"></canvas><div class="tut2ChannelFlash857"></div></div></div><div class="tut2Control857"><div class="tut2Knob857"></div><div class="tut2Knob857"></div><div class="tut2Speaker857"></div><div class="tut2Led857"></div></div></div></div><div class="tut2Status857" id="tut2Status857">SINAL DA CONFEDERAÇÃO CHRONAL</div></div><button class="tut2PauseBtn857" id="tut2PauseBtn857" aria-label="Pausar tutorial">Ⅱ</button><div class="tut2Dialogue857" id="tut2Dialogue857"><div class="tutPortrait851"><i class="hair"></i><i class="face"></i><i class="goggles"></i><i class="mouth"></i><i class="coat"></i></div><div class="tutSpeaker851">INSTRUTOR</div><div class="tut2Text857" id="tut2Text857"></div><div class="tut2Hint857" id="tut2Hint857">CLIQUE PARA COMPLETAR A FALA</div></div><div class="tut2Pause857" id="tut2Pause857" hidden><div class="tutPauseBox851"><h2>TRANSMISSÃO PAUSADA</h2><p>Você pode continuar ou encerrar este módulo.</p><button class="primary" id="tut2Continue857">CONTINUAR</button><button id="tut2Exit857">VOLTAR AOS TUTORIAIS</button><button id="tut2ExitMain857">VOLTAR AO MENU PRINCIPAL</button></div></div>`;
+      document.body.appendChild(root);
+      const cv=root.querySelector('#tut2Canvas857'),c=cv.getContext('2d'),tv=root.querySelector('#tut2TvWrap857'),dialog=root.querySelector('#tut2Dialogue857'),textEl=root.querySelector('#tut2Text857'),hint=root.querySelector('#tut2Hint857'),status=root.querySelector('#tut2Status857');
+      const imgs=[1,2,3,4,5].map(n=>{const im=new Image();im.decoding='async';im.src=`modos-${n}.png`;return im});
+      const noise=document.createElement('canvas');noise.width=160;noise.height=90;const nc=noise.getContext('2d'),noiseData=nc.createImageData(noise.width,noise.height);
+      const S={step:0,typing:null,mode:'off',image:0,transition:false,paused:false,dead:false,last:performance.now(),raf:0,lastNoise:0,powerStart:0,channelStart:0};
+
+      function rich857(raw){
+        let t=esc(raw);
+        const reps=[
+          [/Cazé TV/g,'<span class="tut2Word857 orange">Cazé TV</span>'],[/3 modos/g,'<span class="tut2Word857 purple">3 modos</span>'],[/clássico/g,'<span class="tut2Word857 gold">clássico</span>'],[/5 waves/g,'<span class="tut2Word857 orange">5 waves</span>'],[/\bwaves\b/gi,'<span class="tut2Word857">waves</span>'],[/confederação Chronal/g,'<span class="tut2Word857 purple">confederação Chronal</span>'],[/\bC\.C\b/g,'<span class="tut2Word857 purple">C.C</span>'],[/\bBosses\b/g,'<span class="tut2Word857 red">Bosses</span>'],[/\bboss\b/gi,'<span class="tut2Word857 red">boss</span>'],[/\bloja\b/gi,'<span class="tut2Word857 gold">loja</span>'],[/\bbuffs\b/gi,'<span class="tut2Word857 green">buffs</span>'],[/\bsorte\b/gi,'<span class="tut2Word857 purple">sorte</span>'],[/tela de morte/gi,'<span class="tut2Word857 pink">tela de morte</span>'],[/reimprimir/gi,'<span class="tut2Word857">reimprimir</span>'],[/conversão de recursos/gi,'<span class="tut2Word857 gold">conversão de recursos</span>']
+        ];
+        for(const [r,v] of reps)t=t.replace(r,v);return t;
+      }
+      function richLen857(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent.length}
+      function richSlice857(html,limit){const src=document.createElement('div');src.innerHTML=html,out=document.createElement('div');let left=Math.max(0,limit);function cp(n,p){if(left<=0)return;if(n.nodeType===3){const s=n.nodeValue||'',part=s.slice(0,left);if(part)p.appendChild(document.createTextNode(part));left-=part.length;return}if(n.nodeType!==1)return;const x=n.cloneNode(false);p.appendChild(x);for(const ch of n.childNodes){cp(ch,x);if(left<=0)break}}for(const n of src.childNodes){cp(n,out);if(left<=0)break}return out.innerHTML}
+      function type857(raw){const html=rich857(raw);S.typing={html,total:richLen857(html),pos:0,shown:-1,done:false};textEl.innerHTML='';hint.textContent='CLIQUE PARA COMPLETAR A FALA';dialog.style.opacity='1'}
+      function finishType857(){if(!S.typing||S.typing.done)return;S.typing.pos=S.typing.total;S.typing.shown=S.typing.total;S.typing.done=true;textEl.innerHTML=S.typing.html;hint.textContent='CLIQUE PARA PASSAR'}
+      function updateType857(dt){const t=S.typing;if(!t||t.done)return;t.pos=Math.min(t.total,t.pos+dt*40);const n=Math.floor(t.pos);if(n!==t.shown){t.shown=n;textEl.innerHTML=richSlice857(t.html,n)}if(t.pos>=t.total)finishType857()}
+      function drawImage857(im){
+        c.fillStyle='#000';c.fillRect(0,0,cv.width,cv.height);
+        if(!im||!im.complete||!im.naturalWidth){c.fillStyle='#8ea2b8';c.textAlign='center';c.font='700 20px monospace';c.fillText(`AGUARDANDO modos-${S.image}.png`,cv.width/2,cv.height/2);return}
+        const scale=Math.min(cv.width/im.naturalWidth,cv.height/im.naturalHeight),w=im.naturalWidth*scale,h=im.naturalHeight*scale,x=(cv.width-w)/2,y=(cv.height-h)/2;
+        c.save();c.translate((Math.random()-.5)*1.2,(Math.random()-.5)*.8);c.drawImage(im,x,y,w,h);c.restore();
+        c.globalAlpha=.08;c.fillStyle=Math.random()>.5?'#63ddff':'#ff6b87';c.fillRect(0,Math.random()*cv.height,cv.width,1+Math.random()*3);c.globalAlpha=1;
+      }
+      function drawNoise857(now){
+        if(now-S.lastNoise>68){S.lastNoise=now;const d=noiseData.data;for(let i=0;i<d.length;i+=4){const v=Math.random()*255|0;d[i]=v;d[i+1]=v;d[i+2]=v;d[i+3]=255}nc.putImageData(noiseData,0,0)}
+        c.imageSmoothingEnabled=false;c.drawImage(noise,0,0,cv.width,cv.height);c.imageSmoothingEnabled=true;
+        c.globalAlpha=.26;c.fillStyle='#fff';for(let i=0;i<8;i++)c.fillRect(0,Math.random()*cv.height,cv.width,1+Math.random()*5);c.globalAlpha=1;
+      }
+      function render857(now){
+        if(S.mode==='off'){c.fillStyle='#000';c.fillRect(0,0,cv.width,cv.height)}
+        else if(S.mode==='power'){
+          const p=Math.min(1,(now-S.powerStart)/1450);c.fillStyle='#000';c.fillRect(0,0,cv.width,cv.height);
+          if(p<.25){c.fillStyle='#fff';const w=10+(p/.25)*cv.width*.62,h=2+(p/.25)*4;c.fillRect((cv.width-w)/2,(cv.height-h)/2,w,h)}
+          else drawNoise857(now);
+        }else if(S.mode==='static')drawNoise857(now);
+        else if(S.mode==='image')drawImage857(imgs[S.image-1]);
+        c.save();c.globalAlpha=.12;c.fillStyle='#fff';for(let y=0;y<cv.height;y+=4)c.fillRect(0,y,cv.width,1);c.restore();
+      }
+      function showStep857(i){
+        S.step=i;const st=TUT2_STEPS857[i];if(!st){finish857();return}
+        const after=()=>{S.transition=false;type857(st.text)};
+        if(st.power){
+          S.transition=true;hint.textContent='LIGANDO TRANSMISSÃO...';S.mode='power';S.powerStart=performance.now();tv.classList.add('powered');status.classList.add('show');
+          setTimeout(()=>{if(S.dead)return;S.mode='static'},900);
+          setTimeout(()=>{if(S.dead)return;S.image=st.image;S.mode='image';after()},1900);return;
+        }
+        if(st.image&&st.image!==S.image){
+          S.transition=true;hint.textContent='TROCANDO DE CANAL...';tv.classList.add('switching');S.mode='static';S.channelStart=performance.now();
+          setTimeout(()=>{if(S.dead)return;S.image=st.image;S.mode='image';tv.classList.remove('switching');after()},580);return;
+        }
+        after();
+      }
+      function next857(){if(S.paused||S.transition)return;if(S.typing&&!S.typing.done){finishType857();return}const st=TUT2_STEPS857[S.step];if(st?.finish){finish857();return}showStep857(S.step+1)}
+      function togglePause857(force){S.paused=typeof force==='boolean'?force:!S.paused;root.querySelector('#tut2Pause857').hidden=!S.paused}
+      function finish857(){if(S.dead)return;S.dead=true;const p=tutorialProgress851();p.module2=true;saveTutorialProgress851(p);const toast=document.createElement('div');toast.className='tutFinishToast851';toast.textContent='MÓDULO 2 CONCLUÍDO';document.body.appendChild(toast);setTimeout(()=>{toast.remove();destroy857(true)},900)}
+      function destroy857(back=true){if(!root.isConnected)return;S.dead=true;cancelAnimationFrame(S.raf);window.removeEventListener('keydown',key857,true);root.remove();game=previousGame857;mouse.x=previousMouse857.x;mouse.y=previousMouse857.y;mouse.down=false;if(back)openTutorial461()}
+      function key857(e){if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();togglePause857()}}
+      function loop857(now){if(S.dead)return;const dt=Math.min(.05,(now-S.last)/1000||.016);S.last=now;if(!S.paused){updateType857(dt);render857(now)}S.raf=requestAnimationFrame(loop857)}
+      dialog.onclick=e=>{e.stopPropagation();next857()};root.querySelector('#tut2PauseBtn857').onclick=e=>{e.stopPropagation();togglePause857()};root.querySelector('#tut2Continue857').onclick=e=>{e.stopPropagation();togglePause857(false)};root.querySelector('#tut2Exit857').onclick=e=>{e.stopPropagation();destroy857(true)};root.querySelector('#tut2ExitMain857').onclick=e=>{e.stopPropagation();destroy857(false);(window.openStartMenu||window.openStartMenu461)?.()};
+      window.addEventListener('keydown',key857,true);showStep857(0);S.raf=requestAnimationFrame(loop857);
+    }
+
+
+    const TUT_STEPS851=[
+      {type:'dialog',text:'Olá, Bem vindo ao Chrono Shards!'},
+      {type:'dialog',text:'Calma ai, deixe-me ligar as luzes...',lights:true},
+      {type:'dialog',text:'Bem, não estava esperando visitas a essa hora, mas que bom que você veio!'},
+      {type:'dialog',text:'Eu receio que você veio aqui para aprender a lidar com aqueles monstrengos lá fora não é? Haha, que coragem, aquelas coisas fazem minha espinha tremer.'},
+      {type:'dialog',text:'Bom, para começar, vamos ao básico, aprender a movimentação. Para você andar, é somente clicar o famoso W A S D, W para cima, A para a esquerda, S para baixo e D para a direita, tente você mesmo!'},
+      {type:'task',task:'move'},
+      {type:'dialog',text:'Ahá, você já tá manjado no que fazer, mas isso ai é coisa fácil, todo mundo sabe, agora vamos para o sistema de habilidades e tiros, porque é isso que nós gostamos.'},
+      {type:'dialog',text:'Então, com o botão esquerdo do mouse, você poderá atirar livremente no bixo feio que você quiser. Você pode tanto clicar normalmente, como também segurar, há personagens que tem mecânicas aonde você vai precisar segurar. Mete bala nesse boneco de treino!'},
+      {type:'task',task:'shoot'},
+      {type:'dialog',text:'Agora que você já sabe como atirar, vamos aprender a estripar e dilacerar esses feiosos!'},
+      {type:'dialog',text:'Nesse jogo, cada personagem tem um arsenal de 3 habilidades com uma ultimate, sem contar as mecânicas universais que vamos ver depois, mas esses especiais são únicos para cada personagem — é o que faz a mágica acontecer, saca? Esse personagem que você está usando agora possui um arsenal de 3 habilidades e 1 ultimate, mas você deve estar se perguntando: Ué, cadê minha ultimate? Calma ai meu queridinho, isso ai é explicação para outro módulo!'},
+      {type:'dialog',showSkillHud:true,text:'Mas o que importa agora, é aprender a utilizar suas habilidades. Vamos lá, utilize seus especiais para destruir esses dummys. Você pode utilizar com os botões Q, E e R, mas também pode trocá-los nas configurações caso queira.'},
+      {type:'task',task:'skills'},
+      {type:'dialog',text:'Muuuuuiitooo bem meu queridão, você tá pegando fogo! Agora vamos aprender as mecânicas universais do jogo, aonde todos os personagens tem e você pode usufruir disso a vontade!'},
+      {type:'dialog',text:'No Shift, você pode lançar um dash. Esse dash te deixa invulnerável por alguns segundos e dá dano nos inimigos! No espaço, se você segurar, o tempo vai ficar lento, e isso meu amigo, é o poder do Chrono hahaha! Você pode utilizar esse Time Slow para desviar de projéteis, como o dash também. Lembre-se: todos esses botões podem ser alterados nas configurações.'},
+      {type:'dialog',text:'Agora, vamos pra parte prática que é o que importa aqui, garotão. Tente desviar dos projéteis desses dummys utilizando o Time Slow e o dash. Vai, vai vai!'},
+      {type:'task',task:'evade'},
+      {type:'dialog',text:'Que maravilhaaa! Você é mais surpreendente do que me falaram, aposto que você vai destruir esses miseráveis!!! *rangendo os dentes*'},
+      {type:'dialog',text:'Muito bem, você passou pelo meu teste, e te dou meu selo de aprovação meu querido. AAAAAHH, quase me esqueci. Você analisou que ao utilizar habilidades, ou o Time Slow, apareceu uma barra embaixo de você correto?'},
+      {type:'dialog',text:'Muito bem, aquilo não é só enfeite não garotão, aquilo é o seu FOCO. O seu FOCO é como se fosse sua stamina, utilizado para suas habilidades e também o Time Slow, mas o dash não conta.'},
+      {type:'dialog',text:'Tome cuidado meu garotão, caso você fique sem FOCO, você não poderá utilizar suas habilidades, mas ele regenera com o tempo.'},
+      {type:'dialog',text:'Agora, eu quero que você me mostre o que você aprendeu aqui, matando esse meu boneco de treino SUUPREEEMOOO!!!!'},
+      {type:'task',task:'supreme'},
+      {type:'dialog',text:'Meus parabéns! Você é realmente muito incrível...'},
+      {type:'dialog',text:'É isso meu parceiro, meu trabalho acabou aqui, espero que o Chrono não te mate de uma vez. Até logo!',finish:true}
+    ];
+    let tut851=null;
+    function tutorialRichText851(s){let t=esc(s);t=t.replace(/\*([^*]+)\*/g,'<em>$1</em>');t=t.replace(/SUUPREEEMOOO!!!!/g,'<span class="tutSupreme854">SUUPREEEMOOO!!!!</span>');const reps=[[/W A S D/g,'<span class="tutKey851 cyan">W A S D</span>'],[/Time Slow/g,'<span class="tutKey851">Time Slow</span>'],[/FOCO/g,'<span class="tutKey851">FOCO</span>'],[/Shift/g,'<span class="tutKey851 gold">Shift</span>'],[/\bdash\b/gi,'<span class="tutKey851 gold">dash</span>'],[/\bQ, E e R\b/g,'<span class="tutKey851 cyan">Q, E e R</span>'],[/\bultimate\b/gi,'<span class="tutKey851">ultimate</span>'],[/\bhabilidades\b/gi,'<span class="tutKey851 cyan">habilidades</span>']];for(const [r,v] of reps)t=t.replace(r,v);return t}
+    const TUT_BATTLE_SHOOT851=shoot;
+    const TUT_BATTLE_SKILL851=useSkill;
+    const TUT_BATTLE_DASH851=startDash;
+    const TUT_BATTLE_UPDATE_BULLETS851=updateBullets;
+    const TUT_BATTLE_UPDATE_FX851=updateFX;
+    const TUT_BATTLE_DRAW_PLAYER851=drawPlayer;
+    function startTutorialModuleOne851(){
+      ensureTutorialModuleOne851Style();
+      if(tut851?.destroy)tut851.destroy(false);
+      overlay?.classList?.add('hidden');
+
+      const previousGame851=game;
+      const tutorialSaveSnapshot854=localStorage.getItem(SAVE);
+      const previousMouse851={x:mouse.x,y:mouse.y,down:mouse.down};
+      const previousKeys851={};for(const k in keys)previousKeys851[k]=keys[k];
+      let battle851=null;
+      try{
+        resetGame('assault');
+        battle851=game;
+      }catch(err){
+        console.error('Falha ao preparar o Assault real para o tutorial',err);
+        game=previousGame851;
+        throw err;
+      }
+      battle851.running=false;
+      battle851.time=0;
+      battle851.mode='tutorial';
+      battle851.mapDecor=null;battle851.duneMap=false;battle851.secretArena=false;battle851.riftMode50=false;
+      battle851.classKey='assault';
+      battle851.weaponKey=CLASSES.assault.weapon;
+      battle851.enemies.length=0;battle851.bullets.length=0;battle851.enemyBullets.length=0;
+      battle851.particles.length=0;battle851.rings.length=0;battle851.lightnings.length=0;
+      battle851.shockwaves.length=0;battle851.floatingTexts.length=0;battle851.loot.length=0;
+      battle851.hazards.length=0;battle851.drones.length=0;battle851.deathMarks.length=0;
+      battle851.bossActive=false;battle851.waveBoss=false;battle851.betweenWaves=true;
+      battle851.enemiesToSpawn=0;battle851.enemiesSpawnedThisWave=0;battle851.enemiesKilledThisWave=0;
+      battle851.spawnTimer=999999;battle851.shopPending=false;battle851.waveAnnounce='';battle851.waveAnnounceTimer=0;
+      battle851.upgrades={damage:1,fireRate:1,speed:1,lifesteal:0,critChance:0,multishot:0,pierce:0,armor:0,focusRegen:1,lootBonus:0,droneUnlocked:false,killHeal:0,comboBonus:0,explosiveBullets:false};
+      battle851.skillCds=[0,0,0];battle851.cloakActive=0;battle851.cloakBonus=false;battle851.timeStopActive=0;
+      const bp=battle851.player;
+      Object.assign(bp,{x:W/2,y:H/2,r:14,vx:0,vy:0,speed:CLASSES.assault.speed,hp:CLASSES.assault.hp,maxHp:CLASSES.assault.hp,shield:CLASSES.assault.shield,maxShield:CLASSES.assault.shield,focus:CLASSES.assault.focus,maxFocus:CLASSES.assault.focus,dashCharge:100,fireCd:0,hurtCd:0,dashTime:0,dashAngle:0,railPierceMode:0,trail:[]});
+      mouse.down=false;for(const k in keys)keys[k]=false;
+
+      const root=document.createElement('div');
+      root.id='tutorialModuleOne851';root.className='tutScene851';
+      root.innerHTML=`<div class="tutGameStage855" id="tutGameStage855"><canvas id="tutCanvas851"></canvas></div><div class="tutTaskTop851" id="tutTaskTop851"><small>TREINAMENTO ATIVO</small><b id="tutTaskName851"></b><span id="tutTaskDesc851"></span></div><button class="tutPauseButton851" id="tutPauseBtn851" aria-label="Pausar tutorial" hidden>Ⅱ</button><div class="tutDialogue851" id="tutDialogue851"><div class="tutPortrait851"><i class="hair"></i><i class="face"></i><i class="goggles"></i><i class="mouth"></i><i class="coat"></i></div><div class="tutSpeaker851">INSTRUTOR</div><div class="tutText851" id="tutText851"></div><div id="tutReq851"></div><div class="tutHint851" id="tutHint851">CLIQUE PARA PASSAR</div></div><div class="tutPause851" id="tutPause851" hidden><div class="tutPauseBox851"><h2>TREINAMENTO PAUSADO</h2><p>Você pode continuar de onde parou ou voltar ao menu de tutoriais.</p><button class="primary" id="tutContinue851">CONTINUAR</button><button id="tutExit851">VOLTAR AOS TUTORIAIS</button><button id="tutExitMain851">VOLTAR AO MENU PRINCIPAL</button></div></div>`;
+      document.body.appendChild(root);
+      const realSkillBar854=document.getElementById('skillBar');
+      const skillBarHome854=realSkillBar854?{parent:realSkillBar854.parentNode,next:realSkillBar854.nextSibling,style:realSkillBar854.getAttribute('style'),className:realSkillBar854.className,children:[...realSkillBar854.children]}:null;
+      const tutorialStage855=document.getElementById('tutGameStage855');
+      if(realSkillBar854){
+        tutorialStage855.appendChild(realSkillBar854);
+        realSkillBar854.classList.add('tutSkillBar854');
+        realSkillBar854.style.display='none';
+        // Mantém exatamente a ordem usada na partida normal do Assault: E, Q e R.
+        // Não reorganiza os nós, pois skillIcon1 representa o índice 0 (E) e
+        // skillIcon2 representa o índice 1 (Q) no arsenal real do personagem.
+      }
+
+      const cv=document.getElementById('tutCanvas851'),tx=cv.getContext('2d'),dialog=document.getElementById('tutDialogue851'),textEl=document.getElementById('tutText851'),hint=document.getElementById('tutHint851'),req=document.getElementById('tutReq851'),taskTop=document.getElementById('tutTaskTop851');
+      const S={root,cv,ctx:tx,battle:battle851,player:bp,step:0,lights:false,lightSeq:0,lightStable:false,transition:false,paused:false,dead:false,last:performance.now(),w:W,h:H,dpr:1,keys:{},mouse:{x:W*.70,y:H*.5,down:false},dummies:battle851.enemies,enemyBullets:[],fx:[],move:{w:0,a:0,s:0,d:0},kills:0,slowTime:0,dashes:0,shooterCd:.5,task:null,raf:0,typing:null,reqSig:'',grenadeTimers:[],skillHudVisible:false,supreme:null};
+      battle851._tutorialModuleOne851=S;tut851=S;
+
+      const previousEnemyDeath851=enemyDeath;
+      const previousWindowEnemyDeath851=window.enemyDeath;
+      const previousRender851=render;
+      const previousWindowRender851=window.render;
+      const tutorialRenderGuard851=function(){if(tut851===S&&game===battle851)return;return previousRender851.apply(this,arguments)};
+      try{render=tutorialRenderGuard851;window.render=tutorialRenderGuard851}catch{}
+      function tutorialEnemyDeath851(index,e){
+        if(game===battle851&&e?._tutorialDummy851){
+          const pos=battle851.enemies.indexOf(e);if(pos>=0)battle851.enemies.splice(pos,1);
+          if(!e._tutorialCounted851){e._tutorialCounted851=true;S.kills++;addRing(e.x,e.y,e.color||'#ffd36b',52,4);addParticles(e.x,e.y,e.color||'#ffd36b',18,.75)}
+          return;
+        }
+        return previousEnemyDeath851.apply(this,arguments);
+      }
+      try{enemyDeath=tutorialEnemyDeath851;window.enemyDeath=tutorialEnemyDeath851}catch{}
+
+      function resize(){S.dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.round(W*S.dpr);cv.height=Math.round(H*S.dpr);cv.style.width='100%';cv.style.height='100%';tx.setTransform(S.dpr,0,0,S.dpr,0,0);bp.x=Math.max(45,Math.min(W-45,bp.x));bp.y=Math.max(65,Math.min(H-170,bp.y))}
+      function setTaskTop(name,desc,show=true){document.getElementById('tutTaskName851').textContent=name;document.getElementById('tutTaskDesc851').textContent=desc;taskTop.classList.toggle('show',show)}
+      function showRealSkillHud854(show=true){S.skillHudVisible=!!show;if(!realSkillBar854)return;realSkillBar854.style.display=show?'flex':'none';if(show){try{updateHUD();window.__doomControls805?.refreshHints?.(true)}catch(err){console.warn('HUD real do tutorial',err)}}}
+      function clearTimers(){for(const id of S.grenadeTimers)clearTimeout(id);S.grenadeTimers.length=0}
+      function clearArena(){clearTimers();battle851.bullets.length=0;battle851.enemyBullets.length=0;battle851.enemies.length=0;battle851.particles.length=0;battle851.rings.length=0;battle851.lightnings.length=0;battle851.shockwaves.length=0;battle851.floatingTexts.length=0;battle851.assaultGrenades33=[];battle851.assaultGrenades34=[];battle851.assaultTurbo33=0;S.enemyBullets.length=0;S.fx.length=0;S.mouse.down=false;mouse.down=false;S.keys={};for(const k in keys)keys[k]=false}
+      function spawnDummy(x,y,hp=62,shooter=false,supreme=false){const d={_tutorialDummy851:true,x,y,r:supreme?86:shooter?46:40,hp,maxHp:hp,shooter,supreme,hit:0,dead:false,type:'tutorialDummy851',value:0,color:supreme?'#ff9f43':shooter?'#ff8c6b':'#69dff7',elite:false,wobble:0,hitFlash:0,shieldHp:0,frozenTime:0,marked:false,vx:0,vy:0,speed:0};battle851.enemies.push(d);return d}
+      function addFx(type,x,y,color='#74ddff',life=.35,r=20){S.fx.push({type,x,y,color,life,max:life,r})}
+      function damageDummy(d,amount){if(!d||d.dead||!battle851.enemies.includes(d))return;d.hp-=amount;d.hit=.12;d.hitFlash=.12;addParticles(d.x,d.y,d.color||'#75ddff',6,.45);if(d.hp<=0){d.dead=true;tutorialEnemyDeath851(battle851.enemies.indexOf(d),d)}}
+
+      function richLength851(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent.length}
+      function richSlice851(html,limit){const src=document.createElement('div');src.innerHTML=html;const out=document.createElement('div');let left=Math.max(0,limit);function copy(n,parent){if(left<=0)return;if(n.nodeType===3){const s=n.nodeValue||'',part=s.slice(0,left);if(part)parent.appendChild(document.createTextNode(part));left-=part.length;return}if(n.nodeType!==1)return;const c=n.cloneNode(false);parent.appendChild(c);for(const ch of n.childNodes){copy(ch,c);if(left<=0)break}}for(const n of src.childNodes){copy(n,out);if(left<=0)break}return out.innerHTML}
+      function setTyping(raw,isTask=false){const html=tutorialRichText851(raw),total=richLength851(html);S.typing={html,total,pos:0,shown:-1,done:false,isTask};textEl.innerHTML='';req.innerHTML='';hint.textContent='CLIQUE PARA COMPLETAR A FALA';dialog.style.cursor='pointer'}
+      function finishTyping(){const t=S.typing;if(!t||t.done)return;t.pos=t.total;t.shown=t.total;t.done=true;textEl.innerHTML=t.html;hint.textContent=t.isTask?'COMPLETE OS REQUISITOS PARA CONTINUAR':'CLIQUE PARA PASSAR';if(t.isTask)updateRequirements(true)}
+      function updateTyping(dt){const t=S.typing;if(!t||t.done)return;t.pos=Math.min(t.total,t.pos+dt*42);const shown=Math.floor(t.pos);if(shown!==t.shown){t.shown=shown;textEl.innerHTML=richSlice851(t.html,shown)}if(t.pos>=t.total)finishTyping()}
+      function updateRequirements(force=false){if(!S.task)return;const html=reqHTML();if(force||html!==S.reqSig){S.reqSig=html;req.innerHTML=html}}
+
+      function setupTask(kind){
+        clearArena();S.task=kind;S.reqSig='';
+        if(kind==='move'){
+          S.move={w:0,a:0,s:0,d:0};setTaskTop('MOVIMENTAÇÃO','Use W, A, S e D.');setTyping('Movimente-se em todas as direções para concluir o exercício.',true);
+        }else if(kind==='shoot'){
+          S.kills=0;spawnDummy(Math.min(W-120,bp.x+280),bp.y,62,false);setTaskTop('TIRO PRINCIPAL','Destrua o dummy com o ataque principal do Assault.');setTyping('Mire no boneco de treino e utilize o ataque principal do Assault.',true);
+        }else if(kind==='skills'){
+          S.kills=0;bp.focus=bp.maxFocus;battle851.skillCds=[0,0,0];showRealSkillHud854(true);const pad=145,top=190,bottom=H-190;spawnDummy(pad,top,54);spawnDummy(W-pad,top,54);spawnDummy(pad,bottom,54);spawnDummy(W-pad,bottom,54);setTaskTop('HABILIDADES','Movimente-se, atire e elimine os quatro dummys usando o arsenal real do Assault.');setTyping('Movimente-se livremente, atire quando precisar e utilize as habilidades Q, E e R do Assault para destruir os quatro dummys.',true);
+        }else if(kind==='evade'){
+          S.slowTime=0;S.dashes=0;bp.focus=bp.maxFocus;spawnDummy(W/2,190,999,true);setTaskTop('MECÂNICAS UNIVERSAIS','Ande livremente, use o Time Slow e execute dashes enquanto o dummy dispara.');setTyping('Movimente-se pelo laboratório e sobreviva ao exercício utilizando o dash e o Time Slow.',true);
+        }else if(kind==='supreme'){
+          S.kills=0;S.shooterCd=.35;bp.x=W/2;bp.y=H-165;bp.focus=bp.maxFocus;bp.hp=bp.maxHp;battle851.skillCds=[0,0,0];showRealSkillHud854(true);S.supreme=spawnDummy(W/2,H*.48,Math.round(3500*.60),true,true);setTaskTop('DUMMY SUPREMO','Use tudo que aprendeu e destrua o boneco com 60% da vida base do Archon Core.');setTyping('Derrote o Dummy Supremo usando movimento, tiros, habilidades, dash e Time Slow.',true);
+        }
+        updateRequirements(true);
+      }
+      function enterStep(i){S.step=i;S.task=null;S.typing=null;S.reqSig='';clearArena();taskTop.classList.remove('show');const st=TUT_STEPS851[i];if(!st)return finish();if(st.showSkillHud)showRealSkillHud854(true);if(st.type==='task')setupTask(st.task);else setTyping(st.text,false)}
+      function startLights(){S.transition=true;S.lights=true;S.lightSeq=0;hint.textContent='INICIALIZANDO ILUMINAÇÃO...';dialog.style.cursor='default'}
+      function advance(){if(S.paused||S.task||S.transition)return;const st=TUT_STEPS851[S.step];if(!st)return;if(st.lights){startLights();return}if(st.finish){finish();return}enterStep(S.step+1)}
+      function completeTask(){S.task=null;S.typing=null;clearArena();setTaskTop('ETAPA CONCLUÍDA','Preparando a próxima instrução...',true);hint.textContent='ETAPA CONCLUÍDA';const id=setTimeout(()=>{if(!S.dead)enterStep(S.step+1)},480);S.grenadeTimers.push(id)}
+      function reqHTML(){if(S.task==='move'){const data=[['Subir',S.move.w],['Esquerda',S.move.a],['Descer',S.move.s],['Direita',S.move.d]];return `<div class="tutReq851">${data.map(x=>`<div class="${x[1]>=2?'done':''}">${x[0]} por 2s <b>${Math.min(2,x[1]).toFixed(1)}s</b></div>`).join('')}</div>`}if(S.task==='shoot')return `<div class="tutReq851"><div class="${S.kills>=1?'done':''}">Destrua o dummy <b>${S.kills}/1</b></div></div>`;if(S.task==='skills')return `<div class="tutReq851"><div class="${S.kills>=4?'done':''}">Dummys eliminados <b>${S.kills}/4</b></div></div>`;if(S.task==='evade')return `<div class="tutReq851"><div class="${S.slowTime>=10?'done':''}">Time Slow ativo <b>${Math.min(10,S.slowTime).toFixed(1)}/10s</b></div><div class="${S.dashes>=5?'done':''}">Dashes executados <b>${S.dashes}/5</b></div></div>`;if(S.task==='supreme'){const d=S.supreme,p=d?Math.max(0,d.hp):0,m=d?.maxHp||Math.round(3500*.60);return `<div class="tutReq851"><div class="${!d||p<=0?'done':''}">Vida do Dummy Supremo <b>${Math.ceil(p)}/${m}</b></div></div>`}return ''}
+
+      function withRunning851(fn){const old=battle851.running;battle851.running=true;try{return fn()}finally{battle851.running=old}}
+      function fireActual851(){if(!['shoot','skills','supreme'].includes(S.task)||bp.fireCd>0)return;mouse.x=S.mouse.x;mouse.y=S.mouse.y;withRunning851(()=>shoot())}
+      function useActualSkill851(i){if(!['skills','supreme'].includes(S.task)||battle851.skillCds[i]>0)return;mouse.x=S.mouse.x;mouse.y=S.mouse.y;withRunning851(()=>useSkill(i))}
+      function dashActual851(){if(!['evade','supreme'].includes(S.task)||bp.dashTime>0||bp.dashCharge<100)return;for(const k in keys)keys[k]=false;keys.w=!!S.keys.w;keys.a=!!S.keys.a;keys.s=!!S.keys.s;keys.d=!!S.keys.d;mouse.x=S.mouse.x;mouse.y=S.mouse.y;startDash();for(const k in keys)keys[k]=false;if(bp.dashTime>0&&S.task==='evade')S.dashes++}
+
+      function keydown(e){
+        if(S.dead)return;const k=String(e.key||'').toLowerCase(),nk=k===' '?'space':k;
+        if(k==='escape'){e.preventDefault();e.stopImmediatePropagation();togglePause();return}
+        if(S.paused){e.preventDefault();e.stopImmediatePropagation();return}
+        if(['w','a','s','d','q','e','r','shift',' '].includes(k)||e.code==='Space'){e.preventDefault();e.stopImmediatePropagation()}
+        S.keys[nk]=true;
+        if(['skills','supreme'].includes(S.task)&&!e.repeat){if(k==='e')useActualSkill851(0);if(k==='q')useActualSkill851(1);if(k==='r')useActualSkill851(2)}
+        if(['evade','supreme'].includes(S.task)&&k==='shift'&&!e.repeat)dashActual851()
+      }
+      function keyup(e){const k=String(e.key||'').toLowerCase();S.keys[k===' '?'space':k]=false;if(['w','a','s','d','q','e','r','shift',' '].includes(k)||e.code==='Space'){e.preventDefault();e.stopImmediatePropagation()}}
+      function pointer(e){const r=cv.getBoundingClientRect();S.mouse.x=(e.clientX-r.left)/r.width*W;S.mouse.y=(e.clientY-r.top)/r.height*H;mouse.x=S.mouse.x;mouse.y=S.mouse.y}
+      function down(e){if(S.paused||S.dead)return;if(e.target?.closest?.('#tutPauseBtn851,#tutPause851,#tutDialogue851'))return;pointer(e);if(['shoot','skills','supreme'].includes(S.task)){S.mouse.down=true;fireActual851();e.preventDefault();e.stopPropagation()}}
+      function up(){S.mouse.down=false;mouse.down=false}
+      function dialogueClick(e){e.stopPropagation();if(S.paused||S.transition)return;if(S.typing&&!S.typing.done){finishTyping();return}if(S.task)return;advance()}
+      function togglePause(force){S.paused=typeof force==='boolean'?force:!S.paused;document.getElementById('tutPause851').hidden=!S.paused;S.mouse.down=false;mouse.down=false}
+      function finish(){if(S.dead)return;S.dead=true;const p=tutorialProgress851();p.module1=true;saveTutorialProgress851(p);const toast=document.createElement('div');toast.className='tutFinishToast851';toast.textContent='MÓDULO 1 CONCLUÍDO';document.body.appendChild(toast);setTimeout(()=>{toast.remove();destroy(true)},900)}
+      function destroy(back=true){
+        if(root.isConnected===false)return;S.dead=true;clearTimers();cancelAnimationFrame(S.raf);
+        window.removeEventListener('resize',resize);window.removeEventListener('keydown',keydown,true);window.removeEventListener('keyup',keyup,true);
+        root.removeEventListener('pointermove',pointer);root.removeEventListener('pointerdown',down);root.removeEventListener('pointerup',up);
+        try{enemyDeath=previousEnemyDeath851;window.enemyDeath=previousWindowEnemyDeath851||previousEnemyDeath851}catch{}
+        try{render=previousRender851;window.render=previousWindowRender851||previousRender851}catch{}
+        if(realSkillBar854&&skillBarHome854){realSkillBar854.replaceChildren(...skillBarHome854.children);realSkillBar854.className=skillBarHome854.className;if(skillBarHome854.style===null)realSkillBar854.removeAttribute('style');else realSkillBar854.setAttribute('style',skillBarHome854.style);if(skillBarHome854.parent){if(skillBarHome854.next&&skillBarHome854.next.parentNode===skillBarHome854.parent)skillBarHome854.parent.insertBefore(realSkillBar854,skillBarHome854.next);else skillBarHome854.parent.appendChild(realSkillBar854)}}
+        if(tutorialSaveSnapshot854===null)localStorage.removeItem(SAVE);else localStorage.setItem(SAVE,tutorialSaveSnapshot854);
+        root.remove();tut851=null;game=previousGame851;mouse.x=previousMouse851.x;mouse.y=previousMouse851.y;mouse.down=false;
+        for(const k in keys)delete keys[k];for(const k in previousKeys851)keys[k]=previousKeys851[k];
+        try{canvas.getContext('2d').clearRect(0,0,W,H)}catch{}
+        if(back)openTutorial461()
+      }
+      S.destroy=destroy;
+      window.addEventListener('resize',resize);window.addEventListener('keydown',keydown,true);window.addEventListener('keyup',keyup,true);
+      root.addEventListener('pointermove',pointer);root.addEventListener('pointerdown',down);root.addEventListener('pointerup',up);
+      document.getElementById('tutPauseBtn851').onclick=e=>{e.stopPropagation();togglePause()};
+      document.getElementById('tutContinue851').onclick=e=>{e.stopPropagation();togglePause(false)};
+      document.getElementById('tutExit851').onclick=e=>{e.stopPropagation();destroy(true)};
+      document.getElementById('tutExitMain851').onclick=e=>{e.stopPropagation();destroy(false);(window.openStartMenu||window.openStartMenu461)?.()};
+      dialog.onclick=dialogueClick;
+
+      function spawnTrainingBullet854(d,speed=355,damage=1,spread=0){if(!d)return;const a=Math.atan2(bp.y-d.y,bp.x-d.x)+spread,b={x:d.x,y:d.y+Math.min(34,d.r*.45),vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:d.supreme?9:8,life:5,damage,color:d.supreme?'#ff9f43':'#ff8067',homing:false};const push=window.__ChronoOptimizer820?.pushEnemyBullet;if(typeof push==='function')push(battle851.enemyBullets,b);else battle851.enemyBullets.push(b)}
+      function syncRealControls854(){const move=['move','skills','evade','supreme'].includes(S.task),shooting=['shoot','skills','supreme'].includes(S.task),slow=['evade','supreme'].includes(S.task);for(const k of ['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' '])keys[k]=false;if(move){keys.w=!!S.keys.w;keys.a=!!S.keys.a;keys.s=!!S.keys.s;keys.d=!!S.keys.d}if(slow)keys[' ']=!!S.keys.space;mouse.down=shooting&&!!S.mouse.down;mouse.x=S.mouse.x;mouse.y=S.mouse.y}
+      function segmentBoxHit856(x1,y1,x2,y2,left,top,right,bottom){
+        let t0=0,t1=1;const dx=x2-x1,dy=y2-y1;
+        const clip=(p,q)=>{if(Math.abs(p)<1e-8)return q>=0;const r=q/p;if(p<0){if(r>t1)return false;if(r>t0)t0=r}else{if(r<t0)return false;if(r<t1)t1=r}return true};
+        return clip(-dx,x1-left)&&clip(dx,right-x1)&&clip(-dy,y1-top)&&clip(dy,bottom-y1)&&t0<=t1;
+      }
+      function dummyHitbox856(d,pad=0){
+        if(d.supreme)return {left:d.x-72-pad,right:d.x+72+pad,top:d.y-60-pad,bottom:d.y+84+pad};
+        if(d.shooter)return {left:d.x-40-pad,right:d.x+40+pad,top:d.y-34-pad,bottom:d.y+58+pad};
+        return {left:d.x-36-pad,right:d.x+36+pad,top:d.y-42-pad,bottom:d.y+62+pad};
+      }
+      function updateRealBullets855(dt){
+        const allEnemies=battle851.enemies;
+        const dummies=allEnemies.filter(d=>d?._tutorialDummy851&&!d.dead);
+        const starts=new Map((battle851.bullets||[]).map(b=>[b,{x:b.x,y:b.y}]));
+        // O motor normal usa colisão circular. Durante esta atualização, retiramos
+        // somente os dummys da lista e aplicamos abaixo a hitbox visual completa.
+        battle851.enemies=allEnemies.filter(e=>!e?._tutorialDummy851);
+        try{updateBullets(dt)}finally{battle851.enemies=allEnemies}
+        for(let i=battle851.bullets.length-1;i>=0;i--){
+          const b=battle851.bullets[i],p0=starts.get(b)||{x:b.x-(b.vx||0)*dt,y:b.y-(b.vy||0)*dt};
+          const hits=b._tutorialHits856||(b._tutorialHits856=new WeakSet());
+          for(const d of dummies){
+            if(d.dead||hits.has(d)||!allEnemies.includes(d))continue;
+            const box=dummyHitbox856(d,(b.r||4)+4);
+            if(!segmentBoxHit856(p0.x,p0.y,b.x,b.y,box.left,box.top,box.right,box.bottom))continue;
+            hits.add(d);
+            const crit=Math.random()<(battle851.upgrades?.critChance||0),amount=(b.damage||14)*(crit?2:1);
+            damageDummy(d,amount);
+            addRing(b.x,b.y,d.color||'#75ddff',22,2);
+            if(crit)addFloatingText(d.x,d.y-24,'CRÍTICO!','#ffd166',15);
+            if(b.explosive){
+              for(const other of dummies){if(other!==d&&!other.dead&&Math.hypot(other.x-b.x,other.y-b.y)<72)damageDummy(other,amount*.4)}
+              window.__ChronoOptimizer820.removeBullet(battle851.bullets,i);break;
+            }
+            b.pierce=Number.isFinite(Number(b.pierce))?Number(b.pierce)-1:-1;
+            if(b.pierce<0){window.__ChronoOptimizer820.removeBullet(battle851.bullets,i);break}
+          }
+        }
+      }
+      function update(dt){
+        if(S.paused)return;
+        battle851.time+=dt;updateTyping(dt);
+        if(S.transition){S.lightSeq+=dt;if(S.lightSeq>=1.95){S.transition=false;S.lightStable=true;const pb=document.getElementById('tutPauseBtn851');if(pb)pb.hidden=false;enterStep(S.step+1)}return}
+        if(S.task==='move'){if(S.keys.w)S.move.w+=dt;if(S.keys.s)S.move.s+=dt;if(S.keys.a)S.move.a+=dt;if(S.keys.d)S.move.d+=dt}
+        syncRealControls854();
+        const focusBefore=bp.focus;
+        withRunning851(()=>updatePlayer(dt));
+        bp.x=Math.max(38,Math.min(W-38,bp.x));bp.y=Math.max(S.task?170:55,Math.min(H-82,bp.y));
+        if(bp.dashTime>0){
+          if(!S._dashActive856)S._dashHits856=new WeakSet();
+          S._dashActive856=true;
+          for(const d of battle851.enemies){
+            if(!d?._tutorialDummy851||d.dead||S._dashHits856.has(d))continue;
+            const box=dummyHitbox856(d,(bp.r||14)+5);
+            if(bp.x>=box.left&&bp.x<=box.right&&bp.y>=box.top&&bp.y<=box.bottom){S._dashHits856.add(d);damageDummy(d,90);addRing(d.x,d.y,'#ffe08c',42,3)}
+          }
+        }else S._dashActive856=false;
+        if(S.task==='evade'&&S.keys.space&&focusBefore>0)S.slowTime+=dt;
+        const scaled=dt*(battle851.dtScale||1);
+        try{updateRealBullets855(scaled)}catch(err){console.warn('Atualização dos tiros reais do tutorial',err)}
+        try{updateEnemyBullets(scaled)}catch(err){console.warn('Projéteis de treinamento',err)}
+        try{updateHazards(scaled)}catch(err){console.warn('Efeitos das habilidades do Assault',err)}
+        try{updateFX(scaled)}catch{}
+        for(const d of battle851.enemies)d.hit=Math.max(0,(d.hit||0)-dt);
+        if(['evade','supreme'].includes(S.task)){
+          const d=battle851.enemies.find(e=>e._tutorialDummy851&&e.shooter);S.shooterCd-=dt;
+          if(S.shooterCd<=0&&d){S.shooterCd=d.supreme?0.46:0.72;if(d.supreme){spawnTrainingBullet854(d,390,1,-.10);spawnTrainingBullet854(d,390,1,.10)}else spawnTrainingBullet854(d,355,1,0)}
+        }
+        for(const f of S.fx)f.life-=dt;S.fx=S.fx.filter(f=>f.life>0);
+        if(S.skillHudVisible){try{updateHUD();window.__doomControls805?.refreshHints?.(false)}catch{}}
+        updateRequirements();
+        if(S.task==='move'&&Object.values(S.move).every(v=>v>=2))completeTask();
+        if(S.task==='shoot'&&S.kills>=1)completeTask();
+        if(S.task==='skills'&&S.kills>=4)completeTask();
+        if(S.task==='evade'&&S.slowTime>=10&&S.dashes>=5)completeTask();
+        if(S.task==='supreme'&&(!S.supreme||S.supreme.dead||!battle851.enemies.includes(S.supreme)))completeTask();
+      }
+
+      function round(x,y,w,h,r){tx.beginPath();tx.roundRect?tx.roundRect(x,y,w,h,r):tx.rect(x,y,w,h)}
+      function lightAmount851(){if(!S.lights)return 0;if(S.lightStable)return 1;const t=S.lightSeq;if(t<.18)return 0;if(t<.34)return .72+Math.sin(t*95)*.22;if(t<.55)return .06;if(t<.78)return .92+Math.sin(t*70)*.08;if(t<1.02)return .16+Math.sin(t*82)*.12;if(t<1.28)return .82;if(t<1.52)return .30+Math.sin(t*76)*.22;return Math.min(1,.55+(t-1.52)*1.55)}
+      function drawLab(alpha=1){const w=W,h=H;tx.save();tx.globalAlpha=alpha;tx.fillStyle='#edf4f7';tx.fillRect(0,0,w,h);const g=tx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#fbfeff');g.addColorStop(.58,'#dce9ee');g.addColorStop(1,'#bccdd4');tx.fillStyle=g;tx.fillRect(0,0,w,h);tx.fillStyle='#fff';tx.fillRect(0,0,w,112);tx.fillStyle='#9beaff';tx.fillRect(0,106,w,5);tx.strokeStyle='rgba(33,91,115,.18)';tx.lineWidth=1;for(let x=0;x<w;x+=110){tx.beginPath();tx.moveTo(x,0);tx.lineTo(x,112);tx.stroke()}for(let x=80;x<w;x+=210){const on=alpha>.35;tx.fillStyle=on?'rgba(255,255,255,.98)':'rgba(130,150,160,.22)';round(x,22,130,24,8);tx.fill();if(on){tx.shadowBlur=24;tx.shadowColor='#fff';tx.fillStyle='rgba(255,255,255,.36)';tx.fillRect(x-20,42,170,18);tx.shadowBlur=0}}tx.save();tx.translate(w/2,h*.61);tx.strokeStyle='rgba(35,103,126,.15)';for(let i=-10;i<=10;i++){tx.beginPath();tx.moveTo(i*105,-20);tx.lineTo(i*190,h*.45);tx.stroke()}for(let y=0;y<h*.42;y+=54){tx.beginPath();tx.moveTo(-w,y);tx.lineTo(w,y);tx.stroke()}tx.restore();for(const s of[-1,1]){tx.fillStyle='#e8f4f7';round(s<0?22:w-202,145,180,210,22);tx.fill();tx.strokeStyle='#8fdff2';tx.lineWidth=2;tx.stroke();tx.fillStyle='#142a36';round(s<0?42:w-182,169,140,82,14);tx.fill();tx.fillStyle='#79e3ff';tx.fillRect(s<0?57:w-167,188,80,5);tx.fillStyle='#aec5cc';for(let i=0;i<3;i++){round((s<0?53:w-171)+i*38,276,28,48,8);tx.fill()}}tx.fillStyle='rgba(105,219,247,.13)';tx.beginPath();tx.ellipse(w/2,h*.49,240,80,0,0,Math.PI*2);tx.fill();tx.strokeStyle='rgba(78,196,225,.32)';tx.stroke();tx.restore()}
+      function drawDummy(d){tx.save();tx.translate(d.x,d.y);if(d.supreme)tx.scale(1.48,1.48);tx.shadowBlur=d.supreme?28:16;tx.shadowColor=d.shooter?'#ff9a73':'#75ddff';tx.fillStyle=(d.hit||d.hitFlash)>0?'#fff':'#e9f0f2';tx.strokeStyle=d.shooter?'#ff8c6b':'#4cbdd9';tx.lineWidth=3;if(d.shooter){round(d.supreme?-42:-31,d.supreme?-38:-27,d.supreme?84:62,d.supreme?76:54,d.supreme?20:14);tx.fill();tx.stroke();tx.fillStyle='#182631';round(-20,-16,40,25,8);tx.fill();tx.fillStyle='#ff8c6b';tx.beginPath();tx.arc(0,-4,7,0,Math.PI*2);tx.fill();tx.fillStyle='#324753';round(-8,19,16,33,6);tx.fill();tx.stroke()}else{tx.beginPath();tx.arc(0,-20,17,0,Math.PI*2);tx.fill();tx.stroke();round(-25,0,50,55,14);tx.fill();tx.stroke();tx.fillStyle='#172d38';tx.beginPath();tx.arc(0,24,14,0,Math.PI*2);tx.fill();tx.strokeStyle='#ff657b';tx.beginPath();tx.arc(0,24,7,0,Math.PI*2);tx.stroke()}tx.restore();if(!d.shooter||d.supreme){const w=d.supreme?150:62,x=d.x-w/2,y=d.y-(d.supreme?118:57);tx.fillStyle='rgba(8,14,25,.72)';round(x,y,w,7,5);tx.fill();tx.fillStyle='#6de0ff';round(x+2,y+2,(w-4)*Math.max(0,d.hp/d.maxHp),3,4);tx.fill()}}
+      function drawFocus851(){if(!S.lightStable)return;const bw=66,bh=7,x=bp.x-bw/2,y=bp.y+31;tx.fillStyle='rgba(7,12,25,.72)';round(x,y,bw,bh,6);tx.fill();tx.fillStyle='#a875ff';round(x+2,y+2,(bw-4)*(bp.focus/bp.maxFocus),bh-4,5);tx.fill();tx.fillStyle='#4ee0ff';tx.font='700 8px Orbitron, sans-serif';tx.textAlign='center';tx.fillText('FOCO',bp.x,y+18)}
+      function drawHud(){if(!S.lightStable)return;tx.fillStyle='rgba(6,13,27,.78)';round(20,H-82,285,55,16);tx.fill();tx.strokeStyle='rgba(111,222,255,.28)';tx.stroke();tx.fillStyle='#77e1ff';tx.font='900 9px Orbitron, sans-serif';tx.textAlign='left';tx.fillText('ASSAULT • LABORATÓRIO CHRONAL',36,H-57);tx.fillStyle='#aeb9cb';tx.font='10px Inter, sans-serif';tx.fillText(S.task==='move'?'MOVIMENTO LIBERADO':S.task==='shoot'?'TIRO PRINCIPAL LIBERADO':S.task==='skills'?'MOVIMENTO • Q • E • R LIBERADOS':S.task==='evade'?'SHIFT • ESPAÇO LIBERADOS':'AGUARDANDO INSTRUÇÕES',36,H-40);const labels=['Q','E','R'];for(let i=0;i<3;i++){const x=W-158+i*44,y=H-68;tx.fillStyle=S.task==='skills'?'rgba(120,102,255,.30)':'rgba(10,15,27,.65)';round(x,y,36,36,10);tx.fill();tx.strokeStyle=S.task==='skills'?'#9d83ff':'rgba(255,255,255,.12)';tx.stroke();tx.fillStyle='#fff';tx.font='900 11px Orbitron';tx.textAlign='center';tx.fillText(labels[i],x+18,y+23)}}
+      function drawFx(){for(const f of S.fx){const a=Math.max(0,f.life/f.max);tx.save();tx.globalAlpha=a;tx.strokeStyle=f.color;tx.fillStyle=f.color;tx.lineWidth=3;if(f.type==='ring'||f.type==='burst'){tx.beginPath();tx.arc(f.x,f.y,f.r*(1.4-a*.4),0,Math.PI*2);tx.stroke()}else{tx.beginPath();tx.arc(f.x,f.y,f.r*(1.2-a*.2),0,Math.PI*2);tx.fill()}tx.restore()}}
+      function drawRealBattleLayer851(){const bx=canvas.getContext('2d');bx.setTransform(1,0,0,1,0,0);bx.clearRect(0,0,W,H);mouse.x=S.mouse.x;mouse.y=S.mouse.y;try{drawHazards();drawRings();drawShockwaves();drawBullets();drawEnemyBullets();drawLightnings();drawParticles();drawPlayer();window.__drawAssaultGrenadesLatest854?.();drawFloatingTexts();window.__drawFocusUnderPlayerLatest854?.()}catch(err){console.warn('Render real do Assault no tutorial',err);try{drawPlayer();window.__drawFocusUnderPlayerLatest854?.()}catch{}}tx.drawImage(canvas,0,0,W,H);bx.clearRect(0,0,W,H)}
+      function draw(){tx.setTransform(S.dpr,0,0,S.dpr,0,0);tx.clearRect(0,0,W,H);tx.fillStyle='#000';tx.fillRect(0,0,W,H);const la=lightAmount851();if(S.lights&&la>0){drawLab(la);for(const d of battle851.enemies)drawDummy(d);for(const b of S.enemyBullets){tx.fillStyle='#ff8067';tx.shadowBlur=15;tx.shadowColor='#ff5a43';tx.beginPath();tx.moveTo(b.x+10,b.y);tx.lineTo(b.x-7,b.y-7);tx.lineTo(b.x-7,b.y+7);tx.closePath();tx.fill()}drawFx();if(S.task==='evade'&&S.keys.space&&bp.focus>0){tx.fillStyle='rgba(102,211,255,.055)';tx.fillRect(0,0,W,H);tx.strokeStyle='rgba(117,221,255,.42)';tx.lineWidth=3;tx.beginPath();tx.arc(bp.x,bp.y,92+Math.sin(performance.now()*.006)*8,0,Math.PI*2);tx.stroke()}}drawRealBattleLayer851();if(S.transition){const flick=Math.max(0,1-la);tx.fillStyle=`rgba(255,255,255,${Math.max(0,Math.sin(S.lightSeq*84))*.12*flick})`;tx.fillRect(0,0,W,H)}}
+      function loop(now){if(S.dead)return;const dt=Math.min(.035,(now-S.last)/1000||.016);S.last=now;update(dt);draw();S.raf=requestAnimationFrame(loop)}
+      resize();enterStep(0);S.raf=requestAnimationFrame(loop)
+    }
+
+    // Chrono Shards 8.4.56 — HUD normal E/Q/R, hitboxes visuais e Time Slow universal
+    // Compatibilidade restaurada: o rework do Tutorial 8.4.49 substituiu por engano
+    // também a função de Configurações usada pela seleção de personagens.
+    // Esta ponte mantém a rota local exigida pelos patches antigos, mas sempre abre
+    // a interface final mais recente (5.2.9 / configuração premium de mira e botões).
+    function openSettings461(){
+      const latest=window.openSettings529;
+      if(typeof latest==='function'&&latest!==openSettings461)return latest();
+      const legacy=window.openSettingsMenu37;
+      if(typeof legacy==='function'&&legacy!==openSettings461)return legacy();
+      setCard();
+      const m=meta();
+      overlayCard.innerHTML=`<h1 style="text-align:center">CONFIGURAÇÕES</h1><p class="duneSub461">A interface completa ainda está carregando. Os ajustes básicos continuam disponíveis.</p><div class="duneGrid461"><div class="dunePanel461 settingsLow462" style="border-color:${m.gfxLow?'#86ffb0':'rgba(255,255,255,.14)'}"><span class="badge461" style="--co:${m.gfxLow?'#86ffb0':'#78ddff'}">LOW GFX ${m.gfxLow?'ATIVO':'DESATIVADO'}</span><strong>Modo visual leve</strong><span>Simplifica efeitos e modelos para melhorar o desempenho.</span><button class="lowSwitch462 ${m.gfxLow?'':'off'}" id="lowGfx461Fallback">${m.gfxLow?'Desativar Low GFX':'Ativar Low GFX'}</button></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="cfgBack461Fallback">← Início</button></div>`;
+      document.getElementById('lowGfx461Fallback').onclick=()=>{const mm=meta();mm.gfxLow=!mm.gfxLow;save(mm);openSettings461();};
+      document.getElementById('cfgBack461Fallback').onclick=()=>window.openStartMenu?.();
+    }
     function openHub461(){setCard();const m=meta();overlayCard.innerHTML=`<h1 style="text-align:center">CONQUISTAS & MISSÕES</h1><p class="duneSub461">Área central da progressão fora da batalha, organizada apenas com loja, missões e bestiário.</p><div class="duneGrid461 hubThree462"><button class="dunePanel461" id="hubRelics461"><span class="badge461" style="--co:#ffd166">LOJA</span><strong>Relíquias</strong><span>Compre bônus permanentes e acompanhe suas moedas.</span><span class="small461">Disponível: ${m.relicShards} relíquias</span></button><button class="dunePanel461" id="hubMissions461"><span class="badge461" style="--co:#86ffb0">OBJETIVOS</span><strong>Missões</strong><span>Missões de várias dificuldades que te dão relíquias em troca. Além de missões de awakening, que dão ultimates para personagens específicos!</span></button><button class="dunePanel461" id="hubBestiary461"><span class="badge461" style="--co:#ff6b9d">ARQUIVO</span><strong>Bestiário</strong><span>Registros de tudo e todos os bixos que você mata, além de te dar recompensas ao completar os registros.</span></button></div><div class="duneActions461"><button class="duneBtn461 dark" id="hubBack461">← Início</button></div>`;document.getElementById('hubRelics461').onclick=openRelics461;document.getElementById('hubMissions461').onclick=e=>{e?.preventDefault?.();e?.stopPropagation?.();(window.openMissions489||window.openMissions827||window.openMissions461)?.();};document.getElementById('hubBestiary461').onclick=openBestiary461;document.getElementById('hubBack461').onclick=()=>window.openStartMenu?.();}
     function classModel(k){return `<div class="modelBox461"><div class="heroModel461" data-hero="${esc(k)}" style="--c:${classColor(k)}"><i></i><b></b><em></em></div></div>`;}
   function comingSoonCard461(n){return `<div class="classCard461 comingCard462"><div class="comingModel462"></div><span class="badge461" style="--co:#d8d8d8">PRECISÃO</span><strong>Em Breve</strong><span>Slot reservado para um futuro personagem de precisão.</span><span class="small461">Arquivo bloqueado • ???</span></div>`;}
   function renderClassCard461(k,relics,chrono){const c=CLASSES[k],un=isUnlocked(k),co=classColor(k),cost=classCost(k),afford=k==='moonSlayer'?chrono>=cost:relics>=cost;return `<div class="classCard461 ${un?'':'locked'}" data-card461="${esc(k)}" style="--c:${co}"><button class="classInfo461" data-info461="${esc(k)}" title="Informações">i</button>${un?'':`<div class="classLock461">🔒</div>`}${classModel(k)}<span class="badge461" style="--co:${co}">${esc(c.tag||'CLASSE')}</span><strong>${esc(c.name)}</strong><span>${esc(c.desc||'Classe sem descrição.')}</span><span class="small461">HP ${c.hp} • Escudo ${c.shield} • Foco ${c.focus} • ${esc(WEAPONS[c.weapon]?.name||c.weapon)}</span>${un?`<button class="pick461" data-pick461="${esc(k)}">Selecionar</button>`:`<button class="buy461" data-buy461="${esc(k)}" ${afford?'':'disabled'}>Comprar — ${cost} ${classCurrency(k)}</button>`}</div>`;}
-  function openClassMenu461(){setCard();const m=meta(),relics=Number(m.relicShards||0),chrono=Number(m.chronoFragments||0);const groups=CLASS_GROUPS.map(g=>({...g,keys:g.keys.filter(canShowClass).sort((a,b)=>classCost(a)-classCost(b))})).filter(g=>g.keys.length);overlayCard.innerHTML=`<div class="classTop461"><div><h1>SELEÇÃO DE PERSONAGEM</h1><p>Selecione seu heroi para salvar as dimensões de um colapso gigante! Clique em <b>i</b> para ver atributos, habilidades e lore.<br>Relíquias: <strong>${relics}</strong> • ${CHRONO} Fragmentos Chrono: <strong>${chrono}</strong></p></div><div class="duneActions461" style="margin-top:0"><button class="duneBtn461 dark" id="classCfg461">Configurações</button><button class="duneBtn461 blue" id="classRelics461">Relíquias</button><button class="duneBtn461 purple" id="classMissions461">Missões</button></div></div><div class="classGroups461">${groups.map(g=>{const cards=g.keys.map(k=>renderClassCard461(k,relics,chrono)).join('')+(g.id==='precision'?comingSoonCard461(1)+comingSoonCard461(2):'');const count=g.keys.length+(g.id==='precision'?2:0);return `<section class="classGroup461"><div class="classGroupHead461"><div><h3 class="section461" style="color:${g.color};margin:0 0 4px">${g.name}</h3><span class="small461">${g.desc}</span></div><span class="badge461" style="--co:${g.color}">${count} slot(s)</span></div><div class="classGrid461">${cards}</div></section>`}).join('')}</div><div class="duneActions461"><button class="duneBtn461 dark" id="classBack461">← Modos</button></div>`;overlayCard.querySelectorAll('[data-info461]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openClassInfo461(b.dataset.info461);});overlayCard.querySelectorAll('[data-pick461]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();resetGame(b.dataset.pick461);overlay.classList.add('hidden');});overlayCard.querySelectorAll('[data-card461]').forEach(card=>card.onclick=e=>{if(e.target.closest('button'))return;const k=card.dataset.card461;if(isUnlocked(k)){resetGame(k);overlay.classList.add('hidden');}});overlayCard.querySelectorAll('[data-buy461]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();const k=b.dataset.buy461,cost=classCost(k),mm=meta();if(k==='moonSlayer'){if(mm.chronoFragments<cost)return;mm.chronoFragments-=cost;mm.unlockedMoonSlayer=true;save(mm);openClassMenu461();return;}if(mm.relicShards<cost)return;mm.relicShards-=cost;save(mm);const arr=readUnlocks();arr.push(k);writeUnlocks(arr);openClassMenu461();});document.getElementById('classBack461').onclick=()=>window.openModeChoice50?.();document.getElementById('classCfg461').onclick=openSettings461;document.getElementById('classRelics461').onclick=openRelics461;document.getElementById('classMissions461').onclick=e=>{e?.preventDefault?.();e?.stopPropagation?.();(window.openMissions489||window.openMissions827||window.openMissions461)?.();};}
+  function openClassMenu461(){setCard();const m=meta(),relics=Number(m.relicShards||0),chrono=Number(m.chronoFragments||0);const groups=CLASS_GROUPS.map(g=>({...g,keys:g.keys.filter(canShowClass).sort((a,b)=>classCost(a)-classCost(b))})).filter(g=>g.keys.length);overlayCard.innerHTML=`<div class="classTop461"><div><h1>SELEÇÃO DE PERSONAGEM</h1><p>Selecione seu heroi para salvar as dimensões de um colapso gigante! Clique em <b>i</b> para ver atributos, habilidades e lore.<br>Relíquias: <strong>${relics}</strong> • ${CHRONO} Fragmentos Chrono: <strong>${chrono}</strong></p></div><div class="duneActions461" style="margin-top:0"><button class="duneBtn461 dark" id="classCfg461">Configurações</button><button class="duneBtn461 blue" id="classRelics461">Relíquias</button><button class="duneBtn461 purple" id="classMissions461">Missões</button></div></div><div class="classGroups461">${groups.map(g=>{const cards=g.keys.map(k=>renderClassCard461(k,relics,chrono)).join('')+(g.id==='precision'?comingSoonCard461(1)+comingSoonCard461(2):'');const count=g.keys.length+(g.id==='precision'?2:0);return `<section class="classGroup461"><div class="classGroupHead461"><div><h3 class="section461" style="color:${g.color};margin:0 0 4px">${g.name}</h3><span class="small461">${g.desc}</span></div><span class="badge461" style="--co:${g.color}">${count} slot(s)</span></div><div class="classGrid461">${cards}</div></section>`}).join('')}</div><div class="duneActions461"><button class="duneBtn461 dark" id="classBack461">← Modos</button></div>`;overlayCard.querySelectorAll('[data-info461]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openClassInfo461(b.dataset.info461);});overlayCard.querySelectorAll('[data-pick461]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();resetGame(b.dataset.pick461);overlay.classList.add('hidden');});overlayCard.querySelectorAll('[data-card461]').forEach(card=>card.onclick=e=>{if(e.target.closest('button'))return;const k=card.dataset.card461;if(isUnlocked(k)){resetGame(k);overlay.classList.add('hidden');}});overlayCard.querySelectorAll('[data-buy461]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();const k=b.dataset.buy461,cost=classCost(k),mm=meta();if(k==='moonSlayer'){if(mm.chronoFragments<cost)return;mm.chronoFragments-=cost;mm.unlockedMoonSlayer=true;save(mm);openClassMenu461();return;}if(mm.relicShards<cost)return;mm.relicShards-=cost;save(mm);const arr=readUnlocks();arr.push(k);writeUnlocks(arr);openClassMenu461();});document.getElementById('classBack461').onclick=()=>window.openModeChoice50?.();document.getElementById('classCfg461').onclick=()=>openSettings461();document.getElementById('classRelics461').onclick=openRelics461;document.getElementById('classMissions461').onclick=e=>{e?.preventDefault?.();e?.stopPropagation?.();(window.openMissions489||window.openMissions827||window.openMissions461)?.();};}
     function skillRows(k){const c=CLASSES[k]||{},keys=c.skills||[],labels=['Habilidade 2','Habilidade 1','Habilidade 3'];let rows=keys.map((sk,i)=>{const s=SKILL_DEFS[sk]||{};return `<div class="skillRow461"><b>${labels[i]||'?'} — ${esc(s.emoji||'✦')} ${esc(s.name||sk)}</b><br><span>${esc(s.desc||'Especial de combate.')}</span></div>`}).join('');if(k==='chronoHero')rows+=`<div class="skillRow461"><b>Habilidade 4 — 💎 Rajada prismática x1.000</b><br><span>Um dos únicos com ultimate. Essa habilidade suprema faz tudo parar ao ser ativada e dá uma rajada imensa de energia aonde estiver mirando. Eu não iria querer ficar no caminho.</span></div>`;if(k==='moonSlayer')rows+=`<div class="skillRow461"><b>Habilidade 4 — ⚔️ Sou a Tempestade que se Aproxima</b><br><span>O Exterminador tira sua espada da bainha e faz cortes multidimensionais azuis, quebrando a linha temporal em pedaços. É como dizem, ele tem um "gatilho diabólico" ao invés de uma espada.</span></div>`;if(k==='shadowChild')rows+=`<div class="skillRow461"><b>Habilidade 4 — 🩸 Forma Abissal</b><br><span>Assume um estado sombrio temporário com dano e resistência extremos.</span></div>`;return rows;}
     function openClassInfo461(k){const c=CLASSES[k];if(!c)return;setCard();const co=classColor(k);overlayCard.innerHTML=`<h1 style="text-align:center">${esc(c.name)}</h1><p class="duneSub461">Informações completas restauradas na seleção de personagens.</p><div class="infoLayout461"><div class="infoModel461">${classModel(k)}<span class="badge461" style="--co:${co}">${esc(c.tag||'CLASSE')}</span></div><div><div class="statsGrid461"><div class="duneStat461"><small>HP</small><b>${c.hp}</b></div><div class="duneStat461"><small>ESCUDO</small><b>${c.shield}</b></div><div class="duneStat461"><small>FOCO</small><b>${c.focus}</b></div><div class="duneStat461"><small>VELOCIDADE</small><b>${c.speed}</b></div></div><h3 class="section461" style="color:${co}">HABILIDADES</h3>${skillRows(k)}<h3 class="section461" style="color:${co}">LORE</h3><div class="dunePanel461"><span>${esc(LORE[k]||'Um combatente perdido entre fragmentos de tempo.')}</span></div></div></div><div class="duneActions461"><button class="duneBtn461 dark" id="infoBack461">← Seleção</button></div>`;document.getElementById('infoBack461').onclick=openClassMenu461;}
 
@@ -12389,7 +12952,15 @@ function killKey37(e){
     grid.querySelectorAll('[data-pick461="archer"]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();resetGame('archer');overlay.classList.add('hidden');});
     grid.querySelectorAll('[data-buy461="archer"]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();if(!spendRelics(ARCHER_COST))return;const arr=unlocks();arr.push(ARCHER);saveUnlocks(arr);setTimeout(()=>{if(typeof window.openClassMenu==='function')window.openClassMenu();},40);});
     const card=grid.querySelector('[data-card461="archer"]');
-    if(card)card.onclick=e=>{if(e.target.closest('button'))return;if(isUnlocked(ARCHER)){resetGame(ARCHER);overlay.classList.add('hidden');}};
+    if(card){
+      card.querySelectorAll('.classStats551,.classStats702,[data-stats551]').forEach(x=>x.remove());
+      const sentinel=document.createElement('button');
+      sentinel.type='button';sentinel.hidden=true;sentinel.disabled=true;sentinel.tabIndex=-1;
+      sentinel.className='classStats702 masteryStatsSentinel835 archerMasterySentinel851';
+      sentinel.dataset.stats551='archer';sentinel.setAttribute('aria-hidden','true');
+      card.prepend(sentinel);
+      card.onclick=e=>{if(e.target.closest('button'))return;if(isUnlocked(ARCHER)){resetGame(ARCHER);overlay.classList.add('hidden');}};
+    }
   }
   function forcePlayRoute487(){
     const b=document.getElementById('play461');
@@ -12574,6 +13145,12 @@ function killKey37(e){
     const a=AWAKEN[active?.id],mission=a?.missions?.[active?.stage];if(!mission)return {cur:0,target:1,pct:0,done:false};
     const cur=mission[2]==='maxWave'?Math.max(0,n(active.waveBest)):Math.max(0,metric(mission[2],m)-n(active.baseline));
     return {cur:Math.min(cur,mission[3]),target:mission[3],pct:clamp(cur/mission[3]*100,0,100),done:cur>=mission[3]};
+  }
+  function settleCompletedAwakening489(m){
+    const active=m?.awakenings463?.active;if(!active)return null;const a=AWAKEN[active.id],mission=a?.missions?.[active.stage];if(!a||!mission)return null;
+    const ap=awakeningProgress(active,m);if(!ap.done)return null;
+    m.awakenings463.completed[active.id]=Math.max(doneCount(active.id,m),active.stage+1);m.awakenings463.active=null;
+    return {id:active.id,stage:active.stage,name:a.name,color:a.color};
   }
   function ensureStyle(){if(document.getElementById('missionRework489Style'))return;const st=document.createElement('style');st.id='missionRework489Style';st.textContent=`
     .card.mission489{
@@ -12765,11 +13342,11 @@ function killKey37(e){
   function awakeningHtml(m){
     if(!AWAKEN[selectedHero])selectedHero=Object.keys(AWAKEN)[0];
     const a=AWAKEN[selectedHero],unlocked=isJourneyUnlocked(selectedHero,m),done=doneCount(selectedHero,m),ult=ultimateUnlocked(selectedHero,m),active=m.awakenings463.active;
-    const sectionHead=`<div class="missionSectionHead489"><div><h2>MISSÕES DE AWAKENING</h2><p>Gaste uma chave para abrir a jornada de um personagem e conclua cinco etapas.</p></div><div class="missionSummary489">Uma missão de Awakening pode ficar ativa por vez</div></div>`;
+    const sectionHead=`<div class="missionSectionHead489"><div><h2>MISSÕES DE AWAKENING</h2><p>Gaste uma chave por etapa. Durante um objetivo, as outras jornadas ficam bloqueadas; entre etapas, você pode escolher qualquer personagem.</p></div><div class="missionSummary489">Somente um objetivo pode ficar ativo por vez</div></div>`;
     const chips=`<div class="awakTopBar489">${Object.entries(AWAKEN).map(([id,h])=>`<button class="awakChip489 ${id===selectedHero?'active':''} ${isJourneyUnlocked(id,m)?'':'locked'}" data-awakhero489="${id}" style="--c:${h.color}"><span>${h.emoji}</span> ${h.name}${isJourneyUnlocked(id,m)?'':'<i>🔒</i>'}</button>`).join('')}</div>`;
     if(!unlocked){
       const other=active&&active.id!==selectedHero;
-      return `<section class="missionAwakening489">${sectionHead}${chips}<div class="awakLayout489"><aside class="awakHero489 locked" style="--c:${a.color}"><div class="awakPortrait489"><div class="awakGlyph489">${a.emoji}</div><div class="bigLock489">🔒</div></div><span style="margin-top:11px;font:900 8px Orbitron,sans-serif;color:${a.color}">AWAKENING</span><h2>${esc(a.name)}</h2><p>Esta jornada ainda não foi iniciada. Gaste uma Chave de Awakening para revelar as cinco etapas.</p><div class="unlockBox489"><b>DESPERTAR SELADO</b><p>${other?'Existe outra missão de Awakening ativa no momento.':'A primeira missão será ativada assim que a chave for consumida.'}</p><button class="unlockJourney489" id="unlockJourney489" ${(m.awakeningKeys>0&&!other)?'':'disabled'}>${m.awakeningKeys>0?(other?'OUTRA MISSÃO ATIVA':`Gastar 1 ${KEY_ICON} e desbloquear`):'Sem chaves disponíveis'}</button></div></aside><section class="awakMissions489 locked">${awakeningLockedRows()}</section></div></section>`
+      return `<section class="missionAwakening489">${sectionHead}${chips}<div class="awakLayout489"><aside class="awakHero489 locked" style="--c:${a.color}"><div class="awakPortrait489"><div class="awakGlyph489">${a.emoji}</div><div class="bigLock489">🔒</div></div><span style="margin-top:11px;font:900 8px Orbitron,sans-serif;color:${a.color}">AWAKENING</span><h2>${esc(a.name)}</h2><p>Esta jornada ainda não foi iniciada. Gaste uma Chave de Awakening para revelar as cinco etapas.</p><div class="unlockBox489"><b>DESPERTAR SELADO</b><p>${other?'Existe um objetivo de Awakening em andamento. Assim que ele for concluído, esta jornada será liberada.':'Nenhum objetivo está ativo. Você pode iniciar esta jornada ou continuar outra já desbloqueada.'}</p><button class="unlockJourney489" id="unlockJourney489" ${(m.awakeningKeys>0&&!other)?'':'disabled'}>${m.awakeningKeys>0?(other?'OUTRA MISSÃO ATIVA':`Gastar 1 ${KEY_ICON} e desbloquear`):'Sem chaves disponíveis'}</button></div></aside><section class="awakMissions489 locked">${awakeningLockedRows()}</section></div></section>`
     }
     const rows=a.missions.map((mi,i)=>{
       const stepDone=i<done,own=!!(active&&active.id===selectedHero&&active.stage===i),other=!!(active&&!own),next=!active&&i===done&&!stepDone,visible=stepDone||own||next,ap=own?awakeningProgress(active,m):{cur:0,target:mi[3],pct:0,done:false};
@@ -12783,6 +13360,7 @@ function killKey37(e){
 
   function renderMissionScreen(view=currentView){
     ensureStyle();stopTimers();document.querySelectorAll('body > .rankModal489').forEach(el=>el.remove());currentView=view==='awakening'?'awakening':'general';let m=ensureMissionState(read());
+    const settledAwakening489=settleCompletedAwakening489(m);if(settledAwakening489){write(m);m=ensureMissionState(read());}
     const route=window.__ChronoUIRoute827;route?.enter?.('missions','missions-8.4.21');
     try{document.body.classList.remove('doomUi801');overlay.classList.add('masteryOverlay837')}catch{}
     overlay.classList.remove('hidden');overlayCard.className='card mission489 masteryTheme837 masteryUpdateTheme835';overlayCard.dataset.uiScreen827='missions';
@@ -12790,6 +13368,7 @@ function killKey37(e){
     overlayCard.querySelectorAll('[data-view489]').forEach(b=>b.onclick=()=>renderMissionScreen(b.dataset.view489));
     const back=document.getElementById('misBack461');if(back)back.onclick=()=>{route?.permitHub?.('missions-back',1400);try{(window.openHub461||window.openDuneHub461||window.openHub40)?.()}catch{overlay.classList.add('hidden')}};
     if(currentView==='general')bindGeneral(m);else bindAwakening(m);
+    if(settledAwakening489)setTimeout(()=>missionToast489(`Etapa ${settledAwakening489.stage+1} de ${settledAwakening489.name} concluída — outras jornadas liberadas`,settledAwakening489.color),80);
   }
   function bindGeneral(m){
     animateRank();scheduleCooldown();const info=document.getElementById('rankInfo489'),modal=document.getElementById('rankModal489'),close=document.getElementById('rankClose489');
@@ -38493,5 +39072,6 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 })();
 </script>
 
+<script>console.log('Chrono Shards 8.4.49 — intervalos de Awakening e Tutorial modular carregados');</script>
 </body>
 </html>
