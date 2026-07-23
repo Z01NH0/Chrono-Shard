@@ -11332,7 +11332,7 @@ function killKey37(e){
         const card=e.target.closest?.('.tutorialCard849');if(!card||!vp.contains(card))return;
         if(suppressClick){e.preventDefault();e.stopPropagation();return}
         const module=Number(card.dataset.module849||0);
-        if(module===1||module===2){e.preventDefault();e.stopPropagation();showTutorialConfirm851(module)}
+        if(module===1||module===2||module===3){e.preventDefault();e.stopPropagation();showTutorialConfirm851(module)}
       });
       vp.addEventListener('scroll',()=>{cancelAnimationFrame(scrollRaf);scrollRaf=requestAnimationFrame(pageFor)},{passive:true});
       document.querySelector('[data-tutarrow849="left"]')?.addEventListener('click',e=>{e.preventDefault();goPage(pageFor()-1)});
@@ -11343,6 +11343,7 @@ function killKey37(e){
     function showTutorialConfirm851(module){
       ensureTutorialModuleOne851Style();
       if(module===2)ensureTutorialModuleTwo857Style();
+      if(module===3)ensureTutorialModuleThree858Style();
       document.getElementById('tutorialConfirm851')?.remove();
       const el=document.createElement('div');el.id='tutorialConfirm851';el.className='tutorialConfirm851';
       el.innerHTML=`<div class="tutorialConfirmBox851"><small>ARQUIVO DE TREINAMENTO</small><h2>Começar Módulo ${module}?</h2><p>O progresso da partida atual não será utilizado. Você poderá sair a qualquer momento com ESC.</p><div class="tutorialConfirmActions851"><button class="no" id="tutNo851">NÃO</button><button class="yes" id="tutYes851">SIM</button></div></div>`;
@@ -11353,6 +11354,7 @@ function killKey37(e){
           el.remove();
           if(module===1)startTutorialModuleOne851();
           else if(module===2)startTutorialModuleTwo857();
+          else if(module===3)startTutorialModuleThree858();
         }catch(err){
           console.error(`Falha ao iniciar o Módulo ${module}`,err);el.remove();
           const fail=document.createElement('div');fail.className='tutorialConfirm851';
@@ -11363,15 +11365,15 @@ function killKey37(e){
       el.onclick=e=>{if(e.target===el)el.remove()};
     }
     function openTutorial461(){
-      ensureTutorial849Style();ensureTutorialModuleOne851Style();ensureTutorialModuleTwo857Style();setCard();
+      ensureTutorial849Style();ensureTutorialModuleOne851Style();ensureTutorialModuleTwo857Style();ensureTutorialModuleThree858Style();setCard();
       overlayCard.classList.add('tutorialModules849','masteryTheme837','masteryUpdateTheme835');
-      const progress=tutorialProgress851(),done1=!!progress.module1,done2=!!progress.module2;
+      const progress=tutorialProgress851(),done1=!!progress.module1,done2=!!progress.module2,done3=!!progress.module3;
       const cards=TUTORIAL_MODULES849.map(m=>{
-        const ready=m.n===1||m.n===2,done=m.n===1?done1:m.n===2?done2:false;
+        const ready=m.n===1||m.n===2||m.n===3,done=m.n===1?done1:m.n===2?done2:m.n===3?done3:false;
         const footer=ready?(done?'REJOGAR MÓDULO CONCLUÍDO':m.n===1?'INICIAR TREINAMENTO':'INICIAR TRANSMISSÃO'):'CONTEÚDO RESERVADO PARA ATUALIZAÇÕES FUTURAS';
         return `<button type="button" class="tutorialCard849 ${ready?'moduleReady851':''} ${done?'moduleDone851':''}" data-module849="${m.n}" style="--tc:${m.color}"><div class="tutorialModuleNum849"><span>MÓDULO ${m.n}</span><em>${String(m.n).padStart(2,'0')} / ${String(TUTORIAL_MODULES849.length).padStart(2,'0')}</em></div><div class="tutorialIcon849">${m.icon}</div><h2>${esc(m.title)}</h2><p>${esc(m.desc)}</p><div class="tutorialFuture849">${footer}</div>${done?'<span class="tutorialDoneBadge851">CONCLUÍDO</span>':''}</button>`;
       }).join('');
-      overlayCard.innerHTML=`<header class="tutorialHead849"><div><small>ARQUIVO DE TREINAMENTO CHRONAL</small><h1>TUTORIAL</h1><p>Explore os módulos da esquerda para a direita. Os módulos 1 e 2 já estão disponíveis para treinamento.</p></div></header><section class="tutorialShell849"><div class="tutorialTools849"><span>Segure e arraste, use o toque ou as setas.</span><div><button class="tutorialArrow849" data-tutarrow849="left" aria-label="Página anterior">←</button><button class="tutorialArrow849" data-tutarrow849="right" aria-label="Próxima página">→</button></div></div><div class="tutorialViewport849" id="tutorialViewport849"><div class="tutorialTrack849">${cards}</div></div></section><footer class="tutorialFooter849"><div class="tutorialProgress849">${[0,1,2,3].map((_,i)=>`<button type="button" class="tutorialDot849 ${i===0?'active':''}" data-page849="${i}" aria-label="Mostrar módulos ${i*2+1} e ${i*2+2}" aria-current="${i===0?'page':'false'}"></button>`).join('')}</div><button class="tutorialBack849" id="tutorialBack849">← Voltar ao início</button></footer>`;
+      overlayCard.innerHTML=`<header class="tutorialHead849"><div><small>ARQUIVO DE TREINAMENTO CHRONAL</small><h1>TUTORIAL</h1><p>Explore os módulos da esquerda para a direita. Os módulos 1, 2 e 3 já estão disponíveis para treinamento.</p></div></header><section class="tutorialShell849"><div class="tutorialTools849"><span>Segure e arraste, use o toque ou as setas.</span><div><button class="tutorialArrow849" data-tutarrow849="left" aria-label="Página anterior">←</button><button class="tutorialArrow849" data-tutarrow849="right" aria-label="Próxima página">→</button></div></div><div class="tutorialViewport849" id="tutorialViewport849"><div class="tutorialTrack849">${cards}</div></div></section><footer class="tutorialFooter849"><div class="tutorialProgress849">${[0,1,2,3].map((_,i)=>`<button type="button" class="tutorialDot849 ${i===0?'active':''}" data-page849="${i}" aria-label="Mostrar módulos ${i*2+1} e ${i*2+2}" aria-current="${i===0?'page':'false'}"></button>`).join('')}</div><button class="tutorialBack849" id="tutorialBack849">← Voltar ao início</button></footer>`;
       bindTutorial849();document.getElementById('tutorialBack849').onclick=()=>window.openStartMenu?.();
     }
 
@@ -11492,6 +11494,120 @@ function killKey37(e){
       function loop857(now){if(S.dead)return;const dt=Math.min(.05,(now-S.last)/1000||.016);S.last=now;if(!S.paused){updateType857(dt);render857(now)}S.raf=requestAnimationFrame(loop857)}
       dialog.onclick=e=>{e.stopPropagation();next857()};root.querySelector('#tut2PauseBtn857').onclick=e=>{e.stopPropagation();togglePause857()};root.querySelector('#tut2Continue857').onclick=e=>{e.stopPropagation();togglePause857(false)};root.querySelector('#tut2Exit857').onclick=e=>{e.stopPropagation();destroy857(true)};root.querySelector('#tut2ExitMain857').onclick=e=>{e.stopPropagation();destroy857(false);(window.openStartMenu||window.openStartMenu461)?.()};
       window.addEventListener('keydown',key857,true);showStep857(0);S.raf=requestAnimationFrame(loop857);
+    }
+
+
+    function ensureTutorialModuleThree858Style(){
+      if(document.getElementById('tutorialModuleThree858Style'))return;
+      const st=document.createElement('style');st.id='tutorialModuleThree858Style';st.textContent=`
+        .tut3Scene858 .tut2Tv857:before{content:"C.C — UNIDADE DE TRANSMISSÃO 03"}
+        .tut3Scene858 .tut2Dialogue857{border-color:rgba(255,194,91,.30);background:radial-gradient(circle at 12% 0,rgba(255,190,77,.08),transparent 31%),linear-gradient(150deg,rgba(19,16,45,.97),rgba(5,7,19,.985))}
+        .tut3Scene858 .tut2Dialogue857 .tutSpeaker851{color:#ffd166}.tut3Scene858 .tut2Status857{border-color:rgba(255,209,102,.22);color:#ffe7a5}
+        .tut3Word858{display:inline-block;color:#72ddff;font-weight:900;text-shadow:0 0 13px currentColor;animation:tut2WordWave857 1.45s ease-in-out infinite}.tut3Word858.purple{color:#b887ff}.tut3Word858.gold{color:#ffd166}.tut3Word858.orange{color:#ff9f43}.tut3Word858.red{color:#ff526c}.tut3Word858.green{color:#75f0ae}.tut3Word858.pink{color:#ff84cb}.tut3Word858.cyan{color:#72e8ff}
+        .tut3Sound858{color:#9aa4bd;font-style:italic;letter-spacing:.04em}.tut3Censor858{position:relative;display:inline-block;color:#ff795f;font-weight:1000;letter-spacing:.10em;text-shadow:2px 0 #62e5ff,-2px 0 #ff3e73,0 0 17px #ff6b4d;animation:tut3CensorShake858 .12s steps(2,end) infinite}
+        @keyframes tut3CensorShake858{0%{transform:translate(0)}25%{transform:translate(2px,-1px) skewX(5deg)}50%{transform:translate(-2px,1px) skewX(-4deg)}75%{transform:translate(1px,1px)}100%{transform:translate(0)}}
+        .tut3Scene858 .tut2TvWrap857.error{animation:tut3TvError858 .16s steps(2,end) infinite;filter:drop-shadow(0 36px 55px rgba(0,0,0,.85)) drop-shadow(0 0 28px rgba(255,50,88,.24))}.tut3Scene858 .tut2TvWrap857.corrupted{animation:tut3TvCorrupt858 .08s steps(2,end) infinite}
+        @keyframes tut3TvError858{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(calc(-50% + 2px),calc(-50% - 1px))}}@keyframes tut3TvCorrupt858{0%{transform:translate(calc(-50% - 4px),calc(-50% + 1px))}50%{transform:translate(calc(-50% + 5px),calc(-50% - 2px))}100%{transform:translate(-50%,-50%)}}
+        .tut3SignalError858{position:absolute;z-index:9;left:50%;top:55%;transform:translate(-50%,-50%);pointer-events:none;color:#ff5b72;font:900 15px Orbitron,sans-serif;letter-spacing:.18em;text-shadow:2px 0 #58dfff,-2px 0 #ff234f,0 0 18px rgba(255,55,87,.9);opacity:0}.tut3SignalError858.show{opacity:.9;animation:tut3ErrorText858 .16s steps(2,end) infinite}@keyframes tut3ErrorText858{50%{transform:translate(calc(-50% + 4px),calc(-50% - 2px));opacity:.45}}
+      `;document.head.appendChild(st);
+    }
+
+    const TUT3_STEPS858=[
+      {text:'* sons de mastigação * Bun dian, eu nun vi qe vusê já tauva ahi!'},
+      {text:'* tomando água *'},
+      {text:'Ooopa meu garotão, bom dia, desculpa pelo inconveniente, mas até eu tenho que tomar meu cafézinho né.'},
+      {text:'Bom, hoje vamos falar sobre as moedas do jogo e sobre como cada uma funciona!'},
+      {text:'Só me deixa ligar essa porcaria aqui...'},
+      {text:'Caramba, aqui na C.C nós temos tanta tecnologia, e ainda precisamos usar essa joça velha para ensinar os novatos. Vai entender...'},
+      {image:1,power:true,text:'Bom garotão, você provavelmente já viu no menu principal aqueles negócios ali escritos Relíquias e Fragmentos Chrono, certo? Você deve ter se perguntado: Pra que serve essas bombas?'},
+      {image:1,text:'Bem, estou aqui para te explicar certinho como é.'},
+      {image:1,text:'As Relíquias, elas são a moeda principal do nosso universo, elas são amplamente encontradas em cavernas e também em fissuras em todo o cosmo, e como elas são poderosas, elas substituem qualquer tipo de minério, virando a nossa moeda principal aqui meu garotão!'},
+      {image:2,highlight:'relic',text:'Como você pode ver na imagem e também aonde eu estou circulando, existe um negocinho rosa no chão, aquilo ali é uma Relíquia, ela pode ser tanto dropada de monstros normais, como também os de elite e especialmente bosses!'},
+      {image:2,highlight:'relic',text:'Mas ela é meio complicadinha de dropar em inimigos normais.'},
+      {image:3,text:'Analisando aqui, nós podemos ver que na seleção de personagens, todos eles são comprados por Relíquias, ou seja, você vai ter que caçar essa bagaças por ai se quiser ter mais poder destrutivo garotão!'},
+      {image:4,text:'Como também sendo utilizáveis na loja do Seu Mauro.'},
+      {image:4,text:'O Seu Mauro é um grande amigo aqui da C.C! Ele sempre traz recursos novinhos e outras velharias que ele acha por ai. Ele vende todas essas coisas a preço de Relíquias, ou seja, se você estiver com uma bunfunfa gorda no bolso, dê uma passadinha lá!'},
+      {image:5,text:'Bem, eu não devia estar falando disso agora, pois não é meu roteiro, mas aproveitando que já estamos falando da loja do Seu Mauro e também de Relíquias, vou ter falar sobre isso aqui garotão.'},
+      {image:5,text:'Essas coisas são os Power-Ups permanentes, somente disponíveis na loja do Seu Mauro a preço de relíquias e como eles são permanentes, você comprou uma vez e já era, tá contigo para sempre em todos os personagens!'},
+      {image:6,highlight:'gold',text:'E aqui meu garotão, aonde está circulado, são os OOOOUURROOSS! ! ! Sim, além das Relíquias por ai, nós aqui temos ouro, mas eles não são muito importantes não.'},
+      {image:6,highlight:'gold',text:'Na verdade, são sim, mas somente nas suas partidas. O que eles fazem basicamente é servir de moeda para você comprar seus buffs ou baús na loja após os bosses, para te deixar mais forte.'},
+      {image:6,highlight:'gold',text:'E caso você venha a óbito de uma forma terrivelmente terrível, os ouros que estavam com você vão ser coletados pela C.C e convertidos em Relíquias como mérito do seu trabalho! Mas lembre-se, a cada 50 ouros, equivale a 1 Relíquia.'},
+      {image:6,text:'Beleza, vamos para o *grand finale*, mas não menos importante.'},
+      {error:true,text:'Aahh merda...'},
+      {error:true,text:'Bem garotão, agora eu iria te mostrar imagens do Fragmento Chrono, um minério extremamente raro, mas infelizmente, a tv deu pau.'},
+      {error:true,text:'Provavelmente deve ser pela força atemporal do Fragmento, essa TV velha não deve aguentar.'},
+      {error:true,text:'Mas mesmo assim, eu vou te dar uma resumidinha do que se trata meu garotão.'},
+      {error:true,text:'Os Fragmentos Chrono são pedaços minúsculos do Chrono que alimentava o universo inteiro, mas que após a chegada da instabilidade universal e sua explosão, foi dividido em bilhares de pedacinhos pequenos pelo universo, trazendo o caos absoluto em que vivemos nos dias de hoje. Agora o objetivo da C.C é coletar todos eles novamente para trazer a ordem e a paz novamente para o cosmo, e contamos com você!'},
+      {error:true,text:'Mas caso você colete os Fragmentos espalhados por ai, você pode comprar algumas coisinhas para você. Infelizmente as compras feitas por ele são poucas, mas essas poucas são absurdas meu garotão, você vai gostar!'},
+      {error:true,censor:true,text:'Basicamente você pode comprar #@-%!&*$*#iais e também vários upgrades legais para seus personagens, mas isso ai é assunto para outro módulo garotão!'},
+      {error:true,finish:true,text:'Obrigado pela sua atenção meu garotão! E eu confio que você vai conseguir trazer a ordem novamente para esse universo. Além disso, desculpe pelo inconveniente, teremos que trocar essa bagaça futuramente. Até mais!'}
+    ];
+
+    function startTutorialModuleThree858(){
+      ensureTutorialModuleOne851Style();ensureTutorialModuleTwo857Style();ensureTutorialModuleThree858Style();
+      document.getElementById('tutorialModuleThree858')?.remove();mouse.down=false;
+      const previousGame858=game,previousMouse858={x:mouse.x,y:mouse.y,down:mouse.down};game=null;
+      const root=document.createElement('div');root.id='tutorialModuleThree858';root.className='tut2Scene857 tut3Scene858';
+      root.innerHTML=`<div class="tut2Room857"><div class="tut2TvWrap857" id="tut3TvWrap858"><div class="tut2Tv857"><div class="tut2ScreenBezel857"><div class="tut2Screen857"><canvas id="tut3Canvas858" width="960" height="540"></canvas><div class="tut2ChannelFlash857"></div><div class="tut3SignalError858" id="tut3SignalError858">SINAL CHRONAL CORROMPIDO</div></div></div><div class="tut2Control857"><div class="tut2Knob857"></div><div class="tut2Knob857"></div><div class="tut2Speaker857"></div><div class="tut2Led857"></div></div></div></div><div class="tut2Status857" id="tut3Status858">ARQUIVO DE RECURSOS DA C.C</div></div><button class="tut2PauseBtn857" id="tut3PauseBtn858" aria-label="Pausar tutorial">Ⅱ</button><div class="tut2Dialogue857" id="tut3Dialogue858"><div class="tutPortrait851"><i class="hair"></i><i class="face"></i><i class="goggles"></i><i class="mouth"></i><i class="coat"></i></div><div class="tutSpeaker851">INSTRUTOR</div><div class="tut2Text857" id="tut3Text858"></div><div class="tut2Hint857" id="tut3Hint858">CLIQUE PARA COMPLETAR A FALA</div></div><div class="tut2Pause857" id="tut3Pause858" hidden><div class="tutPauseBox851"><h2>TRANSMISSÃO PAUSADA</h2><p>Você pode continuar ou encerrar este módulo.</p><button class="primary" id="tut3Continue858">CONTINUAR</button><button id="tut3Exit858">VOLTAR AOS TUTORIAIS</button><button id="tut3ExitMain858">VOLTAR AO MENU PRINCIPAL</button></div></div>`;
+      document.body.appendChild(root);
+      const cv=root.querySelector('#tut3Canvas858'),c=cv.getContext('2d'),tv=root.querySelector('#tut3TvWrap858'),dialog=root.querySelector('#tut3Dialogue858'),textEl=root.querySelector('#tut3Text858'),hint=root.querySelector('#tut3Hint858'),status=root.querySelector('#tut3Status858'),errorText=root.querySelector('#tut3SignalError858');
+      const imgs=[1,2,3,4,5,6].map(n=>{const im=new Image();im.decoding='async';im.src=`recursos-${n}.png`;return im});
+      const noise=document.createElement('canvas');noise.width=160;noise.height=90;const nc=noise.getContext('2d'),noiseData=nc.createImageData(noise.width,noise.height);
+      const S={step:0,typing:null,mode:'off',image:0,highlight:null,transition:false,paused:false,dead:false,last:performance.now(),raf:0,lastNoise:0,powerStart:0,censor:false};
+      function rich858(raw){
+        const token='__TUT3_CENSOR__';let base=String(raw||'').replace('#@-%!&*$*#iais',token);let t=esc(base);
+        t=t.replace(/\*([^*]+)\*/g,'<em class="tut3Sound858">$1</em>');
+        const reps=[
+          [/OOOOUURROOSS! ! !/g,'<span class="tut3Word858 orange">OOOOUURROOSS! ! !</span>'],[/Power-Ups permanentes/gi,'<span class="tut3Word858 green">Power-Ups permanentes</span>'],[/50 ouros/g,'<span class="tut3Word858 gold">50 ouros</span>'],[/1 Relíquia/g,'<span class="tut3Word858 purple">1 Relíquia</span>'],[/\bFragmentos Chrono\b/g,'<span class="tut3Word858 cyan">Fragmentos Chrono</span>'],[/\bFragmento Chrono\b/g,'<span class="tut3Word858 cyan">Fragmento Chrono</span>'],[/\bRelíquias\b/g,'<span class="tut3Word858 purple">Relíquias</span>'],[/\bRelíquia\b/g,'<span class="tut3Word858 purple">Relíquia</span>'],[/\bChrono\b/g,'<span class="tut3Word858 cyan">Chrono</span>'],[/\bC\.C\b/g,'<span class="tut3Word858 purple">C.C</span>'],[/Seu Mauro/g,'<span class="tut3Word858 gold">Seu Mauro</span>'],[/\bouro\b/gi,'<span class="tut3Word858 gold">ouro</span>'],[/\bbuffs\b/gi,'<span class="tut3Word858 green">buffs</span>'],[/\bbaús\b/gi,'<span class="tut3Word858 gold">baús</span>'],[/grand finale/gi,'<span class="tut3Word858 orange">grand finale</span>'],[/instabilidade universal/gi,'<span class="tut3Word858 red">instabilidade universal</span>'],[/ordem e a paz/gi,'<span class="tut3Word858 green">ordem e a paz</span>']
+        ];for(const [r,v] of reps)t=t.replace(r,v);
+        return t.replace(token,'<span class="tut3Censor858">#@-%!&amp;*$*#iais</span>');
+      }
+      function richLen858(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent.length}
+      function richSlice858(html,limit){const src=document.createElement('div');src.innerHTML=html,out=document.createElement('div');let left=Math.max(0,limit);function cp(n,p){if(left<=0)return;if(n.nodeType===3){const s=n.nodeValue||'',part=s.slice(0,left);if(part)p.appendChild(document.createTextNode(part));left-=part.length;return}if(n.nodeType!==1)return;const x=n.cloneNode(false);p.appendChild(x);for(const ch of n.childNodes){cp(ch,x);if(left<=0)break}}for(const n of src.childNodes){cp(n,out);if(left<=0)break}return out.innerHTML}
+      function type858(raw){const html=rich858(raw);S.typing={html,total:richLen858(html),pos:0,shown:-1,done:false};textEl.innerHTML='';hint.textContent='CLIQUE PARA COMPLETAR A FALA';dialog.style.opacity='1'}
+      function finishType858(){if(!S.typing||S.typing.done)return;S.typing.pos=S.typing.total;S.typing.shown=S.typing.total;S.typing.done=true;textEl.innerHTML=S.typing.html;hint.textContent='CLIQUE PARA PASSAR'}
+      function updateType858(dt){const t=S.typing;if(!t||t.done)return;t.pos=Math.min(t.total,t.pos+dt*40);const n=Math.floor(t.pos);if(n!==t.shown){t.shown=n;textEl.innerHTML=richSlice858(t.html,n)}if(t.pos>=t.total)finishType858()}
+      function imageRect858(im){const scale=Math.min(cv.width/im.naturalWidth,cv.height/im.naturalHeight),w=im.naturalWidth*scale,h=im.naturalHeight*scale;return {scale,w,h,x:(cv.width-w)/2,y:(cv.height-h)/2}}
+      function ring858(x,y,r,now){const pulse=1+Math.sin(now*.008)*.08;c.save();c.strokeStyle='#ff304f';c.lineWidth=5;c.shadowColor='#ff304f';c.shadowBlur=16;c.globalAlpha=.94;c.beginPath();c.arc(x,y,r*pulse,0,Math.PI*2);c.stroke();c.lineWidth=2;c.globalAlpha=.6;c.beginPath();c.arc(x,y,r*pulse+9,0,Math.PI*2);c.stroke();c.restore()}
+      function drawImage858(im,now){
+        c.fillStyle='#000';c.fillRect(0,0,cv.width,cv.height);
+        if(!im||!im.complete||!im.naturalWidth){c.fillStyle='#8ea2b8';c.textAlign='center';c.font='700 20px monospace';c.fillText(`AGUARDANDO recursos-${S.image}.png`,cv.width/2,cv.height/2);return}
+        const r=imageRect858(im);c.save();c.translate((Math.random()-.5)*1.1,(Math.random()-.5)*.8);c.drawImage(im,r.x,r.y,r.w,r.h);c.restore();
+        if(S.highlight==='relic'&&S.image===2)ring858(r.x+470*r.scale,r.y+155*r.scale,36*r.scale,now);
+        if(S.highlight==='gold'&&S.image===6){[[654,254],[720,256],[681,440],[723,479]].forEach(([px,py])=>ring858(r.x+px*r.scale,r.y+py*r.scale,26*r.scale,now))}
+        c.globalAlpha=.08;c.fillStyle=Math.random()>.5?'#63ddff':'#ff6b87';c.fillRect(0,Math.random()*cv.height,cv.width,1+Math.random()*3);c.globalAlpha=1;
+      }
+      function drawNoise858(now,error=false){
+        if(now-S.lastNoise>(error?42:68)){S.lastNoise=now;const d=noiseData.data;for(let i=0;i<d.length;i+=4){const v=Math.random()*255|0;d[i]=v;d[i+1]=error&&Math.random()>.7?0:v;d[i+2]=error&&Math.random()>.65?40:v;d[i+3]=255}nc.putImageData(noiseData,0,0)}
+        c.imageSmoothingEnabled=false;c.drawImage(noise,0,0,cv.width,cv.height);c.imageSmoothingEnabled=true;c.globalAlpha=error?.42:.26;c.fillStyle='#fff';for(let i=0;i<(error?16:8);i++)c.fillRect(0,Math.random()*cv.height,cv.width,1+Math.random()*(error?10:5));c.globalAlpha=1;
+        if(error){for(let i=0;i<8;i++){const y=Math.random()*cv.height,h=2+Math.random()*18;c.globalAlpha=.18+Math.random()*.25;c.fillStyle=i%2?'#ff315c':'#4ee8ff';c.fillRect((Math.random()-.5)*80,y,cv.width+100,h)}c.globalAlpha=1;c.fillStyle='rgba(0,0,0,.65)';c.fillRect(0,cv.height*.46,cv.width,cv.height*.13);c.fillStyle='#ff6b79';c.textAlign='center';c.font='900 21px Orbitron,monospace';c.fillText(S.censor?'PACOTE DE DADOS CENSURADO':'ERRO DE SINAL CHRONAL',cv.width/2,cv.height*.535)}
+      }
+      function render858(now){
+        if(S.mode==='off'){c.fillStyle='#000';c.fillRect(0,0,cv.width,cv.height)}
+        else if(S.mode==='power'){const p=Math.min(1,(now-S.powerStart)/1450);c.fillStyle='#000';c.fillRect(0,0,cv.width,cv.height);if(p<.25){c.fillStyle='#fff';const w=10+(p/.25)*cv.width*.62,h=2+(p/.25)*4;c.fillRect((cv.width-w)/2,(cv.height-h)/2,w,h)}else drawNoise858(now)}
+        else if(S.mode==='static')drawNoise858(now)
+        else if(S.mode==='error')drawNoise858(now,true)
+        else if(S.mode==='image')drawImage858(imgs[S.image-1],now);
+        c.save();c.globalAlpha=.12;c.fillStyle='#fff';for(let y=0;y<cv.height;y+=4)c.fillRect(0,y,cv.width,1);c.restore();
+      }
+      function showStep858(i){
+        S.step=i;const st=TUT3_STEPS858[i];if(!st){finish858();return}S.highlight=st.highlight||null;S.censor=!!st.censor;
+        const after=()=>{S.transition=false;type858(st.text)};
+        if(st.power){S.transition=true;hint.textContent='LIGANDO TRANSMISSÃO...';S.mode='power';S.powerStart=performance.now();tv.classList.add('powered');status.classList.add('show');setTimeout(()=>{if(S.dead)return;S.mode='static'},900);setTimeout(()=>{if(S.dead)return;S.image=st.image;S.mode='image';after()},1900);return}
+        if(st.error){
+          if(S.mode!=='error'){S.transition=true;hint.textContent='FALHA NA TROCA DE CANAL...';tv.classList.add('switching','error');errorText.classList.add('show');status.textContent='ERRO — FRAGMENTO CHRONO NÃO DECODIFICADO';S.mode='static';setTimeout(()=>{if(S.dead)return;S.mode='error';tv.classList.remove('switching');after()},850);return}
+          tv.classList.toggle('corrupted',!!st.censor);after();return;
+        }
+        tv.classList.remove('error','corrupted');errorText.classList.remove('show');if(st.image&&st.image!==S.image){S.transition=true;hint.textContent='TROCANDO DE CANAL...';tv.classList.add('switching');S.mode='static';setTimeout(()=>{if(S.dead)return;S.image=st.image;S.mode='image';tv.classList.remove('switching');after()},580);return}after();
+      }
+      function next858(){if(S.paused||S.transition)return;if(S.typing&&!S.typing.done){finishType858();return}const st=TUT3_STEPS858[S.step];if(st?.finish){finish858();return}showStep858(S.step+1)}
+      function togglePause858(force){S.paused=typeof force==='boolean'?force:!S.paused;root.querySelector('#tut3Pause858').hidden=!S.paused}
+      function finish858(){if(S.dead)return;S.dead=true;const p=tutorialProgress851();p.module3=true;saveTutorialProgress851(p);const toast=document.createElement('div');toast.className='tutFinishToast851';toast.textContent='MÓDULO 3 CONCLUÍDO';document.body.appendChild(toast);setTimeout(()=>{toast.remove();destroy858(true)},900)}
+      function destroy858(back=true){if(!root.isConnected)return;S.dead=true;cancelAnimationFrame(S.raf);window.removeEventListener('keydown',key858,true);root.remove();game=previousGame858;mouse.x=previousMouse858.x;mouse.y=previousMouse858.y;mouse.down=false;if(back)openTutorial461()}
+      function key858(e){if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();togglePause858()}}
+      function loop858(now){if(S.dead)return;const dt=Math.min(.05,(now-S.last)/1000||.016);S.last=now;if(!S.paused){updateType858(dt);render858(now)}S.raf=requestAnimationFrame(loop858)}
+      dialog.onclick=e=>{e.stopPropagation();next858()};root.querySelector('#tut3PauseBtn858').onclick=e=>{e.stopPropagation();togglePause858()};root.querySelector('#tut3Continue858').onclick=e=>{e.stopPropagation();togglePause858(false)};root.querySelector('#tut3Exit858').onclick=e=>{e.stopPropagation();destroy858(true)};root.querySelector('#tut3ExitMain858').onclick=e=>{e.stopPropagation();destroy858(false);(window.openStartMenu||window.openStartMenu461)?.()};
+      window.addEventListener('keydown',key858,true);showStep858(0);S.raf=requestAnimationFrame(loop858);
     }
 
 
