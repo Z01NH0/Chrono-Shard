@@ -1,0 +1,5 @@
+project_id = "favrbugywlamhitktocy"
+
+[functions.game-api]
+# A função usa withSupabase({ auth: 'user' }) para validar a sessão do jogador.
+verify_jwt = false
