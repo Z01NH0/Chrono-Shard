@@ -31986,12 +31986,20 @@ function closeDeleteSave832(){document.getElementById('deleteSaveOverlay832')?.r
 function openDeleteSave832(){
   ensureDeleteSaveStyle832();closeDeleteSave832();
   const box=document.createElement('div');box.id='deleteSaveOverlay832';box.className='deleteSaveOverlay832';
-  box.innerHTML=`<div class="deleteSaveConfirm832" role="dialog" aria-modal="true" aria-labelledby="deleteSaveTitle832"><h2 id="deleteSaveTitle832">EXCLUIR SAVE ATUAL?</h2><p>Todo o progresso, moedas, personagens, skins, configurações e registros locais serão apagados.</p><div class="deleteSaveWarning832">Esta ação não poderá ser desfeita.</div><div class="deleteSaveActions832"><button class="deleteSaveYes832" id="deleteSaveYes832">Quero Apagar</button><button class="deleteSaveNo832" id="deleteSaveNo832">Não</button></div></div>`;
+  box.innerHTML=`<div class="deleteSaveConfirm832" role="dialog" aria-modal="true" aria-labelledby="deleteSaveTitle832"><h2 id="deleteSaveTitle832">EXCLUIR SAVE ATUAL?</h2><p>Todo o progresso, moedas, personagens, skins, configurações e registros locais serão apagados. A sessão da conta Supabase será preservada.</p><div class="deleteSaveWarning832">Esta ação não poderá ser desfeita.</div><div class="deleteSaveActions832"><button class="deleteSaveYes832" id="deleteSaveYes832">Quero Apagar</button><button class="deleteSaveNo832" id="deleteSaveNo832">Não</button></div></div>`;
   document.body.appendChild(box);
   document.getElementById('deleteSaveNo832').onclick=closeDeleteSave832;
   document.getElementById('deleteSaveYes832').onclick=()=>{
     const yes=document.getElementById('deleteSaveYes832');if(yes){yes.disabled=true;yes.textContent='APAGANDO...'}
-    try{localStorage.clear()}catch(e){console.error('Erro ao limpar save',e)}
+    try{
+      const preserved=[];
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k&&k.startsWith('sb-'))preserved.push([k,localStorage.getItem(k)]);
+      }
+      localStorage.clear();
+      for(const [k,v] of preserved)if(v!==null)localStorage.setItem(k,v);
+    }catch(e){console.error('Erro ao limpar save',e)}
     setTimeout(()=>window.location.reload(),180);
   };
   box.addEventListener('click',e=>{if(e.target===box)closeDeleteSave832()});
@@ -37128,6 +37136,362 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 }
 @media(prefers-reduced-motion:reduce){#overlayCard .nefalemRitual849:before,#overlayCard .nefSealGlyph849,#overlayCard .nefChain849,#overlayCard .nefEmbers849 b{animation:none!important}}
 </style>
+<!-- Chrono Shards 8.5.0 — Supabase cloud foundation -->
+<style id="chronoCloudStyle850">
+  #chronoCloudCard850{margin:16px 0;padding:18px;border-radius:20px;background:radial-gradient(circle at 10% 0,rgba(97,218,251,.14),transparent 36%),linear-gradient(145deg,rgba(7,17,34,.98),rgba(4,7,16,.98));border:1px solid rgba(97,218,251,.28);box-shadow:inset 0 0 30px rgba(97,218,251,.035),0 16px 45px rgba(0,0,0,.28)}
+  #chronoCloudCard850 .cloudHead850{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  #chronoCloudCard850 h3{margin:0;color:#eefbff;font:900 15px Orbitron,sans-serif;letter-spacing:.07em}
+  #chronoCloudCard850 .cloudBadge850{padding:7px 11px;border-radius:999px;color:#b8cbea;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font:800 10px Orbitron,sans-serif}
+  #chronoCloudCard850 .cloudBadge850.ok{color:#9dffcf;border-color:rgba(76,224,179,.4);background:rgba(76,224,179,.08)}
+  #chronoCloudCard850 .cloudBadge850.warn{color:#ffe38c;border-color:rgba(255,209,102,.38);background:rgba(255,209,102,.08)}
+  #chronoCloudCard850 .cloudBadge850.err{color:#ff9aad;border-color:rgba(255,48,79,.38);background:rgba(255,48,79,.08)}
+  #chronoCloudCard850 p{margin:10px 0!important;color:#a9bdd8!important;line-height:1.55!important;text-align:left!important}
+  #chronoCloudCard850 .cloudMeta850{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+  #chronoCloudCard850 .cloudMeta850 div{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);min-width:0}
+  #chronoCloudCard850 .cloudMeta850 small{display:block;color:#7188a8;font:700 9px Orbitron,sans-serif;letter-spacing:.07em}
+  #chronoCloudCard850 .cloudMeta850 b{display:block;margin-top:5px;color:#e9f7ff;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #chronoCloudCard850 .cloudActions850{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}
+  #chronoCloudCard850 button{padding:11px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.13);background:linear-gradient(135deg,rgba(97,218,251,.18),rgba(159,108,255,.16));color:#eef9ff;font:800 10px Orbitron,sans-serif;letter-spacing:.03em}
+  #chronoCloudCard850 button:hover:not(:disabled){transform:translateY(-1px);border-color:rgba(97,218,251,.45)}
+  #chronoCloudCard850 button:disabled{opacity:.4;cursor:not-allowed}
+  #chronoCloudCard850 .cloudNote850{font-size:11px;color:#7f94b0;margin-top:11px}
+  @media(max-width:700px){#chronoCloudCard850 .cloudActions850,#chronoCloudCard850 .cloudMeta850{grid-template-columns:1fr}}
+</style>
+<script id="chronoCloudClient850">
+(()=>{
+  if(window.__chronoCloudClient850)return;
+  window.__chronoCloudClient850=true;
+
+  const CONFIG=Object.freeze({
+    url:'https://favrbugywlamhitktocy.supabase.co',
+    publishableKey:'sb_publishable_6isbwgyY072T1_o0eirr_w_HjyPZ_oc',
+    functionName:'game-api'
+  });
+  const SAVE_KEYS=[
+    'chrono_v4_meta','chrono_v4_meta_class_unlocks_v3','chrono_v4_meta_secret_rift_v1',
+    'chrono_v4_meta_redeemed_codes_v1','chrono_v4_meta_chrono_augments_620',
+    'chrono_v4_meta_skins_clean_702','chrono_v4_meta_power_catalog_unlocks_544',
+    'chrono_v4_meta_mauro_shop_clean_702','chrono_v4_meta_infernal_shop_830',
+    'chrono_v4_meta_doom_mode_v1','chrono_rift_tutorial_skip_v1','chrono_doom_tutorial_skip_v1'
+  ];
+  const runtime={client:null,session:null,state:null,status:'idle',message:'Aguardando conexão',lastError:null,bootPromise:null,sdkPromise:null};
+  const listeners=new Set();
+  const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+
+  function emit(){
+    const detail={...runtime,client:undefined,session:runtime.session?{user:{id:runtime.session.user?.id}}:null};
+    listeners.forEach(fn=>{try{fn(detail)}catch(e){console.warn('Chrono Cloud listener',e)}});
+    try{window.dispatchEvent(new CustomEvent('chrono-cloud-state',{detail}))}catch{}
+    refreshCloudCard850();
+  }
+  function setStatus(status,message,error=null){runtime.status=status;runtime.message=message;runtime.lastError=error;emit()}
+  function subscribe(fn){if(typeof fn!=='function')return()=>{};listeners.add(fn);return()=>listeners.delete(fn)}
+
+  function collectLocalSnapshot(){
+    const snapshot={};
+    for(const key of SAVE_KEYS){
+      const raw=localStorage.getItem(key);
+      if(raw===null)continue;
+      try{snapshot[key]=JSON.parse(raw)}catch{snapshot[key]=raw}
+    }
+    return snapshot;
+  }
+
+  function snapshotFromState850(state){
+    const source=state?.save_data&&typeof state.save_data==='object'
+      ?JSON.parse(JSON.stringify(state.save_data))
+      :{};
+    const meta=source.chrono_v4_meta&&typeof source.chrono_v4_meta==='object'
+      ?source.chrono_v4_meta
+      :{};
+    meta.relicShards=n(state?.relic_shards,meta.relicShards||0);
+    meta.chronoFragments=n(state?.chrono_fragments,meta.chronoFragments||0);
+    meta.awakeningKeys=n(state?.awakening_keys,meta.awakeningKeys||0);
+    meta.sinnerTears830=n(state?.sinner_tears,meta.sinnerTears830||meta.doomFragments||0);
+    meta.doomFragments=meta.sinnerTears830;
+    meta.highScore=n(state?.high_score,meta.highScore||0);
+    source.chrono_v4_meta=meta;
+    return source;
+  }
+
+  function applySnapshot(snapshot,{reloadUI=true}={}){
+    if(!snapshot||typeof snapshot!=='object')throw new Error('Snapshot do servidor inválido');
+    for(const key of SAVE_KEYS){
+      if(Object.prototype.hasOwnProperty.call(snapshot,key))localStorage.setItem(key,JSON.stringify(snapshot[key]));
+      else localStorage.removeItem(key);
+    }
+    try{
+      const meta=JSON.parse(localStorage.getItem('chrono_v4_meta')||'{}');
+      if(window.game)game.meta=meta;
+      if(typeof updateHUD==='function'&&window.game)updateHUD();
+    }catch(e){console.warn('Chrono Cloud apply meta',e)}
+    if(reloadUI&&!window.game?.running){
+      setTimeout(()=>{
+        try{
+          const fn=window.openStartMenu||window.openStartMenu461;
+          if(typeof fn==='function')fn();
+        }catch(e){console.warn('Chrono Cloud refresh UI',e)}
+      },0);
+    }
+    try{window.dispatchEvent(new CustomEvent('chrono-cloud-applied',{detail:{snapshot}}))}catch{}
+    return snapshot;
+  }
+
+  async function loadSupabaseSdk850(){
+    if(window.supabase?.createClient)return window.supabase;
+    if(runtime.sdkPromise)return runtime.sdkPromise;
+    runtime.sdkPromise=new Promise((resolve,reject)=>{
+      const existing=document.getElementById('chronoSupabaseSdk850');
+      const script=existing||document.createElement('script');
+      let settled=false;
+      const finish=(fn,value)=>{if(settled)return;settled=true;clearTimeout(timer);fn(value)};
+      const timer=setTimeout(()=>finish(reject,new Error('Tempo limite ao carregar a biblioteca do Supabase')),8000);
+      script.id='chronoSupabaseSdk850';
+      script.async=true;
+      script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8';
+      script.onload=()=>window.supabase?.createClient
+        ?finish(resolve,window.supabase)
+        :finish(reject,new Error('Biblioteca do Supabase carregou sem createClient'));
+      script.onerror=()=>finish(reject,new Error('Não foi possível baixar a biblioteca do Supabase'));
+      if(!existing)document.head.appendChild(script);
+    }).catch(error=>{
+      runtime.sdkPromise=null;
+      document.getElementById('chronoSupabaseSdk850')?.remove();
+      throw error;
+    });
+    return runtime.sdkPromise;
+  }
+
+  async function ensureClient(){
+    if(runtime.client)return runtime.client;
+    await loadSupabaseSdk850();
+    if(!window.supabase?.createClient)throw new Error('Biblioteca do Supabase não foi carregada');
+    runtime.client=window.supabase.createClient(CONFIG.url,CONFIG.publishableKey,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false},
+      global:{headers:{'x-chrono-client':'chrono-shards-8.5.0'}}
+    });
+    return runtime.client;
+  }
+
+  async function ensureAuth(){
+    const client=await ensureClient();
+    const {data:{session},error}=await client.auth.getSession();
+    if(error)throw error;
+    if(session){runtime.session=session;return session}
+    const signed=await client.auth.signInAnonymously();
+    if(signed.error)throw signed.error;
+    if(!signed.data.session)throw new Error('O Supabase não retornou uma sessão anônima');
+    runtime.session=signed.data.session;
+    return runtime.session;
+  }
+
+  async function invoke(action,payload={}){
+    const client=await ensureClient();
+    await ensureAuth();
+    const {data,error}=await client.functions.invoke(CONFIG.functionName,{body:{action,...payload}});
+    if(error){
+      let message=error.message||'Falha ao chamar a Edge Function';
+      try{
+        const response=error.context;
+        if(response&&typeof response.clone==='function'){
+          const body=await response.clone().json();
+          if(body?.error)message=body.error;
+        }
+      }catch{}
+      throw new Error(message);
+    }
+    if(data?.error)throw new Error(data.error);
+    return data;
+  }
+
+  async function loadState({applyAuthoritative=true,forceApply=false}={}){
+    setStatus('loading','Lendo progresso no servidor...');
+    const result=await invoke('load_state');
+    runtime.state=result?.state||null;
+    const state=runtime.state;
+    if(state?.initialized&&(forceApply||(applyAuthoritative&&state.authority_mode==='authoritative'))){
+      applySnapshot(snapshotFromState850(state));
+    }
+    if(!state?.initialized){
+      setStatus('ready','Conectado. O save local ainda não foi migrado.');
+    }else if(state.authority_mode==='authoritative'){
+      setStatus('authoritative','Save online autoritativo carregado.');
+    }else{
+      setStatus('migration','Save registrado no servidor; migração das ações ainda está em andamento.');
+    }
+    return result;
+  }
+
+  async function migrateLocalSave(){
+    const snapshot=collectLocalSnapshot();
+    if(!Object.keys(snapshot).length)throw new Error('Nenhum save local foi encontrado');
+    setStatus('loading','Enviando a migração inicial...');
+    const result=await invoke('import_legacy',{requestId:crypto.randomUUID(),snapshot});
+    runtime.state=result?.state||runtime.state;
+    setStatus('migration',result?.message||'Migração inicial concluída.');
+    return result;
+  }
+
+  async function startRun(mode,classKey){
+    const result=await invoke('start_run',{mode:String(mode||'normal'),classKey:String(classKey||'')});
+    try{if(window.game&&result?.session){game.cloudSessionId=result.session.id;game.cloudServerSeed=result.session.server_seed}}catch{}
+    return result;
+  }
+
+  async function finishRun(sessionId,summary={}){
+    const result=await invoke('finish_run',{
+      requestId:crypto.randomUUID(),sessionId,
+      score:n(summary.score),wave:n(summary.wave),kills:n(summary.kills)
+    });
+    if(result?.state){runtime.state=result.state;if(result.state.authority_mode==='authoritative')applySnapshot(snapshotFromState850(result.state))}
+    return result;
+  }
+
+  async function boot({force=false}={}){
+    if(force){runtime.bootPromise=null;runtime.client=null;runtime.session=null}
+    if(runtime.bootPromise)return runtime.bootPromise;
+    runtime.bootPromise=(async()=>{
+      try{
+        setStatus('loading','Conectando ao Supabase...');
+        await ensureAuth();
+        return await loadState({applyAuthoritative:true});
+      }catch(error){
+        console.warn('Chrono Cloud indisponível:',error);
+        runtime.bootPromise=null;
+        setStatus('error','Servidor indisponível; o jogo continuará usando o save local.',error);
+        return null;
+      }
+    })();
+    return runtime.bootPromise;
+  }
+  async function reconnect(){return boot({force:true})}
+
+  function statusPresentation(){
+    if(runtime.status==='authoritative')return['ok','AUTORITATIVO'];
+    if(runtime.status==='ready')return['ok','CONECTADO'];
+    if(runtime.status==='migration')return['warn','MIGRAÇÃO'];
+    if(runtime.status==='loading')return['','CONECTANDO'];
+    if(runtime.status==='error')return['err','ERRO'];
+    return['','OFFLINE'];
+  }
+
+  function cloudCardHTML850(){
+    const [badgeClass,badgeText]=statusPresentation();
+    const userId=runtime.session?.user?.id||'—';
+    const revision=runtime.state?.revision??0;
+    const mode=runtime.state?.authority_mode||'não inicializado';
+    const imported=!!runtime.state?.legacy_imported_at;
+    const loading=runtime.status==='loading';
+    const connected=!['error','idle','loading'].includes(runtime.status);
+    const refreshLabel=runtime.status==='error'?'Tentar novamente':'Baixar do servidor';
+    return `<div class="cloudHead850"><h3>☁ SAVE ONLINE / SUPABASE</h3><span class="cloudBadge850 ${badgeClass}">${badgeText}</span></div><p id="chronoCloudMessage850">${String(runtime.message||'').replace(/[<>&]/g,s=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[s]))}</p><div class="cloudMeta850"><div><small>ID DA CONTA</small><b title="${userId}">${userId}</b></div><div><small>REVISÃO / MODO</small><b>${revision} • ${mode}</b></div></div><div class="cloudActions850"><button id="chronoCloudRefresh850" ${loading?'disabled':''}>${refreshLabel}</button><button id="chronoCloudMigrate850" ${connected&&!imported?'':'disabled'}>${imported?'Migração realizada':'Migrar save local'}</button><button id="chronoCloudCopy850" ${userId==='—'?'disabled':''}>Copiar ID</button></div><div class="cloudNote850">O modo autoritativo só deve ser ativado depois que compras, missões e recompensas permanentes forem processadas pelo servidor.</div>`;
+  }
+
+  function refreshCloudCard850(){
+    const card=document.getElementById('chronoCloudCard850');
+    if(!card)return;
+    card.innerHTML=cloudCardHTML850();
+    bindCloudCard850(card);
+  }
+  function bindCloudCard850(card){
+    const refresh=card.querySelector('#chronoCloudRefresh850');
+    const migrate=card.querySelector('#chronoCloudMigrate850');
+    const copy=card.querySelector('#chronoCloudCopy850');
+    if(refresh)refresh.onclick=async()=>{
+      refresh.disabled=true;
+      try{
+        if(runtime.status==='error'||runtime.status==='idle')await reconnect();
+        else await loadState({applyAuthoritative:false,forceApply:true});
+      }catch(e){setStatus('error',e.message,e)}
+    };
+    if(migrate)migrate.onclick=async()=>{
+      const ok=confirm('Migrar este save local para a conta online? Essa migração inicial só pode ser feita uma vez.');
+      if(!ok)return;
+      migrate.disabled=true;
+      try{await migrateLocalSave()}catch(e){setStatus('error',e.message,e)}
+    };
+    if(copy)copy.onclick=async()=>{
+      const id=runtime.session?.user?.id;if(!id)return;
+      try{await navigator.clipboard.writeText(id);copy.textContent='ID copiado'}catch{prompt('Copie o ID da conta:',id)}
+    };
+  }
+  function injectCloudCard850(){
+    const host=document.getElementById('overlayCard');
+    if(!host)return;
+    const title=(host.querySelector('h1')?.textContent||'').toUpperCase();
+    if(!title.includes('CONFIGURA'))return;
+    let card=document.getElementById('chronoCloudCard850');
+    if(!card){
+      card=document.createElement('section');card.id='chronoCloudCard850';
+      const saveCard=document.getElementById('chronoSaveCard20');
+      const back=host.querySelector('[id*="cfgBack"],[id*="backCfg"],button:last-of-type');
+      if(saveCard?.parentElement===host)saveCard.insertAdjacentElement('afterend',card);
+      else if(back?.parentElement===host)host.insertBefore(card,back);
+      else host.appendChild(card);
+    }
+    refreshCloudCard850();
+  }
+
+  try{
+    const host=document.getElementById('overlayCard');
+    if(host)new MutationObserver(records=>{
+      const externalChange=records.some(record=>{
+        const target=record.target;
+        return !(target instanceof Element)||!target.closest('#chronoCloudCard850');
+      });
+      if(externalChange)queueMicrotask(injectCloudCard850);
+    }).observe(host,{childList:true,subtree:true});
+  }catch(e){console.warn('Chrono Cloud observer',e)}
+  document.addEventListener('click',event=>{
+    if(event.target?.closest?.('#chronoCloudCard850'))return;
+    setTimeout(injectCloudCard850,20);
+  },true);
+  document.addEventListener('DOMContentLoaded',()=>{injectCloudCard850();boot()},{once:true});
+
+  window.ChronoCloud=Object.freeze({
+    config:CONFIG,boot,reconnect,loadState,migrateLocalSave,collectLocalSnapshot,applySnapshot,
+    startRun,finishRun,invoke,subscribe,getState:()=>({...runtime,client:undefined})
+  });
+
+  function installRunHooks850(){
+    const baseReset=window.resetGame||globalThis.resetGame;
+    if(typeof baseReset==='function'&&!baseReset.__chronoCloud850){
+      const wrapped=function(classKey){
+        const out=baseReset.apply(this,arguments);
+        queueMicrotask(async()=>{
+          try{
+            const g=window.game;
+            if(!g?.running)return;
+            const mode=g.doom800?'doom':g.riftMode50?'rift':g.mode||'normal';
+            await startRun(mode,classKey||g.classKey);
+          }catch(e){console.warn('Chrono Cloud start_run',e)}
+        });
+        return out;
+      };
+      wrapped.__chronoCloud850=true;
+      window.resetGame=wrapped;
+      try{resetGame=wrapped}catch{}
+    }
+    const baseGameOver=window.gameOver||globalThis.gameOver;
+    if(typeof baseGameOver==='function'&&!baseGameOver.__chronoCloud850){
+      const wrapped=function(){
+        const g=window.game;
+        const sessionId=g?.cloudSessionId;
+        const summary=sessionId?{score:n(g.score),wave:n(g.wave),kills:n(g.kills)}:null;
+        const out=baseGameOver.apply(this,arguments);
+        if(sessionId&&summary)queueMicrotask(()=>finishRun(sessionId,summary).catch(e=>console.warn('Chrono Cloud finish_run',e)));
+        return out;
+      };
+      wrapped.__chronoCloud850=true;
+      window.gameOver=wrapped;
+      try{gameOver=wrapped}catch{}
+    }
+  }
+  installRunHooks850();
+  console.log('Chrono Shards 8.5.0 — fundação Supabase carregada');
+})();
+</script>
+
 <script id="chronoLatestInterface849">
 /* Chrono Shards DOOM 8.4.9 — ritual ÚNICO + inicialização somente pela interface final */
 (()=>{
@@ -37179,8 +37543,14 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     latestHome849();
     requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.add('chrono-latest-ready849')));
   }
-  function boot849(){
+  async function boot849(){
     /* As chamadas automáticas dos patches 2.7, 2.9, 3.1, 3.7 e 4.6.1 foram guardadas pela flag acima. */
+    try{
+      const cloudBoot=window.ChronoCloud?.boot?.();
+      if(cloudBoot&&typeof cloudBoot.then==='function'){
+        await Promise.race([cloudBoot,new Promise(resolve=>setTimeout(resolve,3500))]);
+      }
+    }catch(e){console.warn(PATCH+' cloud boot',e)}
     latestHome849();
     requestAnimationFrame(()=>{latestHome849();requestAnimationFrame(()=>root.classList.add('chrono-latest-ready849'))});
     setTimeout(()=>{latestHome849();root.classList.add('chrono-latest-ready849')},160);
