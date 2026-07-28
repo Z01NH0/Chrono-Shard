@@ -1,0 +1,18 @@
+Chrono Shards 8.5.12 — validações
+
+[OK] 175 blocos JavaScript compilados individualmente com Node.js.
+[OK] Todos os blocos JavaScript concatenados passaram em node --check.
+[OK] Edge Function transpilada com TypeScript 5.8.3 sem diagnósticos.
+[OK] 107 IDs estáticos analisados pelo parser HTML; nenhum duplicado.
+[OK] Nenhuma referência estática a arquivo local ausente.
+[OK] Todas as 17 ações invocadas pelo HTML possuem handler na game-api.
+[OK] Todas as 6 RPCs usadas pela Edge Function existem nas migrations.
+[OK] Botão e texto "Continuar como convidado" removidos.
+[OK] Nenhum timeout restante libera chrono-latest-ready849 sem autenticação.
+[OK] Existe somente um ponto que libera a interface, protegido por isAuthenticated().
+[OK] Modal obrigatório permanece não fechável.
+[OK] Sessão sem token abre o login sem aguardar o SDK do Supabase.
+[OK] Sessão anônima antiga não libera o menu.
+[OK] Conta permanente válida libera o menu apenas após aplicar o save.
+[OK] Nenhuma migration SQL nova necessária.
+[OK] Edge Function não foi alterada em relação à versão 8.5.11.

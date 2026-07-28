@@ -1,0 +1,13 @@
+PASS | Sintaxe dos scripts JavaScript | 176 scripts; 0 erro(s)
+PASS | IDs HTML únicos | 107 IDs; duplicados: []
+PASS | Catálogo de missões HTML/SQL | 34 no HTML; 34 no SQL
+PASS | Ações do cliente atendidas pela Edge Function | faltando: []
+PASS | RPCs da Edge Function presentes nas migrações | faltando: []
+PASS | Estrutura das funções PostgreSQL | arquivos com inconsistência: []
+WARN | Recursos locais referenciados | ausente no pacote original: multiplayer.js
+PASS | Cabeçalho CORS antigo removido | 
+PASS | Módulo autoritativo 8.5.6 único | 
+PASS | TypeScript da Edge Function | 0 diagnósticos de transpilação
+PASS | Preços de personagens HTML/SQL | 13 preços e moedas coincidentes
+PASS | RLS nas tabelas Chrono | 7 de 7 tabelas com RLS; nenhum grant de escrita para anon/authenticated
+NOTA | Recurso ausente no pacote original | multiplayer.js é referenciado, mas não foi fornecido

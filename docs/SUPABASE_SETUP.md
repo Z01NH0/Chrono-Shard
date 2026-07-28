@@ -1,81 +1,39 @@
-# Chrono Shards — ativação do Supabase
+# Chrono Shards 8.5.12 — login obrigatório no início
 
-O HTML já contém:
+Esta versão altera apenas o cliente para bloquear o jogo até uma conta permanente ser autenticada e carregada.
 
-- Project URL: `https://favrbugywlamhitktocy.supabase.co`
-- Publishable key fornecida pelo projeto.
-- Login anônimo.
-- Cliente da Edge Function `game-api`.
-- Tela de status, migração inicial e sincronização dentro de Configurações.
+## Atualizar uma instalação 8.5.11
 
-## 1. Habilitar login anônimo
+1. Não execute SQL novo.
+2. Não é necessário republicar a Edge Function.
+3. Substitua o `index.html` pelo arquivo da versão 8.5.12.
+4. Reinicie o Live Server e abra:
 
-No painel do Supabase:
+   `http://127.0.0.1:5500/index.html?v=8512`
 
-`Authentication → Providers → Anonymous Sign-Ins → Enable`
+5. Pressione `Ctrl + F5`.
 
-## 2. Criar o banco
+## Teste do início obrigatório
 
-Abra `SQL Editor`, crie uma consulta e cole todo o conteúdo de:
+### Sem login
 
-`supabase/migrations/20260724_chrono_cloud.sql`
+1. Clique em `Sair` ou use uma janela anônima.
+2. Reabra o jogo.
+3. O Chrono ID deve aparecer automaticamente.
+4. O menu não deve aparecer por trás nem depois de alguns segundos.
+5. Não deve existir a opção `Continuar como convidado`.
 
-Execute uma única vez.
+### Com login salvo
 
-## 3. Publicar a Edge Function
+1. Entre em uma conta.
+2. Feche e abra novamente a página.
+3. Deve aparecer somente `Carregando...` por um momento.
+4. O save deve ser aplicado e o menu deve abrir sem mostrar o formulário de login.
 
-### Pelo painel
+### Sessão expirada
 
-1. Abra `Edge Functions`.
-2. Clique em `Deploy a new function` → `Via Editor`.
-3. Nome: `game-api`.
-4. Cole o conteúdo de `supabase/functions/game-api/index.ts`.
-5. Nas configurações da função, desative a verificação JWT da plataforma. A própria função valida o usuário com `withSupabase({ auth: 'user' })`.
-6. Publique.
+Quando a sessão não puder ser validada, o jogo permanece bloqueado e mostra login ou a tela de conexão. Ele não abre automaticamente um save local antigo.
 
-### Pela CLI
+## Instalação nova
 
-```bash
-supabase login
-supabase link --project-ref favrbugywlamhitktocy
-supabase db push
-supabase functions deploy game-api --no-verify-jwt
-```
-
-## 4. Testar no jogo
-
-Sirva a pasta por HTTP. Não abra somente por `file://`.
-
-Exemplo:
-
-```bash
-python -m http.server 5500
-```
-
-Abra `http://localhost:5500`, vá em **Configurações** e confira o cartão **Save Online / Supabase**.
-
-## 5. Fazer a migração inicial
-
-No cartão do Supabase, clique em **Migrar save local**. A migração pode ser feita apenas uma vez por usuário anônimo.
-
-O banco começa em `authority_mode = migration`. Isso é intencional: o save do servidor ainda não substitui automaticamente o local enquanto compras, missões e recompensas antigas continuarem sendo calculadas no navegador. O campo `run_results_enabled` também começa como `false`, portanto resumos de partida são registrados sem alterar moedas ou high score oficial.
-
-## 6. Quando ativar o modo autoritativo
-
-Somente depois de migrar as ações permanentes para chamadas de servidor, altere o jogador para:
-
-```sql
-update public.chrono_player_state
-set authority_mode = 'authoritative',
-    run_results_enabled = true
-where user_id = 'UUID_DO_JOGADOR';
-```
-
-Nesse modo, o HTML carrega o snapshot do servidor e sobrescreve o cache local no boot.
-
-## Segurança
-
-- A Publishable Key pode ficar no HTML.
-- Nunca coloque `secret key`, `service_role` ou senha do banco no HTML.
-- Não crie políticas de escrita direta para `anon` ou `authenticated` nessas tabelas.
-- O sistema de AES local continua apenas como backup antigo; ele não vira fonte oficial do progresso.
+Execute as migrations na ordem numérica, de `20260724000100` até `20260724000900`, e publique a Edge Function mais recente presente em `supabase/functions/game-api/index.ts`.

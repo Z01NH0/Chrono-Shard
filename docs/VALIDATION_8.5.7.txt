@@ -1,0 +1,19 @@
+OK — Scripts inline individuais — 176 verificados; erros=0
+OK — Scripts inline combinados
+OK — IDs HTML duplicados — {}
+OK — Referências locais e imagens
+OK — Padrões antigos removidos
+OK — Ações HTML presentes na Edge Function — HTML=['claim_mission', 'enable_economy', 'load_missions', 'purchase_character', 'redeem_code']; ausentes=[]
+OK — RPCs presentes nas migrações — RPCs=['chrono_claim_mission_server', 'chrono_enable_economy_server', 'chrono_finish_run_server', 'chrono_load_missions_server', 'chrono_purchase_character_server', 'chrono_redeem_code_server']; ausentes=[]
+OK — Ordem de migrações — ['20260724000100_chrono_cloud.sql', '20260724000200_chrono_economy_characters.sql', '20260724000300_chrono_run_rewards.sql', '20260724000400_chrono_missions_codes.sql', '20260724000500_chrono_missions_consistency.sql', '20260724000600_chrono_hardening.sql']
+OK — RLS declarada: chrono_player_state
+OK — RLS declarada: chrono_game_sessions
+OK — RLS declarada: chrono_action_receipts
+OK — RLS declarada: chrono_mission_catalog
+OK — RLS declarada: chrono_player_missions
+OK — RLS declarada: chrono_reward_codes
+OK — RLS declarada: chrono_redeemed_codes
+OK — Índice de sessão ativa única
+OK — Texto de carregamento natural
+OK — Status de missão natural
+OK — .gitignore válido — .DS_Store | Thumbs.db | .vscode/ | node_modules/ | .env | .env.* | supabase/.temp/ | 

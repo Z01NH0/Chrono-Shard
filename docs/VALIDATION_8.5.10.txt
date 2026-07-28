@@ -1,0 +1,24 @@
+Chrono Shards 8.5.10 — validação técnica
+
+Scripts JavaScript internos: 175
+IDs HTML duplicados: 0
+Acessos inseguros e.key.toLowerCase(): 0
+Chamadas diretas signInWithPassword no HTML: 0
+Chamadas diretas auth.updateUser no HTML: 0
+Favicon local/data configurado: True
+Sintaxe individual dos scripts: OK
+Sintaxe combinada dos scripts: OK
+Transpilação TypeScript da Edge Function: OK
+Chrono Shards 8.5.10 — login estável e telemetria de missões corrigida
+CLOUD_SMOKE_OK true true
+Ações do HTML sem handler: []
+RPCs sem função SQL: []
+Migrations encontradas: 9
+Fluxo de login por sessão do servidor: OK
+Telemetria direta de mortes: OK
+Orçamento agregado de inimigos: OK
+
+Limitações dos testes:
+- A migration não foi executada no projeto Supabase real do usuário.
+- A Edge Function não foi publicada a partir deste ambiente.
+- O teste definitivo de login e missão depende da instalação dos arquivos no projeto real.

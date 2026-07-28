@@ -1,0 +1,18 @@
+Chrono Shards 8.5.8 — validação concluída
+Data: 2026-07-27
+
+- 175 blocos JavaScript inline: sintaxe válida individualmente.
+- Conjunto concatenado dos scripts: sintaxe válida e sem colisão léxica detectada.
+- Edge Function TypeScript: 0 diagnósticos de transpilação.
+- Smoke test do módulo de contas: carregamento bem-sucedido.
+- Smoke test de merge: saldo oficial prevaleceu e dados locais não autoritativos foram preservados.
+- IDs HTML duplicados: 0.
+- Ações chamadas pelo HTML sem handler na Edge Function: 0.
+- RPCs chamadas pela Edge Function sem função SQL correspondente: 0.
+- Chaves persistentes conhecidas ausentes do snapshot: 0.
+- Interface antiga de save JSON/AES: removida.
+- Cabeçalho CORS antigo x-chrono-client: ausente.
+- Imagens obrigatórias do pacote: presentes.
+
+Limitação: os testes não executam requisições reais no projeto Supabase do usuário. Registro, login,
+recuperação e sincronização devem ser confirmados após executar a migration 007 e publicar a Edge Function.

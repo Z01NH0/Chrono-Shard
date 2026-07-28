@@ -1,0 +1,13 @@
+Chrono Shards 8.5.11 — validações
+
+[OK] 175 blocos JavaScript compilados individualmente com Node.js.
+[OK] Todos os blocos JavaScript concatenados passaram em node --check.
+[OK] Edge Function transpilada com TypeScript 5.8.3 sem diagnósticos.
+[OK] Smoke test: troca de conta preserva apenas chaves de autenticação Supabase.
+[OK] Smoke test: logout remove 100% do localStorage e sessionStorage.
+[OK] Smoke test: estado em memória do jogo é zerado durante a limpeza.
+[OK] Nenhuma escrita nova no cache chrono_cloud_account_cache_858.
+[OK] Caches legados são removidos no boot.
+[OK] Conta permanente não importa snapshot local sem vínculo comprovado.
+[OK] Sessão anônima temporária é removida no servidor após login/recuperação.
+[OK] Nenhuma migration SQL nova necessária.
