@@ -13228,14 +13228,21 @@ function killKey37(e){
   function activeIds(ms){return (ms.slots||[]).map(s=>s?.missionId).filter(Boolean)}
   function newSlot(diff,m,forbid=[]){const mission=pick(POOLS[diff],forbid);return {difficulty:diff,missionId:mission.id,baseline:baselineFor(mission,m),cooldownUntil:0,v:489}}
   function ensureMissionState(m=read()){
-    const ms=m.missions39,now=Date.now();ms.reworkVersion=489;
+    const ms=m.missions39,now=Date.now(),serverManaged=ms.serverAuthority856===true;ms.reworkVersion=489;
     for(let i=0;i<SLOT_ORDER.length;i++){
       const diff=SLOT_ORDER[i];let slot=ms.slots[i];
       if(slot?.cooldownUntil>now){slot.difficulty=diff;slot.missionId=null;ms.slots[i]=slot;continue}
       const valid=slot&&slot.difficulty===diff&&missionById(slot.missionId)&&POOLS[diff].some(x=>x.id===slot.missionId);
-      if(!valid||slot.cooldownUntil){slot=newSlot(diff,m,activeIds(ms));}
+      if(!valid||slot.cooldownUntil){
+        // Depois que o servidor assume as missões, o cliente não pode sortear
+        // outra rotação sozinho. Ele mantém o slot vazio até load_missions trazer
+        // a atribuição oficial, evitando contratos diferentes após um refresh.
+        slot=serverManaged
+          ?{difficulty:diff,missionId:null,baseline:0,cooldownUntil:0,serverPending:true,v:489}
+          :newSlot(diff,m,activeIds(ms));
+      }
       slot.difficulty=diff;slot.cooldownUntil=0;slot.v=489;
-      if(!Number.isFinite(Number(slot.baseline)))slot.baseline=baselineFor(missionById(slot.missionId),m);
+      if(slot.missionId&&!Number.isFinite(Number(slot.baseline)))slot.baseline=baselineFor(missionById(slot.missionId),m);
       ms.slots[i]=slot;
     }
     const oldSecretClaim=!!(m.moonMissionClaimed||ms.extreme?.claimed||m.missions37?.extreme?.claimed);
@@ -13243,8 +13250,11 @@ function killKey37(e){
     let ex=ms.extreme489||null;
     if(ex?.cooldownUntil>now){ex.missionId=null;}
     else if(!ex||!POOLS.extreme.some(x=>x.id===ex.missionId)||ex.cooldownUntil){
-      const previous=ex?.lastMissionId||ex?.missionId||'';const mission=pick(POOLS.extreme,previous?[previous]:[]);
-      ex={missionId:mission.id,baseline:baselineFor(mission,m),cooldownUntil:0,lastMissionId:previous,v:489};
+      if(serverManaged)ex={missionId:null,baseline:0,cooldownUntil:0,lastMissionId:ex?.lastMissionId||ex?.missionId||'',serverPending:true,v:489};
+      else{
+        const previous=ex?.lastMissionId||ex?.missionId||'';const mission=pick(POOLS.extreme,previous?[previous]:[]);
+        ex={missionId:mission.id,baseline:baselineFor(mission,m),cooldownUntil:0,lastMissionId:previous,v:489};
+      }
     }
     ms.extreme489=ex;
     write(m);return m;
@@ -13398,7 +13408,7 @@ function killKey37(e){
   `;document.head.appendChild(st)}
   function stopTimers(){if(cooldownTimer){clearTimeout(cooldownTimer);cooldownTimer=0}if(rankAnim){cancelAnimationFrame(rankAnim);rankAnim=0}}
   function isMissionsVisible(){const card=document.getElementById('overlayCard');return !!card?.classList.contains('mission489')&&!document.getElementById('overlay')?.classList.contains('hidden')}
-  function scheduleCooldown(){if(cooldownTimer)clearTimeout(cooldownTimer);const tick=()=>{if(!isMissionsVisible()||currentView!=='general'){cooldownTimer=0;return}let expired=false;document.querySelectorAll('[data-cooldown489]').forEach(el=>{const until=n(el.dataset.cooldown489);const left=Math.max(0,until-Date.now());el.textContent=left>0?`Nova missão em ${formatTime(left)}`:'Preparando nova missão…';if(left<=0)expired=true});if(expired){renderMissionScreen('general');return}cooldownTimer=setTimeout(tick,1000)};cooldownTimer=setTimeout(tick,1000)}
+  function scheduleCooldown(){if(cooldownTimer)clearTimeout(cooldownTimer);const tick=()=>{if(!isMissionsVisible()||currentView!=='general'){cooldownTimer=0;return}let expired=false;document.querySelectorAll('[data-cooldown489]').forEach(el=>{const until=n(el.dataset.cooldown489);const left=Math.max(0,until-Date.now());el.textContent=left>0?`Nova missão em ${formatTime(left)}`:'Preparando nova missão…';if(left<=0)expired=true});if(expired){const remote=window.ChronoRewards856?.syncMissions;if(typeof remote==='function')remote({rerender:true}).catch(()=>renderMissionScreen('general'));else renderMissionScreen('general');return}cooldownTimer=setTimeout(tick,1000)};cooldownTimer=setTimeout(tick,1000)}
   function formatTime(ms){const total=Math.ceil(ms/1000),min=Math.floor(total/60),sec=total%60;return `${min}:${String(sec).padStart(2,'0')}`}
 
   function drawRank(canvas,rank,t=0){if(!canvas)return;const x=canvas.getContext('2d'),w=canvas.width,h=canvas.height,cx=w/2,cy=h/2,s=Math.min(w,h)/120;x.clearRect(0,0,w,h);x.save();x.translate(cx,cy);x.scale(s,s);x.rotate(Math.sin(t*1.2)*.025);x.shadowBlur=18;x.shadowColor=rank.color;x.strokeStyle=rank.color;x.fillStyle='rgba(5,4,8,.9)';x.lineWidth=3;
@@ -13483,7 +13493,7 @@ function killKey37(e){
     try{document.body.classList.remove('doomUi801');overlay.classList.add('masteryOverlay837')}catch{}
     overlay.classList.remove('hidden');overlayCard.className='card mission489 masteryTheme837 masteryUpdateTheme835';overlayCard.dataset.uiScreen827='missions';
     overlayCard.innerHTML=`${headerHtml(m)}${currentView==='general'?generalHtml(m):awakeningHtml(m)}<div class="missionBottom489"><button class="missionBack489" id="misBack461" data-missions-back>← Conquistas & Missões</button></div>`;
-    overlayCard.querySelectorAll('[data-view489]').forEach(b=>b.onclick=()=>renderMissionScreen(b.dataset.view489));
+    overlayCard.querySelectorAll('[data-view489]').forEach(b=>b.onclick=()=>{const next=b.dataset.view489;renderMissionScreen(next);if(next==='general')queueMicrotask(()=>window.ChronoRewards856?.refreshView?.({syncIfStale:true}))});
     const back=document.getElementById('misBack461');if(back)back.onclick=()=>{route?.permitHub?.('missions-back',1400);try{(window.openHub461||window.openDuneHub461||window.openHub40)?.()}catch{overlay.classList.add('hidden')}};
     if(currentView==='general')bindGeneral(m);else bindAwakening(m);
     if(settledAwakening489)setTimeout(()=>missionToast489(`Etapa ${settledAwakening489.stage+1} de ${settledAwakening489.name} concluída — outras jornadas liberadas`,settledAwakening489.color),80);
@@ -36761,7 +36771,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 }
 @media(prefers-reduced-motion:reduce){#overlayCard .nefalemRitual849:before,#overlayCard .nefSealGlyph849,#overlayCard .nefChain849,#overlayCard .nefEmbers849 b{animation:none!important}}
 </style>
-<!-- Chrono Shards 8.5.15 — e-mail consistente e missões resilientes -->
+<!-- Chrono Shards 8.5.16 — missões autoritativas hidratadas antes da renderização -->
 <style id="chronoCloudStyle850">
   #chronoCloudCard850{margin:18px 0;display:block}
   #chronoCloudCard850 .chronoAccountGuest858{display:block;width:100%;padding:15px 18px;border-radius:15px;border:1px solid rgba(97,218,251,.38);background:linear-gradient(135deg,rgba(97,218,251,.22),rgba(159,108,255,.22));color:#f3fbff;font:900 12px Orbitron,sans-serif;letter-spacing:.08em;box-shadow:0 12px 35px rgba(0,0,0,.25)}
@@ -37919,7 +37929,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   installDirectTelemetry8510();
   installRunHooks850();
   document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{installStorageTracking8514();installDirectTelemetry8510();installRunHooks850();setInterval(()=>{installStorageTracking8514();installDirectTelemetry8510();installRunHooks850()},2000)},0),{once:true});
-  console.log('Chrono Shards 8.5.15 — revisão profunda, telemetria e sessões idempotentes');
+  console.log('Chrono Shards 8.5.16 — revisão profunda, missões hidratadas e sessões idempotentes');
 })();
 </script>
 
@@ -40317,6 +40327,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       serverProgress:Math.max(0,Math.trunc(num856(value.progress))),
       serverTarget:Math.max(0,Math.trunc(num856(value.target))),
       serverDone:value.done===true,
+      serverProgressComplete:Number.isFinite(Number(value.target))&&Number(value.target)>0&&Number.isFinite(Number(value.progress))&&typeof value.done==='boolean',
       serverVerified:true,
       v:489
     };
@@ -40383,6 +40394,11 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   }
   function updateOfficialCard856(card,slot,kind,index){
     if(!card||!slot||!slot.missionId)return;
+    // Versões antigas da RPC devolviam somente a atribuição/baseline. Nesses
+    // casos não sobrescrevemos a interface com 0/1: a tela local já calcula o
+    // progresso a partir das estatísticas oficiais aplicadas ao meta.
+    const hasProgress=Number.isFinite(Number(slot.target))&&Number(slot.target)>0&&Number.isFinite(Number(slot.progress))&&typeof slot.done==='boolean';
+    if(!hasProgress)return;
     const target=Math.max(1,Math.trunc(num856(slot.target))),progress=Math.max(0,Math.trunc(num856(slot.progress))),shown=Math.min(progress,target),done=slot.done===true,claimed=slot.claimed===true;
     const pct=Math.max(0,Math.min(100,shown/target*100));
     card.dataset.serverVerified856='1';card.classList.toggle('ready',done&&!claimed);
@@ -40409,6 +40425,13 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     updateOfficialCard856(cards[6],payload.extreme,'extreme',6);
     updateOfficialCard856(cards[7],payload.secret,'secret',7);
   }
+  function refreshMissionView856({syncIfStale=false}={}){
+    if(!missionsVisible856())return null;
+    const age=Date.now()-Math.max(0,num856(readMeta856()?.missions39?.serverSyncedAt856));
+    if(syncIfStale&&(!lastMissionPayload856||age>5000))return syncMissions856({rerender:true}).catch(error=>{console.warn('Chrono mission refresh',error);return null});
+    requestAnimationFrame(()=>decorateOfficialProgress856());
+    return lastMissionPayload856;
+  }
   async function refreshEconomyState856(){
     try{return await window.ChronoEconomy852?.reloadState?.()}catch(error){console.warn('Chrono 8.5.6 economy refresh',error);return null}
   }
@@ -40420,7 +40443,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       applyServerState856(payload?.state);applyMissionPayload856(payload);
       if(num856(payload?.recoveredRuns)>0)toast856('PROGRESSO RECUPERADO',`${num856(payload.recoveredKills)} abate(s) de uma partida interrompida foram contabilizados.`,'#86ffb0');
       if(rerender&&missionsVisible856()&&typeof baseOpenMissions856==='function'){
-        baseOpenMissions856();requestAnimationFrame(()=>decorateOfficialProgress856(payload));
+        baseOpenMissions856();
+        requestAnimationFrame(()=>decorateOfficialProgress856(payload));
+        setTimeout(()=>decorateOfficialProgress856(payload),40);
       }
       return payload;
     })().catch(error=>{throw error}).finally(()=>{missionSyncPromise856=null});
@@ -40433,6 +40458,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       const payload=await syncMissions856({rerender:false});
       if(typeof baseOpenMissions856==='function')baseOpenMissions856();
       requestAnimationFrame(()=>decorateOfficialProgress856(payload));
+      setTimeout(()=>decorateOfficialProgress856(payload),40);
       return payload;
     }catch(error){
       console.warn('Chrono missions sync',error);renderMissionError856(error);return null;
@@ -40521,11 +40547,27 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     if(!protectionEnabled856()||event.key!=='Enter'||!event.target?.matches?.(CODE_INPUTS))return;
     const ui=codeUI856(event.target);event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();redeemCode856(ui.input,ui.msg,null);
   },true);
+  let cloudHydrationTimer856=0,lastHydratedRevision856=-1,lastHydratedUser856='';
+  function scheduleMissionHydration856(detail){
+    clearTimeout(cloudHydrationTimer856);
+    if(!protectionEnabled856())return;
+    const userId=String(detail?.session?.user?.id||cloud856()?.getState?.()?.session?.user?.id||'');
+    const revision=Math.trunc(num856(detail?.state?.revision));
+    const shouldHydrate=userId&&(userId!==lastHydratedUser856||revision!==lastHydratedRevision856||!lastMissionPayload856);
+    if(!shouldHydrate)return;
+    cloudHydrationTimer856=setTimeout(async()=>{
+      try{
+        const payload=await syncMissions856({rerender:missionsVisible856()});
+        if(payload){lastHydratedUser856=userId;lastHydratedRevision856=Math.trunc(num856(payload.revision??revision))}
+      }catch(error){console.warn('Chrono mission hydration',error)}
+    },120);
+  }
   window.addEventListener('chrono-run-settled',event=>{if(event.detail?.accepted)syncMissions856({rerender:missionsVisible856()}).catch(()=>{})});
-  window.addEventListener('chrono-cloud-state',()=>{if(missionsVisible856())setTimeout(()=>syncMissions856({rerender:true}).catch(()=>{}),80)});
-  window.ChronoRewards856=Object.freeze({syncMissions:syncMissions856,claimMission:claimMission856,redeemCode:redeemCode856,isProtected:protectionEnabled856,getPayload:()=>clone856(lastMissionPayload856)});
+  window.addEventListener('chrono-cloud-state',event=>scheduleMissionHydration856(event.detail));
+  window.addEventListener('click',event=>{if(!event.target?.closest?.('[data-view489="general"]'))return;setTimeout(()=>refreshMissionView856({syncIfStale:true}),0)},true);
+  window.ChronoRewards856=Object.freeze({syncMissions:syncMissions856,refreshView:refreshMissionView856,claimMission:claimMission856,redeemCode:redeemCode856,isProtected:protectionEnabled856,getPayload:()=>clone856(lastMissionPayload856)});
   window.ChronoRewards855=window.ChronoRewards856;
-  console.log('Chrono Shards 8.5.7 — missões, códigos e interface revisados');
+  console.log('Chrono Shards 8.5.16 — hidratação e renderização autoritativa das missões corrigidas');
 })();
 </script>
 
