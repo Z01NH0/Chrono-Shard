@@ -56,7 +56,10 @@ const RESERVED_USERNAMES = new Set([
   'chrono', 'chronoshards', 'chrono_shards', 'system', 'sistema', 'null',
   'undefined', 'root', 'staff', 'dev', 'developer', 'oficial', 'official',
 ])
-const INTERNAL_EMAIL_DOMAIN = 'chrono-shards.invalid'
+const LEGACY_INTERNAL_EMAIL_DOMAIN = 'chrono-shards.invalid'
+const RESERVED_EMAIL_DOMAINS = new Set([
+  'example.com', 'example.net', 'example.org', 'localhost', 'localhost.localdomain',
+])
 const INITIAL_PROTECTED_META_KEYS = [
   'allUnlocked', 'allInUnlocked', 'nefalemPurchased830',
   'riftModeUnlocked525', 'riftModeUnlocked', 'doomModeUnlocked810', 'doomModeUnlocked',
@@ -82,6 +85,7 @@ const SOFT_ERROR_ACTIONS = new Set([
   'repair_account',
   'recover_account',
   'change_password',
+  'change_email',
   'rotate_recovery',
 ])
 
@@ -162,9 +166,36 @@ function normalizeRecoveryKey(value: unknown): string {
   return String(value ?? '').normalize('NFKC').toUpperCase().replace(/[^A-Z0-9]/g, '')
 }
 
-async function generatedAuthEmail(usernameNormalized: string, userId: string): Promise<string> {
-  const digest = await sha256Hex(`chrono-auth-v2|${usernameNormalized}|${userId}`)
-  return `u-${digest.slice(0, 40)}@${INTERNAL_EMAIL_DOMAIN}`
+function isUuid(value: unknown): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value ?? ''))
+}
+
+function isLegacyTechnicalEmail(value: unknown): boolean {
+  const email = normalizeContactEmail(value)
+  return email.endsWith(`@${LEGACY_INTERNAL_EMAIL_DOMAIN}`)
+}
+
+function isAuthEmailConflict(error: any): boolean {
+  const code = String(error?.code ?? '').toLowerCase()
+  const message = String(error?.message ?? error ?? '').toLowerCase()
+  return [
+    'email_exists',
+    'user_already_exists',
+    'identity_already_exists',
+    'email_conflict_identity_not_deletable',
+  ].some((known) => code === known || code.includes(known))
+    || message.includes('already been registered')
+    || message.includes('already registered')
+    || message.includes('email address is already')
+}
+
+function mapAuthEmailError(error: any, field = 'email'): never {
+  if (isAuthEmailConflict(error)) {
+    publicError('Este e-mail já está registrado em outra conta', 409, 'EMAIL_TAKEN', field)
+  }
+  const message = String(error?.message ?? error ?? '')
+  console.error('Chrono Auth e-mail error', { code: error?.code, message })
+  publicError('Não foi possível configurar o e-mail da conta. Tente novamente.', 500, 'EMAIL_SETUP_FAILED', field)
 }
 
 function validateUsername(username: string): void {
@@ -174,11 +205,110 @@ function validateUsername(username: string): void {
   if (RESERVED_USERNAMES.has(username)) publicError('Este nome de usuário é reservado', 400, 'RESERVED_USERNAME', 'username')
 }
 
-function validateContactEmail(email: string): void {
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-    publicError('Informe um e-mail válido', 400, 'INVALID_EMAIL', 'email')
+function validateContactEmail(email: string, field = 'email'): void {
+  if (!email || email.length > 254 || email !== email.trim().toLowerCase()) {
+    publicError('Informe um e-mail válido', 400, 'INVALID_EMAIL', field)
   }
-  if (email.endsWith(`@${INTERNAL_EMAIL_DOMAIN}`)) publicError('E-mail inválido', 400, 'INVALID_EMAIL', 'email')
+
+  const at = email.lastIndexOf('@')
+  if (at <= 0 || at !== email.indexOf('@')) {
+    publicError('Informe um e-mail válido', 400, 'INVALID_EMAIL', field)
+  }
+
+  const local = email.slice(0, at)
+  const domain = email.slice(at + 1)
+  if (
+    local.length > 64
+    || local.startsWith('.')
+    || local.endsWith('.')
+    || local.includes('..')
+    || !/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/i.test(local)
+  ) {
+    publicError('Informe um e-mail válido', 400, 'INVALID_EMAIL', field)
+  }
+
+  const labels = domain.split('.')
+  const domainValid = domain.length <= 253
+    && labels.length >= 2
+    && labels.every((label) => label.length >= 1
+      && label.length <= 63
+      && /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label))
+    && /^(?:[a-z]{2,63}|xn--[a-z0-9-]{2,59})$/i.test(labels.at(-1) ?? '')
+
+  if (!domainValid || RESERVED_EMAIL_DOMAINS.has(domain) || domain.endsWith('.invalid') || domain.endsWith('.test')) {
+    publicError('Use um endereço de e-mail real', 400, 'INVALID_EMAIL', field)
+  }
+}
+
+
+async function checkEmailAvailability(
+  admin: AdminClient,
+  email: string,
+  excludeUserId: string | null = null,
+  field = 'email',
+): Promise<void> {
+  const { data, error } = await admin.rpc('chrono_email_availability_server', {
+    p_email: email,
+    p_exclude_user_id: excludeUserId,
+  })
+  if (error) throw error
+  const result = asObject(data)
+  if (result.available === true) return
+
+  // Uma tentativa antiga podia criar a identidade Auth e falhar antes de criar
+  // o perfil/save. Essa identidade órfã fazia qualquer nova tentativa parecer
+  // um e-mail já usado. Só limpamos registros sem progresso e marcados como
+  // pertencentes ao fluxo do Chrono Shards.
+  const authUserId = String(result.authUserId ?? '')
+  if (result.profileConflict !== true && result.authConflict === true && authUserId) {
+    const [profileResult, stateResult, authResult] = await Promise.all([
+      admin.from('chrono_profiles').select('user_id').eq('user_id', authUserId).maybeSingle(),
+      admin.from('chrono_player_state').select('user_id').eq('user_id', authUserId).maybeSingle(),
+      admin.auth.admin.getUserById(authUserId),
+    ])
+    const authUser = authResult?.data?.user
+    const metadataEmail = normalizeContactEmail(authUser?.user_metadata?.contact_email)
+    const chronoCandidate = authUser?.app_metadata?.chrono_account_pending === true
+      || (authUser?.app_metadata?.chrono_email_ownership_verified === false
+        && !!authUser?.user_metadata?.username
+        && metadataEmail === email)
+    const lookupSafe = !profileResult?.error && !stateResult?.error && !authResult?.error
+    if (lookupSafe && !profileResult?.data && !stateResult?.data && chronoCandidate) {
+      const { error: deleteError } = await admin.auth.admin.deleteUser(authUserId)
+      if (!deleteError) return
+      console.warn('Não foi possível limpar identidade órfã de cadastro', authUserId, deleteError)
+    }
+  }
+
+  publicError('Este e-mail já está registrado em outra conta', 409, 'EMAIL_TAKEN', field)
+}
+
+async function validateEmailDomain(email: string): Promise<boolean> {
+  const domain = email.slice(email.lastIndexOf('@') + 1)
+  const lookup = async (type: 'MX' | 'A'): Promise<{ status: number; answers: unknown[] }> => {
+    const response = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=${type}`,
+      { headers: { Accept: 'application/dns-json' }, signal: AbortSignal.timeout(3500) },
+    )
+    if (!response.ok) throw new Error(`DNS ${response.status}`)
+    const payload = asObject(await response.json())
+    return { status: finiteInt(payload.Status, 0, 99), answers: cleanArray(payload.Answer, 50) }
+  }
+
+  try {
+    const mx = await lookup('MX')
+    if (mx.status === 3) publicError('O domínio deste e-mail não existe', 400, 'EMAIL_DOMAIN_INVALID', 'email')
+    if (mx.status === 0 && mx.answers.length > 0) return true
+    const a = await lookup('A')
+    if (a.status === 3) publicError('O domínio deste e-mail não existe', 400, 'EMAIL_DOMAIN_INVALID', 'email')
+    if (a.status === 0 && a.answers.length > 0) return true
+    publicError('Este domínio não parece aceitar e-mails', 400, 'EMAIL_DOMAIN_INVALID', 'email')
+  } catch (error) {
+    if (error instanceof PublicError) throw error
+    // Falha temporária do resolvedor não transforma um endereço válido em inválido.
+    console.warn('Não foi possível validar o domínio do e-mail', domain, error)
+    return false
+  }
 }
 
 function validatePassword(passwordValue: unknown): string {
@@ -267,86 +397,137 @@ async function deleteTemporaryAnonymousActor(
   }
 }
 
-async function upgradeUserInPlace(
+
+async function deleteAuthUserQuietly(admin: AdminClient, userId: string): Promise<void> {
+  if (!userId) return
+  try {
+    const { error } = await admin.auth.admin.deleteUser(userId)
+    if (error) console.warn('Não foi possível remover identidade antiga', userId, error)
+  } catch (error) {
+    console.warn('Falha ao remover identidade antiga', userId, error)
+  }
+}
+
+async function createPermanentAccountAndTransfer(
+  req: Request,
   admin: AdminClient,
-  userId: string,
+  sourceUserId: string,
   profile: {
     username: string
     usernameNormalized: string
     contactEmail: string
     contactEmailNormalized: string
+    recoveryKeyHash: string
   },
   password: string,
-  recoveryKey: string,
-  createProfile: boolean,
-): Promise<{ userId: string; authEmail: string; state: Record<string, unknown> }> {
-  const authEmail = await generatedAuthEmail(profile.usernameNormalized, userId)
-  const keyHash = await recoveryHash(profile.usernameNormalized, recoveryKey)
-  let insertedProfile = false
+  field = 'email',
+): Promise<{
+  userId: string
+  authEmail: string
+  state: Record<string, unknown>
+  session: Record<string, unknown>
+  emailDomainValidated: boolean
+}> {
+  const email = normalizeContactEmail(profile.contactEmailNormalized)
+  validateContactEmail(email, field)
+  await checkEmailAvailability(admin, email, sourceUserId, field)
+  const emailDomainValidated = await validateEmailDomain(email)
 
-  if (createProfile) {
-    const { error: insertError } = await admin
-      .from('chrono_profiles')
-      .insert({
-        user_id: userId,
-        username: profile.username,
-        username_normalized: profile.usernameNormalized,
-        contact_email: profile.contactEmail,
-        contact_email_normalized: profile.contactEmailNormalized,
-        auth_email: authEmail,
-        recovery_key_hash: keyHash,
-        last_login_at: new Date().toISOString(),
-      })
-    if (insertError) {
-      const message = String(insertError.message ?? '')
-      if (message.includes('chrono_profiles_username') || message.includes('username_normalized')) {
-        publicError('Este nome de usuário já está em uso', 409, 'USERNAME_TAKEN', 'username')
-      }
-      if (message.includes('chrono_profiles_contact_email') || message.includes('contact_email_normalized')) {
-        publicError('Este e-mail já está registrado', 409, 'EMAIL_TAKEN', 'email')
-      }
-      throw insertError
-    }
-    insertedProfile = true
-  }
-
-  const { data: updatedAuth, error: authError } = await admin.auth.admin.updateUserById(userId, {
-    email: authEmail,
+  const { data: created, error: createError } = await admin.auth.admin.createUser({
+    email,
     password,
     email_confirm: true,
-    user_metadata: { username: profile.username },
+    user_metadata: {
+      username: profile.username,
+      contact_email: email,
+    },
+    app_metadata: {
+      chrono_email_ownership_verified: false,
+      chrono_email_domain_validated: emailDomainValidated,
+      chrono_account_pending: true,
+    },
   })
+  if (createError || !created?.user) mapAuthEmailError(createError ?? new Error('Usuário permanente não criado'), field)
 
-  if (authError || !updatedAuth?.user) {
-    if (insertedProfile) {
-      try {
-        await admin.from('chrono_profiles').delete().eq('user_id', userId)
-      } catch {
-        // A limpeza é apenas compensatória; o erro original continua sendo o relevante.
+  const targetUserId = String(created.user.id)
+  let transferred = false
+  try {
+    const { data: state, error: transferError } = await admin.rpc('chrono_transfer_account_server', {
+      p_from_user_id: sourceUserId,
+      p_to_user_id: targetUserId,
+      p_username: profile.username,
+      p_username_normalized: profile.usernameNormalized,
+      p_contact_email: email,
+      p_contact_email_normalized: email,
+      p_auth_email: email,
+      p_recovery_key_hash: profile.recoveryKeyHash,
+    })
+    if (transferError) throw transferError
+    transferred = true
+
+    const changedAt = new Date().toISOString()
+    const { error: profileError } = await admin
+      .from('chrono_profiles')
+      .update({
+        contact_email: email,
+        contact_email_normalized: email,
+        auth_email: email,
+        email_ownership_verified: false,
+        email_last_changed_at: changedAt,
+        email_domain_validated: emailDomainValidated,
+        email_domain_checked_at: changedAt,
+        last_login_at: changedAt,
+      })
+      .eq('user_id', targetUserId)
+    if (profileError) throw profileError
+
+    const { error: authFinalizeError } = await admin.auth.admin.updateUserById(targetUserId, {
+      app_metadata: {
+        ...(created.user.app_metadata ?? {}),
+        chrono_email_ownership_verified: false,
+        chrono_email_domain_validated: emailDomainValidated,
+        chrono_account_pending: false,
+      },
+    })
+    if (authFinalizeError) throw authFinalizeError
+
+    const session = await passwordSession(req, email, password)
+    if (!session) throw new Error('A conta foi criada, mas a sessão não pôde ser aberta')
+
+    await deleteAuthUserQuietly(admin, sourceUserId)
+    return {
+      userId: targetUserId,
+      authEmail: email,
+      state: asObject(state),
+      session,
+      emailDomainValidated,
+    }
+  } catch (error) {
+    if (transferred) {
+      const { error: rollbackError } = await admin.rpc('chrono_transfer_account_server', {
+        p_from_user_id: targetUserId,
+        p_to_user_id: sourceUserId,
+        p_username: profile.username,
+        p_username_normalized: profile.usernameNormalized,
+        p_contact_email: email,
+        p_contact_email_normalized: email,
+        p_auth_email: email,
+        p_recovery_key_hash: profile.recoveryKeyHash,
+      })
+      if (rollbackError) {
+        console.error('Falha crítica ao reverter transferência de conta', {
+          sourceUserId,
+          targetUserId,
+          rollbackError,
+          originalError: error,
+        })
+        // Não remove o destino: isso apagaria o progresso transferido por cascade.
+        publicError('A conta foi criada, mas a migração ficou pendente. Não tente registrar novamente; contate o suporte.', 500, 'ACCOUNT_TRANSFER_PENDING')
       }
     }
-    throw authError ?? new Error('Não foi possível transformar a sessão em conta permanente')
+    await deleteAuthUserQuietly(admin, targetUserId)
+    throw error
   }
-
-  const finalAuthEmail = String(updatedAuth.user.email ?? authEmail)
-  const { error: profileUpdateError } = await admin
-    .from('chrono_profiles')
-    .update({
-      auth_email: finalAuthEmail,
-      recovery_key_hash: keyHash,
-      last_login_at: new Date().toISOString(),
-    })
-    .eq('user_id', userId)
-  if (profileUpdateError) throw profileUpdateError
-
-  const { data: state, error: stateError } = await admin
-    .from('chrono_player_state')
-    .select('*')
-    .eq('user_id', userId)
-    .single()
-  if (stateError) throw stateError
-
-  return { userId, authEmail: finalAuthEmail, state: state as Record<string, unknown> }
 }
 
 function sanitizeSnapshot(input: unknown): JsonObject {
@@ -497,6 +678,10 @@ async function bootstrapPlayerState(
 export default {
   fetch: withSupabase({ auth: 'user' }, async (req, ctx) => {
     if (req.method !== 'POST') return json({ error: 'Método inválido' }, 405)
+    const contentLength = Number(req.headers.get('content-length') ?? 0)
+    if (Number.isFinite(contentLength) && contentLength > 700_000) {
+      return json({ error: 'Requisição grande demais', code: 'REQUEST_TOO_LARGE' }, 413)
+    }
 
     const claims = (ctx.userClaims ?? {}) as Record<string, unknown>
     const userId = String(claims.sub ?? claims.id ?? '')
@@ -517,14 +702,14 @@ export default {
         return json({
           ok: true,
           service: 'chrono-shards-cloud',
-          phase: 'accounts-missions-8.5.10',
+          phase: 'deep-review-stability-8.5.15',
         })
       }
 
       if (action === 'load_account') {
         const { data: profile, error: profileError } = await admin
           .from('chrono_profiles')
-          .select('user_id, username, contact_email, auth_email, created_at, last_login_at')
+          .select('user_id, username, contact_email, contact_email_normalized, auth_email, email_ownership_verified, email_last_changed_at, email_domain_validated, email_domain_checked_at, created_at, last_login_at')
           .eq('user_id', userId)
           .maybeSingle()
         if (profileError) throw profileError
@@ -532,21 +717,42 @@ export default {
         const { data: authRecord, error: authRecordError } = await admin.auth.admin.getUserById(userId)
         if (authRecordError) throw authRecordError
         const authUser = authRecord?.user
-        const needsRepair = !!profile && (!hasEmailIdentity(authUser) || authUser?.is_anonymous === true)
+        const authEmail = normalizeContactEmail(authUser?.email)
+        const legacyEmail = isLegacyTechnicalEmail(authEmail)
+        const needsRepair = !!profile && (
+          !hasEmailIdentity(authUser)
+          || authUser?.is_anonymous === true
+          || legacyEmail
+        )
 
         if (profile && !needsRepair) {
           const { error: touchError } = await admin
             .from('chrono_profiles')
-            .update({ last_login_at: new Date().toISOString() })
+            .update({ last_login_at: new Date().toISOString(), auth_email: authEmail })
             .eq('user_id', userId)
           if (touchError) console.warn('Não foi possível atualizar last_login_at', touchError)
         }
+
+        const publicProfile = profile ? {
+          user_id: profile.user_id,
+          username: profile.username,
+          contact_email: normalizeContactEmail(profile.contact_email),
+          email_ownership_verified: profile.email_ownership_verified === true,
+          email_last_changed_at: profile.email_last_changed_at ?? null,
+          email_domain_validated: profile.email_domain_validated === true,
+          email_domain_checked_at: profile.email_domain_checked_at ?? null,
+          created_at: profile.created_at,
+          last_login_at: profile.last_login_at,
+        } : null
 
         return json({
           account: {
             anonymous: !profile,
             needsRepair,
-            profile: profile ?? null,
+            repairReason: legacyEmail ? 'legacy_email' : needsRepair ? 'identity_missing' : null,
+            emailMigrated: false,
+            emailIssue: null,
+            profile: publicProfile,
           },
         })
       }
@@ -593,9 +799,11 @@ export default {
       if (action === 'login_account') {
         const usernameNormalized = normalizeUsername(body.username)
         validateUsername(usernameNormalized)
+        const password = validatePassword(body.password)
+
         const { data: profile, error: profileError } = await admin
           .from('chrono_profiles')
-          .select('user_id, username, auth_email')
+          .select('user_id, username, username_normalized, contact_email, contact_email_normalized, auth_email, recovery_key_hash')
           .eq('username_normalized', usernameNormalized)
           .maybeSingle()
         if (profileError) throw profileError
@@ -608,9 +816,9 @@ export default {
         const { data: authRecord, error: authRecordError } = await admin.auth.admin.getUserById(profile.user_id)
         if (authRecordError) throw authRecordError
         const authUser = authRecord?.user
-        const ready = !!authUser?.email && hasEmailIdentity(authUser) && authUser?.is_anonymous !== true
+        const currentAuthEmail = normalizeContactEmail(authUser?.email ?? profile.auth_email)
 
-        if (!ready) {
+        if (!currentAuthEmail || !hasEmailIdentity(authUser) || authUser?.is_anonymous === true) {
           return json({
             authenticated: false,
             needsRepair: true,
@@ -623,25 +831,38 @@ export default {
           })
         }
 
-        const actualAuthEmail = String(authUser.email)
-        if (profile.auth_email !== actualAuthEmail) {
-          const { error: repairEmailError } = await admin
-            .from('chrono_profiles')
-            .update({ auth_email: actualAuthEmail })
-            .eq('user_id', profile.user_id)
-          if (repairEmailError) console.warn('Não foi possível corrigir auth_email', repairEmailError)
-        }
-
-
-        const password = validatePassword(body.password)
-        const session = await passwordSession(req, actualAuthEmail, password)
-        if (!session) {
+        const verifiedSession = await passwordSession(req, currentAuthEmail, password)
+        if (!verifiedSession) {
           await new Promise((resolve) => setTimeout(resolve, 250))
           return json({ authenticated: false, error: 'Nome de usuário ou senha inválidos', code: 'INVALID_LOGIN', field: 'password' })
         }
 
-        await deleteTemporaryAnonymousActor(admin, userId, profile.user_id)
-        return json({ authenticated: true, username: profile.username, session })
+        let session = verifiedSession
+        let targetUserId = String(profile.user_id)
+        let emailMigrated = false
+
+        if (isLegacyTechnicalEmail(currentAuthEmail)) {
+          const targetEmail = normalizeContactEmail(profile.contact_email_normalized ?? profile.contact_email)
+          validateContactEmail(targetEmail)
+          const migrated = await createPermanentAccountAndTransfer(req, admin, String(profile.user_id), {
+            username: String(profile.username),
+            usernameNormalized: String(profile.username_normalized),
+            contactEmail: targetEmail,
+            contactEmailNormalized: targetEmail,
+            recoveryKeyHash: String(profile.recovery_key_hash),
+          }, password)
+          session = migrated.session
+          targetUserId = migrated.userId
+          emailMigrated = true
+        } else {
+          await admin
+            .from('chrono_profiles')
+            .update({ last_login_at: new Date().toISOString(), auth_email: currentAuthEmail })
+            .eq('user_id', profile.user_id)
+        }
+
+        await deleteTemporaryAnonymousActor(admin, userId, targetUserId)
+        return json({ authenticated: true, username: profile.username, emailMigrated, session, userId: targetUserId })
       }
 
       if (action === 'register_account') {
@@ -665,7 +886,7 @@ export default {
 
         const { data: authRecord, error: authRecordError } = await admin.auth.admin.getUserById(userId)
         if (authRecordError) throw authRecordError
-        if (!authRecord?.user?.is_anonymous) publicError('Esta sessão não pode ser registrada novamente', 409, 'ACCOUNT_EXISTS')
+        if (authRecord?.user?.is_anonymous !== true) publicError('Esta sessão não pode ser registrada novamente', 409, 'ACCOUNT_EXISTS')
 
         const { data: usernameTaken, error: usernameError } = await admin
           .from('chrono_profiles')
@@ -675,29 +896,25 @@ export default {
         if (usernameError) throw usernameError
         if (usernameTaken) publicError('Este nome de usuário já está em uso', 409, 'USERNAME_TAKEN', 'username')
 
-        const { data: emailTaken, error: emailError } = await admin
-          .from('chrono_profiles')
-          .select('user_id')
-          .eq('contact_email_normalized', contactEmailNormalized)
-          .maybeSingle()
-        if (emailError) throw emailError
-        if (emailTaken) publicError('Este e-mail já está registrado', 409, 'EMAIL_TAKEN', 'email')
-
+        await checkEmailAvailability(admin, contactEmailNormalized, userId, 'email')
         await bootstrapPlayerState(admin, userId, body.snapshot)
-        const upgraded = await upgradeUserInPlace(admin, userId, {
+        const recoveryKeyHash = await recoveryHash(usernameNormalized, recoveryKey)
+        const upgraded = await createPermanentAccountAndTransfer(req, admin, userId, {
           username,
           usernameNormalized,
-          contactEmail,
+          contactEmail: contactEmailNormalized,
           contactEmailNormalized,
-        }, password, recoveryKey, true)
-        const session = await passwordSession(req, upgraded.authEmail, password)
+          recoveryKeyHash,
+        }, password)
 
         return json({
           registered: true,
           username,
           userId: upgraded.userId,
           state: upgraded.state,
-          session,
+          session: upgraded.session,
+          emailDomainValidated: upgraded.emailDomainValidated,
+          emailOwnershipVerified: false,
         })
       }
 
@@ -706,32 +923,41 @@ export default {
         const recoveryKey = validateRecoveryKey(body.recoveryKey)
         const { data: profile, error: profileError } = await admin
           .from('chrono_profiles')
-          .select('username, username_normalized, contact_email, contact_email_normalized')
+          .select('username, username_normalized, contact_email, contact_email_normalized, recovery_key_hash')
           .eq('user_id', userId)
           .maybeSingle()
         if (profileError) throw profileError
         if (!profile) publicError('Conta para reparo não encontrada', 404, 'ACCOUNT_NOT_FOUND')
 
+        const requestedEmail = normalizeContactEmail(body.email || profile.contact_email_normalized || profile.contact_email)
+        validateContactEmail(requestedEmail)
+        await checkEmailAvailability(admin, requestedEmail, userId, 'email')
+
         const { data: authRecord, error: authRecordError } = await admin.auth.admin.getUserById(userId)
         if (authRecordError) throw authRecordError
-        if (hasEmailIdentity(authRecord?.user) && authRecord?.user?.is_anonymous !== true) {
+        const authUser = authRecord?.user
+        const currentEmail = normalizeContactEmail(authUser?.email)
+        if (hasEmailIdentity(authUser) && authUser?.is_anonymous !== true && !isLegacyTechnicalEmail(currentEmail)) {
           publicError('Esta conta já está configurada corretamente', 409, 'ACCOUNT_ALREADY_VALID')
         }
 
-        const upgraded = await upgradeUserInPlace(admin, userId, {
-          username: profile.username,
-          usernameNormalized: profile.username_normalized,
-          contactEmail: profile.contact_email,
-          contactEmailNormalized: profile.contact_email_normalized,
-        }, password, recoveryKey, false)
-        const session = await passwordSession(req, upgraded.authEmail, password)
+        const recoveryKeyHash = await recoveryHash(String(profile.username_normalized), recoveryKey)
+        const upgraded = await createPermanentAccountAndTransfer(req, admin, userId, {
+          username: String(profile.username),
+          usernameNormalized: String(profile.username_normalized),
+          contactEmail: requestedEmail,
+          contactEmailNormalized: requestedEmail,
+          recoveryKeyHash,
+        }, password)
 
         return json({
           repaired: true,
           username: profile.username,
           userId: upgraded.userId,
           state: upgraded.state,
-          session,
+          session: upgraded.session,
+          emailDomainValidated: upgraded.emailDomainValidated,
+          emailOwnershipVerified: false,
         })
       }
 
@@ -785,26 +1011,47 @@ export default {
 
         const { data: targetAuth, error: targetAuthError } = await admin.auth.admin.getUserById(profile.user_id)
         if (targetAuthError) throw targetAuthError
-        const authReady = !!targetAuth?.user?.email && hasEmailIdentity(targetAuth?.user) && targetAuth?.user?.is_anonymous !== true
-        const authEmail = authReady
-          ? String(targetAuth.user.email)
-          : await generatedAuthEmail(profile.username_normalized, profile.user_id)
+        const authEmail = normalizeContactEmail(profile.contact_email_normalized ?? profile.contact_email)
+        validateContactEmail(authEmail)
 
-        const { error: passwordError } = await admin.auth.admin.updateUserById(profile.user_id, {
-          email: authEmail,
-          password: newPassword,
-          email_confirm: true,
-          user_metadata: { username: profile.username },
-        })
-        if (passwordError) throw passwordError
+        let session: Record<string, unknown> | null = null
+        let targetUserId = String(profile.user_id)
+        const currentAuthEmail = normalizeContactEmail(targetAuth?.user?.email ?? profile.auth_email)
+        const needsIdentityMigration = !hasEmailIdentity(targetAuth?.user)
+          || targetAuth?.user?.is_anonymous === true
+          || isLegacyTechnicalEmail(currentAuthEmail)
+
+        if (needsIdentityMigration) {
+          const migrated = await createPermanentAccountAndTransfer(req, admin, String(profile.user_id), {
+            username: String(profile.username),
+            usernameNormalized: String(profile.username_normalized),
+            contactEmail: authEmail,
+            contactEmailNormalized: authEmail,
+            recoveryKeyHash: String(profile.recovery_key_hash),
+          }, newPassword, 'username')
+          session = migrated.session
+          targetUserId = migrated.userId
+        } else {
+          const { error: passwordError } = await admin.auth.admin.updateUserById(profile.user_id, {
+            password: newPassword,
+            user_metadata: {
+              ...(targetAuth?.user?.user_metadata ?? {}),
+              username: profile.username,
+              contact_email: authEmail,
+            },
+          })
+          if (passwordError) throw passwordError
+          session = await passwordSession(req, currentAuthEmail, newPassword)
+          if (!session) throw new Error('A senha foi atualizada, mas a sessão não pôde ser criada')
+        }
 
         const { error: resetError } = await admin
           .from('chrono_profiles')
           .update({
-            auth_email: authEmail,
             last_recovered_at: new Date().toISOString(),
+            last_login_at: new Date().toISOString(),
           })
-          .eq('user_id', profile.user_id)
+          .eq('user_id', targetUserId)
         if (resetError) throw resetError
 
         await admin
@@ -813,27 +1060,71 @@ export default {
           .eq('actor_user_id', userId)
           .eq('username_normalized', usernameNormalized)
 
-        const session = await passwordSession(req, authEmail, newPassword)
-        if (!session) throw new Error('A senha foi atualizada, mas a sessão não pôde ser criada')
-        await deleteTemporaryAnonymousActor(admin, userId, profile.user_id)
-        return json({ recovered: true, session })
+        await deleteTemporaryAnonymousActor(admin, userId, targetUserId)
+        return json({ recovered: true, session, userId: targetUserId })
       }
 
-      if (action === 'rotate_recovery' || action === 'change_password') {
+      if (action === 'rotate_recovery' || action === 'change_password' || action === 'change_email') {
         const currentPassword = validatePassword(body.currentPassword)
         const { data: profile, error: profileError } = await admin
           .from('chrono_profiles')
-          .select('username_normalized, auth_email')
+          .select('username, username_normalized, contact_email, contact_email_normalized, auth_email')
           .eq('user_id', userId)
           .single()
         if (profileError) throw profileError
 
         const { data: authRecord, error: authError } = await admin.auth.admin.getUserById(userId)
         if (authError) throw authError
-        const actualAuthEmail = String(authRecord?.user?.email ?? profile.auth_email ?? '')
+        const authUser = authRecord?.user
+        const actualAuthEmail = normalizeContactEmail(authUser?.email ?? profile.auth_email ?? '')
         if (!actualAuthEmail) publicError('Conta sem identidade de login', 409, 'ACCOUNT_NEEDS_REPAIR')
         const verified = await passwordSession(req, actualAuthEmail, currentPassword)
         if (!verified) publicError('Senha atual incorreta', 401, 'INVALID_CURRENT_PASSWORD', 'currentPassword')
+
+        if (action === 'change_email') {
+          const newEmail = normalizeContactEmail(body.newEmail)
+          validateContactEmail(newEmail, 'newEmail')
+          if (newEmail === normalizeContactEmail(profile.contact_email_normalized ?? profile.contact_email)) {
+            publicError('Este já é o e-mail da conta', 409, 'EMAIL_UNCHANGED', 'newEmail')
+          }
+
+          await checkEmailAvailability(admin, newEmail, userId, 'newEmail')
+          const emailDomainValidated = await validateEmailDomain(newEmail)
+
+          const { data: updatedAuth, error: emailUpdateError } = await admin.auth.admin.updateUserById(userId, {
+            email: newEmail,
+            email_confirm: true,
+            user_metadata: {
+              ...(authUser?.user_metadata ?? {}),
+              username: profile.username,
+              contact_email: newEmail,
+            },
+            app_metadata: {
+              ...(authUser?.app_metadata ?? {}),
+              chrono_email_ownership_verified: false,
+            },
+          })
+          if (emailUpdateError || !updatedAuth?.user) mapAuthEmailError(emailUpdateError ?? new Error('Não foi possível alterar o e-mail'), 'newEmail')
+
+          const changedAt = new Date().toISOString()
+          const { error: profileUpdateError } = await admin
+            .from('chrono_profiles')
+            .update({
+              contact_email: newEmail,
+              contact_email_normalized: newEmail,
+              auth_email: newEmail,
+              email_ownership_verified: false,
+              email_last_changed_at: changedAt,
+              email_domain_validated: emailDomainValidated,
+              email_domain_checked_at: changedAt,
+            })
+            .eq('user_id', userId)
+          if (profileUpdateError) throw profileUpdateError
+
+          const session = await passwordSession(req, newEmail, currentPassword)
+          if (!session) throw new Error('O e-mail foi alterado, mas a sessão não pôde ser renovada')
+          return json({ changed: true, email: newEmail, emailOwnershipVerified: false, emailDomainValidated, session })
+        }
 
         if (action === 'rotate_recovery') {
           const recoveryKey = validateRecoveryKey(body.recoveryKey)
@@ -942,12 +1233,27 @@ export default {
       }
 
       if (action === 'load_missions') {
+        // Se o navegador caiu antes da liquidação, preserva os feitos de um
+        // checkpoint antigo. Checkpoints recentes são ignorados para não encerrar
+        // uma partida que ainda esteja ativa em outra aba.
+        const { data: recovered, error: recoverError } = await admin.rpc('chrono_recover_stale_run_checkpoints_server', {
+          p_user_id: userId,
+          p_stale_seconds: 45,
+          p_force: false,
+        })
+        if (recoverError) throw recoverError
+
         const { data, error } = await admin.rpc('chrono_load_missions_server', {
           p_user_id: userId,
         })
 
         if (error) throw error
-        return json(data)
+        const payload = asObject(data)
+        if (finiteInt(asObject(recovered).recovered, 0, 1000) > 0) {
+          payload.recoveredRuns = finiteInt(asObject(recovered).recovered, 0, 1000)
+          payload.recoveredKills = finiteInt(asObject(recovered).recoveredKills, 0, 10_000_000)
+        }
+        return json(payload)
       }
 
       if (action === 'claim_mission') {
@@ -991,8 +1297,10 @@ export default {
       }
 
       if (action === 'start_run') {
+        const requestId = String(body.requestId ?? '')
         const mode = String(body.mode ?? 'normal').slice(0, 40)
         const classKey = String(body.classKey ?? '').slice(0, 80)
+        if (!isUuid(requestId)) return json({ error: 'Identificador da partida inválido', code: 'INVALID_RUN_REQUEST' }, 400)
         if (!classKey) return json({ error: 'Classe ausente' }, 400)
         if (!ALLOWED_RUN_MODES.has(mode)) {
           return json({ error: 'Modo de jogo inválido' }, 400)
@@ -1001,13 +1309,51 @@ export default {
           return json({ error: 'Personagem inválido' }, 400)
         }
 
+        // O ID gerado pelo cliente também é o ID da sessão. Assim, uma tentativa
+        // repetida após perda de resposta devolve a mesma partida, em vez de criar
+        // sessões paralelas e quebrar o progresso das missões.
+        const { data: existingSession, error: existingError } = await admin
+          .from('chrono_game_sessions')
+          .select('id, server_seed, started_at, status, mode, class_key')
+          .eq('id', requestId)
+          .eq('user_id', userId)
+          .maybeSingle()
+        if (existingError) throw existingError
+
         const { data: state, error: stateError } = await admin
           .from('chrono_player_state')
           .select('*')
           .eq('user_id', userId)
           .maybeSingle()
-
         if (stateError) throw stateError
+
+        if (existingSession?.status === 'active') {
+          if (existingSession.mode !== mode || existingSession.class_key !== classKey) {
+            return json({ error: 'Identificador já usado por outra partida', code: 'RUN_REQUEST_CONFLICT' }, 409)
+          }
+          return json({
+            session: {
+              id: existingSession.id,
+              server_seed: existingSession.server_seed,
+              started_at: existingSession.started_at,
+            },
+            state,
+            replayed: true,
+          })
+        }
+        if (existingSession) {
+          return json({ error: 'Esta tentativa de partida já foi encerrada', code: 'RUN_REQUEST_ALREADY_USED' }, 409)
+        }
+
+        // Ao iniciar uma nova partida, encerra qualquer sessão anterior e
+        // transforma o último checkpoint em progresso de missão, sem conceder
+        // moedas ou recompensas da run antiga.
+        const { error: recoverError } = await admin.rpc('chrono_recover_stale_run_checkpoints_server', {
+          p_user_id: userId,
+          p_stale_seconds: 0,
+          p_force: true,
+        })
+        if (recoverError) throw recoverError
 
         if (
           state?.character_purchases_enabled === true &&
@@ -1017,21 +1363,59 @@ export default {
           return json({ error: 'Personagem não adquirido no servidor' }, 403)
         }
 
-        const { error: abandonError } = await admin
-          .from('chrono_game_sessions')
-          .update({ status: 'abandoned', ended_at: new Date().toISOString() })
-          .eq('user_id', userId)
-          .eq('status', 'active')
-        if (abandonError) throw abandonError
-
         const { data, error } = await admin
           .from('chrono_game_sessions')
-          .insert({ user_id: userId, mode, class_key: classKey })
+          .insert({ id: requestId, user_id: userId, mode, class_key: classKey })
           .select('id, server_seed, started_at')
           .single()
 
-        if (error) throw error
-        return json({ session: data, state })
+        if (error) {
+          // Duas requisições idênticas podem chegar quase juntas. Reconsulta a
+          // sessão antes de transformar um retry legítimo em erro de login/run.
+          const { data: racedSession, error: racedError } = await admin
+            .from('chrono_game_sessions')
+            .select('id, server_seed, started_at, status, mode, class_key')
+            .eq('id', requestId)
+            .eq('user_id', userId)
+            .maybeSingle()
+          if (!racedError && racedSession?.status === 'active' && racedSession.mode === mode && racedSession.class_key === classKey) {
+            return json({
+              session: {
+                id: racedSession.id,
+                server_seed: racedSession.server_seed,
+                started_at: racedSession.started_at,
+              },
+              state,
+              replayed: true,
+            })
+          }
+          throw error
+        }
+        return json({ session: data, state, replayed: false })
+      }
+
+      if (action === 'checkpoint_run') {
+        const sessionId = String(body.sessionId ?? '')
+        if (!sessionId) return json({ error: 'Sessão ausente' }, 400)
+        const totalKills = finiteInt(body.kills, 0, 10_000_000)
+        const { data, error } = await admin.rpc('chrono_checkpoint_run_server', {
+          p_user_id: userId,
+          p_session_id: sessionId,
+          p_score: finiteInt(body.score, 0, 2_000_000_000),
+          p_wave: finiteInt(body.wave, 0, 1_000_000),
+          p_kills: totalKills,
+          p_boss_kills: finiteInt(body.bossKills, 0, totalKills),
+          p_elite_kills: finiteInt(body.eliteKills, 0, totalKills),
+          p_skills_used: finiteInt(body.skillsUsed, 0, 10_000_000),
+          p_type_kills: sanitizeTypeKills(body.typeKills, totalKills),
+        })
+        if (error) {
+          const message = String(error.message ?? '').toLowerCase()
+          if (message.includes('sessão não encontrada')) return json({ accepted: false, terminal: true, code: 'RUN_SESSION_MISSING' })
+          if (message.includes('sessão já encerrada')) return json({ accepted: false, terminal: true, code: 'RUN_ALREADY_SETTLED' })
+          throw error
+        }
+        return json(data)
       }
 
       if (action === 'finish_run') {
