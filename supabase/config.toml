@@ -1,5 +1,6 @@
 project_id = "favrbugywlamhitktocy"
 
 [functions.game-api]
-# A função usa withSupabase({ auth: 'user' }) para validar a sessão do jogador.
-verify_jwt = false
+# Chamadas do jogo usam a sessão anônima/autenticada no Authorization header.
+# O wrapper withSupabase({ auth: 'user' }) faz a segunda validação dentro da função.
+verify_jwt = true
