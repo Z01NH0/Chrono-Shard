@@ -1238,7 +1238,10 @@ export default {
         // uma partida que ainda esteja ativa em outra aba.
         const { data: recovered, error: recoverError } = await admin.rpc('chrono_recover_stale_run_checkpoints_server', {
           p_user_id: userId,
-          p_stale_seconds: 45,
+          // 45 s era curto demais para abas em segundo plano/mobile e podia
+          // considerar uma partida viva como abandonada. Três minutos ainda
+          // recuperam quedas reais sem disputar com o checkpoint de 15 s.
+          p_stale_seconds: 180,
           p_force: false,
         })
         if (recoverError) throw recoverError
