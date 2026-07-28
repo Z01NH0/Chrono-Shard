@@ -13267,12 +13267,19 @@ function killKey37(e){
   function rankIndex(rep){let idx=0;for(let i=0;i<RANKS.length;i++)if(rep>=RANKS[i].need)idx=i;return idx}
   function rankData(m=read()){const rep=n(m.missionReputation489),idx=rankIndex(rep),rank=RANKS[idx],next=RANKS[idx+1];const pct=next?clamp((rep-rank.need)/(next.need-rank.need)*100,0,100):100;return {rep,idx,rank,next,pct}}
   function isJourneyUnlocked(id,m=read()){return !!(m.awakeningJourneys489[id]||n(m.awakenings463.completed[id])>0||m.awakenings463.active?.id===id||m.awakeningUltimates[id]||m.awakeningRewards480[id])}
+  function isAwakeningOwned(id,m=read()){return !m.awakeningOwned8519||m.awakeningOwned8519[id]!==false}
   function doneCount(id,m=read()){return clamp(n(m.awakenings463.completed[id]),0,5)}
   function ultimateUnlocked(id,m=read()){return !!(m.awakeningUltimates[id]||m.awakeningRewards480[id])}
   function awakeningProgress(active,m=read()){
-    const a=AWAKEN[active?.id],mission=a?.missions?.[active?.stage];if(!mission)return {cur:0,target:1,pct:0,done:false};
-    const cur=mission[2]==='maxWave'?Math.max(0,n(active.waveBest)):Math.max(0,metric(mission[2],m)-n(active.baseline));
-    return {cur:Math.min(cur,mission[3]),target:mission[3],pct:clamp(cur/mission[3]*100,0,100),done:cur>=mission[3]};
+    const a=AWAKEN[active?.id],mission=a?.missions?.[active?.stage];if(!mission)return {cur:0,target:1,pct:0,done:false,server:false};
+    const serverAuthority=window.__ChronoProgression8518?.authoritative===true;
+    const hydrated=serverAuthority&&active?.serverHydrated8519===true&&Number.isFinite(Number(active?.serverProgress));
+    const target=Math.max(1,n(hydrated?active.serverTarget:mission[3],mission[3]));
+    const raw=hydrated
+      ?Math.max(0,n(active.serverProgress))
+      :(mission[2]==='maxWave'?Math.max(0,n(active.waveBest)):Math.max(0,metric(mission[2],m)-n(active.baseline)));
+    const cur=Math.min(raw,target),done=hydrated?(active.serverDone===true||cur>=target):cur>=target;
+    return {cur,target,pct:clamp(cur/target*100,0,100),done,server:hydrated};
   }
   function settleCompletedAwakening489(m){
     const active=m?.awakenings463?.active;if(!active)return null;const a=AWAKEN[active.id],mission=a?.missions?.[active.stage];if(!a||!mission)return null;
@@ -13469,9 +13476,12 @@ function killKey37(e){
   function awakeningLockedRows(){return Array.from({length:5},(_,i)=>`<div class="lockedRow489"><span>🔒</span><small style="display:block;font:900 8px Orbitron,sans-serif;color:#8f7983">ETAPA ${i+1} SELADA</small></div>`).join('')}
   function awakeningHtml(m){
     if(!AWAKEN[selectedHero])selectedHero=Object.keys(AWAKEN)[0];
-    const a=AWAKEN[selectedHero],unlocked=isJourneyUnlocked(selectedHero,m),done=doneCount(selectedHero,m),ult=ultimateUnlocked(selectedHero,m),active=m.awakenings463.active;
+    const a=AWAKEN[selectedHero],owned=isAwakeningOwned(selectedHero,m),unlocked=isJourneyUnlocked(selectedHero,m),done=doneCount(selectedHero,m),ult=ultimateUnlocked(selectedHero,m),active=m.awakenings463.active;
     const sectionHead=`<div class="missionSectionHead489"><div><h2>MISSÕES DE AWAKENING</h2><p>Gaste uma chave por etapa. Durante um objetivo, as outras jornadas ficam bloqueadas; entre etapas, você pode escolher qualquer personagem.</p></div><div class="missionSummary489">Somente um objetivo pode ficar ativo por vez</div></div>`;
-    const chips=`<div class="awakTopBar489">${Object.entries(AWAKEN).map(([id,h])=>`<button class="awakChip489 ${id===selectedHero?'active':''} ${isJourneyUnlocked(id,m)?'':'locked'}" data-awakhero489="${id}" style="--c:${h.color}"><span>${h.emoji}</span> ${h.name}${isJourneyUnlocked(id,m)?'':'<i>🔒</i>'}</button>`).join('')}</div>`;
+    const chips=`<div class="awakTopBar489">${Object.entries(AWAKEN).map(([id,h])=>{const heroOwned=isAwakeningOwned(id,m),journey=isJourneyUnlocked(id,m);return `<button class="awakChip489 ${id===selectedHero?'active':''} ${(heroOwned&&journey)?'':'locked'}" data-awakhero489="${id}" style="--c:${h.color}"><span>${h.emoji}</span> ${h.name}${(heroOwned&&journey)?'':'<i>🔒</i>'}</button>`}).join('')}</div>`;
+    if(!owned){
+      return `<section class="missionAwakening489">${sectionHead}${chips}<div class="awakLayout489"><aside class="awakHero489 locked" style="--c:${a.color}"><div class="awakPortrait489"><div class="awakGlyph489">${a.emoji}</div><div class="bigLock489">🔒</div></div><span style="margin-top:11px;font:900 8px Orbitron,sans-serif;color:${a.color}">AWAKENING</span><h2>${esc(a.name)}</h2><p>Esta jornada pertence a um personagem que ainda não foi adquirido nesta conta.</p><div class="unlockBox489"><b>PERSONAGEM NÃO ADQUIRIDO</b><p>Desbloqueie o personagem primeiro. O servidor não permite gastar Chaves de Awakening em personagens que não pertencem à conta.</p><button class="unlockJourney489" disabled>Adquira o personagem</button></div></aside><section class="awakMissions489 locked">${awakeningLockedRows()}</section></div></section>`
+    }
     if(!unlocked){
       const other=active&&active.id!==selectedHero;
       return `<section class="missionAwakening489">${sectionHead}${chips}<div class="awakLayout489"><aside class="awakHero489 locked" style="--c:${a.color}"><div class="awakPortrait489"><div class="awakGlyph489">${a.emoji}</div><div class="bigLock489">🔒</div></div><span style="margin-top:11px;font:900 8px Orbitron,sans-serif;color:${a.color}">AWAKENING</span><h2>${esc(a.name)}</h2><p>Esta jornada ainda não foi iniciada. Gaste uma Chave de Awakening para revelar as cinco etapas.</p><div class="unlockBox489"><b>DESPERTAR SELADO</b><p>${other?'Existe um objetivo de Awakening em andamento. Assim que ele for concluído, esta jornada será liberada.':'Nenhum objetivo está ativo. Você pode iniciar esta jornada ou continuar outra já desbloqueada.'}</p><button class="unlockJourney489" id="unlockJourney489" ${(m.awakeningKeys>0&&!other)?'':'disabled'}>${m.awakeningKeys>0?(other?'OUTRA MISSÃO ATIVA':`Gastar 1 ${KEY_ICON} e desbloquear`):'Sem chaves disponíveis'}</button></div></aside><section class="awakMissions489 locked">${awakeningLockedRows()}</section></div></section>`
@@ -13479,7 +13489,7 @@ function killKey37(e){
     const rows=a.missions.map((mi,i)=>{
       const stepDone=i<done,own=!!(active&&active.id===selectedHero&&active.stage===i),other=!!(active&&!own),next=!active&&i===done&&!stepDone,visible=stepDone||own||next,ap=own?awakeningProgress(active,m):{cur:0,target:mi[3],pct:0,done:false};
       const state=stepDone?'CONCLUÍDA':own?'ATIVA':other?'OUTRA ATIVA':next?(m.awakeningKeys>0?'PRONTA':'SEM CHAVE'):'BLOQUEADA';
-      return `<article class="awakStep489 ${stepDone?'done':''} ${own?'active':''} ${visible?'':'locked'}" style="--c:${a.color}"><div class="stepNum489">${stepDone?'✓':i+1}</div><div class="stepText489"><strong>${visible?esc(mi[0]):'Etapa bloqueada'}</strong><p>${visible?esc(mi[1]):'Conclua a etapa anterior para revelar esta missão.'}</p><div class="missionProgress489" style="--c:${a.color};--p:${stepDone?100:own?ap.pct:0}%"><i></i></div><div class="missionCount489"><span>${stepDone?`${mi[3]}/${mi[3]}`:own?`${fmt(ap.cur)}/${fmt(mi[3])}`:visible?`0/${mi[3]}`:'???'}</span><span>${stepDone?'100%':own?`${Math.round(ap.pct)}%`:'0%'}</span></div></div><div class="stepAction489"><div class="stepState489">${state}</div>${next&&m.awakeningKeys>0&&!other?`<button data-startstep489="${i}">Usar 1 ${KEY_ICON}</button>`:''}${own&&ap.done?`<button data-claimstep489="${i}">Concluir etapa</button>`:''}</div></article>`
+      return `<article class="awakStep489 ${stepDone?'done':''} ${own?'active':''} ${visible?'':'locked'}" style="--c:${a.color}"><div class="stepNum489">${stepDone?'✓':i+1}</div><div class="stepText489"><strong>${visible?esc(mi[0]):'Etapa bloqueada'}</strong><p>${visible?esc(mi[1]):'Conclua a etapa anterior para revelar esta missão.'}</p><div class="missionProgress489" style="--c:${a.color};--p:${stepDone?100:own?ap.pct:0}%"><i></i></div><div class="missionCount489"><span>${stepDone?`${mi[3]}/${mi[3]}`:own?`${fmt(ap.cur)}/${fmt(ap.target)}`:visible?`0/${mi[3]}`:'???'}</span><span>${stepDone?'100%':own?`${Math.round(ap.pct)}%`:'0%'}</span></div></div><div class="stepAction489"><div class="stepState489">${state}</div>${next&&m.awakeningKeys>0&&!other?`<button data-startstep489="${i}">Usar 1 ${KEY_ICON}</button>`:''}${own&&ap.done?`<button data-claimstep489="${i}">Concluir etapa</button>`:''}</div></article>`
     }).join('');
     const rewardState=ult?'ULTIMATE LIBERADA':done>=5?'PRONTA PARA RESGATE':'RECOMPENSA FINAL';
     return `<section class="missionAwakening489">${sectionHead}${chips}<div class="awakLayout489"><aside class="awakHero489" style="--c:${a.color}"><div class="awakPortrait489"><div class="awakGlyph489">${a.emoji}</div></div><span style="margin-top:11px;font:900 8px Orbitron,sans-serif;color:${a.color}">AWAKENING</span><h2>${esc(a.name)}</h2><p>Complete as cinco etapas para liberar a Ultimate exclusiva deste personagem.</p><div class="awakTotal489"><strong><span>PROGRESSÃO TOTAL</span><span>${done}/5</span></strong><div class="missionProgress489" style="--c:${a.color};--p:${done/5*100}%"><i></i></div></div><div class="awakReward489"><span style="font:900 8px Orbitron,sans-serif;color:#ffe391">${rewardState}</span><b>${esc(ULT_NAMES[selectedHero]||'Ultimate')}</b><button id="claimUltimate489" ${(done>=5&&!ult)?'':'disabled'}>${ult?'Resgatada':done>=5?'Resgatar Ultimate':'Complete todas as etapas'}</button></div></aside><section class="awakMissions489">${rows}</section></div></section>`
@@ -13488,7 +13498,7 @@ function killKey37(e){
 
   function renderMissionScreen(view=currentView){
     ensureStyle();stopTimers();document.querySelectorAll('body > .rankModal489').forEach(el=>el.remove());currentView=view==='awakening'?'awakening':'general';let m=ensureMissionState(read());
-    const settledAwakening489=settleCompletedAwakening489(m);if(settledAwakening489){write(m);m=ensureMissionState(read());}
+    const settledAwakening489=window.__ChronoProgression8518?.authoritative?null:settleCompletedAwakening489(m);if(settledAwakening489){write(m);m=ensureMissionState(read());}
     const route=window.__ChronoUIRoute827;route?.enter?.('missions','missions-8.4.21');
     try{document.body.classList.remove('doomUi801');overlay.classList.add('masteryOverlay837')}catch{}
     overlay.classList.remove('hidden');overlayCard.className='card mission489 masteryTheme837 masteryUpdateTheme835';overlayCard.dataset.uiScreen827='missions';
@@ -34931,7 +34941,12 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     };
   }
   function shop(force=false){
-    let s=readJSON(SHOP_KEY,null);
+    let s=readJSON(SHOP_KEY,null),authority=window.__ChronoProgression8518?.authoritative===true;
+    if(authority){
+      if(s?.offers){s.sold=s.sold||{};s.pity=s.pity||{apoc:0,heretic:0};if(Date.now()>=N(s.next))window.__ChronoProgression8518?.refresh?.();return s}
+      window.__ChronoProgression8518?.refresh?.();
+      return {version:2,created:Date.now(),next:Date.now()+15000,rotationId:'server-loading',offers:{relics:[],chrono:[],augments:[],permanent:[],doomBuffs:[],chests:[],skins:[]},sold:{},pity:{apoc:0,heretic:0},serverPending:true};
+    }
     if(force||!s||!s.offers||Date.now()>=N(s.next)){const pity=s?.pity||{apoc:0,heretic:0};s=generateRotation();s.pity={apoc:N(pity.apoc),heretic:N(pity.heretic)};writeJSON(SHOP_KEY,s)}
     s.sold=s.sold||{};s.pity=s.pity||{apoc:0,heretic:0};return s;
   }
@@ -35203,7 +35218,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   window.__InfernalShop830={open:openInfernalShop830,openChest:openInfernalChest830,portal:openDoomPortal830,readMeta,writeMeta,shop,demonSkins,grantAllinTears:grantAllinTears832,targetDamage:targetDamage830,critBonusFor:critBonusFor830,lavaDamage:lavaDamage830,hasRelic,applyDoomBuffs:applyDoomBuffs830,catalogs:{relicPacks:RELIC_PACKS,chronoPacks:CHRONO_PACKS,infernalRelics:INFERNAL_RELICS,doomBuffs:DOOM_BUFFS,legacy:LEGACY,chests:CHESTS,rarities:RARITIES}};
 
   function tick830(){
-    try{skinState(true);patchTutorial830();patchDoomCard830();patchSkinPage830();patchUniqueClass830();drawDemonPreviews830();const timer=document.getElementById('infernalTimer830');if(timer){const s=shop();if(Date.now()>=N(s.next))openInfernalShop830(shopOrigin830);else timer.textContent=fmtTime(s.next-Date.now())}}catch(e){console.warn(PATCH+' tick',e)}
+    try{skinState(true);patchTutorial830();patchDoomCard830();patchSkinPage830();patchUniqueClass830();drawDemonPreviews830();const timer=document.getElementById('infernalTimer830');if(timer){const s=shop();if(Date.now()>=N(s.next)){if(window.__ChronoProgression8518?.authoritative)window.__ChronoProgression8518.refresh?.();else openInfernalShop830(shopOrigin830)}else timer.textContent=fmtTime(s.next-Date.now())}}catch(e){console.warn(PATCH+' tick',e)}
   }
   try{const root=cardEl();if(root)new MutationObserver(()=>requestAnimationFrame(tick830)).observe(root,{childList:true,subtree:true});window.__ChronoUIScheduler820?.interval?.(tick830,900)}catch{}
   setTimeout(tick830,120);
@@ -36771,7 +36786,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 }
 @media(prefers-reduced-motion:reduce){#overlayCard .nefalemRitual849:before,#overlayCard .nefSealGlyph849,#overlayCard .nefChain849,#overlayCard .nefEmbers849 b{animation:none!important}}
 </style>
-<!-- Chrono Shards 8.5.16 — missões autoritativas hidratadas antes da renderização -->
+<!-- Chrono Shards 8.5.19 — revisão profunda de Awakening, hidratação e consistência -->
 <style id="chronoCloudStyle850">
   #chronoCloudCard850{margin:18px 0;display:block}
   #chronoCloudCard850 .chronoAccountGuest858{display:block;width:100%;padding:15px 18px;border-radius:15px;border:1px solid rgba(97,218,251,.38);background:linear-gradient(135deg,rgba(97,218,251,.22),rgba(159,108,255,.22));color:#f3fbff;font:900 12px Orbitron,sans-serif;letter-spacing:.08em;box-shadow:0 12px 35px rgba(0,0,0,.25)}
@@ -36869,11 +36884,13 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   const AUTH_STORAGE_KEY_8510='sb-favrbugywlamhitktocy-auth-token';
   const AUTH_STORAGE_PREFIX_8511='sb-favrbugywlamhitktocy-';
   const TRACKED_TYPES_855=['chaser','swarmer','strafer','tank','bomber','sentinel','vomiter','pukeling'];
+  const PROGRESSION_SPECIAL_KEYS_8518=['riftTickKills','assaultTurboBossKills','roninParryContacts','infernalBossKills','doomEmperorKills'];
   const runtime={client:null,session:null,state:null,profile:null,account:null,status:'idle',message:'',lastError:null,bootPromise:null,sdkPromise:null,authSubscription:null};
   const listeners=new Set();
   const runTracker854={
     active:false,sessionId:'',baseRelics:0,baseChrono:0,maxRelics:0,maxChrono:0,baseStats:null,suppress:0,
-    telemetryReady:false,eventKills:0,eventBossKills:0,eventEliteKills:0,eventSkillsUsed:0,eventTypeKills:{},seenDeaths:new WeakSet()
+    telemetryReady:false,eventKills:0,eventBossKills:0,eventEliteKills:0,eventSkillsUsed:0,eventTypeKills:{},seenDeaths:new WeakSet(),
+    baseRoninParry:0,eventRiftTickKills:0,eventAssaultTurboBossKills:0,eventInfernalBossKills:0,eventDoomEmperorKills:0
   };
   let authModal858=null,authRequired858=false,authMode858='login',authBusy858=false,keyModal858=null,startupGate8512=null,settingsTimer858=0,accountCacheTimer858=0;
   let signedOutCleanup8511=false,explicitLogout8511=false;
@@ -36926,6 +36943,31 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     runTracker854.telemetryReady=true;
     runTracker854.eventKills=0;runTracker854.eventBossKills=0;runTracker854.eventEliteKills=0;runTracker854.eventSkillsUsed=0;
     runTracker854.eventTypeKills={};runTracker854.seenDeaths=new WeakSet();
+    runTracker854.eventRiftTickKills=0;runTracker854.eventAssaultTurboBossKills=0;
+    runTracker854.eventInfernalBossKills=0;runTracker854.eventDoomEmperorKills=0;
+    runTracker854.baseRoninParry=Math.max(0,Math.trunc(n(localMeta855()?.stats?.roninParryContacts8427)));
+  }
+  function specialMetrics8518(){
+    const currentRonin=Math.max(0,Math.trunc(n(localMeta855()?.stats?.roninParryContacts8427)));
+    return{
+      riftTickKills:Math.max(0,Math.trunc(n(runTracker854.eventRiftTickKills))),
+      assaultTurboBossKills:Math.max(0,Math.trunc(n(runTracker854.eventAssaultTurboBossKills))),
+      roninParryContacts:Math.max(0,currentRonin-Math.max(0,Math.trunc(n(runTracker854.baseRoninParry)))),
+      infernalBossKills:Math.max(0,Math.trunc(n(runTracker854.eventInfernalBossKills))),
+      doomEmperorKills:Math.max(0,Math.trunc(n(runTracker854.eventDoomEmperorKills)))
+    };
+  }
+  function doomSummary8518(){
+    const d=window.game?.doom800||{};
+    return{
+      missionsCompleted:Math.max(0,Math.trunc(n(d.missionsCompleted))),
+      missionsFailed:Math.max(0,Math.trunc(n(d.missionsFailed))),
+      minibossKills:Math.max(0,Math.trunc(n(d.minibossKills))),
+      bossKills:Math.max(0,Math.trunc(n(d.bossKills))),
+      peakValue:Math.max(0,Math.min(100,Math.trunc(n(d.peakValue825??d.peakValue??d.value)))),
+      timeAtDoom:Math.max(0,Math.trunc(n(d.timeAtDoom))),
+      emperorDefeated:Math.max(0,Math.trunc(n(runTracker854.eventDoomEmperorKills)))>0
+    };
   }
   function cleanTypeKills8510(source,totalKills){
     const out={},total=Math.max(0,Math.trunc(n(totalKills)));let remaining=total;
@@ -36946,12 +36988,18 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   const storageRemoveBefore858=Storage.prototype.removeItem;
   const storageClearBefore8511=Storage.prototype.clear;
   const storageSetTracked8515=function(key,value){
-    if(this===localStorage&&String(key)===MAIN_SAVE_854&&runTracker854.active&&!runTracker854.suppress){
+    const isMain=this===localStorage&&String(key)===MAIN_SAVE_854;
+    const previous=isMain?parseJSON854(localStorage.getItem(MAIN_SAVE_854),{}):null;
+    if(isMain&&runTracker854.active&&!runTracker854.suppress){
       const next=parseJSON854(value,{});
       runTracker854.maxRelics=Math.max(runTracker854.maxRelics,n(next.relicShards));
       runTracker854.maxChrono=Math.max(runTracker854.maxChrono,n(next.chronoFragments));
     }
     const result=storageSetBefore854.call(this,key,value);
+    if(isMain&&!runTracker854.suppress&&!window.__ChronoProgression8518?.applying){
+      const next=parseJSON854(value,{}),was=!!(previous?.doomModeUnlocked810||previous?.doomModeUnlocked),now=!!(next?.doomModeUnlocked810||next?.doomModeUnlocked);
+      if(!was&&now)try{window.dispatchEvent(new CustomEvent('chrono-doom-local-unlock',{detail:{sessionId:String(window.game?.cloudSessionId||'')}}))}catch{}
+    }
     if(this===localStorage&&SAVE_KEYS.includes(String(key))&&!runTracker854.suppress)scheduleCloudSave858();
     return result;
   };
@@ -36979,13 +37027,13 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     const local=localWallet854(),pending=runTracker854.active&&runTracker854.sessionId==='__pending__';
     const baseRelics=n(state?.relic_shards,local.relics),baseChrono=n(state?.chrono_fragments,local.chrono);
     const pendingStats=pending?runTracker854.baseStats:null,pendingMaxRelics=runTracker854.maxRelics,pendingMaxChrono=runTracker854.maxChrono;
-    const pendingTelemetry=pending?{kills:runTracker854.eventKills,boss:runTracker854.eventBossKills,elite:runTracker854.eventEliteKills,skills:runTracker854.eventSkillsUsed,types:{...runTracker854.eventTypeKills},seen:runTracker854.seenDeaths}:null;
+    const pendingTelemetry=pending?{kills:runTracker854.eventKills,boss:runTracker854.eventBossKills,elite:runTracker854.eventEliteKills,skills:runTracker854.eventSkillsUsed,types:{...runTracker854.eventTypeKills},seen:runTracker854.seenDeaths,baseRonin:runTracker854.baseRoninParry,riftTick:runTracker854.eventRiftTickKills,turboBoss:runTracker854.eventAssaultTurboBossKills,infernalBoss:runTracker854.eventInfernalBossKills,emperor:runTracker854.eventDoomEmperorKills}:null;
     runTracker854.active=true;runTracker854.sessionId=String(sessionId||'');
     runTracker854.baseRelics=baseRelics;runTracker854.baseChrono=baseChrono;
     runTracker854.maxRelics=pending?Math.max(baseRelics,pendingMaxRelics,local.relics):baseRelics;
     runTracker854.maxChrono=pending?Math.max(baseChrono,pendingMaxChrono,local.chrono):baseChrono;
     runTracker854.baseStats=pendingStats||localMissionStats855();
-    if(pendingTelemetry){runTracker854.telemetryReady=true;runTracker854.eventKills=pendingTelemetry.kills;runTracker854.eventBossKills=pendingTelemetry.boss;runTracker854.eventEliteKills=pendingTelemetry.elite;runTracker854.eventSkillsUsed=pendingTelemetry.skills;runTracker854.eventTypeKills=pendingTelemetry.types;runTracker854.seenDeaths=pendingTelemetry.seen}else resetRunTelemetry8510();
+    if(pendingTelemetry){runTracker854.telemetryReady=true;runTracker854.eventKills=pendingTelemetry.kills;runTracker854.eventBossKills=pendingTelemetry.boss;runTracker854.eventEliteKills=pendingTelemetry.elite;runTracker854.eventSkillsUsed=pendingTelemetry.skills;runTracker854.eventTypeKills=pendingTelemetry.types;runTracker854.seenDeaths=pendingTelemetry.seen;runTracker854.baseRoninParry=pendingTelemetry.baseRonin;runTracker854.eventRiftTickKills=pendingTelemetry.riftTick;runTracker854.eventAssaultTurboBossKills=pendingTelemetry.turboBoss;runTracker854.eventInfernalBossKills=pendingTelemetry.infernalBoss;runTracker854.eventDoomEmperorKills=pendingTelemetry.emperor}else resetRunTelemetry8510();
   }
   function runDelta854(sessionId){
     const empty={kills:0,relicDelta:0,chronoDelta:0,bossKills:0,eliteKills:0,skillsUsed:0,typeKills:{}};
@@ -37003,13 +37051,14 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       bossKills:Math.min(kills,runTracker854.telemetryReady?Math.max(0,Math.trunc(n(runTracker854.eventBossKills))):Math.max(0,Math.trunc(n(current.bossKills)-n(base.bossKills)))),
       eliteKills:Math.min(kills,runTracker854.telemetryReady?Math.max(0,Math.trunc(n(runTracker854.eventEliteKills))):Math.max(0,Math.trunc(n(current.eliteKills)-n(base.eliteKills)))),
       skillsUsed:runTracker854.telemetryReady?Math.max(0,Math.trunc(n(runTracker854.eventSkillsUsed))):Math.max(0,Math.trunc(n(current.skillsUsed)-n(base.skillsUsed))),
-      typeKills:cleanTypeKills8510(types,kills)
+      typeKills:cleanTypeKills8510(types,kills),
+      specialMetrics:specialMetrics8518()
     };
   }
   function stopRunCheckpoint8514(){clearTimeout(runCheckpointTimer8514);runCheckpointTimer8514=0;runCheckpointInFlight8514=false;lastRunCheckpoint8514=''}
   function checkpointSummary8514(sessionId){
     const g=window.game||{},delta=runDelta854(sessionId),kills=Math.max(0,Math.trunc(Math.max(n(delta.kills),n(g.kills))));
-    return{score:Math.max(0,Math.trunc(n(g.score))),wave:Math.max(0,Math.trunc(n(g.wave))),kills,bossKills:Math.min(kills,Math.max(0,Math.trunc(n(delta.bossKills)))),eliteKills:Math.min(kills,Math.max(0,Math.trunc(n(delta.eliteKills)))),skillsUsed:Math.max(0,Math.trunc(n(delta.skillsUsed))),typeKills:cleanTypeKills8510(delta.typeKills,kills)};
+    return{score:Math.max(0,Math.trunc(n(g.score))),wave:Math.max(0,Math.trunc(n(g.wave))),kills,bossKills:Math.min(kills,Math.max(0,Math.trunc(n(delta.bossKills)))),eliteKills:Math.min(kills,Math.max(0,Math.trunc(n(delta.eliteKills)))),skillsUsed:Math.max(0,Math.trunc(n(delta.skillsUsed))),typeKills:cleanTypeKills8510(delta.typeKills,kills),specialMetrics:delta.specialMetrics||specialMetrics8518(),doomSummary:doomSummary8518()};
   }
   async function sendRunCheckpoint8514({force=false,sessionId:sessionOverride='',summary:summaryOverride=null}={}){
     const sessionId=String(sessionOverride||runTracker854.sessionId||'');
@@ -37023,6 +37072,10 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     try{
       const result=await invoke('checkpoint_run',{sessionId,...summary});
       if(result?.terminal){stopRunCheckpoint8514();return result}
+      if(result?.progression&&window.__ChronoProgression8518?.apply){
+        try{window.__ChronoProgression8518.apply(result.progression,{render:!!document.querySelector('.missionAwakening489')})}catch(error){console.warn('Chrono Awakening checkpoint hydrate',error)}
+      }
+      try{window.dispatchEvent(new CustomEvent('chrono-run-checkpoint-progression',{detail:{sessionId,progression:result?.progression||null}}))}catch{}
       lastRunCheckpoint8514=fingerprint;
       return result;
     }catch(error){
@@ -37074,11 +37127,12 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     meta.relicShards=n(state?.relic_shards,officialMeta.relicShards||0);
     meta.chronoFragments=n(state?.chrono_fragments,officialMeta.chronoFragments||0);
     meta.highScore=n(state?.high_score,officialMeta.highScore||0);
-    // Chaves/Lágrimas ainda têm fontes locais não migradas. Usar o maior valor
-    // evita apagar recompensas legítimas até esses sistemas virarem autoritativos.
-    meta.awakeningKeys=Math.max(n(meta.awakeningKeys),n(state?.awakening_keys),n(officialMeta.awakeningKeys));
-    meta.sinnerTears830=Math.max(n(meta.sinnerTears830),n(meta.doomFragments),n(state?.sinner_tears),n(officialMeta.sinnerTears830),n(officialMeta.doomFragments));
-    meta.doomFragments=meta.sinnerTears830;
+    if(state?.awakening_authority_enabled)meta.awakeningKeys=n(state?.awakening_keys,officialMeta.awakeningKeys||0);
+    else meta.awakeningKeys=Math.max(n(meta.awakeningKeys),n(state?.awakening_keys),n(officialMeta.awakeningKeys));
+    if(state?.infernal_authority_enabled){meta.sinnerTears830=n(state?.sinner_tears,officialMeta.sinnerTears830||officialMeta.doomFragments||0);meta.doomFragments=meta.sinnerTears830}
+    else{meta.sinnerTears830=Math.max(n(meta.sinnerTears830),n(meta.doomFragments),n(state?.sinner_tears),n(officialMeta.sinnerTears830),n(officialMeta.doomFragments));meta.doomFragments=meta.sinnerTears830}
+    if(state?.infernal_authority_enabled)meta.nefalemPurchased830=officialMeta.nefalemPurchased830===true;
+    if(state?.doom_authority_enabled){meta.doomModeUnlocked810=officialMeta.doomModeUnlocked810===true;meta.doomModeUnlocked=officialMeta.doomModeUnlocked===true}
     if(state?.mission_reputation!==undefined)meta.missionReputation489=n(state.mission_reputation,meta.missionReputation489||0);
     source.chrono_v4_meta=meta;
 
@@ -37568,13 +37622,19 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       const result=await invoke('start_run',{requestId:String(requestId||crypto.randomUUID()),mode:String(mode||'normal'),classKey:String(classKey||'')});
       if(result?.state){runtime.state=result.state;emit()}
       try{if(window.game&&result?.session){game.cloudSessionId=result.session.id;game.cloudServerSeed=result.session.server_seed;beginRunTracking854(result.session.id,result.state||runtime.state);scheduleRunCheckpoint8514(5000)}}catch{}
+      if(result?.doomLoadout&&Array.isArray(result.doomLoadout.ids)){
+        runTracker854.suppress++;
+        try{const meta=localMeta855();meta.doomRunBuffs830=result.doomLoadout.ids.filter(v=>typeof v==='string').slice(0,2);storageSetBefore854.call(localStorage,MAIN_SAVE_854,JSON.stringify(meta));if(window.game){game.meta=Object.assign(game.meta||{},meta);game.__doomStoreBuffsApplied830=false}window.__InfernalShop830?.applyDoomBuffs?.(window.game)}catch(error){console.warn('Chrono DOOM loadout',error)}finally{runTracker854.suppress=Math.max(0,runTracker854.suppress-1)}
+        try{window.dispatchEvent(new CustomEvent('chrono-doom-loadout',{detail:{ids:result.doomLoadout.ids.slice(0,2)}}))}catch{}
+      }
       return result;
     }catch(error){endRunTracking854();throw error}
   }
   async function finishRun(sessionId,summary={}){
     const requestId=String(summary.requestId||crypto.randomUUID()),kills=Math.max(0,Math.trunc(n(summary.kills)));
     const cleanTypes=cleanTypeKills8510(summary.typeKills&&typeof summary.typeKills==='object'?summary.typeKills:{},kills);
-    const cleanSummary={score:n(summary.score),wave:n(summary.wave),kills,gold:n(summary.gold),relicDelta:Math.max(0,Math.trunc(n(summary.relicDelta))),chronoDelta:Math.max(0,Math.trunc(n(summary.chronoDelta))),bossKills:Math.min(kills,Math.max(0,Math.trunc(n(summary.bossKills)))),eliteKills:Math.min(kills,Math.max(0,Math.trunc(n(summary.eliteKills)))),skillsUsed:Math.max(0,Math.trunc(n(summary.skillsUsed))),typeKills:cleanTypes};
+    const special=summary.specialMetrics&&typeof summary.specialMetrics==='object'?summary.specialMetrics:specialMetrics8518(),doom=summary.doomSummary&&typeof summary.doomSummary==='object'?summary.doomSummary:doomSummary8518();
+    const cleanSummary={score:n(summary.score),wave:n(summary.wave),kills,gold:n(summary.gold),relicDelta:Math.max(0,Math.trunc(n(summary.relicDelta))),chronoDelta:Math.max(0,Math.trunc(n(summary.chronoDelta))),bossKills:Math.min(kills,Math.max(0,Math.trunc(n(summary.bossKills)))),eliteKills:Math.min(kills,Math.max(0,Math.trunc(n(summary.eliteKills)))),skillsUsed:Math.max(0,Math.trunc(n(summary.skillsUsed))),typeKills:cleanTypes,specialMetrics:special,doomSummary:doom};
     localStorage.setItem(PENDING_RUN_854,JSON.stringify({requestId,sessionId:String(sessionId||''),ownerUserId:runtime.session?.user?.id||'',summary:cleanSummary,createdAt:Date.now()}));
     await sendRunCheckpoint8514({force:true,sessionId:String(sessionId||''),summary:cleanSummary}).catch(()=>{});
     endRunTracking854();
@@ -37798,7 +37858,8 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     startRun,finishRun,flushPendingRun:flushPendingRun854,invoke,subscribe,getState:()=>publicRuntime858(),
     getAccount:()=>runtime.account?JSON.parse(JSON.stringify(runtime.account)):null,
     isAuthenticated:hasPermanentAccount8512,
-    openLogin:()=>openAuthModal858({required:false,mode:'login'}),logout:logout858,syncNow:()=>syncSnapshot858({force:true})
+    openLogin:()=>openAuthModal858({required:false,mode:'login'}),logout:logout858,syncNow:()=>syncSnapshot858({force:true}),
+    checkpointNow:()=>sendRunCheckpoint8514({force:true})
   });
 
   function installStorageTracking8514(){
@@ -37855,12 +37916,11 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     if(typeof currentDeath==='function'&&!currentDeath.__chronoTelemetry8510){
       const wrappedDeath=function(index,enemy){
         const shouldCount=!!(runTracker854.active&&window.game?.running&&enemy&&typeof enemy==='object'&&!runTracker854.seenDeaths.has(enemy));
-        const deathInfo=shouldCount?{
-          rawType:String(enemy?.type||enemy?.bossType||enemy?.kind||''),
-          type:classifyEnemyType8510(enemy),
-          boss:String(enemy?.type||'')==='boss'||enemy?.boss===true||enemy?.isBoss===true,
-          elite:enemy?.elite===true||enemy?.isElite===true
-        }:null;
+        const deathInfo=shouldCount?(()=>{
+          const rawType=String(enemy?.type||enemy?.bossType||enemy?.kind||''),infernalBoss=enemy?.infernalBoss810===true,emperor=enemy?.doomEmperor800===true;
+          const boss=rawType==='boss'||enemy?.boss===true||enemy?.isBoss===true||infernalBoss||emperor;
+          return{rawType,type:classifyEnemyType8510(enemy),boss,elite:enemy?.elite===true||enemy?.isElite===true,riftTick:rawType==='riftTick',infernalBoss,emperor,assaultTurbo:boss&&String(window.game?.classKey||'')==='assault'&&n(window.game?.assaultTurbo33)>0};
+        })():null;
         if(shouldCount)runTracker854.seenDeaths.add(enemy);
         const result=currentDeath.apply(this,arguments);
         if(deathInfo){
@@ -37868,6 +37928,10 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
           if(deathInfo.boss)runTracker854.eventBossKills++;
           if(deathInfo.elite)runTracker854.eventEliteKills++;
           if(deathInfo.type)runTracker854.eventTypeKills[deathInfo.type]=Math.max(0,Math.trunc(n(runTracker854.eventTypeKills[deathInfo.type])))+1;
+          if(deathInfo.riftTick)runTracker854.eventRiftTickKills++;
+          if(deathInfo.assaultTurbo)runTracker854.eventAssaultTurboBossKills++;
+          if(deathInfo.infernalBoss)runTracker854.eventInfernalBossKills++;
+          if(deathInfo.emperor)runTracker854.eventDoomEmperorKills++;
         }
         return result;
       };
@@ -37917,9 +37981,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       const wrapped=function(){
         const g=window.game;if(g?.cloudSettlementQueued854)return baseGameOver.apply(this,arguments);
         const sessionId=g?.cloudSessionId;if(g&&sessionId){g.cloudSettlementQueued854=true;g.cloudSessionId=null}
-        const delta=sessionId?runDelta854(sessionId):{kills:0,relicDelta:0,chronoDelta:0,bossKills:0,eliteKills:0,skillsUsed:0,typeKills:{}};
+        const delta=sessionId?runDelta854(sessionId):{kills:0,relicDelta:0,chronoDelta:0,bossKills:0,eliteKills:0,skillsUsed:0,typeKills:{},specialMetrics:{}};
         const verifiedKills=Math.max(0,Math.trunc(Math.max(n(delta.kills),n(g?.kills))));
-        const summary=sessionId?{requestId:crypto.randomUUID(),score:n(g.score),wave:n(g.wave),kills:verifiedKills,gold:n(g.gold),relicDelta:delta.relicDelta,chronoDelta:delta.chronoDelta,bossKills:Math.min(verifiedKills,delta.bossKills),eliteKills:Math.min(verifiedKills,delta.eliteKills),skillsUsed:delta.skillsUsed,typeKills:cleanTypeKills8510(delta.typeKills,verifiedKills)}:null;
+        const summary=sessionId?{requestId:crypto.randomUUID(),score:n(g.score),wave:n(g.wave),kills:verifiedKills,gold:n(g.gold),relicDelta:delta.relicDelta,chronoDelta:delta.chronoDelta,bossKills:Math.min(verifiedKills,delta.bossKills),eliteKills:Math.min(verifiedKills,delta.eliteKills),skillsUsed:delta.skillsUsed,typeKills:cleanTypeKills8510(delta.typeKills,verifiedKills),specialMetrics:delta.specialMetrics||specialMetrics8518(),doomSummary:doomSummary8518()}:null;
         if(sessionId&&summary)localStorage.setItem(PENDING_RUN_854,JSON.stringify({requestId:summary.requestId,sessionId,ownerUserId:runtime.session?.user?.id||'',summary,createdAt:Date.now()}));
         endRunTracking854();const out=baseGameOver.apply(this,arguments);if(sessionId&&summary)queueMicrotask(()=>finishRun(sessionId,summary).catch(error=>console.warn('Chrono Cloud finish_run',error)));return out;
       };
@@ -37929,7 +37993,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   installDirectTelemetry8510();
   installRunHooks850();
   document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{installStorageTracking8514();installDirectTelemetry8510();installRunHooks850();setInterval(()=>{installStorageTracking8514();installDirectTelemetry8510();installRunHooks850()},2000)},0),{once:true});
-  console.log('Chrono Shards 8.5.16 — revisão profunda, missões hidratadas e sessões idempotentes');
+  console.log('Chrono Shards 8.5.19 — telemetria de Awakening e DOOM revisada');
 })();
 </script>
 
@@ -40191,11 +40255,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 
   window.addEventListener('chrono-run-settled',event=>{
     const r=event.detail||{};
-    if(r?.rejected){toast('PARTIDA NÃO VALIDADA','Os feitos desta partida não foram enviados. Atualize o jogo e tente novamente.','#ff8fa3');return}
-    if(!r?.accepted)return;
-    const relics=num(r.rewardRelics),chrono=num(r.rewardChrono);
-    const detail=[relics?`+${relics} Relíquias`:'',chrono?`+${chrono} Fragmentos Chrono`:''].filter(Boolean).join(' • ')||'Progresso e missões atualizados';
-    toast('PARTIDA LIQUIDADA',detail,'#86ffb0');
+    // A liquidação continua acontecendo silenciosamente. Só exibimos aviso
+    // quando a partida for rejeitada e o jogador realmente precisar agir.
+    if(r?.rejected)toast('PARTIDA NÃO VALIDADA','Os feitos desta partida não foram enviados. Atualize o jogo e tente novamente.','#ff8fa3');
   });
   function receive(detail){if(detail?.state)applyState(detail.state)}
   try{cloud()?.subscribe?.(receive)}catch{}
@@ -40250,10 +40312,13 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     for(const key of ['totalKills','bossKills','eliteKills','skillsUsed','maxWave','chronoFragmentsCollected']){
       if(server[key]!=null)local[key]=official(local[key],server[key]);
     }
-    const trackedTypes=['chaser','swarmer','strafer','tank','bomber','sentinel','vomiter','pukeling'];
+    const trackedTypes=['chaser','swarmer','strafer','tank','bomber','sentinel','vomiter','pukeling','riftTick'];
     local.typeKills=local.typeKills&&typeof local.typeKills==='object'?local.typeKills:{};
     const serverTypes=server.typeKills&&typeof server.typeKills==='object'?server.typeKills:{};
     for(const key of trackedTypes)if(serverTypes[key]!=null)local.typeKills[key]=official(local.typeKills[key],serverTypes[key]);
+    for(const key of ['assaultTurboBossKills','roninParryContacts8427']){
+      if(server[key]!=null)local[key]=official(local[key],server[key]);
+    }
     for(const group of ['classKills','classBossKills','classSkillUses']){
       local[group]=local[group]&&typeof local[group]==='object'?local[group]:{};
       const source=server[group]&&typeof server[group]==='object'?server[group]:{};
@@ -40284,14 +40349,16 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       const serverRelics=num856(state.relic_shards??meta.relicShards),serverChrono=num856(state.chrono_fragments??meta.chronoFragments);
       meta.relicShards=preserveLive?Math.max(num856(meta.relicShards),serverRelics):serverRelics;
       meta.chronoFragments=preserveLive?Math.max(num856(meta.chronoFragments),serverChrono):serverChrono;
-      meta.awakeningKeys=Math.max(num856(meta.awakeningKeys),num856(state.awakening_keys));
-      meta.sinnerTears830=Math.max(num856(meta.sinnerTears830),num856(meta.doomFragments),num856(state.sinner_tears));
+      meta.awakeningKeys=state.awakening_authority_enabled?Math.max(0,Math.trunc(num856(state.awakening_keys))):Math.max(num856(meta.awakeningKeys),num856(state.awakening_keys));
+      meta.sinnerTears830=state.infernal_authority_enabled?Math.max(0,Math.trunc(num856(state.sinner_tears))):Math.max(num856(meta.sinnerTears830),num856(meta.doomFragments),num856(state.sinner_tears));
       meta.doomFragments=meta.sinnerTears830;
       meta.highScore=num856(state.high_score??meta.highScore);
       if(state.mission_stats&&typeof state.mission_stats==='object')meta.stats=mergeMissionStats856(meta.stats,state.mission_stats);
       if(state.mission_reputation!=null)meta.missionReputation489=Math.max(0,Math.trunc(num856(state.mission_reputation)));
       const serverFlags=['allUnlocked','allInUnlocked','nefalemPurchased830','riftModeUnlocked525','riftModeUnlocked','doomModeUnlocked810','doomModeUnlocked','unlockedMoonSlayer','moonMissionClaimed','unlockedShadowChild','shadowChildUnlocked','stellarEmperorRevealed','stellarEmperorSecretUnlocked'];
       for(const key of serverFlags)if(serverMeta[key]===true)meta[key]=true;
+      if(state.infernal_authority_enabled)meta.nefalemPurchased830=serverMeta.nefalemPurchased830===true;
+      if(state.doom_authority_enabled){meta.doomModeUnlocked810=serverMeta.doomModeUnlocked810===true;meta.doomModeUnlocked=serverMeta.doomModeUnlocked===true}
       writeMeta856(meta);
       const classKey=SAVE+'_class_unlocks_v3',serverUnlocks=serverSave[classKey];
       if(Array.isArray(serverUnlocks)){
@@ -40567,7 +40634,158 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   window.addEventListener('click',event=>{if(!event.target?.closest?.('[data-view489="general"]'))return;setTimeout(()=>refreshMissionView856({syncIfStale:true}),0)},true);
   window.ChronoRewards856=Object.freeze({syncMissions:syncMissions856,refreshView:refreshMissionView856,claimMission:claimMission856,redeemCode:redeemCode856,isProtected:protectionEnabled856,getPayload:()=>clone856(lastMissionPayload856)});
   window.ChronoRewards855=window.ChronoRewards856;
-  console.log('Chrono Shards 8.5.16 — hidratação e renderização autoritativa das missões corrigidas');
+  console.log('Chrono Shards 8.5.19 — Awakening, Loja Infernal e DOOM revisados');
+})();
+</script>
+
+<script id="chronoProgression8519">
+(()=>{
+  if(window.__ChronoProgression8518)return;
+  const META='chrono_v4_meta',SHOP='chrono_v4_meta_infernal_shop_830',DOOM='chrono_v4_meta_doom_mode_v1',SKINS='chrono_v4_meta_skins_clean_702',AUG='chrono_v4_meta_chrono_augments_620';
+  const HEROES=new Set(['assault','sniper','reaper','alchemist','colonel','engineer','archer','bomber','mage','ronin']);
+  const INFERNAL_AUGMENTS=new Set(['assault_arsenal','assault_remorse','sniper_execution','sniper_still','engineer_maintenance','engineer_infernal','mage_condensed_void','mage_between_doors','ronin_return_blade','ronin_oath','alchemist_volatile','alchemist_transmuter','reaper_procession','reaper_eclipse','colonel_ghost','colonel_command','bomber_napalm','bomber_precision','archer_celestial_string','archer_judgement','chrono_fractured_clock','chrono_prism_core','shadow_veil','shadow_heir','moon_crescent','moon_sheath','rico_angle','rico_table']);
+  const api={authoritative:true,applying:false,payload:null,selectedHero:'assault',loading:null,lastLoaded:0};
+  window.__ChronoProgression8518=api;
+  const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const read=(k,f={})=>{try{return JSON.parse(localStorage.getItem(k)||'null')??f}catch{return f}};
+  const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  const cloud=()=>window.ChronoCloud;
+  function toast(title,detail='',color='#ff405f'){
+    try{document.getElementById('chronoProgressionToast8518')?.remove();const d=document.createElement('div');d.id='chronoProgressionToast8518';d.className='infernalToast830';d.style.setProperty('--c',color);d.innerHTML=`<b>${String(title||'').replace(/[<>&]/g,'')}</b><span>${String(detail||'').replace(/[<>&]/g,'')}</span>`;document.body.appendChild(d);setTimeout(()=>d.remove(),3200)}catch{}
+  }
+  function currentMetric(meta,path){
+    const stats=meta?.stats||{};
+    if(path==='roninParryContacts8427')return n(stats.roninParryContacts8427);
+    if(path==='assaultTurboBossKills')return n(stats.assaultTurboBossKills);
+    return n(String(path||'').split('.').reduce((o,k)=>o&&o[k],stats));
+  }
+  function exactArray(value){return Array.isArray(value)?value.filter(v=>typeof v==='string'):[]}
+  function applyProgression(payload,{render=false}={}){
+    if(!payload||typeof payload!=='object')return null;
+    api.applying=true;api.payload=payload;api.lastLoaded=Date.now();
+    try{
+      const awakening=payload.awakening||{},infernal=payload.infernal||{},journeys=awakening.journeys||{},meta=read(META,{});
+      meta.awakeningKeys=Math.max(0,Math.trunc(n(awakening.keys)));
+      meta.sinnerTears830=Math.max(0,Math.trunc(n(infernal.tears)));meta.doomFragments=meta.sinnerTears830;
+      meta.nefalemPurchased830=infernal.nefalemOwned===true;meta.doomModeUnlocked810=infernal.doomUnlocked===true;meta.doomModeUnlocked=infernal.doomUnlocked===true;
+      meta.infernalRelics830=exactArray(infernal.infernalRelics);meta.infernalLegacy830=infernal.legacyLevels&&typeof infernal.legacyLevels==='object'?infernal.legacyLevels:{};
+      meta.doomRunBuffs830=exactArray(infernal.queuedDoomBuffs).slice(0,2);meta.awakeningJourneys489={};meta.awakeningUltimates={};meta.awakeningRewards480={};meta.awakeningOwned8519={};
+      meta.awakenings463=meta.awakenings463&&typeof meta.awakenings463==='object'?meta.awakenings463:{};meta.awakenings463.completed={};
+      for(const hero of HEROES){const row=journeys[hero]||{};meta.awakeningOwned8519[hero]=row.owned!==false;meta.awakeningJourneys489[hero]=row.journeyUnlocked===true;meta.awakenings463.completed[hero]=Math.max(0,Math.min(5,Math.trunc(n(row.completedStages))));meta.awakeningUltimates[hero]=row.ultimateUnlocked===true;meta.awakeningRewards480[hero]=row.ultimateUnlocked===true}
+      const active=awakening.active;
+      meta.awakeningServerHydrated8519=true;
+      meta.awakeningServerTime8519=Math.max(0,Math.trunc(n(payload.serverTime,Date.now())));
+      meta.awakeningServerRevision8519=Math.max(0,Math.trunc(n(payload.revision)));
+      if(active&&HEROES.has(String(active.characterKey))){
+        const metric=String(active.metric||''),target=Math.max(1,Math.trunc(n(active.target,1))),progress=Math.max(0,Math.min(Math.trunc(n(active.progress)),target));
+        meta.awakenings463.active={
+          id:String(active.characterKey),stage:Math.max(0,Math.trunc(n(active.stage))-1),
+          baseline:Math.max(0,Math.trunc(n(active.baseline))),waveBest:metric==='maxWave'?progress:0,
+          startedAt:n(active.startedAt,Date.now()),serverProgress:progress,serverTarget:target,serverMetric:metric,
+          serverDone:active.done===true||progress>=target,serverHydrated8519:true,
+          serverUpdatedAt8519:Math.max(0,Math.trunc(n(active.updatedAt,payload.serverTime||Date.now())))
+        };
+        api.selectedHero=String(active.characterKey);
+      }else meta.awakenings463.active=null;
+      write(META,meta);
+      const doom=read(DOOM,{});doom.sinnerTears830=meta.sinnerTears830;doom.doomFragments=meta.sinnerTears830;doom.doomModeUnlocked810=meta.doomModeUnlocked810;doom.doomModeUnlocked=meta.doomModeUnlocked;write(DOOM,doom);
+      if(infernal.shop&&typeof infernal.shop==='object')write(SHOP,infernal.shop);
+      const skin=read(SKINS,{});skin.unlocked=skin.unlocked&&typeof skin.unlocked==='object'?skin.unlocked:{};skin.selected=skin.selected&&typeof skin.selected==='object'?skin.selected:{};
+      for(const key of Object.keys(skin.unlocked))if(key.startsWith('demon_'))delete skin.unlocked[key];
+      for(const id of exactArray(infernal.demonSkins))skin.unlocked[id]=true;
+      for(const [hero,id] of Object.entries(skin.selected))if(String(id).startsWith('demon_')&&!skin.unlocked[id])delete skin.selected[hero];
+      write(SKINS,skin);
+      const aug=read(AUG,{});aug.unlocked=aug.unlocked&&typeof aug.unlocked==='object'?aug.unlocked:{};
+      for(const id of exactArray(infernal.infernalAugments))aug.unlocked[id]=true;write(AUG,aug);
+      if(window.game){game.meta=Object.assign(game.meta||{},meta);try{window.updateHUD?.()}catch{}}
+      try{window.dispatchEvent(new CustomEvent('chrono-progression-applied',{detail:{payload}}))}catch{}
+    }finally{api.applying=false}
+    if(render)refreshVisible();return payload;
+  }
+  async function load({render=false,force=false}={}){
+    if(!cloud()?.isAuthenticated?.())return null;if(api.loading)return api.loading;if(!force&&api.payload&&Date.now()-api.lastLoaded<3500){if(render)refreshVisible();return api.payload}
+    api.loading=(async()=>{try{const result=await cloud().invoke('load_progression',{});return applyProgression(result?.progression||result,{render})}catch(error){console.warn('Chrono progression load',error);return null}finally{api.loading=null}})();return api.loading;
+  }
+  function awakeningVisible(){return !!document.querySelector('.missionAwakening489')}
+  function infernalVisible(){return !!document.querySelector('.infernalShop830')}
+  function refreshVisible(){
+    if(awakeningVisible())try{originalAwakeningOpen?.(api.selectedHero)}catch{}
+    if(infernalVisible())try{originalInfernalOpen?.(infernalOrigin)}catch{}
+  }
+  async function refreshState(result,{render=true}={}){
+    if(result?.progression)applyProgression(result.progression,{render:false});
+    try{await cloud()?.loadState?.({applyAuthoritative:true,forceApply:true})}catch(error){console.warn('Chrono progression state refresh',error)}
+    if(!result?.progression)await load({force:true});
+    if(render)refreshVisible();
+  }
+  async function action(name,body,button,success){
+    if(button?.dataset?.serverBusy8518)return;button&&(button.dataset.serverBusy8518='1',button.disabled=true);
+    try{const result=await cloud().invoke(name,{requestId:crypto.randomUUID(),...body});await refreshState(result);if(success)toast(success,result?.reward?.title||'', '#86ffb0');return result}
+    catch(error){toast('AÇÃO RECUSADA',error?.message||String(error),'#ff6b7d');await load({force:true,render:true});throw error}
+    finally{if(button?.isConnected){delete button.dataset.serverBusy8518;button.disabled=false}}
+  }
+  async function purchaseInfernal(section,index,button){
+    let rotation=read(SHOP,null),next=n(rotation?.next);
+    if(!rotation?.offers||rotation?.rotationId==='server-loading'||!rotation?.rotationId||!next||Date.now()>=next){
+      await load({force:true,render:true});rotation=read(SHOP,null);next=n(rotation?.next);
+      if(!rotation?.offers||!rotation?.rotationId||!next||Date.now()>=next){toast('LOJA SINCRONIZANDO','Aguarde a rotação oficial chegar do servidor.','#ffd166');return null}
+      toast('ROTAÇÃO ATUALIZADA','Confira as ofertas antes de comprar.','#ffd166');return null;
+    }
+    return action('infernal_purchase',{section,index,rotationId:String(rotation.rotationId)},button,'COMPRA CONCLUÍDA');
+  }
+  function selectedHero(){const active=document.querySelector('[data-awakhero489].active')?.dataset?.awakhero489;return HEROES.has(active)?active:HEROES.has(api.selectedHero)?api.selectedHero:'assault'}
+  window.addEventListener('click',event=>{const hero=event.target?.closest?.('[data-awakhero489]')?.dataset?.awakhero489;if(HEROES.has(hero))api.selectedHero=hero},true);
+  window.addEventListener('click',event=>{
+    const unlock=event.target?.closest?.('#unlockJourney489'),start=event.target?.closest?.('[data-startstep489]'),claim=event.target?.closest?.('[data-claimstep489]'),ultimate=event.target?.closest?.('#claimUltimate489');
+    const buy=event.target?.closest?.('[data-infernal-buy830]'),legacy=event.target?.closest?.('[data-legacy-buy830]'),nefalem=event.target?.closest?.('#buyNefalem830');
+    const button=unlock||start||claim||ultimate||buy||legacy||nefalem;if(!button)return;
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+    const hero=selectedHero();
+    if((unlock||start||ultimate)&&api.payload?.awakening?.journeys?.[hero]?.owned===false){toast('PERSONAGEM NÃO ADQUIRIDO','Desbloqueie este personagem antes de iniciar o Awakening.','#ff6b7d');return}
+    if(unlock)action('awakening_start_stage',{characterKey:hero,stage:1},button,'JORNADA DESPERTADA').catch(()=>{});
+    else if(start)action('awakening_start_stage',{characterKey:hero,stage:Math.max(1,Math.trunc(n(start.dataset.startstep489))+1)},button,'ETAPA ATIVADA').catch(()=>{});
+    else if(claim)action('awakening_claim_stage',{},button,'ETAPA CONCLUÍDA').catch(()=>{});
+    else if(ultimate)action('awakening_claim_ultimate',{characterKey:hero},button,'ULTIMATE DESBLOQUEADA').catch(()=>{});
+    else if(buy){const [section,indexRaw]=String(buy.dataset.infernalBuy830||'').split(':');purchaseInfernal(section,Math.max(0,Math.trunc(n(indexRaw))),button).catch(()=>{})}
+    else if(legacy)action('infernal_legacy',{legacyId:String(legacy.dataset.legacyBuy830||'')},button,'LEGADO FORTALECIDO').catch(()=>{});
+    else if(nefalem)action('infernal_nefalem',{},button,'O SANGUE RESPONDEU').catch(()=>{});
+  },true);
+  let doomUnlockBusy=false;
+  window.addEventListener('chrono-doom-local-unlock',async event=>{
+    if(doomUnlockBusy||api.payload?.infernal?.doomUnlocked===true)return;doomUnlockBusy=true;
+    try{await cloud()?.checkpointNow?.();const sessionId=String(event.detail?.sessionId||window.game?.cloudSessionId||'');if(!sessionId)throw new Error('Sessão da batalha infernal não encontrada');const result=await cloud().invoke('doom_unlock',{requestId:crypto.randomUUID(),sessionId});await refreshState(result);toast('MODO DOOM DESBLOQUEADO','O servidor confirmou a derrota do guardião infernal.','#ff405f')}
+    catch(error){console.warn('Chrono DOOM unlock',error);toast('DOOM NÃO VALIDADO',error?.message||'A derrota ainda não foi confirmada pelo servidor.','#ff6b7d');await load({force:true,render:true})}
+    finally{doomUnlockBusy=false}
+  });
+  let originalInfernalOpen=window.openInfernalShop830,infernalOrigin='portal';
+  if(typeof originalInfernalOpen==='function'){
+    const wrapped=async origin=>{infernalOrigin=origin||infernalOrigin;await load({force:true});return originalInfernalOpen(infernalOrigin)};
+    window.openInfernalShop830=wrapped;if(window.__InfernalShop830)window.__InfernalShop830.open=wrapped;
+  }
+  let originalAwakeningOpen=window.openAwakening489;
+  if(typeof originalAwakeningOpen==='function'){
+    const wrappedAwakening=id=>{
+      if(HEROES.has(String(id||'')))api.selectedHero=String(id);
+      const out=originalAwakeningOpen(api.selectedHero);
+      load({force:true,render:true}).catch(()=>{});
+      return out;
+    };
+    window.openAwakening489=wrappedAwakening;window.openAwakening488=wrappedAwakening;window.openAwakening480=wrappedAwakening;window.openAwakening464=wrappedAwakening;window.openAwakening461=wrappedAwakening;
+    try{openAwakening461=wrappedAwakening}catch{}
+  }
+  window.addEventListener('click',event=>{if(event.target?.closest?.('[data-view489="awakening"]'))setTimeout(()=>load({force:true,render:true}).catch(()=>{}),0)},true);
+  window.addEventListener('chrono-account-ready',()=>load({force:true,render:awakeningVisible()||infernalVisible()}));
+  window.addEventListener('chrono-cloud-applied',()=>load({force:true,render:awakeningVisible()||infernalVisible()}));
+  window.addEventListener('chrono-run-settled',event=>{if(event.detail?.accepted)load({force:true,render:awakeningVisible()||infernalVisible()})});
+  window.addEventListener('chrono-run-checkpoint-progression',event=>{if(event.detail?.progression)applyProgression(event.detail.progression,{render:awakeningVisible()})});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&awakeningVisible()&&Date.now()-api.lastLoaded>5000)load({force:true,render:true})});
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>load({force:true,render:awakeningVisible()||infernalVisible()}),300),{once:true});
+  setInterval(()=>{
+    if(infernalVisible()){const next=n(api.payload?.infernal?.shop?.next);if(next&&Date.now()>=next)load({force:true,render:true})}
+    if(awakeningVisible()&&Date.now()-api.lastLoaded>12000)load({force:true,render:true});
+  },5000);
+  api.load=load;api.apply=applyProgression;api.refresh=()=>load({force:true,render:true});
+  console.log('Chrono Shards 8.5.19 — progressão autoritativa e hidratação ativa');
 })();
 </script>
 
