@@ -5,6 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>CHRONO SHARDS — DOOM Update</title>
+<link rel="icon" href="data:,"/>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&amp;family=Rajdhani:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -222,8 +223,9 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
 
 
 <style id="chronoLatestBootGate849">
-  html:not(.chrono-latest-ready849) #overlay{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
-  html.chrono-latest-ready849 #overlay{visibility:visible;opacity:1}
+  html:not(.chrono-latest-ready849) #overlay,
+  html.chrono-auth-locked8512 #overlay{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+  html.chrono-latest-ready849:not(.chrono-auth-locked8512) #overlay{visibility:visible;opacity:1}
 </style>
 
 
@@ -718,7 +720,7 @@ const RELICS = [
 
 // ── EVENTS ───────────────────────────────────────────────────────
 window.addEventListener('keydown', e=>{
-  const k = e.key.toLowerCase();
+  const k = String(e.key||'').toLowerCase();
   keys[k] = true;
   if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k)) e.preventDefault();
   if(!game||!game.running) return;
@@ -727,7 +729,7 @@ window.addEventListener('keydown', e=>{
   if(k==='q') useSkill(1);
   if(k==='r') useSkill(2);
 });
-window.addEventListener('keyup', e=>keys[e.key.toLowerCase()]=false);
+window.addEventListener('keyup', e=>keys[String(e.key||'').toLowerCase()]=false);
 canvas.addEventListener('mousemove', e=>{
   const rect=canvas.getBoundingClientRect();
   mouse.x=(e.clientX-rect.left)*(canvas.width/rect.width);
@@ -14388,7 +14390,7 @@ function killKey37(e){
     if((s.kind==='turret'||s.kind==='heavy')&&r.structures.filter(x=>x.kind==='turret'||x.kind==='heavy').length>=r.maxTurrets){addFloatingText(p.x,p.y-20,'LIMITE DE TORRETAS','#ff7b92',14);return;}
     r.structures.push(s);addRing(p.x,p.y,'#62ff9b',60,4);addParticles(p.x,p.y,'#62ff9b',18,.7);game.riftBuild50=null;hideBuildHint50();openRiftWaveShop50();}
   canvas.addEventListener('click',e=>{if(game?.riftBuild50){e.preventDefault();e.stopImmediatePropagation();placeBuild50();}},true);
-  window.addEventListener('keydown',e=>{if(!game?.riftBuild50)return;if(e.key.toLowerCase()==='r'){e.preventDefault();const b=game.riftBuild50;b.rot=b.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();game.gold+=(game.riftBuild50.cost||0);game.riftBuild50=null;hideBuildHint50();openRiftWaveShop50();}},true);
+  window.addEventListener('keydown',e=>{if(!game?.riftBuild50)return;if(String(e.key||'').toLowerCase()==='r'){e.preventDefault();const b=game.riftBuild50;b.rot=b.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();game.gold+=(game.riftBuild50.cost||0);game.riftBuild50=null;hideBuildHint50();openRiftWaveShop50();}},true);
 
   const prevDrawHazards50=window.drawHazards||drawHazards;
   window.drawHazards=function(){prevDrawHazards50.apply(this,arguments);drawRiftFloor50();};
@@ -15202,7 +15204,7 @@ function killKey37(e){
     game.riftBuild505=null;hideBuildHint505();openRiftWaveShop505();
   }
   canvas.addEventListener('click',e=>{if(game?.riftBuild505){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();placeBuild505();}},true);
-  window.addEventListener('keydown',e=>{if(!game?.riftBuild505)return;if(e.key.toLowerCase()==='r'){e.preventDefault();game.riftBuild505.rot=game.riftBuild505.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();game.gold+=(game.riftBuild505.cost||0);game.riftBuild505=null;hideBuildHint505();openRiftWaveShop505();}},true);
+  window.addEventListener('keydown',e=>{if(!game?.riftBuild505)return;if(String(e.key||'').toLowerCase()==='r'){e.preventDefault();game.riftBuild505.rot=game.riftBuild505.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();game.gold+=(game.riftBuild505.cost||0);game.riftBuild505=null;hideBuildHint505();openRiftWaveShop505();}},true);
 
   function drawBuildGrid505(){
     if(!isRift505()||!game.riftBuild505)return;
@@ -15616,7 +15618,7 @@ function killKey37(e){
     game.riftBuild507=null;hideHint();openShop();
   }
   canvas.addEventListener('click',e=>{if(game?.riftBuild507){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();placeBuild();}},true);
-  window.addEventListener('keydown',e=>{if(!game?.riftBuild507)return;if(e.key.toLowerCase()==='r'&&game.riftBuild507.mode==='build'){e.preventDefault();game.riftBuild507.rot=game.riftBuild507.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();const b=game.riftBuild507;if(b?.mode==='build'&&b.cost)game.gold+=(b.cost||0);game.riftBuild507=null;hideHint();openShop();}},true);
+  window.addEventListener('keydown',e=>{if(!game?.riftBuild507)return;if(String(e.key||'').toLowerCase()==='r'&&game.riftBuild507.mode==='build'){e.preventDefault();game.riftBuild507.rot=game.riftBuild507.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();const b=game.riftBuild507;if(b?.mode==='build'&&b.cost)game.gold+=(b.cost||0);game.riftBuild507=null;hideHint();openShop();}},true);
   function drawBuild(){
     if(!isRift()||!game.riftBuild507)return;const r=game.rift50,b=game.riftBuild507;ctx.save();
     if(b.mode==='build'){const p=buildPreview();for(let x=BUILD_GRID;x<W;x+=BUILD_GRID){for(let y=BUILD_GRID;y<H;y+=BUILD_GRID){const d=Math.hypot(x-r.core.x,y-r.core.y);if(d<r.buildRadius&&d>r.core.r+38){ctx.globalAlpha=.18;ctx.fillStyle='#62ff9b';ctx.fillRect(x-11,y-11,22,22);}}}if(p){ctx.globalAlpha=.75;ctx.fillStyle=p.valid?'#62ff9b':'#ff405f';ctx.strokeStyle='#fff';if(p.type==='wall'){const w=p.rot==='h'?78:28,h=p.rot==='h'?28:78;ctx.fillRect(p.x-w/2,p.y-h/2,w,h);ctx.strokeRect(p.x-w/2,p.y-h/2,w,h);}else{ctx.beginPath();ctx.arc(p.x,p.y,p.type==='heavy'?22:18,0,Math.PI*2);ctx.fill();ctx.stroke();}}}
@@ -15792,7 +15794,7 @@ function killKey37(e){
     r.structures.push(s);try{addRing(p.x,p.y,'#62ff9b',60,4);addParticles(p.x,p.y,'#62ff9b',18,.7)}catch{}game.riftBuild508=null;hideHint();openShop508();
   }
   canvas.addEventListener('click',e=>{if(game?.riftBuild508){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();place508();}},true);
-  window.addEventListener('keydown',e=>{if(!game?.riftBuild508)return;if(e.key.toLowerCase()==='r'&&game.riftBuild508.mode==='build'){e.preventDefault();game.riftBuild508.rot=game.riftBuild508.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();const b=game.riftBuild508;if(b?.mode==='build'&&b.cost)game.gold+=(b.cost||0);game.riftBuild508=null;hideHint();openShop508();}},true);
+  window.addEventListener('keydown',e=>{if(!game?.riftBuild508)return;if(String(e.key||'').toLowerCase()==='r'&&game.riftBuild508.mode==='build'){e.preventDefault();game.riftBuild508.rot=game.riftBuild508.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();const b=game.riftBuild508;if(b?.mode==='build'&&b.cost)game.gold+=(b.cost||0);game.riftBuild508=null;hideHint();openShop508();}},true);
 
   // Hitbox universal para fissuras: qualquer ataque relevante do jogador consegue danificá-las.
   let rid=1;
@@ -15909,7 +15911,7 @@ function killKey37(e){
     r.structures.push(s);try{addRing(p.x,p.y,'#62ff9b',60,4);addParticles(p.x,p.y,'#62ff9b',18,.7)}catch{}game.riftBuild509=null;hideHint();openShop509();
   }
   canvas.addEventListener('click',e=>{if(game?.riftBuild509){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();place509();}},true);
-  window.addEventListener('keydown',e=>{if(!game?.riftBuild509)return;if(e.key.toLowerCase()==='r'&&game.riftBuild509.mode==='build'){e.preventDefault();game.riftBuild509.rot=game.riftBuild509.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();const b=game.riftBuild509;if(b?.mode==='build'&&b.cost)game.gold+=(b.cost||0);game.riftBuild509=null;hideHint();openShop509();}},true);
+  window.addEventListener('keydown',e=>{if(!game?.riftBuild509)return;if(String(e.key||'').toLowerCase()==='r'&&game.riftBuild509.mode==='build'){e.preventDefault();game.riftBuild509.rot=game.riftBuild509.rot==='h'?'v':'h';}if(e.key==='Escape'){e.preventDefault();const b=game.riftBuild509;if(b?.mode==='build'&&b.cost)game.gold+=(b.cost||0);game.riftBuild509=null;hideHint();openShop509();}},true);
   function nextWave509(){if(!isRift())return;const r=game.rift50;overlay.classList.add('hidden');r.shopOpen=false;r.waveDoneShop=false;r.repairWave509=null;r._readyWaveSince509=0;game.running=true;game.wave++;startNextWave();tuneWave509();try{updateHUD?.()}catch{}}
   function tuneWave509(){if(!isRift())return;const r=game.rift50;if(game.waveBoss){game.enemiesToSpawn=1;return;}if(game.wave<=5){game.enemiesToSpawn=Math.max(1,Math.floor(n(game.enemiesToSpawn,1)*.90));}}
   const startPrev509=window.startNextWave||startNextWave;window.startNextWave=function(){const out=startPrev509.apply(this,arguments);try{tuneWave509();}catch{}return out;};if(typeof startNextWave!=='undefined')startNextWave=window.startNextWave;
@@ -16496,7 +16498,7 @@ function killKey37(e){
   window.addEventListener('keydown',function(e){
     const b=activeBuild520();
     if(!b||!isRift())return;
-    if(e.key&&e.key.toLowerCase()==='r'){
+    if(e.key&&String(e.key||'').toLowerCase()==='r'){
       // A rotação principal já é feita pelos handlers do modo de construção ativo (50/505/507/509).
       // Este listener agora só sincroniza aliases depois do handler antigo, evitando duplo-toggle.
       setTimeout(()=>{
@@ -16605,8 +16607,8 @@ function killKey37(e){
   const oldGoldSetter=null;
   // Último reforço de rotação: se nenhum handler antigo tiver mudado o estado, o keyup garante uma rotação perceptível.
   let lastRDown=null;
-  window.addEventListener('keydown',e=>{if(!isRift()||!(e.key&&e.key.toLowerCase()==='r'))return;const b=game.riftBuild509||game.riftBuild508||game.riftBuild507||game.riftBuild505||game.riftBuild50;if(b&&b.mode==='build')lastRDown={b,rot:b.rot,t:performance.now()};},true);
-  window.addEventListener('keyup',e=>{if(!isRift()||!(e.key&&e.key.toLowerCase()==='r')||!lastRDown)return;const b=lastRDown.b;if(b&&b.mode==='build'&&b.rot===lastRDown.rot&&performance.now()-lastRDown.t<900){b.rot=b.rot==='v'?'h':'v';}lastRDown=null;},true);
+  window.addEventListener('keydown',e=>{if(!isRift()||!(e.key&&String(e.key||'').toLowerCase()==='r'))return;const b=game.riftBuild509||game.riftBuild508||game.riftBuild507||game.riftBuild505||game.riftBuild50;if(b&&b.mode==='build')lastRDown={b,rot:b.rot,t:performance.now()};},true);
+  window.addEventListener('keyup',e=>{if(!isRift()||!(e.key&&String(e.key||'').toLowerCase()==='r')||!lastRDown)return;const b=lastRDown.b;if(b&&b.mode==='build'&&b.rot===lastRDown.rot&&performance.now()-lastRDown.t<900){b.rot=b.rot==='v'?'h':'v';}lastRDown=null;},true);
   console.log(PATCH);
 })();
 </script>
@@ -16633,7 +16635,7 @@ function killKey37(e){
   let desiredRot=null;
   let rDown=false;
   window.addEventListener('keydown',function(e){
-    if(!isRift()||!(e.key&&e.key.toLowerCase()==='r'))return;
+    if(!isRift()||!(e.key&&String(e.key||'').toLowerCase()==='r'))return;
     const b=activeBuild();
     if(!b||b.mode!=='build')return;
     e.preventDefault();
@@ -16650,7 +16652,7 @@ function killKey37(e){
     },0);
   },true);
   window.addEventListener('keyup',function(e){
-    if(!isRift()||!(e.key&&e.key.toLowerCase()==='r'))return;
+    if(!isRift()||!(e.key&&String(e.key||'').toLowerCase()==='r'))return;
     const b=activeBuild();
     if(!b||b.mode!=='build')return;
     e.preventDefault();
@@ -31683,380 +31685,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 })();
 
 </script>
-<script defer src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script defer src="multiplayer.js"></script>
-<script>
-/* ────────────────────────────────────────────────────────────────
-CHRONO SHARDS — Save/Load System v2.0 (Clean Implementation)
-- Aparece APENAS na tela de Configurações
-- Botões funcionam SEMPRE (event delegation)
-- Sem loop de MutationObserver
-- Criptografia AES-GCM real
-- Visual wide, acima do botão Voltar
-─────────────────────────────────────────────────────────────── */
-(()=>{
-if(window.__chronoSaveSystem20) return;
-window.__chronoSaveSystem20 = true;
 
-const SAVE_KEYS = [
-  'chrono_v4_meta',
-  'chrono_v4_meta_class_unlocks_v3',
-  'chrono_v4_meta_secret_rift_v1',
-  'chrono_v4_meta_redeemed_codes_v1',
-  'chrono_v4_meta_chrono_augments_620',
-  'chrono_v4_meta_skins_clean_702',
-  'chrono_v4_meta_power_catalog_unlocks_544',
-  'chrono_v4_meta_mauro_shop_clean_702',
-  'chrono_v4_meta_infernal_shop_830',
-  'chrono_v4_meta_doom_mode_v1',
-  'chrono_rift_tutorial_skip_v1',
-  'chrono_doom_tutorial_skip_v1'
-];
-
-// Detecta se estamos na tela de Configurações
-function isSettingsScreen(){
-  const card = document.getElementById('overlayCard');
-  if(!card) return false;
-  const title = card.querySelector('h1')?.textContent || '';
-  return title.includes('CONFIGURAÇÕES');
-}
-
-// Remove card de save se existir
-function removeSaveCard(){
-  const el = document.getElementById('chronoSaveCard20');
-  if(el) el.remove();
-}
-
-// Insere card de save ACIMA do botão Voltar
-function injectSaveCard(){
-  if(!isSettingsScreen()) return;
-
-  // 8.4.4: keep the same node alive. Recreating it on every mutation made
-  // hover states flicker and caused clicks to miss on slower frames.
-  const existingSaveCard=document.getElementById('chronoSaveCard20');
-  if(existingSaveCard) return existingSaveCard;
-
-  const card = document.getElementById('overlayCard');
-  if(!card) return;
-  
-  // Encontra botão Voltar
-  const backBtn = card.querySelector('[id*="cfgBack"], [id*="backCfg"], button:last-of-type');
-  
-  const saveCard = document.createElement('div');
-  saveCard.id = 'chronoSaveCard20';
-  saveCard.style.cssText = `
-    margin-top: 24px;
-    padding: 24px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, rgba(97,218,251,.08), rgba(159,108,255,.06));
-    border: 1px solid rgba(97,218,251,.25);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 0 24px rgba(97,218,251,.05);
-    backdrop-filter: blur(14px);
-  `;
-  
-  saveCard.innerHTML = `
-    <h3 style="
-      font-family: Orbitron, sans-serif;
-      font-size: 15px;
-      letter-spacing: .14em;
-      color: #61dafb;
-      margin: 0 0 14px 0;
-      text-shadow: 0 0 14px rgba(97,218,251,.4);
-      text-align: center;
-    ">💾 GERENCIAR SAVE</h3>
-    <p style="
-      color: #bcd6ff;
-      font-size: 13px;
-      line-height: 1.6;
-      margin: 0 0 18px 0;
-      text-align: center;
-    ">Exporte seu progresso completo ou importe um save anterior.</p>
-    <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;">
-      <button id="chronoSaveBtn20" style="
-        flex: 1;
-        min-width: 150px;
-        max-width: 200px;
-        padding: 14px 20px;
-        border: none;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #61dafb, #4ce0b3);
-        color: #051a10;
-        font: 700 13px Orbitron, sans-serif;
-        letter-spacing: .08em;
-        cursor: pointer;
-        box-shadow: 0 0 24px rgba(97,218,251,.35);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-      " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 0 32px rgba(97,218,251,.5)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 0 24px rgba(97,218,251,.35)'">💾 Salvar Jogo</button>
-      <button id="chronoLoadBtn20" style="
-        flex: 1;
-        min-width: 150px;
-        max-width: 200px;
-        padding: 14px 20px;
-        border: none;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #9f6cff, #c6a0ff);
-        color: #06101d;
-        font: 700 13px Orbitron, sans-serif;
-        letter-spacing: .08em;
-        cursor: pointer;
-        box-shadow: 0 0 24px rgba(159,108,255,.35);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-      " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 0 32px rgba(159,108,255,.5)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 0 24px rgba(159,108,255,.35)'">📂 Carregar Save</button>
-    </div>
-    <div style="display:flex;justify-content:center;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)">
-      <button id="chronoDeleteSaveBtn832" style="min-width:230px;padding:12px 18px;border-radius:12px;background:linear-gradient(135deg,#3b050c,#9f1025,#ff405f);color:#fff;font:900 12px Orbitron,sans-serif;letter-spacing:.08em;border:1px solid rgba(255,92,115,.45);box-shadow:0 0 22px rgba(255,48,79,.18)">🗑 Excluir Save Atual</button>
-    </div>
-  `;
-  
-  // Insere ACIMA do botão Voltar
-  if(backBtn && backBtn.parentElement === card){
-    card.insertBefore(saveCard, backBtn);
-  } else {
-    card.appendChild(saveCard);
-  }
-}
-
-// Criptografia AES-GCM
-async function deriveKey(){
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    enc.encode('ChronoShards_SaveKey_v20'),
-    {name: 'PBKDF2'},
-    false,
-    ['deriveBits', 'deriveKey']
-  );
-  return await crypto.subtle.deriveKey(
-    {
-      name: 'PBKDF2',
-      salt: enc.encode('ChronoShards_Salt_v20'),
-      iterations: 100000,
-      hash: 'SHA-256'
-    },
-    keyMaterial,
-    {name: 'AES-GCM', length: 256},
-    false,
-    ['encrypt', 'decrypt']
-  );
-}
-
-async function encryptData(data){
-  const key = await deriveKey();
-  const enc = new TextEncoder();
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encrypted = await crypto.subtle.encrypt(
-    {name: 'AES-GCM', iv: iv},
-    key,
-    enc.encode(JSON.stringify(data))
-  );
-  return {
-    iv: Array.from(iv),
-    data: Array.from(new Uint8Array(encrypted)),
-    version: '2.0'
-  };
-}
-
-async function decryptData(encryptedObj){
-  const key = await deriveKey();
-  const iv = new Uint8Array(encryptedObj.iv);
-  const data = new Uint8Array(encryptedObj.data);
-  const decrypted = await crypto.subtle.decrypt(
-    {name: 'AES-GCM', iv: iv},
-    key,
-    data
-  );
-  const dec = new TextDecoder();
-  return JSON.parse(dec.decode(decrypted));
-}
-
-// Coleta dados do save
-function collectSaveData(){
-  const saveData = {
-    timestamp: Date.now(),
-    date: new Date().toISOString(),
-    data: {}
-  };
-  for(const key of SAVE_KEYS){
-    try{
-      const value = localStorage.getItem(key);
-      if(value !== null){
-        saveData.data[key] = JSON.parse(value);
-      }
-    }catch(e){
-      console.warn('Erro ao coletar chave:', key, e);
-    }
-  }
-  return saveData;
-}
-
-// Restaura dados do save
-function restoreSaveData(saveData){
-  if(!saveData || !saveData.data){
-    throw new Error('Estrutura de save inválida');
-  }
-  let restored = 0;
-  for(const key of SAVE_KEYS){
-    if(saveData.data[key] !== undefined){
-      try{
-        localStorage.setItem(key, JSON.stringify(saveData.data[key]));
-        restored++;
-      }catch(e){
-        console.warn('Erro ao restaurar chave:', key, e);
-      }
-    }
-  }
-  return restored;
-}
-
-// Salvar jogo
-async function saveGame(){
-  try{
-    const saveData = collectSaveData();
-    const encrypted = await encryptData(saveData);
-    
-    const blob = new Blob([JSON.stringify(encrypted)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    const stamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
-    const filename = `ChronoShards_Save_${stamp}.json`;
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    
-    alert(`✅ Jogo salvo como "${filename}"`);
-  }catch(e){
-    console.error('Erro ao salvar:', e);
-    alert('❌ Erro ao salvar: ' + e.message);
-  }
-}
-
-// Carregar jogo
-async function loadGame(){
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json,application/json';
-  
-  input.onchange = async(e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = async(event) => {
-      try{
-        const encrypted = JSON.parse(event.target.result);
-        const saveData = await decryptData(encrypted);
-        const restored = restoreSaveData(saveData);
-        
-        alert(`✅ Save carregado! ${restored} chaves restauradas. Recarregando...`);
-        
-        setTimeout(() => window.location.reload(), 1500);
-      }catch(err){
-        console.error('Erro ao carregar:', err);
-        alert('❌ Erro ao carregar: ' + err.message);
-      }
-    };
-    reader.readAsText(file);
-  };
-  
-  input.click();
-}
-
-
-// Exclusão total do save com confirmação visual própria.
-function ensureDeleteSaveStyle832(){
-  if(document.getElementById('deleteSaveStyle832'))return;
-  const st=document.createElement('style');st.id='deleteSaveStyle832';st.textContent=`
-    .deleteSaveOverlay832{position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(12px)}
-    .deleteSaveConfirm832{position:relative;width:min(92vw,520px);padding:28px;border-radius:24px;text-align:center;overflow:hidden;background:radial-gradient(circle at 50% 0,rgba(255,48,79,.22),transparent 42%),linear-gradient(150deg,#1b0308,#050103);border:1px solid rgba(255,73,94,.42);box-shadow:0 0 70px rgba(255,0,42,.18),0 30px 90px rgba(0,0,0,.75)}
-    .deleteSaveConfirm832:before{content:'⚠';display:grid;place-items:center;width:76px;height:76px;margin:0 auto 13px;border-radius:50%;font-size:38px;background:rgba(255,48,79,.12);border:1px solid rgba(255,75,100,.38);box-shadow:0 0 28px rgba(255,48,79,.2)}
-    .deleteSaveConfirm832 h2{margin:0 0 8px;color:#fff;font:900 22px Orbitron,sans-serif}.deleteSaveConfirm832 p{margin:0!important;color:#d9bbc2!important;line-height:1.6!important}.deleteSaveWarning832{margin:16px 0;padding:11px;border-radius:13px;background:rgba(255,48,79,.08);border:1px solid rgba(255,48,79,.2);color:#ff9aad;font-weight:700}
-    .deleteSaveActions832{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.deleteSaveActions832 button{padding:13px;border-radius:999px;font:900 11px Orbitron,sans-serif}.deleteSaveYes832{background:linear-gradient(135deg,#8d0019,#ff304f);color:#fff;box-shadow:0 0 24px rgba(255,48,79,.24)}.deleteSaveNo832{background:rgba(255,255,255,.07);color:#e7d9dd;border:1px solid rgba(255,255,255,.14)}
-    @media(max-width:520px){.deleteSaveActions832{grid-template-columns:1fr}}
-  `;document.head.appendChild(st);
-}
-function closeDeleteSave832(){document.getElementById('deleteSaveOverlay832')?.remove()}
-function openDeleteSave832(){
-  ensureDeleteSaveStyle832();closeDeleteSave832();
-  const box=document.createElement('div');box.id='deleteSaveOverlay832';box.className='deleteSaveOverlay832';
-  box.innerHTML=`<div class="deleteSaveConfirm832" role="dialog" aria-modal="true" aria-labelledby="deleteSaveTitle832"><h2 id="deleteSaveTitle832">EXCLUIR SAVE ATUAL?</h2><p>Todo o progresso, moedas, personagens, skins, configurações e registros locais serão apagados. A sessão da conta Supabase será preservada.</p><div class="deleteSaveWarning832">Esta ação não poderá ser desfeita.</div><div class="deleteSaveActions832"><button class="deleteSaveYes832" id="deleteSaveYes832">Quero Apagar</button><button class="deleteSaveNo832" id="deleteSaveNo832">Não</button></div></div>`;
-  document.body.appendChild(box);
-  document.getElementById('deleteSaveNo832').onclick=closeDeleteSave832;
-  document.getElementById('deleteSaveYes832').onclick=()=>{
-    const yes=document.getElementById('deleteSaveYes832');if(yes){yes.disabled=true;yes.textContent='APAGANDO...'}
-    try{
-      const preserved=[];
-      for(let i=0;i<localStorage.length;i++){
-        const k=localStorage.key(i);
-        if(k&&k.startsWith('sb-'))preserved.push([k,localStorage.getItem(k)]);
-      }
-      localStorage.clear();
-      for(const [k,v] of preserved)if(v!==null)localStorage.setItem(k,v);
-    }catch(e){console.error('Erro ao limpar save',e)}
-    setTimeout(()=>window.location.reload(),180);
-  };
-  box.addEventListener('click',e=>{if(e.target===box)closeDeleteSave832()});
-}
-
-// Event delegation - captura cliques nos botões de save
-document.addEventListener('click', e => {
-  const saveBtn = e.target.closest('#chronoSaveBtn20');
-  const loadBtn = e.target.closest('#chronoLoadBtn20');
-  const deleteBtn = e.target.closest('#chronoDeleteSaveBtn832');
-  
-  if(saveBtn){
-    e.preventDefault();
-    e.stopPropagation();
-    saveGame();
-  }
-  
-  if(loadBtn){
-    e.preventDefault();
-    e.stopPropagation();
-    loadGame();
-  }
-  if(deleteBtn){
-    e.preventDefault();
-    e.stopPropagation();
-    openDeleteSave832();
-  }
-}, true);
-
-// MutationObserver com debounce forte - evita loop e flicker
-let observerTimeout = null;
-const observer = new MutationObserver(() => {
-  if(observerTimeout) clearTimeout(observerTimeout);
-  observerTimeout = setTimeout(() => {
-    if(isSettingsScreen()){
-      injectSaveCard();
-    } else {
-      removeSaveCard();
-    }
-  }, 150); // 150ms de debounce para evitar flicker
-});
-
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
-
-// Verificação inicial com delay maior
-setTimeout(() => {
-  if(isSettingsScreen()){
-    injectSaveCard();
-  }
-}, 300);
-
-console.log('Chrono Shards Save/Load System v2.1 carregado');
-})();
-</script>
 
 <style id="reaperSoul744Style">
   #reaperSoulRow744{
@@ -33751,9 +33380,6 @@ console.log('Chrono Shards Save/Load System v2.1 carregado');
       body.doomUi801 #overlayCard.bestiary464,body.doomUi801 #overlayCard.mauroShop702,body.doomUi801 #overlayCard.riftCfg529,body.doomUi801 #overlayCard.awakDetail464,body.doomUi801 #overlayCard.doomTutorial800,body.doomUi801 #overlayCard.doomEnd800{border-color:rgba(255,45,67,.3)!important;background:radial-gradient(circle at 50% 0,rgba(130,0,20,.2),transparent 34%),linear-gradient(150deg,rgba(13,2,6,.99),rgba(5,1,4,.99))!important}
       body.doomUi801 #overlayCard .mauroHero702,body.doomUi801 #overlayCard .mauroSpeech702,body.doomUi801 #overlayCard .mauroItem702,body.doomUi801 #overlayCard .permGroup702,body.doomUi801 #overlayCard .permBtn702{background:linear-gradient(145deg,rgba(41,4,10,.88),rgba(10,2,5,.94))!important;border-color:rgba(255,68,82,.22)!important;color:#f6dde2!important}body.doomUi801 #overlayCard .mauroBuy702{background:linear-gradient(135deg,#760011,#df1b38)!important;color:#fff1f3!important}
       body.doomUi801 #overlayCard .bookTickets529,body.doomUi801 #overlayCard #bookSideNav531{filter:hue-rotate(122deg) saturate(1.45) brightness(.8)}
-      body.doomUi801 #chronoSaveCard20{background:linear-gradient(135deg,rgba(80,0,14,.22),rgba(20,2,7,.88))!important;border-color:rgba(255,50,73,.28)!important;box-shadow:0 8px 32px rgba(0,0,0,.46),inset 0 0 24px rgba(255,20,50,.045)!important}
-      body.doomUi801 #chronoSaveCard20 h3{color:#ff5568!important;text-shadow:0 0 14px rgba(255,40,65,.35)!important}body.doomUi801 #chronoSaveCard20 p{color:#d9aeb6!important}
-      body.doomUi801 #chronoSaveBtn20,body.doomUi801 #chronoLoadBtn20{background:linear-gradient(135deg,#770011,#e31b39)!important;color:#fff1f3!important;box-shadow:0 0 22px rgba(255,27,57,.2)!important}
       body.doomUi801 .riftModeChoice50 .riftModeCard50{background:linear-gradient(145deg,rgba(34,3,9,.96),rgba(7,2,5,.98))!important;border-color:rgba(255,54,76,.2)!important}body.doomUi801 .riftModeChoice50 .riftModeCard50:hover{border-color:rgba(255,90,104,.55)!important;box-shadow:0 0 30px rgba(255,20,52,.15)!important}
       body.doomUi801 .riftTutorial50,body.doomUi801 .riftEnd509,body.doomUi801 .riftEnd518{background:radial-gradient(circle at 50% 0,rgba(125,0,18,.2),transparent 35%),linear-gradient(150deg,rgba(13,2,6,.99),rgba(5,1,4,.99))!important;border-color:rgba(255,45,67,.28)!important}
       body.doomUi801 .left-panel,body.doomUi801 .right-panel{filter:saturate(.9)}
@@ -36773,7 +36399,6 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   /* Stable cards: legacy observers can see the sentinel but it never participates in layout. */
   .nefalemSkinSentinel844{display:none!important;width:0!important;height:0!important;padding:0!important;margin:0!important;pointer-events:none!important}
   .nefalemCard841{will-change:auto!important}.nefalemCard841:hover{transform:translateY(-3px)!important}
-  #chronoSaveCard20{transform:none!important}
 
   /* First information/lore presentation, rebuilt with current content. */
   .nefalemInfoClassic844{width:min(96vw,1180px)!important;text-align:left!important;background:radial-gradient(circle at 16% 0%,rgba(255,48,70,.17),transparent 31%),radial-gradient(circle at 88% 10%,rgba(126,108,255,.09),transparent 27%),linear-gradient(145deg,#170209,#050205 62%,#10020a)!important;border-color:rgba(255,71,82,.34)!important}
@@ -37136,361 +36761,1022 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 }
 @media(prefers-reduced-motion:reduce){#overlayCard .nefalemRitual849:before,#overlayCard .nefSealGlyph849,#overlayCard .nefChain849,#overlayCard .nefEmbers849 b{animation:none!important}}
 </style>
-<!-- Chrono Shards 8.5.0 — Supabase cloud foundation -->
+<!-- Chrono Shards 8.5.12 — login obrigatório no início e boot protegido -->
 <style id="chronoCloudStyle850">
-  #chronoCloudCard850{margin:16px 0;padding:18px;border-radius:20px;background:radial-gradient(circle at 10% 0,rgba(97,218,251,.14),transparent 36%),linear-gradient(145deg,rgba(7,17,34,.98),rgba(4,7,16,.98));border:1px solid rgba(97,218,251,.28);box-shadow:inset 0 0 30px rgba(97,218,251,.035),0 16px 45px rgba(0,0,0,.28)}
-  #chronoCloudCard850 .cloudHead850{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-  #chronoCloudCard850 h3{margin:0;color:#eefbff;font:900 15px Orbitron,sans-serif;letter-spacing:.07em}
-  #chronoCloudCard850 .cloudBadge850{padding:7px 11px;border-radius:999px;color:#b8cbea;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font:800 10px Orbitron,sans-serif}
-  #chronoCloudCard850 .cloudBadge850.ok{color:#9dffcf;border-color:rgba(76,224,179,.4);background:rgba(76,224,179,.08)}
-  #chronoCloudCard850 .cloudBadge850.warn{color:#ffe38c;border-color:rgba(255,209,102,.38);background:rgba(255,209,102,.08)}
-  #chronoCloudCard850 .cloudBadge850.err{color:#ff9aad;border-color:rgba(255,48,79,.38);background:rgba(255,48,79,.08)}
-  #chronoCloudCard850 p{margin:10px 0!important;color:#a9bdd8!important;line-height:1.55!important;text-align:left!important}
-  #chronoCloudCard850 .cloudMeta850{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
-  #chronoCloudCard850 .cloudMeta850 div{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);min-width:0}
-  #chronoCloudCard850 .cloudMeta850 small{display:block;color:#7188a8;font:700 9px Orbitron,sans-serif;letter-spacing:.07em}
-  #chronoCloudCard850 .cloudMeta850 b{display:block;margin-top:5px;color:#e9f7ff;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  #chronoCloudCard850 .cloudActions850{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}
-  #chronoCloudCard850 button{padding:11px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.13);background:linear-gradient(135deg,rgba(97,218,251,.18),rgba(159,108,255,.16));color:#eef9ff;font:800 10px Orbitron,sans-serif;letter-spacing:.03em}
-  #chronoCloudCard850 button:hover:not(:disabled){transform:translateY(-1px);border-color:rgba(97,218,251,.45)}
-  #chronoCloudCard850 button:disabled{opacity:.4;cursor:not-allowed}
-  #chronoCloudCard850 .cloudNote850{font-size:11px;color:#7f94b0;margin-top:11px}
-  @media(max-width:700px){#chronoCloudCard850 .cloudActions850,#chronoCloudCard850 .cloudMeta850{grid-template-columns:1fr}}
+  #chronoCloudCard850{margin:18px 0;display:block}
+  #chronoCloudCard850 .chronoAccountGuest858{display:block;width:100%;padding:15px 18px;border-radius:15px;border:1px solid rgba(97,218,251,.38);background:linear-gradient(135deg,rgba(97,218,251,.22),rgba(159,108,255,.22));color:#f3fbff;font:900 12px Orbitron,sans-serif;letter-spacing:.08em;box-shadow:0 12px 35px rgba(0,0,0,.25)}
+  #chronoCloudCard850 .chronoAccountGuest858:hover{transform:translateY(-1px);border-color:rgba(97,218,251,.68)}
+  #chronoCloudCard850 .chronoAccountPermanent858{padding:17px;border-radius:18px;background:radial-gradient(circle at 10% 0,rgba(97,218,251,.13),transparent 38%),linear-gradient(145deg,rgba(7,17,34,.98),rgba(4,7,16,.98));border:1px solid rgba(97,218,251,.25);box-shadow:0 15px 42px rgba(0,0,0,.28)}
+  #chronoCloudCard850 .chronoAccountHead858{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  #chronoCloudCard850 .chronoAccountHead858 strong{color:#eefbff;font:900 13px Orbitron,sans-serif;letter-spacing:.08em}
+  #chronoCloudCard850 .chronoAccountBadge858{padding:6px 10px;border-radius:999px;color:#9dffcf;background:rgba(76,224,179,.08);border:1px solid rgba(76,224,179,.35);font:800 9px Orbitron,sans-serif}
+  #chronoCloudCard850 .chronoAccountName858{margin-top:12px;padding:12px 13px;border-radius:13px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+  #chronoCloudCard850 .chronoAccountName858 small{display:block;color:#7188a8;font:700 9px Orbitron,sans-serif;letter-spacing:.07em}
+  #chronoCloudCard850 .chronoAccountName858 b{display:block;margin-top:5px;color:#fff;font-size:14px;overflow-wrap:anywhere}
+  #chronoCloudCard850 .chronoAccountActions858{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:11px}
+  #chronoCloudCard850 .chronoAccountActions858 button{padding:11px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.13);color:#eef9ff;font:800 10px Orbitron,sans-serif;letter-spacing:.03em}
+  #chronoManageAccount858{background:linear-gradient(135deg,rgba(97,218,251,.18),rgba(159,108,255,.16))}
+  #chronoLogout858{background:rgba(255,73,94,.09);border-color:rgba(255,73,94,.25)!important;color:#ffb1bf!important}
+  #chronoEconomy852{display:none!important}
+
+  .chronoStartupGate8512{position:fixed;inset:0;z-index:2147483400;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 50% 18%,rgba(77,43,143,.3),transparent 42%),#03050b;color:#dcecff;font-family:Orbitron,sans-serif;text-align:center}
+  .chronoStartupGate8512[hidden]{display:none!important}.chronoStartupInner8512{display:grid;justify-items:center;gap:15px}.chronoStartupSigil8512{width:64px;height:64px;display:grid;place-items:center;border-radius:19px;border:1px solid rgba(130,185,255,.28);background:linear-gradient(145deg,rgba(97,218,251,.16),rgba(159,108,255,.2));font-size:29px;box-shadow:0 0 34px rgba(97,218,251,.11);animation:chronoStartupPulse8512 1.15s ease-in-out infinite alternate}.chronoStartupText8512{font-size:12px;letter-spacing:.11em;color:#a9bdd7}.chronoStartupDots8512{display:flex;gap:6px}.chronoStartupDots8512 i{width:6px;height:6px;border-radius:50%;background:#7dddf7;animation:chronoStartupDot8512 .9s ease-in-out infinite}.chronoStartupDots8512 i:nth-child(2){animation-delay:.14s}.chronoStartupDots8512 i:nth-child(3){animation-delay:.28s}@keyframes chronoStartupPulse8512{to{transform:translateY(-3px);filter:brightness(1.16)}}@keyframes chronoStartupDot8512{0%,100%{opacity:.22;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+  html.chrono-auth-locked8512,html.chrono-auth-locked8512 body{overflow:hidden!important}
+
+  .chronoAuthOverlay858{position:fixed;inset:0;z-index:2147483500;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 15%,rgba(77,43,143,.34),transparent 42%),rgba(0,0,0,.84);backdrop-filter:blur(15px)}
+  .chronoAuthDialog858{position:relative;width:min(94vw,540px);max-height:94vh;overflow:auto;padding:24px;border-radius:25px;background:radial-gradient(circle at 15% 0,rgba(97,218,251,.12),transparent 34%),linear-gradient(150deg,#0b1325,#050710 65%,#090410);border:1px solid rgba(135,176,255,.27);box-shadow:0 30px 100px rgba(0,0,0,.76),0 0 45px rgba(93,71,180,.16)}
+  .chronoAuthClose858{position:absolute;right:14px;top:12px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#dce9ff;font-size:18px}
+  .chronoAuthBrand858{text-align:center;margin-bottom:17px}
+  .chronoAuthBrand858 .chronoAuthSigil858{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 10px;border-radius:18px;background:linear-gradient(145deg,rgba(97,218,251,.18),rgba(159,108,255,.2));border:1px solid rgba(145,188,255,.28);font-size:28px;box-shadow:0 0 28px rgba(97,218,251,.12)}
+  .chronoAuthBrand858 h2{margin:0;color:#f4f9ff;font:900 21px Orbitron,sans-serif;letter-spacing:.08em}
+  .chronoAuthBrand858 p{margin:8px 0 0!important;color:#8fa6c5!important;font-size:12px!important;line-height:1.5!important;text-align:center!important}
+  .chronoAuthTabs858{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;padding:5px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+  .chronoAuthTabs858 button{padding:10px;border-radius:10px;background:transparent;color:#7890b0;border:0;font:800 10px Orbitron,sans-serif}
+  .chronoAuthTabs858 button.active{background:linear-gradient(135deg,rgba(97,218,251,.17),rgba(159,108,255,.17));color:#f1f9ff}
+  .chronoAuthForm858{display:grid;gap:12px}
+  .chronoAuthField858{display:grid;gap:6px}
+  .chronoAuthField858 label{color:#b9cbe3;font:700 10px Orbitron,sans-serif;letter-spacing:.04em}
+  .chronoAuthField858 input{width:100%;box-sizing:border-box;padding:12px 13px;border-radius:12px;border:1px solid rgba(142,171,218,.2);background:rgba(2,7,17,.82);color:#f3f8ff;font-size:14px;outline:none}
+  .chronoAuthField858 input:focus{border-color:rgba(97,218,251,.65);box-shadow:0 0 0 3px rgba(97,218,251,.08)}
+  .chronoAuthField858.invalid input{border-color:rgba(255,91,115,.72);box-shadow:0 0 0 3px rgba(255,73,94,.08)}
+  .chronoAuthFieldError859{display:none;color:#ff9caf;font-size:10px;line-height:1.35}.chronoAuthField858.invalid .chronoAuthFieldError859{display:block}
+  .chronoPasswordWrap859{position:relative}.chronoPasswordWrap859 input{padding-right:48px}
+  .chronoPasswordToggle859{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:38px;height:34px;border:0;border-radius:9px;background:rgba(255,255,255,.055);color:#b8cbe5;font-size:16px;cursor:pointer}
+  .chronoPasswordToggle859:hover{background:rgba(97,218,251,.12);color:#effbff}.chronoPasswordToggle859:focus-visible{outline:2px solid rgba(97,218,251,.8);outline-offset:1px}
+  .chronoPasswordStrength859{height:5px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}.chronoPasswordStrength859 span{display:block;height:100%;width:0;background:#ff6b7b;transition:width .18s ease,background .18s ease}
+  .chronoPasswordStrengthText859{color:#7289a9;font-size:10px}
+  .chronoCapsLock859{display:none;color:#ffcf75;font-size:10px;line-height:1.3}.chronoCapsLock859.show{display:block}
+  .chronoAuthHint858{margin:-3px 0 0;color:#7289a9;font-size:11px;line-height:1.45}
+  .chronoAuthPrimary858,.chronoAuthGuest858{width:100%;padding:13px;border-radius:13px;font:900 11px Orbitron,sans-serif;letter-spacing:.07em}
+  .chronoAuthPrimary858{border:1px solid rgba(97,218,251,.35);background:linear-gradient(135deg,#368eaf,#6a4ec2);color:#fff;box-shadow:0 12px 30px rgba(40,82,160,.2)}
+  .chronoAuthGuest858{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.055);color:#cbd8ea}
+  .chronoAuthPrimary858:disabled,.chronoAuthGuest858:disabled{opacity:.48;cursor:wait}
+  .chronoAuthLinkRow858{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:12px}
+  .chronoAuthLink858{border:0;background:transparent;color:#89cce4;font-size:11px;text-decoration:underline;text-underline-offset:3px}
+  .chronoAuthMessage858{display:none;padding:10px 12px;border-radius:11px;background:rgba(255,73,94,.08);border:1px solid rgba(255,73,94,.2);color:#ffadb9;font-size:11px;line-height:1.45}
+  .chronoAuthMessage858.show{display:block}.chronoAuthMessage858.ok{background:rgba(76,224,179,.07);border-color:rgba(76,224,179,.24);color:#9dffcf}
+  .chronoAuthDivider858{display:flex;align-items:center;gap:10px;margin:15px 0;color:#596d89;font-size:9px}.chronoAuthDivider858:before,.chronoAuthDivider858:after{content:'';height:1px;flex:1;background:rgba(255,255,255,.08)}
+  .chronoRecoveryCard858{padding:13px;border-radius:13px;background:rgba(255,201,74,.06);border:1px solid rgba(255,201,74,.2);color:#e7d39e;font-size:11px;line-height:1.5}
+
+  .chronoKeyOverlay858{position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.86);backdrop-filter:blur(14px)}
+  .chronoKeyDialog858{width:min(92vw,520px);padding:25px;border-radius:24px;text-align:center;background:radial-gradient(circle at 50% 0,rgba(255,196,73,.14),transparent 42%),linear-gradient(150deg,#15100a,#08080e);border:1px solid rgba(255,204,104,.28);box-shadow:0 28px 90px rgba(0,0,0,.72)}
+  .chronoKeyDialog858 h2{margin:0;color:#fff0bd;font:900 19px Orbitron,sans-serif}.chronoKeyDialog858 p{color:#b9ad91!important;line-height:1.55!important;text-align:center!important}
+  .chronoKeyValue858{user-select:all;margin:16px 0;padding:15px 10px;border-radius:14px;background:#050609;border:1px dashed rgba(255,215,128,.48);color:#ffe59b;font:900 16px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.08em;overflow-wrap:anywhere}
+  .chronoKeyActions858{display:grid;grid-template-columns:1fr 1fr;gap:10px}.chronoKeyActions858 button{padding:12px;border-radius:12px;font:900 10px Orbitron,sans-serif}.chronoKeyCopy858{background:linear-gradient(135deg,#a87522,#e0b04a);color:#130d03}.chronoKeyDone858{background:rgba(255,255,255,.07);color:#e7e1d6;border:1px solid rgba(255,255,255,.13)}
+  @media(max-width:600px){#chronoCloudCard850 .chronoAccountActions858,.chronoKeyActions858{grid-template-columns:1fr}.chronoAuthDialog858{padding:21px 17px}.chronoAuthBrand858 h2{font-size:18px}}
 </style>
+
 <script id="chronoCloudClient850">
 (()=>{
-  if(window.__chronoCloudClient850)return;
+  if(window.__chronoCloudClient8512)return;
+  window.__chronoCloudClient8512=true;
+  window.__chronoCloudClient8511=true;
+  window.__chronoCloudClient8510=true;
+  window.__chronoCloudClient858=true;
   window.__chronoCloudClient850=true;
 
   const CONFIG=Object.freeze({
     url:'https://favrbugywlamhitktocy.supabase.co',
     publishableKey:'sb_publishable_6isbwgyY072T1_o0eirr_w_HjyPZ_oc',
-    functionName:'game-api'
+    functionName:'game-api',
+    internalEmailDomain:'chrono-shards.invalid'
   });
   const SAVE_KEYS=[
     'chrono_v4_meta','chrono_v4_meta_class_unlocks_v3','chrono_v4_meta_secret_rift_v1',
     'chrono_v4_meta_redeemed_codes_v1','chrono_v4_meta_chrono_augments_620',
     'chrono_v4_meta_skins_clean_702','chrono_v4_meta_power_catalog_unlocks_544',
     'chrono_v4_meta_mauro_shop_clean_702','chrono_v4_meta_infernal_shop_830',
-    'chrono_v4_meta_doom_mode_v1','chrono_rift_tutorial_skip_v1','chrono_doom_tutorial_skip_v1'
+    'chrono_v4_meta_doom_mode_v1','chrono_tutorial_modules_851','chrono_rift_tutorial_skip_v1','chrono_doom_tutorial_skip_v1'
   ];
-  const runtime={client:null,session:null,state:null,status:'idle',message:'Aguardando conexão',lastError:null,bootPromise:null,sdkPromise:null};
+  const AUTH_MARKER_858='chrono_cloud_last_user_858';
+  const ACCOUNT_CACHE_PREFIX_858='chrono_cloud_account_cache_858:';
+  const AUTO_SYNC_MARKER_PREFIX_858='chrono_cloud_auto_sync_858:';
+  const MAIN_SAVE_854='chrono_v4_meta';
+  const PENDING_RUN_854='chrono_cloud_pending_run_854';
+  const PENDING_RECOVERY_KEY_859='chrono_pending_recovery_key_859';
+  const AUTH_STORAGE_KEY_8510='sb-favrbugywlamhitktocy-auth-token';
+  const AUTH_STORAGE_PREFIX_8511='sb-favrbugywlamhitktocy-';
+  const TRACKED_TYPES_855=['chaser','swarmer','strafer','tank','bomber','sentinel','vomiter','pukeling'];
+  const runtime={client:null,session:null,state:null,profile:null,account:null,status:'idle',message:'',lastError:null,bootPromise:null,sdkPromise:null,authSubscription:null};
   const listeners=new Set();
+  const runTracker854={
+    active:false,sessionId:'',baseRelics:0,baseChrono:0,maxRelics:0,maxChrono:0,baseStats:null,suppress:0,
+    telemetryReady:false,eventKills:0,eventBossKills:0,eventEliteKills:0,eventSkillsUsed:0,eventTypeKills:{},seenDeaths:new WeakSet()
+  };
+  let authModal858=null,authRequired858=false,authMode858='login',authBusy858=false,keyModal858=null,startupGate8512=null,settingsTimer858=0,accountCacheTimer858=0;
+  let signedOutCleanup8511=false,explicitLogout8511=false;
+  const authDraft859={login:{username:'',password:''},register:{username:'',email:'',password:'',confirmPassword:''},recover:{username:'',recoveryKey:'',newPassword:'',confirmPassword:''},repair:{password:'',confirmPassword:''},manage:{currentPassword:'',newPassword:'',confirmPassword:''}};
+  let authFieldError859={field:'',message:''};
+  let cloudSaveTimer858=0,cloudSaveInFlight858=null,cloudSavePending858=false,lastCloudSaveAt858=0,lastCloudSnapshot858='';
   const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
-
-  function emit(){
-    const detail={...runtime,client:undefined,session:runtime.session?{user:{id:runtime.session.user?.id}}:null};
-    listeners.forEach(fn=>{try{fn(detail)}catch(e){console.warn('Chrono Cloud listener',e)}});
-    try{window.dispatchEvent(new CustomEvent('chrono-cloud-state',{detail}))}catch{}
-    refreshCloudCard850();
+  const escapeHTML858=value=>String(value??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  const parseJSON854=(raw,fallback={})=>{try{const value=JSON.parse(raw||'null');return value??fallback}catch{return fallback}};
+  class ChronoFormError859 extends Error{constructor(message,field='',code='FORM_ERROR',status=400){super(message);this.name='ChronoFormError859';this.field=field;this.code=code;this.status=status}}
+  const formError859=(message,field='',code='FORM_ERROR')=>{throw new ChronoFormError859(message,field,code)};
+  const localMeta855=()=>parseJSON854(localStorage.getItem(MAIN_SAVE_854),{});
+  const localWallet854=()=>{const m=localMeta855();return{relics:n(m.relicShards),chrono:n(m.chronoFragments)}};
+  const normalizeUsername858=value=>String(value??'').normalize('NFKC').trim().toLowerCase();
+  const internalEmail858=username=>`${normalizeUsername858(username)}@${CONFIG.internalEmailDomain}`;
+  const isAnonymous858=(session=runtime.session)=>!!session?.user?.is_anonymous;
+  const hasLocalSave858=()=>SAVE_KEYS.some(key=>localStorage.getItem(key)!==null);
+  const hasStoredAuth8512=()=>{try{return storageKeys8511(localStorage).some(isSupabaseAuthKey8511)}catch{return false}};
+  const hasPermanentAccount8512=()=>!!(runtime.session&&runtime.profile&&!isAnonymous858()&&!runtime.account?.needsRepair);
+  function setGameAuthGate8512(locked=true){
+    document.documentElement.classList.toggle('chrono-auth-locked8512',!!locked);
+    if(locked)document.documentElement.classList.remove('chrono-latest-ready849');
   }
-  function setStatus(status,message,error=null){runtime.status=status;runtime.message=message;runtime.lastError=error;emit()}
+  function showStartupGate8512(message='Carregando...'){
+    setGameAuthGate8512(true);
+    if(!document.body)return;
+    if(!startupGate8512){
+      startupGate8512=document.createElement('div');startupGate8512.className='chronoStartupGate8512';startupGate8512.id='chronoStartupGate8512';
+      startupGate8512.innerHTML='<div class="chronoStartupInner8512"><div class="chronoStartupSigil8512">◈</div><div class="chronoStartupText8512"></div><div class="chronoStartupDots8512" aria-hidden="true"><i></i><i></i><i></i></div></div>';
+      document.body.appendChild(startupGate8512);
+    }
+    startupGate8512.hidden=false;
+    const text=startupGate8512.querySelector('.chronoStartupText8512');if(text)text.textContent=String(message||'Carregando...');
+  }
+  function hideStartupGate8512(){if(startupGate8512)startupGate8512.hidden=true}
+  function releaseGameAuthGate8512(){
+    if(!hasPermanentAccount8512())return false;
+    hideStartupGate8512();setGameAuthGate8512(false);
+    try{window.dispatchEvent(new CustomEvent('chrono-account-ready',{detail:{userId:runtime.session?.user?.id||'',username:runtime.profile?.username||''}}))}catch{}
+    return true;
+  }
+
+  function localMissionStats855(){
+    const stats=localMeta855()?.stats||{};
+    const typeKills=stats.typeKills&&typeof stats.typeKills==='object'?stats.typeKills:{};
+    const types={};for(const key of TRACKED_TYPES_855)types[key]=Math.max(0,Math.trunc(n(typeKills[key])));
+    return{bossKills:Math.max(0,Math.trunc(n(stats.bossKills))),eliteKills:Math.max(0,Math.trunc(n(stats.eliteKills))),skillsUsed:Math.max(0,Math.trunc(n(stats.skillsUsed))),typeKills:types};
+  }
+  function resetRunTelemetry8510(){
+    runTracker854.telemetryReady=true;
+    runTracker854.eventKills=0;runTracker854.eventBossKills=0;runTracker854.eventEliteKills=0;runTracker854.eventSkillsUsed=0;
+    runTracker854.eventTypeKills={};runTracker854.seenDeaths=new WeakSet();
+  }
+  function cleanTypeKills8510(source,totalKills){
+    const out={},total=Math.max(0,Math.trunc(n(totalKills)));let remaining=total;
+    for(const key of TRACKED_TYPES_855){
+      if(remaining<=0)break;
+      const amount=Math.min(remaining,Math.max(0,Math.trunc(n(source?.[key]))));
+      if(amount>0){out[key]=amount;remaining-=amount}
+    }
+    return out;
+  }
+  function classifyEnemyType8510(enemy){
+    const raw=String(enemy?.type||enemy?.bossType||enemy?.kind||'').trim();
+    if(TRACKED_TYPES_855.includes(raw))return raw;
+    if(raw==='pukelings'||raw==='pukeling')return'pukeling';
+    return'';
+  }
+  const storageSetBefore854=Storage.prototype.setItem;
+  const storageRemoveBefore858=Storage.prototype.removeItem;
+  const storageClearBefore8511=Storage.prototype.clear;
+  Storage.prototype.setItem=function(key,value){
+    if(this===localStorage&&String(key)===MAIN_SAVE_854&&runTracker854.active&&!runTracker854.suppress){
+      const next=parseJSON854(value,{});
+      runTracker854.maxRelics=Math.max(runTracker854.maxRelics,n(next.relicShards));
+      runTracker854.maxChrono=Math.max(runTracker854.maxChrono,n(next.chronoFragments));
+    }
+    const result=storageSetBefore854.call(this,key,value);
+    if(this===localStorage&&SAVE_KEYS.includes(String(key))&&!runTracker854.suppress)scheduleCloudSave858()
+    return result;
+  };
+  Storage.prototype.removeItem=function(key){
+    const result=storageRemoveBefore858.call(this,key);
+    if(this===localStorage&&SAVE_KEYS.includes(String(key))&&!runTracker854.suppress)scheduleCloudSave858()
+    return result;
+  };
+  function primeRunTracking855(){
+    if(runTracker854.active)return;
+    const local=localWallet854();
+    runTracker854.active=true;runTracker854.sessionId='__pending__';
+    runTracker854.baseRelics=local.relics;runTracker854.baseChrono=local.chrono;
+    runTracker854.maxRelics=local.relics;runTracker854.maxChrono=local.chrono;
+    runTracker854.baseStats=localMissionStats855();resetRunTelemetry8510();
+  }
+  function beginRunTracking854(sessionId,state){
+    const local=localWallet854(),pending=runTracker854.active&&runTracker854.sessionId==='__pending__';
+    const baseRelics=n(state?.relic_shards,local.relics),baseChrono=n(state?.chrono_fragments,local.chrono);
+    const pendingStats=pending?runTracker854.baseStats:null,pendingMaxRelics=runTracker854.maxRelics,pendingMaxChrono=runTracker854.maxChrono;
+    const pendingTelemetry=pending?{kills:runTracker854.eventKills,boss:runTracker854.eventBossKills,elite:runTracker854.eventEliteKills,skills:runTracker854.eventSkillsUsed,types:{...runTracker854.eventTypeKills},seen:runTracker854.seenDeaths}:null;
+    runTracker854.active=true;runTracker854.sessionId=String(sessionId||'');
+    runTracker854.baseRelics=baseRelics;runTracker854.baseChrono=baseChrono;
+    runTracker854.maxRelics=pending?Math.max(baseRelics,pendingMaxRelics,local.relics):baseRelics;
+    runTracker854.maxChrono=pending?Math.max(baseChrono,pendingMaxChrono,local.chrono):baseChrono;
+    runTracker854.baseStats=pendingStats||localMissionStats855();
+    if(pendingTelemetry){runTracker854.telemetryReady=true;runTracker854.eventKills=pendingTelemetry.kills;runTracker854.eventBossKills=pendingTelemetry.boss;runTracker854.eventEliteKills=pendingTelemetry.elite;runTracker854.eventSkillsUsed=pendingTelemetry.skills;runTracker854.eventTypeKills=pendingTelemetry.types;runTracker854.seenDeaths=pendingTelemetry.seen}else resetRunTelemetry8510();
+  }
+  function runDelta854(sessionId){
+    const empty={kills:0,relicDelta:0,chronoDelta:0,bossKills:0,eliteKills:0,skillsUsed:0,typeKills:{}};
+    if(!runTracker854.active||runTracker854.sessionId!==String(sessionId||''))return empty;
+    const base=runTracker854.baseStats||empty,current=localMissionStats855(),legacyTypes={};
+    for(const key of TRACKED_TYPES_855){const amount=Math.max(0,Math.trunc(n(current.typeKills?.[key])-n(base.typeKills?.[key])));if(amount>0)legacyTypes[key]=amount}
+    const eventKills=Math.max(0,Math.trunc(n(runTracker854.eventKills)));
+    const gameKills=Math.max(0,Math.trunc(n(window.game?.kills)));
+    const kills=Math.max(eventKills,gameKills);
+    const types=runTracker854.telemetryReady?runTracker854.eventTypeKills:legacyTypes;
+    return{
+      kills,
+      relicDelta:Math.max(0,Math.trunc(runTracker854.maxRelics-runTracker854.baseRelics)),
+      chronoDelta:Math.max(0,Math.trunc(runTracker854.maxChrono-runTracker854.baseChrono)),
+      bossKills:Math.min(kills,runTracker854.telemetryReady?Math.max(0,Math.trunc(n(runTracker854.eventBossKills))):Math.max(0,Math.trunc(n(current.bossKills)-n(base.bossKills)))),
+      eliteKills:Math.min(kills,runTracker854.telemetryReady?Math.max(0,Math.trunc(n(runTracker854.eventEliteKills))):Math.max(0,Math.trunc(n(current.eliteKills)-n(base.eliteKills)))),
+      skillsUsed:runTracker854.telemetryReady?Math.max(0,Math.trunc(n(runTracker854.eventSkillsUsed))):Math.max(0,Math.trunc(n(current.skillsUsed)-n(base.skillsUsed))),
+      typeKills:cleanTypeKills8510(types,kills)
+    };
+  }
+  function endRunTracking854(){runTracker854.active=false;runTracker854.sessionId='';runTracker854.baseStats=null;resetRunTelemetry8510()}
+
+  function publicRuntime858(){
+    return{...runtime,client:undefined,session:runtime.session?{user:{id:runtime.session.user?.id,is_anonymous:!!runtime.session.user?.is_anonymous}}:null};
+  }
+  function emit(){
+    const detail=publicRuntime858();
+    listeners.forEach(fn=>{try{fn(detail)}catch(error){console.warn('Chrono Cloud listener',error)}});
+    try{window.dispatchEvent(new CustomEvent('chrono-cloud-state',{detail}))}catch{}
+    refreshAccountCard858();
+  }
+  function setStatus(status,message='',error=null){runtime.status=status;runtime.message=message;runtime.lastError=error;emit()}
   function subscribe(fn){if(typeof fn!=='function')return()=>{};listeners.add(fn);return()=>listeners.delete(fn)}
 
   function collectLocalSnapshot(){
     const snapshot={};
-    for(const key of SAVE_KEYS){
-      const raw=localStorage.getItem(key);
-      if(raw===null)continue;
-      try{snapshot[key]=JSON.parse(raw)}catch{snapshot[key]=raw}
-    }
+    for(const key of SAVE_KEYS){const raw=localStorage.getItem(key);if(raw===null)continue;try{snapshot[key]=JSON.parse(raw)}catch{snapshot[key]=raw}}
+    if(!snapshot.chrono_v4_meta)snapshot.chrono_v4_meta={};
     return snapshot;
   }
+  const PROTECTED_CLASSES_858=new Set(['assault','sniper','engineer','mage','ronin','alchemist','reaper','colonel','chronoHero','shadowChild','moonSlayer','bomber','archer','ricocheteador','stellarEmperor']);
+  const PROTECTED_META_KEYS_858=['allUnlocked','allInUnlocked','nefalemPurchased830','riftModeUnlocked525','riftModeUnlocked','doomModeUnlocked810','doomModeUnlocked','unlockedMoonSlayer','moonMissionClaimed','unlockedShadowChild','shadowChildUnlocked','stellarEmperorRevealed','stellarEmperorSecretUnlocked'];
+  const clone858=value=>{try{return JSON.parse(JSON.stringify(value??{}))}catch{return{}}};
+  function snapshotFromState850(state,{preferLocal=true}={}){
+    const official=state?.save_data&&typeof state.save_data==='object'?clone858(state.save_data):{};
+    const client=state?.client_save_data&&typeof state.client_save_data==='object'?clone858(state.client_save_data):{};
+    const local=preferLocal&&hasLocalSave858()?collectLocalSnapshot():{};
+    const source=Object.keys(local).length?clone858(local):Object.keys(client).length?clone858(client):clone858(official);
+    for(const [key,value] of Object.entries(official))if(!Object.prototype.hasOwnProperty.call(source,key))source[key]=clone858(value);
 
-  function snapshotFromState850(state){
-    const source=state?.save_data&&typeof state.save_data==='object'
-      ?JSON.parse(JSON.stringify(state.save_data))
-      :{};
-    const meta=source.chrono_v4_meta&&typeof source.chrono_v4_meta==='object'
-      ?source.chrono_v4_meta
-      :{};
-    meta.relicShards=n(state?.relic_shards,meta.relicShards||0);
-    meta.chronoFragments=n(state?.chrono_fragments,meta.chronoFragments||0);
-    meta.awakeningKeys=n(state?.awakening_keys,meta.awakeningKeys||0);
-    meta.sinnerTears830=n(state?.sinner_tears,meta.sinnerTears830||meta.doomFragments||0);
+    const meta=source.chrono_v4_meta&&typeof source.chrono_v4_meta==='object'?source.chrono_v4_meta:{};
+    const officialMeta=official.chrono_v4_meta&&typeof official.chrono_v4_meta==='object'?official.chrono_v4_meta:{};
+    for(const key of PROTECTED_META_KEYS_858){
+      if(officialMeta[key]===true)meta[key]=true;
+    }
+    meta.relicShards=n(state?.relic_shards,officialMeta.relicShards||0);
+    meta.chronoFragments=n(state?.chrono_fragments,officialMeta.chronoFragments||0);
+    meta.highScore=n(state?.high_score,officialMeta.highScore||0);
+    // Chaves/Lágrimas ainda têm fontes locais não migradas. Usar o maior valor
+    // evita apagar recompensas legítimas até esses sistemas virarem autoritativos.
+    meta.awakeningKeys=Math.max(n(meta.awakeningKeys),n(state?.awakening_keys),n(officialMeta.awakeningKeys));
+    meta.sinnerTears830=Math.max(n(meta.sinnerTears830),n(meta.doomFragments),n(state?.sinner_tears),n(officialMeta.sinnerTears830),n(officialMeta.doomFragments));
     meta.doomFragments=meta.sinnerTears830;
-    meta.highScore=n(state?.high_score,meta.highScore||0);
+    if(state?.mission_reputation!==undefined)meta.missionReputation489=n(state.mission_reputation,meta.missionReputation489||0);
     source.chrono_v4_meta=meta;
+
+    const clientUnlocks=Array.isArray(source.chrono_v4_meta_class_unlocks_v3)?source.chrono_v4_meta_class_unlocks_v3.filter(v=>typeof v==='string'):[];
+    const officialUnlocks=Array.isArray(official.chrono_v4_meta_class_unlocks_v3)?official.chrono_v4_meta_class_unlocks_v3.filter(v=>typeof v==='string'):[];
+    const mergedUnlocks=new Set(clientUnlocks.filter(key=>!PROTECTED_CLASSES_858.has(key)));
+    for(const key of officialUnlocks)if(PROTECTED_CLASSES_858.has(key)||!mergedUnlocks.has(key))mergedUnlocks.add(key);
+    source.chrono_v4_meta_class_unlocks_v3=[...mergedUnlocks];
+
+    const usedClient=Array.isArray(source.chrono_v4_meta_redeemed_codes_v1)?source.chrono_v4_meta_redeemed_codes_v1:[];
+    const usedOfficial=Array.isArray(official.chrono_v4_meta_redeemed_codes_v1)?official.chrono_v4_meta_redeemed_codes_v1:[];
+    source.chrono_v4_meta_redeemed_codes_v1=[...new Set([...usedClient,...usedOfficial].filter(v=>typeof v==='string'))];
+    if(official.chrono_v4_meta_secret_rift_v1&&typeof official.chrono_v4_meta_secret_rift_v1==='object')source.chrono_v4_meta_secret_rift_v1={...(source.chrono_v4_meta_secret_rift_v1||{}),...official.chrono_v4_meta_secret_rift_v1};
     return source;
   }
-
   function applySnapshot(snapshot,{reloadUI=true}={}){
-    if(!snapshot||typeof snapshot!=='object')throw new Error('Snapshot do servidor inválido');
-    for(const key of SAVE_KEYS){
-      if(Object.prototype.hasOwnProperty.call(snapshot,key))localStorage.setItem(key,JSON.stringify(snapshot[key]));
-      else localStorage.removeItem(key);
-    }
+    if(!snapshot||typeof snapshot!=='object')throw new Error('Save da conta inválido');
+    runTracker854.suppress++;
     try{
-      const meta=JSON.parse(localStorage.getItem('chrono_v4_meta')||'{}');
-      if(window.game)game.meta=meta;
-      if(typeof updateHUD==='function'&&window.game)updateHUD();
-    }catch(e){console.warn('Chrono Cloud apply meta',e)}
-    if(reloadUI&&!window.game?.running){
-      setTimeout(()=>{
-        try{
-          const fn=window.openStartMenu||window.openStartMenu461;
-          if(typeof fn==='function')fn();
-        }catch(e){console.warn('Chrono Cloud refresh UI',e)}
-      },0);
-    }
+      for(const key of SAVE_KEYS){
+        if(Object.prototype.hasOwnProperty.call(snapshot,key))localStorage.setItem(key,JSON.stringify(snapshot[key]));
+        else localStorage.removeItem(key);
+      }
+    }finally{runTracker854.suppress=Math.max(0,runTracker854.suppress-1)}
+    try{const meta=JSON.parse(localStorage.getItem(MAIN_SAVE_854)||'{}');if(window.game)game.meta=meta;if(typeof updateHUD==='function'&&window.game)updateHUD()}catch(error){console.warn('Chrono Cloud apply meta',error)}
+    if(reloadUI&&!window.game?.running)setTimeout(()=>{try{const fn=window.openStartMenu||window.openStartMenu461;if(typeof fn==='function')fn()}catch(error){console.warn('Chrono Cloud refresh UI',error)}},0);
     try{window.dispatchEvent(new CustomEvent('chrono-cloud-applied',{detail:{snapshot}}))}catch{}
     return snapshot;
+  }
+  function storageKeys8511(storage){
+    const keys=[];
+    try{for(let i=0;i<storage.length;i++){const key=storage.key(i);if(key!==null)keys.push(String(key))}}catch{}
+    return keys;
+  }
+  function isSupabaseAuthKey8511(key){
+    const value=String(key||'');
+    return value===AUTH_STORAGE_KEY_8510||value.startsWith(AUTH_STORAGE_PREFIX_8511);
+  }
+  function clearLegacyAccountCaches8511(){
+    try{
+      for(const key of storageKeys8511(localStorage)){
+        if(key.startsWith(ACCOUNT_CACHE_PREFIX_858))storageRemoveBefore858.call(localStorage,key);
+      }
+    }catch(error){console.warn('Chrono cache legado',error)}
+  }
+  function resetLocalRuntimeState8511(){
+    clearTimeout(accountCacheTimer858);accountCacheTimer858=0;
+    clearTimeout(cloudSaveTimer858);cloudSaveTimer858=0;
+    cloudSavePending858=false;lastCloudSnapshot858='';lastCloudSaveAt858=0;
+    endRunTracking854();
+    try{
+      if(window.game&&typeof window.game==='object'){
+        window.game.running=false;
+        window.game.meta={};
+        window.game.cloudSessionId='';
+        window.game.cloudServerSeed='';
+      }
+    }catch{}
+  }
+  function clearNonAuthBrowserState8511(){
+    runTracker854.suppress++;
+    try{
+      for(const key of storageKeys8511(localStorage)){
+        if(!isSupabaseAuthKey8511(key))storageRemoveBefore858.call(localStorage,key);
+      }
+      try{storageClearBefore8511.call(sessionStorage)}catch{
+        for(const key of storageKeys8511(sessionStorage))storageRemoveBefore858.call(sessionStorage,key);
+      }
+    }finally{runTracker854.suppress=Math.max(0,runTracker854.suppress-1)}
+    resetLocalRuntimeState8511();
+  }
+  function purgeAllBrowserState8511(){
+    runTracker854.suppress++;
+    try{
+      try{storageClearBefore8511.call(localStorage)}catch{
+        for(const key of storageKeys8511(localStorage))storageRemoveBefore858.call(localStorage,key);
+      }
+      try{storageClearBefore8511.call(sessionStorage)}catch{
+        for(const key of storageKeys8511(sessionStorage))storageRemoveBefore858.call(sessionStorage,key);
+      }
+    }finally{runTracker854.suppress=Math.max(0,runTracker854.suppress-1)}
+    resetLocalRuntimeState8511();
+    authDraft859.login={username:'',password:''};
+    authDraft859.register={username:'',email:'',password:'',confirmPassword:''};
+    authDraft859.recover={username:'',recoveryKey:'',newPassword:'',confirmPassword:''};
+    authDraft859.repair={password:'',confirmPassword:''};
+    authDraft859.manage={currentPassword:'',newPassword:'',confirmPassword:''};
+    authFieldError859={field:'',message:''};
+  }
+  function clearGameSave858(){clearNonAuthBrowserState8511()}
+  // O servidor é a fonte do save. Caches completos por conta no localStorage
+  // foram removidos para impedir vazamento ou restauração cruzada entre usuários.
+  const autoSyncMarker858=userId=>AUTO_SYNC_MARKER_PREFIX_858+String(userId||'');
+  const serializeSnapshot858=snapshot=>JSON.stringify(snapshot||{});
+  function markSnapshotSynced858(snapshot=collectLocalSnapshot()){
+    try{lastCloudSnapshot858=serializeSnapshot858(snapshot);lastCloudSaveAt858=Date.now()}catch{}
+  }
+  function scheduleCloudSave858(delay=3500){
+    clearTimeout(cloudSaveTimer858);
+    cloudSaveTimer858=setTimeout(()=>syncSnapshot858().catch(error=>console.warn('Chrono save automático',error)),delay);
+  }
+  async function syncSnapshot858({force=false}={}){
+    if(!runtime.session||!runtime.state?.initialized)return null;
+    if(window.game?.running&&!force){scheduleCloudSave858(5000);return null}
+    const snapshot=collectLocalSnapshot(),serialized=serializeSnapshot858(snapshot);
+    if(serialized===lastCloudSnapshot858)return{saved:true,unchanged:true};
+    if(cloudSaveInFlight858){cloudSavePending858=true;return cloudSaveInFlight858}
+    const elapsed=Date.now()-lastCloudSaveAt858;
+    if(!force&&elapsed<15000){scheduleCloudSave858(15000-elapsed+300);return null}
+    cloudSaveInFlight858=(async()=>{
+      const result=await invoke('sync_snapshot',{snapshot});
+      lastCloudSnapshot858=serialized;lastCloudSaveAt858=Date.now();
+      const userId=runtime.session?.user?.id;if(userId)storageSetBefore854.call(localStorage,autoSyncMarker858(userId),'1');
+      return result;
+    })();
+    try{return await cloudSaveInFlight858}finally{
+      cloudSaveInFlight858=null;
+      if(cloudSavePending858){cloudSavePending858=false;scheduleCloudSave858(1200)}
+    }
   }
 
   async function loadSupabaseSdk850(){
     if(window.supabase?.createClient)return window.supabase;
     if(runtime.sdkPromise)return runtime.sdkPromise;
     runtime.sdkPromise=new Promise((resolve,reject)=>{
-      const existing=document.getElementById('chronoSupabaseSdk850');
-      const script=existing||document.createElement('script');
-      let settled=false;
-      const finish=(fn,value)=>{if(settled)return;settled=true;clearTimeout(timer);fn(value)};
-      const timer=setTimeout(()=>finish(reject,new Error('Tempo limite ao carregar a biblioteca do Supabase')),8000);
-      script.id='chronoSupabaseSdk850';
-      script.async=true;
-      script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8';
-      script.onload=()=>window.supabase?.createClient
-        ?finish(resolve,window.supabase)
-        :finish(reject,new Error('Biblioteca do Supabase carregou sem createClient'));
-      script.onerror=()=>finish(reject,new Error('Não foi possível baixar a biblioteca do Supabase'));
+      const existing=document.getElementById('chronoSupabaseSdk850'),script=existing||document.createElement('script');
+      let settled=false;const finish=(fn,value)=>{if(settled)return;settled=true;clearTimeout(timer);fn(value)};
+      const timer=setTimeout(()=>finish(reject,new Error('Tempo limite ao carregar o serviço de conta')),9000);
+      script.id='chronoSupabaseSdk850';script.async=true;script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8';
+      script.onload=()=>window.supabase?.createClient?finish(resolve,window.supabase):finish(reject,new Error('O serviço de conta não foi carregado corretamente'));
+      script.onerror=()=>finish(reject,new Error('Não foi possível conectar ao serviço de conta'));
       if(!existing)document.head.appendChild(script);
-    }).catch(error=>{
-      runtime.sdkPromise=null;
-      document.getElementById('chronoSupabaseSdk850')?.remove();
-      throw error;
-    });
+    }).catch(error=>{runtime.sdkPromise=null;document.getElementById('chronoSupabaseSdk850')?.remove();throw error});
     return runtime.sdkPromise;
+  }
+  function finishSignedOutCleanup8511({reload=true}={}){
+    if(signedOutCleanup8511)return;
+    setGameAuthGate8512(true);showStartupGate8512('Saindo...');
+    signedOutCleanup8511=true;
+    purgeAllBrowserState8511();
+    runtime.session=null;runtime.state=null;runtime.profile=null;runtime.account=null;runtime.bootPromise=null;
+    try{runtime.authSubscription?.unsubscribe?.()}catch{}
+    runtime.authSubscription=null;runtime.client=null;
+    if(reload){
+      setTimeout(()=>{try{location.reload()}catch{signedOutCleanup8511=false;openAuthModal858({required:true,mode:'login'})}},20);
+    }else{
+      setStatus('signed_out','');
+      openAuthModal858({required:true,mode:'login'});
+    }
   }
 
   async function ensureClient(){
     if(runtime.client)return runtime.client;
     await loadSupabaseSdk850();
-    if(!window.supabase?.createClient)throw new Error('Biblioteca do Supabase não foi carregada');
-    runtime.client=window.supabase.createClient(CONFIG.url,CONFIG.publishableKey,{
-      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false},
-      global:{headers:{'x-chrono-client':'chrono-shards-8.5.0'}}
+    runtime.client=window.supabase.createClient(CONFIG.url,CONFIG.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+    const listener=runtime.client.auth.onAuthStateChange((event,session)=>{
+      runtime.session=session||null;
+      if(event==='SIGNED_OUT'&&!explicitLogout8511)setTimeout(()=>finishSignedOutCleanup8511({reload:true}),0);
+      else if(event==='TOKEN_REFRESHED')setTimeout(emit,0);
     });
+    runtime.authSubscription=listener?.data?.subscription||null;
     return runtime.client;
   }
-
-  async function ensureAuth(){
+  async function getExistingSession858(){
     const client=await ensureClient();
     const {data:{session},error}=await client.auth.getSession();
     if(error)throw error;
-    if(session){runtime.session=session;return session}
-    const signed=await client.auth.signInAnonymously();
-    if(signed.error)throw signed.error;
-    if(!signed.data.session)throw new Error('O Supabase não retornou uma sessão anônima');
-    runtime.session=signed.data.session;
+    runtime.session=session||null;
     return runtime.session;
   }
-
+  async function createGuestSession858(){
+    const client=await ensureClient();
+    const current=await getExistingSession858();
+    if(current)return current;
+    setStatus('loading','Carregando...');
+    const {data,error}=await client.auth.signInAnonymously();
+    if(error)throw error;
+    if(!data.session)throw new Error('Não foi possível criar a sessão de convidado');
+    runtime.session=data.session;
+    return runtime.session;
+  }
   async function invoke(action,payload={}){
     const client=await ensureClient();
-    await ensureAuth();
+    if(!runtime.session)await getExistingSession858();
+    if(!runtime.session)throw new ChronoFormError859('Faça login para continuar','','AUTH_REQUIRED',401);
     const {data,error}=await client.functions.invoke(CONFIG.functionName,{body:{action,...payload}});
     if(error){
-      let message=error.message||'Falha ao chamar a Edge Function';
-      try{
-        const response=error.context;
-        if(response&&typeof response.clone==='function'){
-          const body=await response.clone().json();
-          if(body?.error)message=body.error;
-        }
-      }catch{}
-      throw new Error(message);
+      let message=error.message||'Falha ao acessar o servidor',code='FUNCTION_ERROR',field='',status=Number(error?.context?.status)||500;
+      try{const response=error.context;if(response&&typeof response.clone==='function'){const body=await response.clone().json();if(body?.error)message=body.error;if(body?.code)code=body.code;if(body?.field)field=body.field}}catch{}
+      throw new ChronoFormError859(message,field,code,status);
     }
-    if(data?.error)throw new Error(data.error);
+    if(data?.error)throw new ChronoFormError859(data.error,data.field||'',data.code||'REQUEST_ERROR',Number(data.status)||400);
     return data;
   }
 
+  async function applyServerSession8510(sessionPayload){
+    const accessToken=String(sessionPayload?.access_token||''),refreshToken=String(sessionPayload?.refresh_token||'');
+    if(!accessToken||!refreshToken)throw new ChronoFormError859('O servidor não retornou uma sessão válida','','SESSION_MISSING',500);
+    const client=await ensureClient();
+    const {data,error}=await client.auth.setSession({access_token:accessToken,refresh_token:refreshToken});
+    if(error||!data?.session)throw new ChronoFormError859('Não foi possível abrir a sessão da conta','','SESSION_SET_FAILED',500);
+    runtime.session=data.session;
+    return data.session;
+  }
+  async function clearLocalAuthSession8510(){
+    const client=runtime.client;
+    try{await client?.auth?.stopAutoRefresh?.()}catch{}
+    try{runtime.authSubscription?.unsubscribe?.()}catch{}
+    runtime.authSubscription=null;
+    try{
+      for(const key of storageKeys8511(localStorage)){
+        if(isSupabaseAuthKey8511(key))storageRemoveBefore858.call(localStorage,key);
+      }
+    }catch{}
+    runtime.client=null;runtime.session=null;
+  }
+
+
+  async function loadAccount858(){
+    if(!runtime.session){runtime.profile=null;runtime.account={anonymous:true,needsRepair:false,profile:null};return runtime.account}
+    const result=await invoke('load_account');
+    runtime.account=result?.account||{anonymous:isAnonymous858(),needsRepair:false,profile:null};
+    runtime.profile=runtime.account.profile||null;
+    emit();
+    return runtime.account;
+  }
+
   async function loadState({applyAuthoritative=true,forceApply=false}={}){
-    setStatus('loading','Lendo progresso no servidor...');
+    setStatus('loading','Carregando...');
     const result=await invoke('load_state');
     runtime.state=result?.state||null;
     const state=runtime.state;
-    if(state?.initialized&&(forceApply||(applyAuthoritative&&state.authority_mode==='authoritative'))){
-      applySnapshot(snapshotFromState850(state));
-    }
-    if(!state?.initialized){
-      setStatus('ready','Conectado. O save local ainda não foi migrado.');
-    }else if(state.authority_mode==='authoritative'){
-      setStatus('authoritative','Save online autoritativo carregado.');
-    }else{
-      setStatus('migration','Save registrado no servidor; migração das ações ainda está em andamento.');
-    }
+    if(state?.initialized&&(forceApply||(applyAuthoritative&&state.authority_mode==='authoritative')))applySnapshot(snapshotFromState850(state));
+    setStatus(runtime.profile?'account':'guest','');
     return result;
   }
+  async function bootstrapAccount858({forceApply=false,closeModal=true,bootstrapSnapshot=null}={}){
+    if(!runtime.session)throw new Error('Sessão ausente');
+    setStatus('loading','Carregando...');
+    let loaded=await invoke('load_state');
+    let state=loaded?.state||null,bootstrappedNow=false;
+    const needsBootstrap=!state?.initialized||!state?.wallet_authority_enabled||!state?.character_purchases_enabled||!state?.run_results_enabled||!state?.mission_rewards_enabled||!state?.code_rewards_enabled;
+    if(needsBootstrap){
+      const initialSnapshot=bootstrapSnapshot&&typeof bootstrapSnapshot==='object'
+        ?bootstrapSnapshot
+        :(isAnonymous858()?collectLocalSnapshot():{chrono_v4_meta:{}});
+      const result=await invoke('bootstrap_account',{snapshot:initialSnapshot});
+      state=result?.state||state;bootstrappedNow=true;
+    }
+    runtime.state=state;
+    await loadAccount858();
+    const userId=runtime.session.user.id,previousUser=localStorage.getItem(AUTH_MARKER_858);
 
-  async function migrateLocalSave(){
-    const snapshot=collectLocalSnapshot();
-    if(!Object.keys(snapshot).length)throw new Error('Nenhum save local foi encontrado');
-    setStatus('loading','Enviando a migração inicial...');
-    const result=await invoke('import_legacy',{requestId:crypto.randomUUID(),snapshot});
-    runtime.state=result?.state||runtime.state;
-    setStatus('migration',result?.message||'Migração inicial concluída.');
+    // Primeira abertura desta versão: envia automaticamente o save atual para
+    // o snapshot de compatibilidade, sem alterar as moedas/desbloqueios oficiais.
+    const canMigrateCurrent=previousUser===userId||(!previousUser&&isAnonymous858());
+    if(state?.initialized&&!bootstrappedNow&&canMigrateCurrent&&hasLocalSave858()&&!localStorage.getItem(autoSyncMarker858(userId))){
+      await invoke('sync_snapshot',{snapshot:collectLocalSnapshot()});
+      storageSetBefore854.call(localStorage,autoSyncMarker858(userId),'1');
+      loaded=await invoke('load_state');state=loaded?.state||state;runtime.state=state;
+    }
+
+    if(previousUser&&previousUser!==userId){
+      clearGameSave858();
+    }
+    if(state?.initialized){
+      const snapshot=snapshotFromState850(state,{preferLocal:false});
+      applySnapshot(snapshot);
+      markSnapshotSynced858(snapshot);
+    }
+    storageSetBefore854.call(localStorage,AUTH_MARKER_858,userId);
+    storageSetBefore854.call(localStorage,autoSyncMarker858(userId),'1');
+    setStatus(runtime.profile?'account':'guest','');
+    try{await flushPendingRun854()}catch(error){console.warn('Chrono Cloud liquidação pendente',error)}
+    if(forceApply)scheduleCloudSave858(1000);
+    if(runtime.account?.needsRepair){
+      setGameAuthGate8512(true);hideStartupGate8512();
+      openAuthModal858({required:true,mode:'repair'});
+    }else if(hasPermanentAccount8512()){
+      if(closeModal)closeAuthModal858(true);
+      showPendingRecoveryKey859();
+      releaseGameAuthGate8512();
+    }else{
+      setGameAuthGate8512(true);
+    }
+    return{state,account:runtime.account,authenticated:hasPermanentAccount8512()};
+  }
+  async function migrateLocalSave(){return bootstrapAccount858({forceApply:false})}
+
+  function validateUsernameClient858(value){
+    const normalized=normalizeUsername858(value);
+    if(!/^[a-z0-9_]{3,20}$/.test(normalized))formError859('Use de 3 a 20 caracteres: letras, números e _','username','INVALID_USERNAME');
+    return normalized;
+  }
+  function validatePasswordClient858(value,field='password'){
+    const password=String(value??'');
+    if(password.length<8||password.length>72)formError859('A senha deve ter de 8 a 72 caracteres',field,'INVALID_PASSWORD');
+    if(!/\p{L}/u.test(password)||!/\p{N}/u.test(password))formError859('A senha precisa ter pelo menos uma letra e um número',field,'INVALID_PASSWORD');
+    return password;
+  }
+
+  function generateRecoveryKey858(){
+    const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',bytes=crypto.getRandomValues(new Uint8Array(24));
+    const raw=Array.from(bytes,b=>alphabet[b%alphabet.length]).join('');
+    return `CS-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}-${raw.slice(12,16)}-${raw.slice(16,20)}-${raw.slice(20,24)}`;
+  }
+
+  function rewritePendingRunOwner859(fromUserId,toUserId){
+    const pending=parseJSON854(localStorage.getItem(PENDING_RUN_854),null);
+    if(!pending||!toUserId)return;
+    if(!pending.ownerUserId||pending.ownerUserId===fromUserId){pending.ownerUserId=toUserId;localStorage.setItem(PENDING_RUN_854,JSON.stringify(pending))}
+  }
+  function isTerminalRunError859(error){
+    const code=String(error?.code||''),message=String(error?.message||'').toLowerCase();
+    return ['RUN_SESSION_MISSING','RUN_ALREADY_SETTLED','RUN_OWNER_MISMATCH'].includes(code)||message.includes('sessão não encontrada')||message.includes('sessão já finalizada')||message.includes('não pertence');
+  }
+
+  async function settleBeforeAccountChange858(){
+    if(!runtime.session)return;
+    const pending=parseJSON854(localStorage.getItem(PENDING_RUN_854),null);
+    if(pending?.sessionId){
+      try{await flushPendingRun854()}catch(error){throw new Error('Existe uma partida aguardando salvamento. Conecte-se e tente novamente antes de trocar de conta.')}
+    }
+    try{await syncSnapshot858({force:true})}catch(error){throw new Error('Não foi possível salvar o progresso atual. Tente novamente antes de trocar de conta.')}
+  }
+
+  async function login858(username,password){
+    if(window.game?.running)formError859('Saia da partida antes de trocar de conta','','GAME_RUNNING');
+    const normalized=validateUsernameClient858(username),cleanPassword=validatePasswordClient858(password,'password');
+    await createGuestSession858();
+    if(runtime.session)await settleBeforeAccountChange858();
+    setAuthBusy858(true,'Entrando...');
+    const result=await invoke('login_account',{username:normalized,password:cleanPassword});
+    if(result?.needsRepair){
+      if(result.repairCurrentSession){runtime.account={...(runtime.account||{}),needsRepair:true};openAuthModal858({required:true,mode:'repair'})}
+      throw new ChronoFormError859(result.error||'Esta conta precisa ser concluída','username',result.code||'ACCOUNT_NEEDS_REPAIR',409);
+    }
+    await applyServerSession8510(result?.session);
+    clearGameSave858();
+    await bootstrapAccount858({forceApply:true});
+    authDraft859.login.password='';
     return result;
+  }
+  async function register858({username,email,password,confirmPassword}){
+    if(window.game?.running)formError859('Saia da partida antes de criar a conta','','GAME_RUNNING');
+    const normalized=validateUsernameClient858(username),cleanPassword=validatePasswordClient858(password,'password');
+    if(cleanPassword!==String(confirmPassword??''))formError859('As senhas não coincidem','confirmPassword','PASSWORD_MISMATCH');
+    const cleanEmail=String(email??'').normalize('NFKC').trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cleanEmail))formError859('Informe um e-mail válido','email','INVALID_EMAIL');
+    await createGuestSession858();
+    if(!isAnonymous858()&&!runtime.account?.needsRepair)formError859('Esta sessão já está vinculada a uma conta','','ACCOUNT_EXISTS');
+    await bootstrapAccount858({forceApply:false,closeModal:false});
+    const recoveryKey=generateRecoveryKey858();
+    setAuthBusy858(true,'Criando conta...');
+    const result=await invoke('register_account',{username:String(username).normalize('NFKC').trim(),email:cleanEmail,password:cleanPassword,recoveryKey,snapshot:collectLocalSnapshot()});
+    rememberRecoveryKey859(recoveryKey,'CONTA CRIADA');
+    await showRecoveryKey858(recoveryKey,'CONTA CRIADA');
+    clearRecoveryKeyReminder859();
+    await applyServerSession8510(result?.session);
+    runtime.state=result?.state||runtime.state;
+    await bootstrapAccount858({forceApply:false});
+    authDraft859.register={username:'',email:'',password:'',confirmPassword:''};
+    return result;
+  }
+  async function repairAccount859(password,confirmPassword){
+    if(!runtime.profile)formError859('Conta para reparo não encontrada','','ACCOUNT_NOT_FOUND');
+    const cleanPassword=validatePasswordClient858(password,'password');
+    if(cleanPassword!==String(confirmPassword??''))formError859('As senhas não coincidem','confirmPassword','PASSWORD_MISMATCH');
+    const recoveryKey=generateRecoveryKey858();
+    setAuthBusy858(true,'Concluindo...');
+    const result=await invoke('repair_account',{password:cleanPassword,recoveryKey});
+    rememberRecoveryKey859(recoveryKey,'CONTA CORRIGIDA');
+    await showRecoveryKey858(recoveryKey,'CONTA CORRIGIDA');
+    clearRecoveryKeyReminder859();
+    await applyServerSession8510(result?.session);
+    runtime.state=result?.state||runtime.state;
+    await bootstrapAccount858({forceApply:true});
+    authDraft859.repair={password:'',confirmPassword:''};
+    return result;
+  }
+  async function recover858({username,recoveryKey,newPassword,confirmPassword}){
+    if(window.game?.running)formError859('Saia da partida antes de recuperar uma conta','','GAME_RUNNING');
+    const normalized=validateUsernameClient858(username),password=validatePasswordClient858(newPassword,'newPassword');
+    if(password!==String(confirmPassword??''))formError859('As senhas não coincidem','confirmPassword','PASSWORD_MISMATCH');
+    if(String(recoveryKey??'').replace(/[^A-Za-z0-9]/g,'').length<20)formError859('Chave de recuperação inválida','recoveryKey','INVALID_RECOVERY_KEY');
+    await createGuestSession858();
+    await settleBeforeAccountChange858();
+    setAuthBusy858(true,'Recuperando...');
+    const result=await invoke('recover_account',{username:normalized,recoveryKey,newPassword:password});
+    await applyServerSession8510(result?.session);
+    clearGameSave858();
+    await bootstrapAccount858({forceApply:true});
+    authDraft859.recover={username:'',recoveryKey:'',newPassword:'',confirmPassword:''};
+    return true;
+  }
+
+  async function logout858(){
+    if(window.game?.running)throw new Error('Saia da partida antes de desconectar');
+    await settleBeforeAccountChange858();
+    explicitLogout8511=true;
+    try{
+      await clearLocalAuthSession8510();
+      purgeAllBrowserState8511();
+      runtime.state=null;runtime.profile=null;runtime.account=null;runtime.bootPromise=null;
+      setTimeout(()=>{try{location.reload()}catch{signedOutCleanup8511=false;setStatus('signed_out','');openAuthModal858({required:true,mode:'login'})}},20);
+    }finally{
+      // A página normalmente recarrega. O fallback permite uma nova tentativa.
+      setTimeout(()=>{explicitLogout8511=false},1500);
+    }
+  }
+  async function changePassword858(currentPassword,newPassword,confirmPassword){
+    if(!runtime.profile)formError859('Conta não encontrada','','ACCOUNT_NOT_FOUND');
+    const current=validatePasswordClient858(currentPassword,'currentPassword'),next=validatePasswordClient858(newPassword,'newPassword');
+    if(next!==String(confirmPassword??''))formError859('As novas senhas não coincidem','confirmPassword','PASSWORD_MISMATCH');
+    const result=await invoke('change_password',{currentPassword:current,newPassword:next});
+    await applyServerSession8510(result?.session);
+    return true;
+  }
+  async function rotateRecovery858(currentPassword){
+    if(!runtime.profile)formError859('Conta não encontrada','','ACCOUNT_NOT_FOUND');
+    const current=validatePasswordClient858(currentPassword,'currentPassword'),recoveryKey=generateRecoveryKey858();
+    await invoke('rotate_recovery',{currentPassword:current,recoveryKey});
+    rememberRecoveryKey859(recoveryKey,'NOVA CHAVE GERADA');
+    await showRecoveryKey858(recoveryKey,'NOVA CHAVE GERADA');
+    clearRecoveryKeyReminder859();
+    return true;
+  }
+
+  async function flushPendingRun854(){
+    const pending=parseJSON854(localStorage.getItem(PENDING_RUN_854),null);
+    if(!pending?.sessionId||!pending?.requestId||!pending?.summary)return null;
+    const pendingAge=Date.now()-Number(pending.createdAt||0);
+    if(Number.isFinite(pendingAge)&&pendingAge>72*60*60_000){
+      localStorage.removeItem(PENDING_RUN_854);
+      return{discarded:true,reason:'expired'};
+    }
+    const currentUserId=runtime.session?.user?.id||'';
+    if(pending.ownerUserId&&currentUserId&&pending.ownerUserId!==currentUserId){
+      localStorage.removeItem(PENDING_RUN_854);
+      return{discarded:true,reason:'different_account'};
+    }
+    try{return await finishRun(pending.sessionId,{...pending.summary,requestId:pending.requestId})}
+    catch(error){
+      if(isTerminalRunError859(error)){localStorage.removeItem(PENDING_RUN_854);return{discarded:true,reason:error.code||'missing_session'}}
+      throw error;
+    }
   }
 
   async function startRun(mode,classKey){
-    const result=await invoke('start_run',{mode:String(mode||'normal'),classKey:String(classKey||'')});
-    try{if(window.game&&result?.session){game.cloudSessionId=result.session.id;game.cloudServerSeed=result.session.server_seed}}catch{}
-    return result;
+    if(!runtime.session)throw new Error('Faça login para continuar');
+    await flushPendingRun854().catch(error=>{throw new Error('Existe uma partida anterior aguardando liquidação: '+(error?.message||error))});
+    primeRunTracking855();
+    try{
+      const result=await invoke('start_run',{mode:String(mode||'normal'),classKey:String(classKey||'')});
+      if(result?.state){runtime.state=result.state;emit()}
+      try{if(window.game&&result?.session){game.cloudSessionId=result.session.id;game.cloudServerSeed=result.session.server_seed;beginRunTracking854(result.session.id,result.state||runtime.state)}}catch{}
+      return result;
+    }catch(error){endRunTracking854();throw error}
   }
-
   async function finishRun(sessionId,summary={}){
-    const result=await invoke('finish_run',{
-      requestId:crypto.randomUUID(),sessionId,
-      score:n(summary.score),wave:n(summary.wave),kills:n(summary.kills)
-    });
-    if(result?.state){runtime.state=result.state;if(result.state.authority_mode==='authoritative')applySnapshot(snapshotFromState850(result.state))}
+    const requestId=String(summary.requestId||crypto.randomUUID()),kills=Math.max(0,Math.trunc(n(summary.kills)));
+    const cleanTypes=cleanTypeKills8510(summary.typeKills&&typeof summary.typeKills==='object'?summary.typeKills:{},kills);
+    const cleanSummary={score:n(summary.score),wave:n(summary.wave),kills,gold:n(summary.gold),relicDelta:Math.max(0,Math.trunc(n(summary.relicDelta))),chronoDelta:Math.max(0,Math.trunc(n(summary.chronoDelta))),bossKills:Math.min(kills,Math.max(0,Math.trunc(n(summary.bossKills)))),eliteKills:Math.min(kills,Math.max(0,Math.trunc(n(summary.eliteKills)))),skillsUsed:Math.max(0,Math.trunc(n(summary.skillsUsed))),typeKills:cleanTypes};
+    localStorage.setItem(PENDING_RUN_854,JSON.stringify({requestId,sessionId:String(sessionId||''),ownerUserId:runtime.session?.user?.id||'',summary:cleanSummary,createdAt:Date.now()}));
+    endRunTracking854();
+    const result=await invoke('finish_run',{requestId,sessionId,...cleanSummary});
+    if(result?.state){runtime.state=result.state;emit();if(result.state.authority_mode==='authoritative')applySnapshot(snapshotFromState850(result.state))}
+    const pending=parseJSON854(localStorage.getItem(PENDING_RUN_854),null);if(pending?.requestId===requestId&&(result?.accepted||result?.terminal))localStorage.removeItem(PENDING_RUN_854);
+    try{window.dispatchEvent(new CustomEvent('chrono-run-settled',{detail:result}))}catch{}
+    if(result?.accepted)scheduleCloudSave858(900);
     return result;
   }
 
   async function boot({force=false}={}){
-    if(force){runtime.bootPromise=null;runtime.client=null;runtime.session=null}
+    if(force){runtime.bootPromise=null;runtime.session=null}
     if(runtime.bootPromise)return runtime.bootPromise;
     runtime.bootPromise=(async()=>{
       try{
-        setStatus('loading','Conectando ao Supabase...');
-        await ensureAuth();
-        return await loadState({applyAuthoritative:true});
+        setGameAuthGate8512(true);showStartupGate8512('Carregando...');
+        setStatus('loading','Carregando...');
+        clearLegacyAccountCaches8511();
+        if(!hasStoredAuth8512()){
+          hideStartupGate8512();setStatus('signed_out','');
+          openAuthModal858({required:true,mode:'login'});
+          return{authenticated:false,reason:'signed_out'};
+        }
+        await getExistingSession858();
+        if(!runtime.session){
+          hideStartupGate8512();setStatus('signed_out','');
+          openAuthModal858({required:true,mode:'login'});
+          return{authenticated:false,reason:'signed_out'};
+        }
+        if(isAnonymous858()){
+          await loadAccount858();
+          hideStartupGate8512();
+          if(runtime.account?.needsRepair)openAuthModal858({required:true,mode:'repair'});
+          else openAuthModal858({required:true,mode:'login'});
+          return{authenticated:false,reason:runtime.account?.needsRepair?'repair':'anonymous'};
+        }
+        const result=await bootstrapAccount858({forceApply:false});
+        if(!hasPermanentAccount8512()){
+          hideStartupGate8512();openAuthModal858({required:true,mode:runtime.account?.needsRepair?'repair':'login'});
+          return{...(result||{}),authenticated:false,reason:'profile_missing'};
+        }
+        releaseGameAuthGate8512();
+        return{...(result||{}),authenticated:true};
       }catch(error){
-        console.warn('Chrono Cloud indisponível:',error);
-        runtime.bootPromise=null;
-        setStatus('error','Servidor indisponível; o jogo continuará usando o save local.',error);
-        return null;
+        console.warn('Chrono Cloud indisponível:',error);runtime.bootPromise=null;setStatus('error','Não foi possível conectar à conta.',error);
+        hideStartupGate8512();openAuthModal858({required:true,mode:runtime.session?'connection':'login'});
+        return{authenticated:false,reason:'error',error};
       }
     })();
     return runtime.bootPromise;
   }
   async function reconnect(){return boot({force:true})}
 
-  function statusPresentation(){
-    if(runtime.status==='authoritative')return['ok','AUTORITATIVO'];
-    if(runtime.status==='ready')return['ok','CONECTADO'];
-    if(runtime.status==='migration')return['warn','MIGRAÇÃO'];
-    if(runtime.status==='loading')return['','CONECTANDO'];
-    if(runtime.status==='error')return['err','ERRO'];
-    return['','OFFLINE'];
+  function setAuthBusy858(value,label=''){
+    authBusy858=!!value;
+    if(!authModal858)return;
+    authModal858.querySelectorAll('button,input').forEach(el=>{if(!el.classList.contains('chronoAuthClose858'))el.disabled=authBusy858});
+    const primary=authModal858.querySelector('.chronoAuthPrimary858');if(primary&&label)primary.textContent=label;
   }
-
-  function cloudCardHTML850(){
-    const [badgeClass,badgeText]=statusPresentation();
-    const userId=runtime.session?.user?.id||'—';
-    const revision=runtime.state?.revision??0;
-    const mode=runtime.state?.authority_mode||'não inicializado';
-    const imported=!!runtime.state?.legacy_imported_at;
-    const loading=runtime.status==='loading';
-    const connected=!['error','idle','loading'].includes(runtime.status);
-    const refreshLabel=runtime.status==='error'?'Tentar novamente':'Baixar do servidor';
-    return `<div class="cloudHead850"><h3>☁ SAVE ONLINE / SUPABASE</h3><span class="cloudBadge850 ${badgeClass}">${badgeText}</span></div><p id="chronoCloudMessage850">${String(runtime.message||'').replace(/[<>&]/g,s=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[s]))}</p><div class="cloudMeta850"><div><small>ID DA CONTA</small><b title="${userId}">${userId}</b></div><div><small>REVISÃO / MODO</small><b>${revision} • ${mode}</b></div></div><div class="cloudActions850"><button id="chronoCloudRefresh850" ${loading?'disabled':''}>${refreshLabel}</button><button id="chronoCloudMigrate850" ${connected&&!imported?'':'disabled'}>${imported?'Migração realizada':'Migrar save local'}</button><button id="chronoCloudCopy850" ${userId==='—'?'disabled':''}>Copiar ID</button></div><div class="cloudNote850">O modo autoritativo só deve ser ativado depois que compras, missões e recompensas permanentes forem processadas pelo servidor.</div>`;
+  function authMessage858(message='',ok=false){
+    const box=authModal858?.querySelector('.chronoAuthMessage858');if(!box)return;
+    box.textContent=String(message||'');box.className='chronoAuthMessage858'+(message?' show':'')+(ok?' ok':'');
   }
-
-  function refreshCloudCard850(){
-    const card=document.getElementById('chronoCloudCard850');
-    if(!card)return;
-    card.innerHTML=cloudCardHTML850();
-    bindCloudCard850(card);
+  function closeAuthModal858(force=false){
+    if(!authModal858)return;if(authRequired858&&!force)return;
+    authModal858.remove();authModal858=null;authBusy858=false;authFieldError859={field:'',message:''};
   }
-  function bindCloudCard850(card){
-    const refresh=card.querySelector('#chronoCloudRefresh850');
-    const migrate=card.querySelector('#chronoCloudMigrate850');
-    const copy=card.querySelector('#chronoCloudCopy850');
-    if(refresh)refresh.onclick=async()=>{
-      refresh.disabled=true;
-      try{
-        if(runtime.status==='error'||runtime.status==='idle')await reconnect();
-        else await loadState({applyAuthoritative:false,forceApply:true});
-      }catch(e){setStatus('error',e.message,e)}
-    };
-    if(migrate)migrate.onclick=async()=>{
-      const ok=confirm('Migrar este save local para a conta online? Essa migração inicial só pode ser feita uma vez.');
-      if(!ok)return;
-      migrate.disabled=true;
-      try{await migrateLocalSave()}catch(e){setStatus('error',e.message,e)}
-    };
-    if(copy)copy.onclick=async()=>{
-      const id=runtime.session?.user?.id;if(!id)return;
-      try{await navigator.clipboard.writeText(id);copy.textContent='ID copiado'}catch{prompt('Copie o ID da conta:',id)}
-    };
+  function draftForMode859(mode=authMode858){return authDraft859[mode]||{}}
+  function fieldHTML859({label,id,key,type='text',maxlength=72,autocomplete='off',placeholder='',password=false,hint=''}){
+    const invalid=authFieldError859.field===key,fieldClass='chronoAuthField858'+(invalid?' invalid':'');
+    const textLike=['username','email','recoveryKey'].includes(key);
+    const extras=textLike?' autocapitalize="none" autocorrect="off" spellcheck="false"':'';
+    const inputMode=type==='email'?' inputmode="email"':key==='username'?' inputmode="text"':'';
+    const input=`<input id="${id}" data-auth-draft859="${key}" type="${type}" maxlength="${maxlength}" autocomplete="${autocomplete}"${placeholder?` placeholder="${escapeHTML858(placeholder)}"`:''}${extras}${inputMode} aria-invalid="${invalid?'true':'false'}">`;
+    const control=password?`<div class="chronoPasswordWrap859">${input}<button type="button" class="chronoPasswordToggle859" data-password-toggle859="${id}" aria-label="Mostrar senha" title="Mostrar senha">👁</button></div>`:input;
+    const caps=password?'<span class="chronoCapsLock859" aria-live="polite">Caps Lock ativado</span>':'';
+    return `<div class="${fieldClass}" data-auth-field859="${key}"><label for="${id}">${label}</label>${control}${caps}${hint?`<span class="chronoAuthHint858">${hint}</span>`:''}<span class="chronoAuthFieldError859">${invalid?escapeHTML858(authFieldError859.message):''}</span></div>`;
   }
-  function injectCloudCard850(){
-    const host=document.getElementById('overlayCard');
-    if(!host)return;
-    const title=(host.querySelector('h1')?.textContent||'').toUpperCase();
-    if(!title.includes('CONFIGURA'))return;
-    let card=document.getElementById('chronoCloudCard850');
-    if(!card){
-      card=document.createElement('section');card.id='chronoCloudCard850';
-      const saveCard=document.getElementById('chronoSaveCard20');
-      const back=host.querySelector('[id*="cfgBack"],[id*="backCfg"],button:last-of-type');
-      if(saveCard?.parentElement===host)saveCard.insertAdjacentElement('afterend',card);
-      else if(back?.parentElement===host)host.insertBefore(card,back);
-      else host.appendChild(card);
+  function restoreDraftFields859(){
+    const draft=draftForMode859();
+    authModal858?.querySelectorAll('[data-auth-draft859]').forEach(input=>{const key=input.dataset.authDraft859||'';input.value=String(draft[key]??'')});
+    updatePasswordStrength859();
+  }
+  function captureDraftFields859(){
+    const draft=draftForMode859();
+    authModal858?.querySelectorAll('[data-auth-draft859]').forEach(input=>{draft[input.dataset.authDraft859||'']=input.value});
+  }
+  function updatePasswordStrength859(){
+    const input=authModal858?.querySelector('#chronoRegPass858,#chronoRecoveryPass858,#chronoRepairPass859,#chronoManageNew858');
+    const bar=authModal858?.querySelector('.chronoPasswordStrength859 span'),text=authModal858?.querySelector('.chronoPasswordStrengthText859');
+    if(!input||!bar||!text)return;
+    const value=input.value||'';let score=0;
+    if(value.length>=8)score++;if(value.length>=12)score++;if(/[A-ZÁÉÍÓÚÂÊÔÃÕÇ]/.test(value)&&/[a-záéíóúâêôãõç]/.test(value))score++;if(/\d/.test(value))score++;if(/[^\p{L}\p{N}]/u.test(value))score++;
+    const widths=['0%','22%','42%','62%','82%','100%'],labels=['Digite uma senha','Muito fraca','Fraca','Razoável','Forte','Muito forte'],colors=['#ff6b7b','#ff6b7b','#ff9a62','#e7c35b','#5bd5ba','#63e6be'];
+    bar.style.width=widths[score];bar.style.background=colors[score];text.textContent=labels[score];
+  }
+  function clearWrongField859(error,mode=authMode858){
+    const draft=authDraft859[mode]||{},field=String(error?.field||''),code=String(error?.code||'');
+    if(code==='INVALID_LOGIN'){draft.password='';return'password'}
+    if(code==='PASSWORD_MISMATCH'){draft.confirmPassword='';return'confirmPassword'}
+    if(['USERNAME_TAKEN','INVALID_USERNAME','RESERVED_USERNAME'].includes(code)){draft.username='';return'username'}
+    if(['EMAIL_TAKEN','INVALID_EMAIL'].includes(code)){draft.email='';return'email'}
+    if(['INVALID_RECOVERY','INVALID_RECOVERY_KEY'].includes(code)){draft.recoveryKey='';return'recoveryKey'}
+    if(field==='currentPassword'){draft.currentPassword='';return field}
+    if(field==='password'&&mode!=='login'){draft.password='';draft.confirmPassword='';return field}
+    if(field==='newPassword'){draft.newPassword='';draft.confirmPassword='';return field}
+    if(field&&Object.prototype.hasOwnProperty.call(draft,field)){draft[field]='';return field}
+    return'';
+  }
+  function handleAuthError859(error,mode=authMode858){
+    setAuthBusy858(false);captureDraftFields859();authMode858=mode;
+    const focusField=clearWrongField859(error,mode);
+    authFieldError859={field:focusField||String(error?.field||''),message:String(error?.message||'Não foi possível concluir a ação')};
+    renderAuthModal858();authMessage858(error?.message||'Não foi possível concluir a ação');
+    const target=focusField||error?.field;setTimeout(()=>{const input=authModal858?.querySelector(`[data-auth-draft859="${CSS.escape(String(target||''))}"]`);input?.focus();if(input&&input.value)input.select?.()},30);
+  }
+  function renderAuthModal858(){
+    if(!authModal858)return;
+    const guest=isAnonymous858()&&!runtime.profile,closable=!authRequired858;
+    let body='';
+    if(authMode858==='connection'){
+      body=`<div class="chronoAuthMessage858 show">Não foi possível conectar à sua conta. Verifique a internet e tente novamente.</div><div class="chronoAuthForm858"><button class="chronoAuthPrimary858" id="chronoConnectionRetry858">TENTAR NOVAMENTE</button></div>`;
+    }else if(authMode858==='register'){
+      body=`<div class="chronoAuthTabs858"><button data-auth-mode858="login">ENTRAR</button><button class="active" data-auth-mode858="register">CRIAR CONTA</button></div><div class="chronoAuthMessage858"></div><div class="chronoAuthForm858">${fieldHTML859({label:'NOME DE USUÁRIO',id:'chronoRegUser858',key:'username',maxlength:20,autocomplete:'username',placeholder:'exemplo_123'})}${fieldHTML859({label:'E-MAIL DE CONTATO',id:'chronoRegEmail858',key:'email',type:'email',maxlength:254,autocomplete:'email',placeholder:'voce@email.com'})}<p class="chronoAuthHint858">O e-mail fica cadastrado como contato. Enquanto não houver SMTP, a recuperação usa a chave secreta.</p>${fieldHTML859({label:'SENHA',id:'chronoRegPass858',key:'password',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR SENHA',id:'chronoRegConfirm858',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<div class="chronoRecoveryCard858">Seu progresso atual será transferido para a nova conta. A chave de recuperação aparecerá em uma tela obrigatória após o cadastro.</div><button class="chronoAuthPrimary858" id="chronoRegisterSubmit858">CRIAR CONTA</button></div>`;
+    }else if(authMode858==='recover'){
+      body=`<div class="chronoAuthMessage858"></div><div class="chronoAuthForm858">${fieldHTML859({label:'NOME DE USUÁRIO',id:'chronoRecoveryUser858',key:'username',maxlength:20,autocomplete:'username'})}${fieldHTML859({label:'CHAVE DE RECUPERAÇÃO',id:'chronoRecoveryKey858',key:'recoveryKey',maxlength:64,autocomplete:'off',placeholder:'CS-XXXX-...'})}${fieldHTML859({label:'NOVA SENHA',id:'chronoRecoveryPass858',key:'newPassword',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR NOVA SENHA',id:'chronoRecoveryConfirm858',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<button class="chronoAuthPrimary858" id="chronoRecoverySubmit858">RECUPERAR CONTA</button><div class="chronoAuthLinkRow858"><button class="chronoAuthLink858" data-auth-mode858="login">Voltar ao login</button></div></div>`;
+    }else if(authMode858==='repair'){
+      const username=escapeHTML858(runtime.profile?.username||'Conta');
+      body=`<div class="chronoAuthMessage858 show ok">Encontramos uma conta criada pela versão anterior. Conclua a configuração para poder entrar normalmente.</div><div class="chronoAuthForm858"><div class="chronoRecoveryCard858"><b>${username}</b><br>O progresso será mantido. Escolha a senha que deseja usar daqui em diante.</div>${fieldHTML859({label:'NOVA SENHA',id:'chronoRepairPass859',key:'password',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR NOVA SENHA',id:'chronoRepairConfirm859',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<button class="chronoAuthPrimary858" id="chronoRepairSubmit859">CONCLUIR CONTA</button><div class="chronoRecoveryCard858">Uma nova chave de recuperação será mostrada e precisará ser guardada.</div></div>`;
+    }else if(authMode858==='manage'){
+      const username=escapeHTML858(runtime.profile?.username||'—'),email=escapeHTML858(runtime.profile?.contact_email||'—');
+      body=`<div class="chronoAuthMessage858"></div><div class="chronoAuthForm858"><div class="chronoRecoveryCard858"><b>${username}</b><br>${email}</div>${fieldHTML859({label:'SENHA ATUAL',id:'chronoManageCurrent858',key:'currentPassword',type:'password',autocomplete:'current-password',password:true})}${fieldHTML859({label:'NOVA SENHA',id:'chronoManageNew858',key:'newPassword',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR NOVA SENHA',id:'chronoManageConfirm858',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<button class="chronoAuthPrimary858" id="chronoChangePassword858">ALTERAR SENHA</button><div class="chronoAuthDivider858">OU</div><button class="chronoAuthGuest858" id="chronoRotateRecovery858">GERAR NOVA CHAVE DE RECUPERAÇÃO</button></div>`;
+    }else{
+      body=`<div class="chronoAuthTabs858"><button class="active" data-auth-mode858="login">ENTRAR</button><button data-auth-mode858="register">CRIAR CONTA</button></div><div class="chronoAuthMessage858"></div><div class="chronoAuthForm858">${fieldHTML859({label:'NOME DE USUÁRIO',id:'chronoLoginUser858',key:'username',maxlength:20,autocomplete:'username'})}${fieldHTML859({label:'SENHA',id:'chronoLoginPass858',key:'password',type:'password',autocomplete:'current-password',password:true})}<button class="chronoAuthPrimary858" id="chronoLoginSubmit858">ENTRAR</button><div class="chronoAuthLinkRow858"><button class="chronoAuthLink858" data-auth-mode858="recover">Esqueci minha senha</button></div>${guest?'<div class="chronoRecoveryCard858">Este dispositivo possui uma sessão temporária. Entre em sua conta ou escolha Criar conta para preservar o progresso atual.</div>':'<div class="chronoRecoveryCard858">Entre ou crie uma conta para carregar e proteger seu progresso.</div>'}</div>`;
     }
-    refreshCloudCard850();
+    const title=authMode858==='manage'?'GERENCIAR CONTA':authMode858==='recover'?'RECUPERAR CONTA':authMode858==='repair'?'CONCLUIR CONTA':authMode858==='connection'?'CONEXÃO':'CHRONO ID';
+    const subtitle=authMode858==='manage'?'Segurança e recuperação da sua conta.':authMode858==='repair'?'Uma correção rápida para manter sua conta acessível.':authMode858==='connection'?'A conexão é necessária para carregar seu progresso.':'Entre para continuar no Chrono Shards.';
+    authModal858.innerHTML=`<div class="chronoAuthDialog858" role="dialog" aria-modal="true" aria-labelledby="chronoAuthTitle858">${closable?'<button class="chronoAuthClose858" aria-label="Fechar">×</button>':''}<div class="chronoAuthBrand858"><div class="chronoAuthSigil858">◈</div><h2 id="chronoAuthTitle858">${title}</h2><p>${subtitle}</p></div>${body}</div>`;
+    restoreDraftFields859();bindAuthModal858();
+  }
+  function openAuthModal858({required=false,mode='login'}={}){
+    authRequired858=!!required;authMode858=mode;authFieldError859={field:'',message:''};
+    hideStartupGate8512();if(authRequired858)setGameAuthGate8512(true);
+    if(!authModal858){authModal858=document.createElement('div');authModal858.className='chronoAuthOverlay858';authModal858.id='chronoAuthOverlay858';document.body.appendChild(authModal858)}
+    renderAuthModal858();setTimeout(()=>authModal858?.querySelector('input')?.focus(),40);
+  }
+  function bindAuthModal858(){
+    if(!authModal858)return;
+    authModal858.querySelector('.chronoAuthClose858')?.addEventListener('click',()=>closeAuthModal858());
+    authModal858.querySelectorAll('[data-auth-draft859]').forEach(input=>input.addEventListener('input',()=>{const draft=draftForMode859();draft[input.dataset.authDraft859||'']=input.value;if(authFieldError859.field===input.dataset.authDraft859){authFieldError859={field:'',message:''};input.closest('.chronoAuthField858')?.classList.remove('invalid')}updatePasswordStrength859()}));
+    authModal858.querySelectorAll('[data-password-toggle859]').forEach(button=>button.addEventListener('click',()=>{const input=document.getElementById(button.dataset.passwordToggle859||'');if(!input)return;const visible=input.type==='text';input.type=visible?'password':'text';button.textContent=visible?'👁':'🙈';button.setAttribute('aria-label',visible?'Mostrar senha':'Ocultar senha');button.title=visible?'Mostrar senha':'Ocultar senha';input.focus()}));
+    authModal858.querySelectorAll('input[type="password"]').forEach(input=>{const updateCaps=event=>{const warning=input.closest('.chronoAuthField858')?.querySelector('.chronoCapsLock859');warning?.classList.toggle('show',!!event.getModifierState?.('CapsLock'))};input.addEventListener('keydown',updateCaps);input.addEventListener('keyup',updateCaps);input.addEventListener('blur',()=>input.closest('.chronoAuthField858')?.querySelector('.chronoCapsLock859')?.classList.remove('show'))});
+    authModal858.querySelector('#chronoConnectionRetry858')?.addEventListener('click',async()=>{try{setAuthBusy858(true,'CONECTANDO...');await reconnect()}catch(error){handleAuthError859(error,'connection')}});
+    authModal858.querySelectorAll('[data-auth-mode858]').forEach(btn=>btn.addEventListener('click',()=>{if(authBusy858)return;captureDraftFields859();authFieldError859={field:'',message:''};authMode858=btn.dataset.authMode858||'login';renderAuthModal858()}));
+    authModal858.querySelector('#chronoLoginSubmit858')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await login858(authDraft859.login.username,authDraft859.login.password)}catch(error){handleAuthError859(error,'login')}});
+    authModal858.querySelector('#chronoRegisterSubmit858')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await register858(authDraft859.register)}catch(error){handleAuthError859(error,'register')}});
+    authModal858.querySelector('#chronoRecoverySubmit858')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await recover858(authDraft859.recover)}catch(error){handleAuthError859(error,'recover')}});
+    authModal858.querySelector('#chronoRepairSubmit859')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await repairAccount859(authDraft859.repair.password,authDraft859.repair.confirmPassword)}catch(error){handleAuthError859(error,'repair')}});
+    authModal858.querySelector('#chronoChangePassword858')?.addEventListener('click',async()=>{captureDraftFields859();try{setAuthBusy858(true,'Alterando...');await changePassword858(authDraft859.manage.currentPassword,authDraft859.manage.newPassword,authDraft859.manage.confirmPassword);authDraft859.manage={currentPassword:'',newPassword:'',confirmPassword:''};setAuthBusy858(false);renderAuthModal858();authMessage858('Senha alterada com sucesso.',true)}catch(error){handleAuthError859(error,'manage')}});
+    authModal858.querySelector('#chronoRotateRecovery858')?.addEventListener('click',async()=>{captureDraftFields859();try{setAuthBusy858(true,'Gerando...');await rotateRecovery858(authDraft859.manage.currentPassword);setAuthBusy858(false)}catch(error){handleAuthError859(error,'manage')}});
+    authModal858.onkeydown=event=>{if(event.key==='Escape')closeAuthModal858();if(event.key==='Enter'&&!event.shiftKey&&event.target?.tagName!=='BUTTON'){event.preventDefault();const button=authModal858.querySelector('.chronoAuthPrimary858:not(:disabled)');button?.click()}};
+  }
+  function rememberRecoveryKey859(key,title='CHAVE DE RECUPERAÇÃO'){
+    try{sessionStorage.setItem(PENDING_RECOVERY_KEY_859,JSON.stringify({key,title,createdAt:Date.now()}))}catch{}
+  }
+  function clearRecoveryKeyReminder859(){try{sessionStorage.removeItem(PENDING_RECOVERY_KEY_859)}catch{}}
+  function showPendingRecoveryKey859(){
+    if(keyModal858)return;
+    let pending=null;try{pending=parseJSON854(sessionStorage.getItem(PENDING_RECOVERY_KEY_859),null)}catch{}
+    if(!pending?.key)return;if(Date.now()-Number(pending.createdAt||0)>24*60*60_000){clearRecoveryKeyReminder859();return}
+    showRecoveryKey858(pending.key,pending.title||'CHAVE DE RECUPERAÇÃO').then(clearRecoveryKeyReminder859);
+  }
+  function showRecoveryKey858(key,title='CHAVE DE RECUPERAÇÃO'){
+    return new Promise(resolve=>{
+      keyModal858?.remove();
+      keyModal858=document.createElement('div');keyModal858.className='chronoKeyOverlay858';keyModal858.id='chronoKeyOverlay858';
+      keyModal858.innerHTML=`<div class="chronoKeyDialog858" role="dialog" aria-modal="true"><h2>${escapeHTML858(title)}</h2><p>Esta é a única forma de recuperar sua conta sem e-mail. Guarde a chave em um local seguro antes de continuar.</p><div class="chronoKeyValue858" id="chronoKeyValue858">${escapeHTML858(key)}</div><div class="chronoKeyActions858"><button class="chronoKeyCopy858" id="chronoKeyCopy858">COPIAR CHAVE</button><button class="chronoKeyDone858" id="chronoKeyDone858">JÁ GUARDEI</button></div></div>`;
+      document.body.appendChild(keyModal858);
+      keyModal858.querySelector('#chronoKeyCopy858').onclick=async()=>{const button=keyModal858.querySelector('#chronoKeyCopy858');try{await navigator.clipboard.writeText(key);button.textContent='CHAVE COPIADA'}catch{prompt('Copie sua chave de recuperação:',key)}};
+      keyModal858.querySelector('#chronoKeyDone858').onclick=()=>{keyModal858?.remove();keyModal858=null;resolve(true)};
+    });
   }
 
-  try{
-    const host=document.getElementById('overlayCard');
-    if(host)new MutationObserver(records=>{
-      const externalChange=records.some(record=>{
-        const target=record.target;
-        return !(target instanceof Element)||!target.closest('#chronoCloudCard850');
-      });
-      if(externalChange)queueMicrotask(injectCloudCard850);
-    }).observe(host,{childList:true,subtree:true});
-  }catch(e){console.warn('Chrono Cloud observer',e)}
-  document.addEventListener('click',event=>{
-    if(event.target?.closest?.('#chronoCloudCard850'))return;
-    setTimeout(injectCloudCard850,20);
-  },true);
-  document.addEventListener('DOMContentLoaded',()=>{injectCloudCard850();boot()},{once:true});
+  function accountCardHTML858(){
+    if(!runtime.profile)return `<button class="chronoAccountGuest858" id="chronoAccountLogin858">👤 FAZER LOGIN</button>`;
+    const username=escapeHTML858(runtime.profile.username||'Conta');
+    return `<div class="chronoAccountPermanent858"><div class="chronoAccountHead858"><strong>👤 CONTA CHRONO</strong><span class="chronoAccountBadge858">CONECTADA</span></div><div class="chronoAccountName858"><small>NOME DE USUÁRIO</small><b>${username}</b></div><div class="chronoAccountActions858"><button id="chronoManageAccount858">GERENCIAR CONTA</button><button id="chronoLogout858">SAIR</button></div></div>`;
+  }
+  function refreshAccountCard858(){
+    const card=document.getElementById('chronoCloudCard850');if(!card)return;
+    card.innerHTML=accountCardHTML858();
+    card.querySelector('#chronoAccountLogin858')?.addEventListener('click',()=>openAuthModal858({required:false,mode:'login'}));
+    card.querySelector('#chronoManageAccount858')?.addEventListener('click',()=>openAuthModal858({required:false,mode:'manage'}));
+    card.querySelector('#chronoLogout858')?.addEventListener('click',async()=>{if(!confirm('Sair desta conta neste dispositivo?'))return;try{await logout858()}catch(error){alert(error.message)}});
+  }
+  function injectAccountCard858(){
+    const host=document.getElementById('overlayCard');if(!host)return;
+    const title=(host.querySelector('h1')?.textContent||'').toUpperCase();if(!title.includes('CONFIGURA'))return;
+    document.getElementById('chronoEconomy852')?.remove();
+    let card=document.getElementById('chronoCloudCard850');
+    if(!card){card=document.createElement('section');card.id='chronoCloudCard850';const back=host.querySelector('[id*="cfgBack"],[id*="backCfg"],button:last-of-type');if(back?.parentElement===host)host.insertBefore(card,back);else host.appendChild(card)}
+    refreshAccountCard858();
+  }
+  function scheduleAccountCard858(){clearTimeout(settingsTimer858);settingsTimer858=setTimeout(injectAccountCard858,55)}
+  try{const host=document.getElementById('overlayCard');if(host)new MutationObserver(scheduleAccountCard858).observe(host,{childList:true,subtree:false})}catch(error){console.warn('Chrono Account observer',error)}
+  document.addEventListener('click',event=>{if(event.target?.closest?.('#chronoCloudCard850,#chronoAuthOverlay858,#chronoKeyOverlay858'))return;scheduleAccountCard858()},true);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&!window.game?.running)syncSnapshot858({force:true}).catch(()=>{})});
+  window.addEventListener('pagehide',()=>{if(!window.game?.running)syncSnapshot858({force:true}).catch(()=>{})});
+  setGameAuthGate8512(true);
+  if(document.body)showStartupGate8512('Carregando...');
+  document.addEventListener('DOMContentLoaded',()=>{injectAccountCard858();boot()},{once:true});
 
   window.ChronoCloud=Object.freeze({
     config:CONFIG,boot,reconnect,loadState,migrateLocalSave,collectLocalSnapshot,applySnapshot,
-    startRun,finishRun,invoke,subscribe,getState:()=>({...runtime,client:undefined})
+    startRun,finishRun,flushPendingRun:flushPendingRun854,invoke,subscribe,getState:()=>publicRuntime858(),
+    getAccount:()=>runtime.account?JSON.parse(JSON.stringify(runtime.account)):null,
+    isAuthenticated:hasPermanentAccount8512,
+    openLogin:()=>openAuthModal858({required:false,mode:'login'}),logout:logout858,syncNow:()=>syncSnapshot858({force:true})
   });
+
+  function installDirectTelemetry8510(){
+    const currentDeath=window.enemyDeath||globalThis.enemyDeath;
+    if(typeof currentDeath==='function'&&!currentDeath.__chronoTelemetry8510){
+      const wrappedDeath=function(index,enemy){
+        const shouldCount=!!(runTracker854.active&&window.game?.running&&enemy&&typeof enemy==='object'&&!runTracker854.seenDeaths.has(enemy));
+        if(shouldCount)runTracker854.seenDeaths.add(enemy);
+        const result=currentDeath.apply(this,arguments);
+        if(shouldCount){
+          runTracker854.eventKills++;
+          const rawType=String(enemy?.type||enemy?.bossType||'');
+          if(rawType==='boss'||enemy?.boss===true||enemy?.isBoss===true)runTracker854.eventBossKills++;
+          if(enemy?.elite===true||enemy?.isElite===true)runTracker854.eventEliteKills++;
+          const type=classifyEnemyType8510(enemy);if(type)runTracker854.eventTypeKills[type]=Math.max(0,Math.trunc(n(runTracker854.eventTypeKills[type])))+1;
+        }
+        return result;
+      };
+      wrappedDeath.__chronoTelemetry8510=true;wrappedDeath.__chronoBase=currentDeath;
+      window.enemyDeath=wrappedDeath;try{enemyDeath=wrappedDeath}catch{}
+    }
+    const currentSkill=window.useSkill||globalThis.useSkill;
+    if(typeof currentSkill==='function'&&!currentSkill.__chronoTelemetry8510){
+      const wrappedSkill=function(idx){
+        const g=window.game,beforeCd=Array.isArray(g?.skillCds)?n(g.skillCds[idx]):-1,beforeFocus=n(g?.player?.focus,NaN);
+        const result=currentSkill.apply(this,arguments);
+        if(runTracker854.active&&g?.running){
+          const afterCd=Array.isArray(g?.skillCds)?n(g.skillCds[idx]):-1,afterFocus=n(g?.player?.focus,NaN);
+          if((afterCd>beforeCd+0.001)||(Number.isFinite(beforeFocus)&&Number.isFinite(afterFocus)&&afterFocus<beforeFocus-0.001))runTracker854.eventSkillsUsed++;
+        }
+        return result;
+      };
+      wrappedSkill.__chronoTelemetry8510=true;wrappedSkill.__chronoBase=currentSkill;
+      window.useSkill=wrappedSkill;try{useSkill=wrappedSkill}catch{}
+    }
+  }
 
   function installRunHooks850(){
     const baseReset=window.resetGame||globalThis.resetGame;
     if(typeof baseReset==='function'&&!baseReset.__chronoCloud850){
-      const wrapped=function(classKey){
-        const out=baseReset.apply(this,arguments);
-        queueMicrotask(async()=>{
-          try{
-            const g=window.game;
-            if(!g?.running)return;
-            const mode=g.doom800?'doom':g.riftMode50?'rift':g.mode||'normal';
-            await startRun(mode,classKey||g.classKey);
-          }catch(e){console.warn('Chrono Cloud start_run',e)}
-        });
-        return out;
-      };
-      wrapped.__chronoCloud850=true;
-      window.resetGame=wrapped;
-      try{resetGame=wrapped}catch{}
+      const wrapped=function(classKey){const out=baseReset.apply(this,arguments);queueMicrotask(async()=>{try{const g=window.game;if(!g?.running)return;const mode=g.doom800?'doom':g.riftMode50?'rift':g.mode||'normal';await startRun(mode,classKey||g.classKey)}catch(error){console.warn('Chrono Cloud start_run',error)}});return out};
+      wrapped.__chronoCloud850=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}
     }
     const baseGameOver=window.gameOver||globalThis.gameOver;
     if(typeof baseGameOver==='function'&&!baseGameOver.__chronoCloud850){
       const wrapped=function(){
-        const g=window.game;
-        const sessionId=g?.cloudSessionId;
-        const summary=sessionId?{score:n(g.score),wave:n(g.wave),kills:n(g.kills)}:null;
-        const out=baseGameOver.apply(this,arguments);
-        if(sessionId&&summary)queueMicrotask(()=>finishRun(sessionId,summary).catch(e=>console.warn('Chrono Cloud finish_run',e)));
-        return out;
+        const g=window.game;if(g?.cloudSettlementQueued854)return baseGameOver.apply(this,arguments);
+        const sessionId=g?.cloudSessionId;if(g&&sessionId){g.cloudSettlementQueued854=true;g.cloudSessionId=null}
+        const delta=sessionId?runDelta854(sessionId):{kills:0,relicDelta:0,chronoDelta:0,bossKills:0,eliteKills:0,skillsUsed:0,typeKills:{}};
+        const verifiedKills=Math.max(0,Math.trunc(Math.max(n(delta.kills),n(g?.kills))));
+        const summary=sessionId?{requestId:crypto.randomUUID(),score:n(g.score),wave:n(g.wave),kills:verifiedKills,gold:n(g.gold),relicDelta:delta.relicDelta,chronoDelta:delta.chronoDelta,bossKills:Math.min(verifiedKills,delta.bossKills),eliteKills:Math.min(verifiedKills,delta.eliteKills),skillsUsed:delta.skillsUsed,typeKills:cleanTypeKills8510(delta.typeKills,verifiedKills)}:null;
+        if(sessionId&&summary)localStorage.setItem(PENDING_RUN_854,JSON.stringify({requestId:summary.requestId,sessionId,ownerUserId:runtime.session?.user?.id||'',summary,createdAt:Date.now()}));
+        endRunTracking854();const out=baseGameOver.apply(this,arguments);if(sessionId&&summary)queueMicrotask(()=>finishRun(sessionId,summary).catch(error=>console.warn('Chrono Cloud finish_run',error)));return out;
       };
-      wrapped.__chronoCloud850=true;
-      window.gameOver=wrapped;
-      try{gameOver=wrapped}catch{}
+      wrapped.__chronoCloud850=true;window.gameOver=wrapped;try{gameOver=wrapped}catch{}
     }
   }
+  installDirectTelemetry8510();
   installRunHooks850();
-  console.log('Chrono Shards 8.5.0 — fundação Supabase carregada');
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{installDirectTelemetry8510();installRunHooks850()},0),{once:true});
+  console.log('Chrono Shards 8.5.12 — login obrigatório, boot protegido e contas isoladas');
 })();
 </script>
+
+
+
 
 <script id="chronoLatestInterface849">
 /* Chrono Shards DOOM 8.4.9 — ritual ÚNICO + inicialização somente pela interface final */
@@ -37539,26 +37825,25 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     }catch(e){console.warn(PATCH+' inicialização final',e)}
     decorateSoon849();
   }
+  let revealed8512=false;
   function reveal849(){
-    latestHome849();
+    if(revealed8512||!window.ChronoCloud?.isAuthenticated?.())return;
+    revealed8512=true;latestHome849();
     requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.add('chrono-latest-ready849')));
   }
   async function boot849(){
-    /* As chamadas automáticas dos patches 2.7, 2.9, 3.1, 3.7 e 4.6.1 foram guardadas pela flag acima. */
+    /* A interface principal só é liberada depois que uma conta permanente é confirmada. */
+    root.classList.remove('chrono-latest-ready849');
     try{
       const cloudBoot=window.ChronoCloud?.boot?.();
-      if(cloudBoot&&typeof cloudBoot.then==='function'){
-        await Promise.race([cloudBoot,new Promise(resolve=>setTimeout(resolve,3500))]);
-      }
+      if(cloudBoot&&typeof cloudBoot.then==='function')await cloudBoot;
+      reveal849();
     }catch(e){console.warn(PATCH+' cloud boot',e)}
-    latestHome849();
-    requestAnimationFrame(()=>{latestHome849();requestAnimationFrame(()=>root.classList.add('chrono-latest-ready849'))});
-    setTimeout(()=>{latestHome849();root.classList.add('chrono-latest-ready849')},160);
   }
+  window.addEventListener('chrono-account-ready',reveal849);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot849,{once:true});else boot849();
-  setTimeout(()=>root.classList.add('chrono-latest-ready849'),1400);
   window.__ChronoLatestUI849={decorateUnique:decorateUnique849,renderLatestHome:latestHome849,reveal:reveal849};
-  console.log(PATCH+' — seção ÚNICO ritualizada e interfaces antigas removidas da inicialização visível');
+  console.log(PATCH+' — interface final protegida pelo login obrigatório');
 })();
 </script>
 
@@ -39555,6 +39840,542 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   new MutationObserver(()=>{if(overlayCard?.dataset?.bestiary846==='1'){document.getElementById('bookSideNav531')?.remove();document.querySelectorAll('.bookTickets529,.bookTickets530,.riftBookGeneral531,.newBook529,.newBook530').forEach(x=>x.remove())}}).observe(document.body,{childList:true,subtree:true});
   const prevDeath=window.enemyDeath||globalThis.enemyDeath;if(typeof prevDeath==='function'&&!prevDeath.__bestiary846){const wrapped=function(index,e){const id=canonicalId(e),before=id?kills(id):0,out=prevDeath.apply(this,arguments);if(id&&DATA.some(x=>x.id===id)&&kills(id)<=before){const m=read();m.bestiaryKills[id]=n(m.bestiaryKills[id])+1;m.stats.typeKills[id]=n(m.stats.typeKills[id])+1;write(m)}return out};wrapped.__bestiary846=true;window.enemyDeath=wrapped;try{enemyDeath=wrapped}catch{}}
   console.log('Chrono Shards 8.4.47 — Bestiário sem reconstrução ao selecionar registros');
+})();
+</script>
+
+
+<!-- Chrono Shards 8.5.8 — economia e compras validadas -->
+<style id="chronoEconomy852Style">
+  .chronoServerBuying852{opacity:.65!important;cursor:wait!important}
+</style>
+<script id="chronoEconomy852Client">
+(()=>{
+  if(window.__chronoEconomy852)return;
+  window.__chronoEconomy852=true;
+
+  const SAVE='chrono_v4_meta';
+  const UNLOCK=SAVE+'_class_unlocks_v3';
+  const FREE=new Set(['assault','sniper']);
+  const PRICES=Object.freeze({
+    engineer:{currency:'relic',cost:30},mage:{currency:'relic',cost:35},ronin:{currency:'relic',cost:40},
+    alchemist:{currency:'relic',cost:40},reaper:{currency:'relic',cost:50},colonel:{currency:'relic',cost:75},
+    chronoHero:{currency:'relic',cost:110},shadowChild:{currency:'relic',cost:170},bomber:{currency:'relic',cost:55},
+    archer:{currency:'relic',cost:55},ricocheteador:{currency:'relic',cost:75},moonSlayer:{currency:'chrono',cost:17},
+    stellarEmperor:{currency:'chrono',cost:30}
+  });
+  const SUPPORTED=new Set(Object.keys(PRICES));
+  let state=null,busy=false,lastToast=null;
+  const num=v=>Number.isFinite(Number(v))?Number(v):0;
+  const readJSON=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key)||'null');return v??fallback}catch{return fallback}};
+  const writeJSON=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
+  const cloud=()=>window.ChronoCloud;
+
+  function saveData(){return state?.save_data&&typeof state.save_data==='object'?state.save_data:{}}
+  function serverUnlocks(){const a=saveData()[UNLOCK];return Array.isArray(a)?a.filter(x=>typeof x==='string'):[]}
+  function serverMeta(){const m=saveData()[SAVE];return m&&typeof m==='object'&&!Array.isArray(m)?m:{}}
+  function enabled(){return !!(state?.wallet_authority_enabled&&state?.character_purchases_enabled)}
+  function owned(key){
+    if(FREE.has(key))return true;
+    if(!SUPPORTED.has(key))return true;
+    if(serverUnlocks().includes(key))return true;
+    if(key==='moonSlayer'&&serverMeta().unlockedMoonSlayer===true)return true;
+    return false;
+  }
+  function balance(currency){return currency==='chrono'?num(state?.chrono_fragments):num(state?.relic_shards)}
+
+  function toast(title,detail='',color='#ffd166'){
+    lastToast?.remove?.();
+    const d=document.createElement('div');lastToast=d;
+    d.style.cssText=`position:fixed;left:50%;top:12%;z-index:100000;transform:translateX(-50%);max-width:min(90vw,520px);padding:13px 17px;border-radius:14px;background:rgba(6,9,20,.97);border:1px solid ${color};box-shadow:0 18px 55px rgba(0,0,0,.48),0 0 28px ${color}33;color:#fff;font-family:Orbitron,Arial;text-align:center;pointer-events:none`;
+    d.innerHTML=`<b style="display:block;font-size:11px">${String(title).replace(/[<>&]/g,'')}</b>${detail?`<span style="display:block;margin-top:6px;color:#b7c5da;font:500 10px Arial">${String(detail).replace(/[<>&]/g,'')}</span>`:''}`;
+    document.body.appendChild(d);setTimeout(()=>{if(lastToast===d)lastToast=null;d.remove()},2300);
+  }
+
+  function applyState(next,{refresh=false}={}){
+    if(!next||typeof next!=='object')return;
+    state=next;
+    if(enabled()){
+      const m=readJSON(SAVE,{});
+      m.relicShards=num(state.relic_shards);
+      m.chronoFragments=num(state.chrono_fragments);
+      const sm=serverMeta();
+      if(sm.unlockedMoonSlayer===true)m.unlockedMoonSlayer=true;
+      writeJSON(SAVE,m);
+      const localUnlocks=readJSON(UNLOCK,[]);
+      const localOnly=Array.isArray(localUnlocks)?localUnlocks.filter(k=>typeof k==='string'&&!SUPPORTED.has(k)&&!FREE.has(k)):[];
+      writeJSON(UNLOCK,Array.from(new Set([...localOnly,...serverUnlocks().filter(k=>!FREE.has(k))])));
+      try{if(window.game)game.meta=m;if(typeof updateHUD==='function'&&window.game)updateHUD()}catch{}
+    }
+    renderPanel();
+    normalizeButtons();
+    if(refresh&&!window.game?.running)refreshClassMenu();
+  }
+
+  async function reloadState(){
+    const result=await cloud()?.loadState?.({applyAuthoritative:false});
+    if(result?.state)applyState(result.state);
+    return result?.state;
+  }
+
+  async function activate(){
+    if(busy||enabled())return;
+    if(!state?.legacy_imported_at){toast('Migração necessária','Migre o save local antes de proteger as compras.','#ff8fa3');return;}
+    const ok=confirm('Ativar compras protegidas usando o saldo que já está no servidor?\n\nDepois disso, compras de personagens usarão somente esse saldo oficial. Ganhos locais ainda serão migrados em uma próxima etapa.');
+    if(!ok)return;
+    busy=true;renderPanel();
+    try{
+      const result=await cloud().invoke('enable_economy',{requestId:crypto.randomUUID()});
+      applyState(result.state,{refresh:true});
+      await reloadState();
+      toast('COMPRAS PROTEGIDAS','Relíquias, Fragmentos Chrono e personagens comprados agora são validados pelo servidor.','#86ffb0');
+    }catch(error){toast('Falha ao ativar',error?.message||String(error),'#ff8fa3')}
+    finally{busy=false;renderPanel()}
+  }
+
+  async function purchase(key,button){
+    if(busy||!enabled()||!SUPPORTED.has(key))return;
+    busy=true;
+    const original=button?.innerHTML;
+    if(button){button.disabled=true;button.classList.add('chronoServerBuying852');button.textContent='COMPRANDO...'}
+    try{
+      const result=await cloud().invoke('purchase_character',{requestId:crypto.randomUUID(),characterKey:key});
+      applyState(result.state);
+      const unit=result.currency==='chrono'?'Fragmentos Chrono':'Relíquias';
+      toast('PERSONAGEM ADQUIRIDO',`${key} • ${result.cost} ${unit}`,'#86ffb0');
+      await reloadState();
+      refreshClassMenu();
+    }catch(error){
+      toast('COMPRA RECUSADA',error?.message||String(error),'#ff8fa3');
+      await reloadState().catch(()=>{});
+      normalizeButtons();
+    }finally{
+      busy=false;
+      if(button?.isConnected){button.classList.remove('chronoServerBuying852');button.innerHTML=original||'Comprar'}
+    }
+  }
+
+  function refreshClassMenu(){
+    try{
+      const title=document.querySelector('#overlayCard h1')?.textContent||'';
+      if(!/SELEÇÃO DE PERSONAGEM/i.test(title))return;
+      const fn=window.openClassMenu461||window.openClassMenu;
+      if(typeof fn==='function')setTimeout(()=>fn(),20);
+    }catch{}
+  }
+
+  function buyKey(btn){
+    if(!btn)return '';
+    if(btn.matches('[data-buy-stellar720],[data-buy-stellar721],[data-buy-stellar722]'))return 'stellarEmperor';
+    return btn.dataset.buy461||btn.dataset.buyRico529||btn.dataset.buyArcher470||btn.dataset.buy37||btn.dataset.buy||'';
+  }
+  function pickKey(btn){
+    if(!btn)return '';
+    if(btn.matches('[data-pick-stellar720],[data-pick-stellar721],[data-pick-stellar722]'))return 'stellarEmperor';
+    return btn.dataset.pick461||btn.dataset.pickRico529||btn.dataset.pickArcher470||btn.dataset.pick37||btn.dataset.pick||'';
+  }
+  function cardKey(card){
+    if(!card)return '';
+    if(card.matches('[data-stellar722],[data-stellar722-v23]')||/Emperador Estelar/i.test(card.textContent||''))return 'stellarEmperor';
+    return card.dataset.card461||card.dataset.cardRico529||card.dataset.cardArcher470||card.dataset.class||'';
+  }
+
+  const BUY_SELECTOR='[data-buy461],[data-buy-rico529],[data-buy-archer470],[data-buy-stellar720],[data-buy-stellar721],[data-buy-stellar722],[data-buy37],.class-card27 [data-buy],.class-card-v23 [data-buy]';
+  const PICK_SELECTOR='[data-pick461],[data-pick-rico529],[data-pick-archer470],[data-pick-stellar720],[data-pick-stellar721],[data-pick-stellar722],[data-pick37],.class-card27 [data-pick],.class-card-v23 [data-pick]';
+  const CARD_SELECTOR='[data-card461],[data-card-rico529],[data-card-archer470],.class-card27[data-class],.class-card-v23[data-class],[data-stellar722],[data-stellar722-v23]';
+
+  window.addEventListener('click',event=>{
+    if(!enabled())return;
+    const buy=event.target?.closest?.(BUY_SELECTOR);
+    const key=buyKey(buy);
+    if(buy&&SUPPORTED.has(key)){
+      event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+      purchase(key,buy);return;
+    }
+    const pick=event.target?.closest?.(PICK_SELECTOR);
+    const pickClass=pickKey(pick);
+    if(pick&&SUPPORTED.has(pickClass)&&!owned(pickClass)){
+      event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+      toast('PERSONAGEM BLOQUEADO','Este personagem ainda não foi adquirido.','#ff8fa3');return;
+    }
+    const card=event.target?.closest?.(CARD_SELECTOR);
+    const cardClass=cardKey(card);
+    if(card&&!event.target.closest('button')&&SUPPORTED.has(cardClass)&&!owned(cardClass)){
+      event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+      toast('PERSONAGEM BLOQUEADO','Este personagem ainda não foi adquirido.','#ff8fa3');
+    }
+  },true);
+
+  function normalizeButtons(){
+    if(!enabled())return;
+    document.querySelectorAll(BUY_SELECTOR).forEach(btn=>{
+      const key=buyKey(btn),price=PRICES[key];if(!price)return;
+      const can=!owned(key)&&balance(price.currency)>=price.cost;
+      btn.disabled=!can||busy;
+      btn.dataset.serverPurchase852='1';
+    });
+  }
+
+  // A ativação agora acontece automaticamente no bootstrap da conta.
+  // O painel técnico antigo foi removido para deixar Configurações natural e
+  // evitar observadores/atualizações desnecessárias nessa tela muito patchada.
+  function renderPanel(){document.getElementById('chronoEconomy852')?.remove();normalizeButtons()}
+
+  const baseReset=window.resetGame||globalThis.resetGame;
+  if(typeof baseReset==='function'&&!baseReset.__chronoEconomy852){
+    const wrapped=function(key){
+      if(enabled()&&SUPPORTED.has(String(key||''))&&!owned(String(key||''))){
+        toast('PERSONAGEM BLOQUEADO','Este personagem ainda não foi adquirido.','#ff8fa3');return false;
+      }
+      return baseReset.apply(this,arguments);
+    };
+    wrapped.__chronoEconomy852=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}
+  }
+
+  window.addEventListener('chrono-run-settled',event=>{
+    const r=event.detail||{};
+    if(!r?.accepted)return;
+    const relics=num(r.rewardRelics),chrono=num(r.rewardChrono);
+    const detail=[relics?`+${relics} Relíquias`:'',chrono?`+${chrono} Fragmentos Chrono`:''].filter(Boolean).join(' • ')||'Nenhum recurso permanente nesta partida';
+    toast('PARTIDA LIQUIDADA',detail,'#86ffb0');
+  });
+  function receive(detail){if(detail?.state)applyState(detail.state)}
+  try{cloud()?.subscribe?.(receive)}catch{}
+  window.addEventListener('chrono-cloud-state',event=>receive(event.detail));
+  document.addEventListener('DOMContentLoaded',()=>{const current=cloud()?.getState?.()?.state;if(current)applyState(current);renderPanel()},{once:true});
+  setTimeout(()=>{const current=cloud()?.getState?.()?.state;if(current)applyState(current);renderPanel();normalizeButtons()},500);
+
+  window.ChronoEconomy852=Object.freeze({
+    activate,purchase,reloadState,isEnabled:enabled,isOwned:owned,getState:()=>state?JSON.parse(JSON.stringify(state)):null
+  });
+  console.log('Chrono Shards 8.5.8 — economia, compras e recompensas de partida sincronizadas');
+})();
+</script>
+
+
+<style id="chronoRewards855Style">
+  .chronoServerBusy855{opacity:.62!important;cursor:wait!important;pointer-events:none!important}
+  .chronoRewardToast855{position:fixed;left:50%;top:12%;z-index:100002;transform:translateX(-50%);max-width:min(90vw,560px);padding:13px 17px;border-radius:14px;background:rgba(6,9,20,.97);border:1px solid var(--toast855,#86ffb0);box-shadow:0 18px 55px rgba(0,0,0,.48),0 0 28px color-mix(in srgb,var(--toast855,#86ffb0) 25%,transparent);color:#fff;font-family:Orbitron,Arial;text-align:center;pointer-events:none}
+  .chronoRewardToast855 b{display:block;font-size:11px}.chronoRewardToast855 span{display:block;margin-top:6px;color:#b7c5da;font:500 10px Arial}
+  .chronoMissionLoading856{min-height:360px!important}
+  .chronoMissionSync856{display:grid;place-items:center;gap:12px;padding:54px 20px;text-align:center}
+  .chronoMissionSync856>span{width:52px;height:52px;border-radius:50%;border:4px solid rgba(134,255,176,.18);border-top-color:#86ffb0;animation:chronoMissionSpin856 .8s linear infinite}
+  .chronoMissionSync856 strong{font:900 14px Orbitron,sans-serif;color:#effff6}
+  .chronoMissionSync856 p{max-width:650px;color:#aebdd1!important}
+  .chronoMissionSync856.error strong{color:#ff9aad}.chronoMissionSync856.error>div{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .missionCard489.ready[data-server-verified856="1"] .status489{color:#86ffb0!important}
+  @keyframes chronoMissionSpin856{to{transform:rotate(360deg)}}
+</style>
+<script id="chronoMissionsCodes856">
+(()=>{
+  if(window.__chronoMissionsCodes856)return;window.__chronoMissionsCodes856=true;
+  const SAVE='chrono_v4_meta';
+  const CODE_INPUTS='#codeInput529,#codeInput461,#code37,#codeInput27,#codeInput,#codeInput23,#codeInput40';
+  const CODE_BUTTONS='#redeem529,#redeem461,#redeem37,#redeem27,#redeemBtn,#redeemCode,#codeRedeemBtn,#redeem23,#redeem40,[data-redeem-code]';
+  const CODE_MESSAGES='#codeMsg529,#codeMsg461,#codeMsg37,#codeMsg27,#codeMsg,#codeMsg23,#codeMsg40';
+  const PROTECTED_CLASS_KEYS_856=new Set(['assault','sniper','engineer','mage','ronin','alchemist','reaper','colonel','chronoHero','shadowChild','moonSlayer','bomber','archer','ricocheteador','stellarEmperor']);
+  const baseOpenMissions856=window.openMissions827||window.openMissions489||window.openMissions461||window.openMissions;
+  let missionSyncPromise856=null,missionClaimBusy856=false,codeBusy856=false,lastToast856=null,missionCooldownTimer856=0,lastMissionPayload856=null;
+  const num856=v=>Number.isFinite(Number(v))?Number(v):0;
+  const clone856=value=>{try{return JSON.parse(JSON.stringify(value))}catch{return value}};
+  const readMeta856=()=>{try{return JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{return {}}};
+  function writeMeta856(meta){localStorage.setItem(SAVE,JSON.stringify(meta||{}));try{if(window.game)game.meta=meta;if(typeof updateHUD==='function'&&window.game)updateHUD()}catch{}}
+  function cloud856(){return window.ChronoCloud}
+  function mergeMissionStats856(localStats,serverStats){
+    const local=localStats&&typeof localStats==='object'?clone856(localStats):{};
+    const server=serverStats&&typeof serverStats==='object'?serverStats:{};
+    const preserveLive=!!window.game?.running;
+    const official=(localValue,serverValue)=>{
+      const value=Math.max(0,Math.trunc(num856(serverValue)));
+      return preserveLive?Math.max(Math.max(0,Math.trunc(num856(localValue))),value):value;
+    };
+    for(const key of ['totalKills','bossKills','eliteKills','skillsUsed','maxWave','chronoFragmentsCollected']){
+      if(server[key]!=null)local[key]=official(local[key],server[key]);
+    }
+    const trackedTypes=['chaser','swarmer','strafer','tank','bomber','sentinel','vomiter','pukeling'];
+    local.typeKills=local.typeKills&&typeof local.typeKills==='object'?local.typeKills:{};
+    const serverTypes=server.typeKills&&typeof server.typeKills==='object'?server.typeKills:{};
+    for(const key of trackedTypes)if(serverTypes[key]!=null)local.typeKills[key]=official(local.typeKills[key],serverTypes[key]);
+    for(const group of ['classKills','classBossKills','classSkillUses']){
+      local[group]=local[group]&&typeof local[group]==='object'?local[group]:{};
+      const source=server[group]&&typeof server[group]==='object'?server[group]:{};
+      for(const [key,value] of Object.entries(source))local[group][key]=official(local[group][key],value);
+    }
+    return local;
+  }
+  function protectionEnabled856(){
+    try{
+      const state=cloud856()?.getState?.()?.state;
+      if(!state)return false;
+      return !!(state.wallet_authority_enabled&&state.character_purchases_enabled&&state.mission_rewards_enabled&&state.code_rewards_enabled);
+    }catch{return false}
+  }
+  function toast856(title,detail='',color='#86ffb0'){
+    lastToast856?.remove?.();
+    const box=document.createElement('div');lastToast856=box;box.className='chronoRewardToast855';box.style.setProperty('--toast855',color);
+    const clean=v=>String(v??'').replace(/[<>&]/g,'');
+    box.innerHTML=`<b>${clean(title)}</b>${detail?`<span>${clean(detail)}</span>`:''}`;
+    document.body.appendChild(box);setTimeout(()=>{if(lastToast856===box)lastToast856=null;box.remove()},3000);
+  }
+  function applyServerState856(state){
+    if(!state||typeof state!=='object')return;
+    try{
+      const serverSave=state.save_data&&typeof state.save_data==='object'?state.save_data:{};
+      const serverMeta=serverSave.chrono_v4_meta&&typeof serverSave.chrono_v4_meta==='object'?serverSave.chrono_v4_meta:{};
+      const meta=readMeta856(),preserveLive=!!window.game?.running;
+      const serverRelics=num856(state.relic_shards??meta.relicShards),serverChrono=num856(state.chrono_fragments??meta.chronoFragments);
+      meta.relicShards=preserveLive?Math.max(num856(meta.relicShards),serverRelics):serverRelics;
+      meta.chronoFragments=preserveLive?Math.max(num856(meta.chronoFragments),serverChrono):serverChrono;
+      meta.awakeningKeys=Math.max(num856(meta.awakeningKeys),num856(state.awakening_keys));
+      meta.sinnerTears830=Math.max(num856(meta.sinnerTears830),num856(meta.doomFragments),num856(state.sinner_tears));
+      meta.doomFragments=meta.sinnerTears830;
+      meta.highScore=num856(state.high_score??meta.highScore);
+      if(state.mission_stats&&typeof state.mission_stats==='object')meta.stats=mergeMissionStats856(meta.stats,state.mission_stats);
+      if(state.mission_reputation!=null)meta.missionReputation489=Math.max(0,Math.trunc(num856(state.mission_reputation)));
+      const serverFlags=['allUnlocked','allInUnlocked','nefalemPurchased830','riftModeUnlocked525','riftModeUnlocked','doomModeUnlocked810','doomModeUnlocked','unlockedMoonSlayer','moonMissionClaimed','unlockedShadowChild','shadowChildUnlocked','stellarEmperorRevealed','stellarEmperorSecretUnlocked'];
+      for(const key of serverFlags)if(serverMeta[key]===true)meta[key]=true;
+      writeMeta856(meta);
+      const classKey=SAVE+'_class_unlocks_v3',serverUnlocks=serverSave[classKey];
+      if(Array.isArray(serverUnlocks)){
+        let localUnlocks=[];try{localUnlocks=JSON.parse(localStorage.getItem(classKey)||'[]')}catch{}
+        const localOnly=(Array.isArray(localUnlocks)?localUnlocks:[]).filter(item=>typeof item==='string'&&!PROTECTED_CLASS_KEYS_856.has(item));
+        localStorage.setItem(classKey,JSON.stringify(Array.from(new Set([...localOnly,...serverUnlocks.filter(item=>typeof item==='string')]))));
+      }
+      const usedKey=SAVE+'_redeemed_codes_v1',serverUsed=serverSave[usedKey];
+      if(Array.isArray(serverUsed)){
+        let localUsed=[];try{localUsed=JSON.parse(localStorage.getItem(usedKey)||'[]')}catch{}
+        localStorage.setItem(usedKey,JSON.stringify(Array.from(new Set([...(Array.isArray(localUsed)?localUsed:[]),...serverUsed]))));
+      }
+      const secretKey=SAVE+'_secret_rift_v1',serverSecret=serverSave[secretKey];
+      if(serverSecret&&typeof serverSecret==='object'){
+        let localSecret={};try{localSecret=JSON.parse(localStorage.getItem(secretKey)||'{}')||{}}catch{}
+        localStorage.setItem(secretKey,JSON.stringify(Object.assign(localSecret,serverSecret)));
+      }
+    }catch(error){console.warn('Chrono 8.5.6 apply state',error)}
+  }
+  function localSlot856(slot,index,difficulty,serverTime=Date.now()){
+    const value=slot&&typeof slot==='object'?slot:{};
+    const remoteCooldown=Math.max(0,Math.trunc(num856(value.cooldownUntil)));
+    const localCooldown=remoteCooldown>0?Date.now()+Math.max(0,remoteCooldown-Math.max(0,Math.trunc(num856(serverTime)))):0;
+    return{
+      difficulty:String(value.difficulty||difficulty||''),
+      missionId:value.missionId||null,
+      baseline:Math.max(0,Math.trunc(num856(value.baseline))),
+      cooldownUntil:localCooldown,
+      lastMissionId:value.lastMissionId||'',
+      claimed:!!value.claimed,
+      serverSlotKey:String(value.slotKey||`normal:${index}`),
+      serverCurrent:Math.max(0,Math.trunc(num856(value.current))),
+      serverProgress:Math.max(0,Math.trunc(num856(value.progress))),
+      serverTarget:Math.max(0,Math.trunc(num856(value.target))),
+      serverDone:value.done===true,
+      serverVerified:true,
+      v:489
+    };
+  }
+  function scheduleMissionCooldownSync856(payload){
+    clearTimeout(missionCooldownTimer856);missionCooldownTimer856=0;
+    const serverNow=Math.max(0,Math.trunc(num856(payload?.serverTime)))||Date.now(),times=[];
+    for(const slot of [...(Array.isArray(payload?.slots)?payload.slots:[]),payload?.extreme]){
+      const until=Math.trunc(num856(slot?.cooldownUntil));if(until>serverNow)times.push(until);
+    }
+    if(!times.length)return;
+    const delay=Math.max(250,Math.min(...times)-serverNow+180);
+    missionCooldownTimer856=setTimeout(()=>syncMissions856({rerender:missionsVisible856()}).catch(()=>{}),delay);
+  }
+  function applyMissionPayload856(payload){
+    if(!payload||typeof payload!=='object')return;
+    lastMissionPayload856=clone856(payload);
+    const meta=readMeta856();
+    meta.stats=mergeMissionStats856(meta.stats,payload.stats);
+    meta.missionReputation489=Math.max(0,Math.trunc(num856(payload.reputation)));
+    meta.missions39=meta.missions39&&typeof meta.missions39==='object'?meta.missions39:{};
+    const ordered=['easy','easy','easy','medium','medium','hard'];
+    const slots=Array.isArray(payload.slots)?payload.slots:[],serverTime=Math.max(0,Math.trunc(num856(payload.serverTime)))||Date.now();
+    meta.missions39.slots=ordered.map((difficulty,index)=>localSlot856(slots.find(item=>Number(item?.slotIndex)===index)||slots[index],index,difficulty,serverTime));
+    meta.missions39.extreme489=localSlot856(payload.extreme,6,'extreme',serverTime);
+    meta.missions39.secret=localSlot856(payload.secret,7,'secret',serverTime);
+    meta.missions39.secret.missionId='s_moon';
+    if(meta.missions39.secret.claimed){
+      meta.moonMissionClaimed=true;
+      meta.missions39.extreme=Object.assign({},meta.missions39.extreme,{claimed:true});
+      meta.missions37=meta.missions37&&typeof meta.missions37==='object'?meta.missions37:{};
+      meta.missions37.extreme=Object.assign({},meta.missions37.extreme,{claimed:true});
+    }
+    meta.missions39.serverAuthority856=true;
+    meta.missions39.serverSyncedAt856=Date.now();
+    writeMeta856(meta);scheduleMissionCooldownSync856(payload);
+    if(payload?.audit&&(num856(payload.audit.invalidMissions)>0||num856(payload.audit.duplicateMissions)>0))console.warn('Chrono mission audit',payload.audit);
+    if(num856(payload.legacyImportedCount)>0&&!sessionStorage.getItem('chronoLegacyMissionNotice856')){
+      sessionStorage.setItem('chronoLegacyMissionNotice856','1');
+      toast856('MISSÕES ANTIGAS RECONCILIADAS',`${num856(payload.legacyImportedCount)} contrato(s) concluído(s) antes da atualização foram preservados.`,'#ffd166');
+    }
+  }
+  function missionsVisible856(){
+    try{return /MISSÕES|MISSÕES CHRONO|AWAKENING/i.test(document.querySelector('#overlayCard h1')?.textContent||'')&&document.getElementById('overlay')&&!document.getElementById('overlay').classList.contains('hidden')}catch{return false}
+  }
+  function officialSlot856(slotKey){
+    if(!lastMissionPayload856)return null;
+    if(slotKey==='extreme')return lastMissionPayload856.extreme||null;
+    if(slotKey==='secret')return lastMissionPayload856.secret||null;
+    return (Array.isArray(lastMissionPayload856.slots)?lastMissionPayload856.slots:[]).find(slot=>String(slot?.slotKey)===slotKey)||null;
+  }
+  function renderMissionLoading856(message='Carregando…'){
+    const overlay=document.getElementById('overlay'),card=document.getElementById('overlayCard');if(!overlay||!card)return;
+    overlay.classList.remove('hidden');card.className='card mission489 chronoMissionLoading856';
+    card.innerHTML=`<h1>MISSÕES</h1><div class="chronoMissionSync856"><span></span><strong>${message}</strong><p>Aguarde enquanto suas missões são carregadas.</p></div>`;
+  }
+  function renderMissionError856(error){
+    const overlay=document.getElementById('overlay'),card=document.getElementById('overlayCard');if(!overlay||!card)return;
+    overlay.classList.remove('hidden');card.className='card mission489 chronoMissionLoading856';
+    const text=String(error?.message||error||'Falha desconhecida').replace(/[<>&]/g,'');
+    card.innerHTML=`<h1>MISSÕES</h1><div class="chronoMissionSync856 error"><strong>Não foi possível carregar as missões</strong><p>${text}</p><div><button class="main-btn" id="retryMissions856">Tentar novamente</button><button class="main-btn" id="backMissions856">← Voltar</button></div></div>`;
+    card.querySelector('#retryMissions856')?.addEventListener('click',()=>openMissions856());
+    card.querySelector('#backMissions856')?.addEventListener('click',()=>{try{(window.openHub461||window.openStartMenu)?.()}catch{overlay.classList.add('hidden')}});
+  }
+  function updateOfficialCard856(card,slot,kind,index){
+    if(!card||!slot||!slot.missionId)return;
+    const target=Math.max(1,Math.trunc(num856(slot.target))),progress=Math.max(0,Math.trunc(num856(slot.progress))),shown=Math.min(progress,target),done=slot.done===true,claimed=slot.claimed===true;
+    const pct=Math.max(0,Math.min(100,shown/target*100));
+    card.dataset.serverVerified856='1';card.classList.toggle('ready',done&&!claimed);
+    const status=card.querySelector('.status489');
+    if(status)status.textContent=claimed?'ENCERRADA':done?'PRONTA PARA RESGATE':'EM PROGRESSO';
+    const progressBar=card.querySelector('.missionProgress489');if(progressBar)progressBar.style.setProperty('--p',`${claimed?100:pct}%`);
+    const counts=card.querySelectorAll('.missionCount489 span');
+    if(counts[0])counts[0].textContent=claimed&&kind==='secret'?'???':`${Math.floor(shown).toLocaleString('pt-BR')}/${Math.floor(target).toLocaleString('pt-BR')}`;
+    if(counts[1])counts[1].textContent=claimed&&kind==='secret'?'CONCLUÍDA':`${Math.round(pct)}%`;
+    let button=kind==='normal'?card.querySelector('[data-claim489]'):kind==='extreme'?card.querySelector('#claimExtreme489'):card.querySelector('#claimSecret489');
+    if(!done||claimed){button?.remove();return}
+    if(!button){
+      button=document.createElement('button');button.className='claim489';button.textContent=kind==='secret'?'Resgatar missão':'Resgatar missão';
+      if(kind==='normal')button.dataset.claim489=String(index);
+      else button.id=kind==='extreme'?'claimExtreme489':'claimSecret489';
+      card.appendChild(button);
+    }
+  }
+  function decorateOfficialProgress856(payload=lastMissionPayload856){
+    if(!payload||!missionsVisible856())return;
+    const cards=[...document.querySelectorAll('#overlayCard .missionGrid489 > article.missionCard489')];
+    const slots=Array.isArray(payload.slots)?payload.slots:[];
+    for(let index=0;index<6;index++)updateOfficialCard856(cards[index],slots.find(slot=>Number(slot?.slotIndex)===index)||slots[index],'normal',index);
+    updateOfficialCard856(cards[6],payload.extreme,'extreme',6);
+    updateOfficialCard856(cards[7],payload.secret,'secret',7);
+  }
+  async function refreshEconomyState856(){
+    try{return await window.ChronoEconomy852?.reloadState?.()}catch(error){console.warn('Chrono 8.5.6 economy refresh',error);return null}
+  }
+  async function syncMissions856({rerender=true}={}){
+    if(!protectionEnabled856()||!cloud856()?.invoke)return null;
+    if(missionSyncPromise856)return missionSyncPromise856;
+    missionSyncPromise856=(async()=>{
+      const payload=await cloud856().invoke('load_missions');
+      applyServerState856(payload?.state);applyMissionPayload856(payload);
+      if(rerender&&missionsVisible856()&&typeof baseOpenMissions856==='function'){
+        baseOpenMissions856();requestAnimationFrame(()=>decorateOfficialProgress856(payload));
+      }
+      return payload;
+    })().catch(error=>{throw error}).finally(()=>{missionSyncPromise856=null});
+    return missionSyncPromise856;
+  }
+  async function openMissions856(){
+    if(!protectionEnabled856()||!cloud856()?.invoke)return typeof baseOpenMissions856==='function'?baseOpenMissions856.apply(this,arguments):undefined;
+    renderMissionLoading856();
+    try{
+      const payload=await syncMissions856({rerender:false});
+      if(typeof baseOpenMissions856==='function')baseOpenMissions856();
+      requestAnimationFrame(()=>decorateOfficialProgress856(payload));
+      return payload;
+    }catch(error){
+      console.warn('Chrono missions sync',error);renderMissionError856(error);return null;
+    }
+  }
+  for(const name of ['openMissions','openMissions461','openMissions465','openMissions482','openMissions483','openMissions488','openMissions489','openMissions827']){
+    window[name]=openMissions856;try{globalThis[name]=openMissions856}catch{}
+  }
+  window.openMissions856=openMissions856;
+
+  async function claimMission856(slotKey,button){
+    if(missionClaimBusy856)return;missionClaimBusy856=true;
+    const original=button?.textContent;if(button){button.disabled=true;button.classList.add('chronoServerBusy855');button.textContent='CARREGANDO...'}
+    try{
+      let official=officialSlot856(slotKey);
+      if(!official){await syncMissions856({rerender:false});official=officialSlot856(slotKey)}
+      if(!official?.done||official?.claimed){
+        const current=Math.max(0,Math.trunc(num856(official?.progress))),target=Math.max(0,Math.trunc(num856(official?.target)));
+        toast856('MISSÃO AINDA NÃO CONCLUÍDA',target?`Progresso: ${current}/${target}`:'Aguarde o carregamento da missão.','#ffd166');
+        if(typeof baseOpenMissions856==='function')baseOpenMissions856();requestAnimationFrame(()=>decorateOfficialProgress856());return;
+      }
+      const result=await cloud856().invoke('claim_mission',{requestId:crypto.randomUUID(),slotKey});
+      applyServerState856(result?.state);applyMissionPayload856(result);
+      await refreshEconomyState856();
+      if(typeof baseOpenMissions856==='function')baseOpenMissions856();requestAnimationFrame(()=>decorateOfficialProgress856(result));
+      const parts=[];if(num856(result?.rewardRelics))parts.push(`+${num856(result.rewardRelics)} Relíquias`);if(num856(result?.rewardChrono))parts.push(`+${num856(result.rewardChrono)} Fragmento Chrono`);if(num856(result?.rewardReputation))parts.push(`+${num856(result.rewardReputation)} Reputação`);
+      toast856(result?.secretUnlocked?'MISSÃO SECRETA RESGATADA':'MISSÃO RESGATADA',parts.join(' • ')||'Progresso atualizado','#86ffb0');
+    }catch(error){
+      await syncMissions856({rerender:false}).catch(()=>{});
+      if(typeof baseOpenMissions856==='function')baseOpenMissions856();requestAnimationFrame(()=>decorateOfficialProgress856());
+      toast856('RESGATE RECUSADO',error?.message||String(error),'#ff8fa3');
+    }finally{
+      missionClaimBusy856=false;if(button?.isConnected){button.classList.remove('chronoServerBusy855');button.disabled=false;button.textContent=original||'Resgatar missão'}
+    }
+  }
+  window.addEventListener('click',event=>{
+    if(!protectionEnabled856())return;
+    const normal=event.target?.closest?.('[data-claim489]');
+    const extreme=event.target?.closest?.('#claimExtreme489');
+    const secret=event.target?.closest?.('#claimSecret489');
+    const button=normal||extreme||secret;if(!button)return;
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+    const slotKey=normal?`normal:${Math.max(0,Math.min(5,Math.trunc(num856(normal.dataset.claim489))))}`:extreme?'extreme':'secret';
+    claimMission856(slotKey,button);
+  },true);
+
+  function codeUI856(origin){
+    const root=origin?.closest?.('.card')||document;
+    return{input:root.querySelector?.(CODE_INPUTS)||document.querySelector(CODE_INPUTS),msg:root.querySelector?.(CODE_MESSAGES)||document.querySelector(CODE_MESSAGES)};
+  }
+  function codeMessage856(element,text,color){if(element){element.style.color=color;element.textContent=text}}
+  async function applyMasterCompatibility856(code){
+    const vault=window.__ChronoCodeVault845;if(!vault?.digest||!vault?.redeemFromUI)return;
+    try{
+      const hash=await vault.digest(code),usedKey=SAVE+'_redeemed_codes_v1';
+      let used=[];try{used=JSON.parse(localStorage.getItem(usedKey)||'[]')}catch{}
+      localStorage.setItem(usedKey,JSON.stringify((Array.isArray(used)?used:[]).filter(item=>String(item).toLowerCase()!==hash)));
+      await vault.redeemFromUI({value:code},null);
+    }catch(error){console.warn('Chrono 8.5.6 master compatibility',error)}
+  }
+  async function redeemCode856(input,msg,button){
+    if(codeBusy856)return;
+    const code=String(input?.value??'').normalize('NFKC').trim();
+    if(!code){codeMessage856(msg,'Digite um código.','#ffd166');return}
+    codeBusy856=true;if(button){button.disabled=true;button.classList.add('chronoServerBusy855')};codeMessage856(msg,'Carregando…','#bcd6ff');
+    try{
+      const result=await cloud856().invoke('redeem_code',{requestId:crypto.randomUUID(),code});
+      if(result?.masterUnlock)await applyMasterCompatibility856(code);
+      applyServerState856(result?.state);await refreshEconomyState856();
+      input.value='';codeMessage856(msg,result?.label||'Código resgatado.','#86ffb0');
+      const rewards=[];if(num856(result?.rewardRelics))rewards.push(`+${num856(result.rewardRelics)} Relíquias`);if(num856(result?.rewardChrono))rewards.push(`+${num856(result.rewardChrono)} Fragmentos Chrono`);if(num856(result?.rewardAwakeningKeys))rewards.push(`+${num856(result.rewardAwakeningKeys)} Chaves`);if(num856(result?.rewardSinnerTears))rewards.push(`+${num856(result.rewardSinnerTears)} Lágrimas`);
+      toast856(result?.masterUnlock?'CÓDIGO MESTRE VALIDADO':'CÓDIGO RESGATADO',rewards.join(' • ')||result?.label||'Recompensa aplicada','#86ffb0');
+      syncMissions856({rerender:false}).catch(()=>{});
+    }catch(error){
+      const text=error?.message||String(error);codeMessage856(msg,/já foi usado/i.test(text)?'Esse código já foi usado.':/inválido/i.test(text)?'Código inválido.':'Não foi possível validar o código.','#ff8fa3');
+      toast856('CÓDIGO RECUSADO',text,'#ff8fa3');
+    }finally{codeBusy856=false;if(button?.isConnected){button.disabled=false;button.classList.remove('chronoServerBusy855')}}
+  }
+  window.addEventListener('click',event=>{
+    if(!protectionEnabled856())return;
+    const button=event.target?.closest?.(CODE_BUTTONS);if(!button)return;
+    const ui=codeUI856(button);if(!ui.input)return;
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();redeemCode856(ui.input,ui.msg,button);
+  },true);
+  window.addEventListener('keydown',event=>{
+    if(!protectionEnabled856()||event.key!=='Enter'||!event.target?.matches?.(CODE_INPUTS))return;
+    const ui=codeUI856(event.target);event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();redeemCode856(ui.input,ui.msg,null);
+  },true);
+  window.addEventListener('chrono-run-settled',event=>{if(event.detail?.accepted)syncMissions856({rerender:missionsVisible856()}).catch(()=>{})});
+  window.addEventListener('chrono-cloud-state',()=>{if(missionsVisible856())setTimeout(()=>syncMissions856({rerender:true}).catch(()=>{}),80)});
+  window.ChronoRewards856=Object.freeze({syncMissions:syncMissions856,claimMission:claimMission856,redeemCode:redeemCode856,isProtected:protectionEnabled856,getPayload:()=>clone856(lastMissionPayload856)});
+  window.ChronoRewards855=window.ChronoRewards856;
+  console.log('Chrono Shards 8.5.7 — missões, códigos e interface revisados');
 })();
 </script>
 
