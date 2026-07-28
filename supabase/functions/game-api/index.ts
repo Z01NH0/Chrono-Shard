@@ -78,6 +78,13 @@ const ALLOWED_TYPE_KILL_KEYS = [
   'pukeling',
 ] as const
 const ALLOWED_TYPE_KILLS = new Set<string>(ALLOWED_TYPE_KILL_KEYS)
+const AWAKENING_CHARACTER_KEYS = new Set([
+  'assault', 'sniper', 'reaper', 'alchemist', 'colonel',
+  'engineer', 'archer', 'bomber', 'mage', 'ronin',
+])
+const INFERNAL_SHOP_SECTIONS = new Set([
+  'relics', 'chrono', 'augments', 'permanent', 'doomBuffs', 'chests', 'skins',
+])
 
 const SOFT_ERROR_ACTIONS = new Set([
   'login_account',
@@ -148,6 +155,45 @@ function sanitizeTypeKills(value: unknown, totalKills: number): Record<string, n
   }
 
   return out
+}
+
+function sanitizeSpecialMetrics(
+  value: unknown,
+  totalKills: number,
+  bossKills: number,
+): Record<string, number> {
+  const source = asObject(value)
+  return {
+    riftTickKills: finiteInt(source.riftTickKills, 0, totalKills),
+    assaultTurboBossKills: finiteInt(source.assaultTurboBossKills, 0, bossKills),
+    roninParryContacts: finiteInt(source.roninParryContacts, 0, 10_000_000),
+    infernalBossKills: finiteInt(source.infernalBossKills, 0, bossKills),
+    doomEmperorKills: finiteInt(source.doomEmperorKills, 0, bossKills),
+  }
+}
+
+function sanitizeDoomSummary(value: unknown, totalKills: number, bossKills: number): JsonObject {
+  const source = asObject(value)
+  return {
+    missionsCompleted: finiteInt(source.missionsCompleted, 0, 100_000),
+    missionsFailed: finiteInt(source.missionsFailed, 0, 100_000),
+    minibossKills: finiteInt(source.minibossKills, 0, totalKills),
+    bossKills: finiteInt(source.bossKills, 0, bossKills),
+    peakValue: finiteInt(source.peakValue, 0, 100),
+    timeAtDoom: finiteInt(source.timeAtDoom, 0, 10_000_000),
+    emperorDefeated: source.emperorDefeated === true,
+  }
+}
+
+function throwProgressionRpcError(error: any): never {
+  const message = String(error?.message ?? error ?? 'Operação recusada pelo servidor')
+  const lower = message.toLowerCase()
+  const status = lower.includes('insuficiente') || lower.includes('limite') || lower.includes('já ') || lower.includes('ainda não')
+    ? 409
+    : lower.includes('não adquirido') || lower.includes('não foi desbloqueado')
+      ? 403
+      : 400
+  publicError(message, status, 'PROGRESSION_ACTION_REJECTED')
 }
 
 function normalizeRewardCode(value: unknown): string {
@@ -604,7 +650,7 @@ function stateOwnsCharacter(stateValue: unknown, classKey: string): boolean {
 }
 
 function json(body: unknown, status = 200): Response {
-  return Response.json(body, { status })
+  return Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
 }
 
 async function bootstrapPlayerState(
@@ -632,8 +678,10 @@ async function bootstrapPlayerState(
   const needsInitialization = current.initialized !== true || !current.legacy_imported_at
   const needsProtection = !current.wallet_authority_enabled || !current.character_purchases_enabled ||
     !current.run_results_enabled || !current.mission_rewards_enabled || !current.code_rewards_enabled
+  const needsProgressionProtection = !current.awakening_authority_enabled ||
+    !current.infernal_authority_enabled || !current.doom_authority_enabled
 
-  if (!needsInitialization && !needsProtection) return current as Record<string, unknown>
+  if (!needsInitialization && !needsProtection && !needsProgressionProtection) return current as Record<string, unknown>
 
   const update: Record<string, unknown> = {
     wallet_authority_enabled: true,
@@ -641,6 +689,10 @@ async function bootstrapPlayerState(
     run_results_enabled: true,
     mission_rewards_enabled: true,
     code_rewards_enabled: true,
+    awakening_authority_enabled: true,
+    infernal_authority_enabled: true,
+    doom_authority_enabled: true,
+    progression_authority_enabled_at: current.progression_authority_enabled_at ?? new Date().toISOString(),
     wallet_authority_enabled_at: current.wallet_authority_enabled_at ?? new Date().toISOString(),
     revision: Number(current.revision ?? 0) + 1,
   }
@@ -702,7 +754,7 @@ export default {
         return json({
           ok: true,
           service: 'chrono-shards-cloud',
-          phase: 'deep-review-stability-8.5.15',
+          phase: 'awakening-hydration-hardening-8.5.19',
         })
       }
 
@@ -1299,6 +1351,120 @@ export default {
         return json(data)
       }
 
+      if (action === 'load_progression') {
+        const { data, error } = await admin.rpc('chrono_progression_payload_server', {
+          p_user_id: userId,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json({ progression: data })
+      }
+
+      if (action === 'awakening_start_stage') {
+        const requestId = String(body.requestId ?? '')
+        const characterKey = String(body.characterKey ?? '')
+        const rawStage = Number(body.stage)
+        if (
+          !isUuid(requestId) ||
+          !AWAKENING_CHARACTER_KEYS.has(characterKey) ||
+          !Number.isInteger(rawStage) ||
+          rawStage < 1 ||
+          rawStage > 5
+        ) {
+          return json({ error: 'Dados da etapa de Awakening inválidos' }, 400)
+        }
+        const stage = rawStage
+        const { data, error } = await admin.rpc('chrono_start_awakening_stage_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+          p_character_key: characterKey,
+          p_stage: stage,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
+      if (action === 'awakening_claim_stage') {
+        const requestId = String(body.requestId ?? '')
+        if (!isUuid(requestId)) return json({ error: 'Identificador inválido' }, 400)
+        const { data, error } = await admin.rpc('chrono_claim_awakening_stage_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
+      if (action === 'awakening_claim_ultimate') {
+        const requestId = String(body.requestId ?? '')
+        const characterKey = String(body.characterKey ?? '')
+        if (!isUuid(requestId) || !AWAKENING_CHARACTER_KEYS.has(characterKey)) {
+          return json({ error: 'Dados da Ultimate inválidos' }, 400)
+        }
+        const { data, error } = await admin.rpc('chrono_claim_awakening_ultimate_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+          p_character_key: characterKey,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
+      if (action === 'infernal_purchase') {
+        const requestId = String(body.requestId ?? '')
+        const section = String(body.section ?? '')
+        const index = finiteInt(body.index, 0, 20)
+        const rotationId = String(body.rotationId ?? '').trim()
+        if (!isUuid(requestId) || !INFERNAL_SHOP_SECTIONS.has(section) || rotationId.length < 10 || rotationId.length > 100) {
+          return json({ error: 'Oferta da Loja Infernal inválida' }, 400)
+        }
+        const { data, error } = await admin.rpc('chrono_infernal_purchase_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+          p_section: section,
+          p_index: index,
+          p_rotation_id: rotationId,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
+      if (action === 'infernal_legacy') {
+        const requestId = String(body.requestId ?? '')
+        const legacyId = String(body.legacyId ?? '')
+        if (!isUuid(requestId) || !legacyId) return json({ error: 'Legado inválido' }, 400)
+        const { data, error } = await admin.rpc('chrono_infernal_legacy_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+          p_legacy_id: legacyId,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
+      if (action === 'infernal_nefalem') {
+        const requestId = String(body.requestId ?? '')
+        if (!isUuid(requestId)) return json({ error: 'Identificador inválido' }, 400)
+        const { data, error } = await admin.rpc('chrono_purchase_nefalem_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
+      if (action === 'doom_unlock') {
+        const requestId = String(body.requestId ?? '')
+        const sessionId = String(body.sessionId ?? '')
+        if (!isUuid(requestId) || !isUuid(sessionId)) return json({ error: 'Sessão DOOM inválida' }, 400)
+        const { data, error } = await admin.rpc('chrono_unlock_doom_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+          p_session_id: sessionId,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
       if (action === 'start_run') {
         const requestId = String(body.requestId ?? '')
         const mode = String(body.mode ?? 'normal').slice(0, 40)
@@ -1317,7 +1483,7 @@ export default {
         // sessões paralelas e quebrar o progresso das missões.
         const { data: existingSession, error: existingError } = await admin
           .from('chrono_game_sessions')
-          .select('id, server_seed, started_at, status, mode, class_key')
+          .select('id, server_seed, started_at, status, mode, class_key, server_context')
           .eq('id', requestId)
           .eq('user_id', userId)
           .maybeSingle()
@@ -1330,9 +1496,35 @@ export default {
           .maybeSingle()
         if (stateError) throw stateError
 
+        let doomAuthority: any = null
+        if (mode === 'doom' || classKey === 'nefalem') {
+          const { data: infernal, error: infernalError } = await admin
+            .from('chrono_player_infernal')
+            .select('nefalem_owned, doom_unlocked')
+            .eq('user_id', userId)
+            .maybeSingle()
+          if (infernalError) throw infernalError
+          doomAuthority = infernal
+          if (mode === 'doom' && infernal?.doom_unlocked !== true) {
+            return json({ error: 'Modo DOOM ainda não foi desbloqueado no servidor', code: 'DOOM_LOCKED' }, 403)
+          }
+          if (classKey === 'nefalem' && infernal?.nefalem_owned !== true) {
+            return json({ error: 'Nefalem ainda não foi adquirido no servidor', code: 'NEFALEM_LOCKED' }, 403)
+          }
+        }
+
         if (existingSession?.status === 'active') {
           if (existingSession.mode !== mode || existingSession.class_key !== classKey) {
             return json({ error: 'Identificador já usado por outra partida', code: 'RUN_REQUEST_CONFLICT' }, 409)
+          }
+          let doomLoadout = null
+          if (mode === 'doom') {
+            const { data: loadout, error: loadoutError } = await admin.rpc('chrono_prepare_doom_run_server', {
+              p_user_id: userId,
+              p_session_id: existingSession.id,
+            })
+            if (loadoutError) throwProgressionRpcError(loadoutError)
+            doomLoadout = loadout
           }
           return json({
             session: {
@@ -1341,6 +1533,7 @@ export default {
               started_at: existingSession.started_at,
             },
             state,
+            doomLoadout,
             replayed: true,
           })
         }
@@ -1377,11 +1570,20 @@ export default {
           // sessão antes de transformar um retry legítimo em erro de login/run.
           const { data: racedSession, error: racedError } = await admin
             .from('chrono_game_sessions')
-            .select('id, server_seed, started_at, status, mode, class_key')
+            .select('id, server_seed, started_at, status, mode, class_key, server_context')
             .eq('id', requestId)
             .eq('user_id', userId)
             .maybeSingle()
           if (!racedError && racedSession?.status === 'active' && racedSession.mode === mode && racedSession.class_key === classKey) {
+            let doomLoadout = null
+            if (mode === 'doom') {
+              const { data: loadout, error: loadoutError } = await admin.rpc('chrono_prepare_doom_run_server', {
+                p_user_id: userId,
+                p_session_id: racedSession.id,
+              })
+              if (loadoutError) throwProgressionRpcError(loadoutError)
+              doomLoadout = loadout
+            }
             return json({
               session: {
                 id: racedSession.id,
@@ -1389,28 +1591,54 @@ export default {
                 started_at: racedSession.started_at,
               },
               state,
+              doomLoadout,
               replayed: true,
             })
           }
           throw error
         }
-        return json({ session: data, state, replayed: false })
+        let doomLoadout = null
+        if (mode === 'doom') {
+          const { data: loadout, error: loadoutError } = await admin.rpc('chrono_prepare_doom_run_server', {
+            p_user_id: userId,
+            p_session_id: data.id,
+          })
+          if (loadoutError) {
+            await admin.from('chrono_game_sessions').update({
+              status: 'rejected',
+              ended_at: new Date().toISOString(),
+              summary: { rejected: true, reason: 'doom_prepare_failed' },
+            }).eq('id', data.id).eq('user_id', userId).eq('status', 'active')
+            throwProgressionRpcError(loadoutError)
+          }
+          doomLoadout = loadout
+        }
+        return json({ session: data, state, doomLoadout, replayed: false })
       }
 
       if (action === 'checkpoint_run') {
         const sessionId = String(body.sessionId ?? '')
-        if (!sessionId) return json({ error: 'Sessão ausente' }, 400)
+        if (!isUuid(sessionId)) return json({ error: 'Sessão ausente ou inválida' }, 400)
         const totalKills = finiteInt(body.kills, 0, 10_000_000)
+        const bossKills = finiteInt(body.bossKills, 0, totalKills)
+        const eliteKills = finiteInt(body.eliteKills, 0, totalKills)
+        const score = finiteInt(body.score, 0, 2_000_000_000)
+        const wave = finiteInt(body.wave, 0, 1_000_000)
+        const skillsUsed = finiteInt(body.skillsUsed, 0, 10_000_000)
+        const typeKills = sanitizeTypeKills(body.typeKills, totalKills)
+        const specialMetrics = sanitizeSpecialMetrics(body.specialMetrics, totalKills, bossKills)
+        const doomSummary = sanitizeDoomSummary(body.doomSummary, totalKills, bossKills)
+
         const { data, error } = await admin.rpc('chrono_checkpoint_run_server', {
           p_user_id: userId,
           p_session_id: sessionId,
-          p_score: finiteInt(body.score, 0, 2_000_000_000),
-          p_wave: finiteInt(body.wave, 0, 1_000_000),
+          p_score: score,
+          p_wave: wave,
           p_kills: totalKills,
-          p_boss_kills: finiteInt(body.bossKills, 0, totalKills),
-          p_elite_kills: finiteInt(body.eliteKills, 0, totalKills),
-          p_skills_used: finiteInt(body.skillsUsed, 0, 10_000_000),
-          p_type_kills: sanitizeTypeKills(body.typeKills, totalKills),
+          p_boss_kills: bossKills,
+          p_elite_kills: eliteKills,
+          p_skills_used: skillsUsed,
+          p_type_kills: typeKills,
         })
         if (error) {
           const message = String(error.message ?? '').toLowerCase()
@@ -1418,7 +1646,31 @@ export default {
           if (message.includes('sessão já encerrada')) return json({ accepted: false, terminal: true, code: 'RUN_ALREADY_SETTLED' })
           throw error
         }
-        return json(data)
+
+        // O checkpoint normal já combina valores cumulativos e impede regressão.
+        // O Awakening usa exatamente esse mesmo resumo oficial para que as duas
+        // abas nunca avancem com números diferentes para a mesma partida.
+        const officialCheckpoint = asObject(asObject(data).checkpoint)
+        const officialKills = finiteInt(officialCheckpoint.kills, 0, 10_000_000)
+        const officialBossKills = finiteInt(officialCheckpoint.bossKills, 0, officialKills)
+        const officialEliteKills = finiteInt(officialCheckpoint.eliteKills, 0, officialKills)
+        const officialTypeKills = sanitizeTypeKills(officialCheckpoint.typeKills, officialKills)
+        const { data: progression, error: progressionError } = await admin.rpc('chrono_apply_progression_run_server', {
+          p_user_id: userId,
+          p_session_id: sessionId,
+          p_score: finiteInt(officialCheckpoint.score, 0, 2_000_000_000),
+          p_wave: finiteInt(officialCheckpoint.wave, 0, 1_000_000),
+          p_kills: officialKills,
+          p_boss_kills: officialBossKills,
+          p_elite_kills: officialEliteKills,
+          p_skills_used: finiteInt(officialCheckpoint.skillsUsed, 0, 10_000_000),
+          p_type_kills: officialTypeKills,
+          p_special_metrics: specialMetrics,
+          p_doom_summary: doomSummary,
+          p_final: false,
+        })
+        if (progressionError) throw progressionError
+        return json({ ...asObject(data), progression: asObject(progression).progression ?? progression })
       }
 
       if (action === 'finish_run') {
@@ -1496,7 +1748,43 @@ export default {
           }
           throw error
         }
-        return json(data)
+        const bossKills = finiteInt(body.bossKills, 0, totalKills)
+        const eliteKills = finiteInt(body.eliteKills, 0, totalKills)
+        const score = finiteInt(body.score, 0, 2_000_000_000)
+        const wave = finiteInt(body.wave, 0, 1_000_000)
+        const skillsUsed = finiteInt(body.skillsUsed, 0, 10_000_000)
+        const typeKills = sanitizeTypeKills(body.typeKills, totalKills)
+        const specialMetrics = sanitizeSpecialMetrics(body.specialMetrics, totalKills, bossKills)
+        const doomSummary = sanitizeDoomSummary(body.doomSummary, totalKills, bossKills)
+        const { data: progression, error: progressionError } = await admin.rpc('chrono_apply_progression_run_server', {
+          p_user_id: userId,
+          p_session_id: sessionId,
+          p_score: score,
+          p_wave: wave,
+          p_kills: totalKills,
+          p_boss_kills: bossKills,
+          p_elite_kills: eliteKills,
+          p_skills_used: skillsUsed,
+          p_type_kills: typeKills,
+          p_special_metrics: specialMetrics,
+          p_doom_summary: doomSummary,
+          p_final: true,
+        })
+        if (progressionError) throw progressionError
+
+        const { data: freshState, error: freshStateError } = await admin
+          .from('chrono_player_state')
+          .select('*')
+          .eq('user_id', userId)
+          .single()
+        if (freshStateError) throw freshStateError
+        const progressionObject = asObject(progression)
+        return json({
+          ...asObject(data),
+          state: freshState,
+          progression: progressionObject.progression ?? null,
+          doomReward: finiteInt(progressionObject.doomReward, 0, 1_000_000),
+        })
       }
 
       return json({ error: 'Ação desconhecida' }, 400)
