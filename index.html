@@ -36761,7 +36761,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 }
 @media(prefers-reduced-motion:reduce){#overlayCard .nefalemRitual849:before,#overlayCard .nefSealGlyph849,#overlayCard .nefChain849,#overlayCard .nefEmbers849 b{animation:none!important}}
 </style>
-<!-- Chrono Shards 8.5.12 — login obrigatório no início e boot protegido -->
+<!-- Chrono Shards 8.5.15 — e-mail consistente e missões resilientes -->
 <style id="chronoCloudStyle850">
   #chronoCloudCard850{margin:18px 0;display:block}
   #chronoCloudCard850 .chronoAccountGuest858{display:block;width:100%;padding:15px 18px;border-radius:15px;border:1px solid rgba(97,218,251,.38);background:linear-gradient(135deg,rgba(97,218,251,.22),rgba(159,108,255,.22));color:#f3fbff;font:900 12px Orbitron,sans-serif;letter-spacing:.08em;box-shadow:0 12px 35px rgba(0,0,0,.25)}
@@ -36773,6 +36773,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   #chronoCloudCard850 .chronoAccountName858{margin-top:12px;padding:12px 13px;border-radius:13px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
   #chronoCloudCard850 .chronoAccountName858 small{display:block;color:#7188a8;font:700 9px Orbitron,sans-serif;letter-spacing:.07em}
   #chronoCloudCard850 .chronoAccountName858 b{display:block;margin-top:5px;color:#fff;font-size:14px;overflow-wrap:anywhere}
+  #chronoCloudCard850 .chronoAccountName858>span:not(.chronoEmailStatus8513){display:block;margin:4px 0 10px;color:#b8c9df;font-size:11px;overflow-wrap:anywhere}
+  .chronoEmailStatus8513{display:inline-flex!important;align-items:center;width:max-content;margin-top:7px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,201,74,.3);background:rgba(255,201,74,.07);color:#f0ce78;font:800 8px Orbitron,sans-serif;letter-spacing:.06em}
+  .chronoEmailStatus8513.verified{border-color:rgba(76,224,179,.35);background:rgba(76,224,179,.08);color:#9dffcf}
   #chronoCloudCard850 .chronoAccountActions858{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:11px}
   #chronoCloudCard850 .chronoAccountActions858 button{padding:11px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.13);color:#eef9ff;font:800 10px Orbitron,sans-serif;letter-spacing:.03em}
   #chronoManageAccount858{background:linear-gradient(135deg,rgba(97,218,251,.18),rgba(159,108,255,.16))}
@@ -36838,8 +36841,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   const CONFIG=Object.freeze({
     url:'https://favrbugywlamhitktocy.supabase.co',
     publishableKey:'sb_publishable_6isbwgyY072T1_o0eirr_w_HjyPZ_oc',
-    functionName:'game-api',
-    internalEmailDomain:'chrono-shards.invalid'
+    functionName:'game-api'
   });
   const SAVE_KEYS=[
     'chrono_v4_meta','chrono_v4_meta_class_unlocks_v3','chrono_v4_meta_secret_rift_v1',
@@ -36865,9 +36867,10 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   };
   let authModal858=null,authRequired858=false,authMode858='login',authBusy858=false,keyModal858=null,startupGate8512=null,settingsTimer858=0,accountCacheTimer858=0;
   let signedOutCleanup8511=false,explicitLogout8511=false;
-  const authDraft859={login:{username:'',password:''},register:{username:'',email:'',password:'',confirmPassword:''},recover:{username:'',recoveryKey:'',newPassword:'',confirmPassword:''},repair:{password:'',confirmPassword:''},manage:{currentPassword:'',newPassword:'',confirmPassword:''}};
+  const authDraft859={login:{username:'',password:''},register:{username:'',email:'',password:'',confirmPassword:''},recover:{username:'',recoveryKey:'',newPassword:'',confirmPassword:''},repair:{email:'',password:'',confirmPassword:''},manage:{currentPassword:'',newEmail:'',newPassword:'',confirmPassword:''}};
   let authFieldError859={field:'',message:''};
   let cloudSaveTimer858=0,cloudSaveInFlight858=null,cloudSavePending858=false,lastCloudSaveAt858=0,lastCloudSnapshot858='';
+  let runCheckpointTimer8514=0,runCheckpointInFlight8514=false,lastRunCheckpoint8514='';
   const n=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
   const escapeHTML858=value=>String(value??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
   const parseJSON854=(raw,fallback={})=>{try{const value=JSON.parse(raw||'null');return value??fallback}catch{return fallback}};
@@ -36876,7 +36879,6 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   const localMeta855=()=>parseJSON854(localStorage.getItem(MAIN_SAVE_854),{});
   const localWallet854=()=>{const m=localMeta855();return{relics:n(m.relicShards),chrono:n(m.chronoFragments)}};
   const normalizeUsername858=value=>String(value??'').normalize('NFKC').trim().toLowerCase();
-  const internalEmail858=username=>`${normalizeUsername858(username)}@${CONFIG.internalEmailDomain}`;
   const isAnonymous858=(session=runtime.session)=>!!session?.user?.is_anonymous;
   const hasLocalSave858=()=>SAVE_KEYS.some(key=>localStorage.getItem(key)!==null);
   const hasStoredAuth8512=()=>{try{return storageKeys8511(localStorage).some(isSupabaseAuthKey8511)}catch{return false}};
@@ -36933,21 +36935,28 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   const storageSetBefore854=Storage.prototype.setItem;
   const storageRemoveBefore858=Storage.prototype.removeItem;
   const storageClearBefore8511=Storage.prototype.clear;
-  Storage.prototype.setItem=function(key,value){
+  const storageSetTracked8515=function(key,value){
     if(this===localStorage&&String(key)===MAIN_SAVE_854&&runTracker854.active&&!runTracker854.suppress){
       const next=parseJSON854(value,{});
       runTracker854.maxRelics=Math.max(runTracker854.maxRelics,n(next.relicShards));
       runTracker854.maxChrono=Math.max(runTracker854.maxChrono,n(next.chronoFragments));
     }
     const result=storageSetBefore854.call(this,key,value);
-    if(this===localStorage&&SAVE_KEYS.includes(String(key))&&!runTracker854.suppress)scheduleCloudSave858()
+    if(this===localStorage&&SAVE_KEYS.includes(String(key))&&!runTracker854.suppress)scheduleCloudSave858();
     return result;
   };
-  Storage.prototype.removeItem=function(key){
+  const storageRemoveTracked8515=function(key){
     const result=storageRemoveBefore858.call(this,key);
-    if(this===localStorage&&SAVE_KEYS.includes(String(key))&&!runTracker854.suppress)scheduleCloudSave858()
+    if(this===localStorage&&SAVE_KEYS.includes(String(key))&&!runTracker854.suppress)scheduleCloudSave858();
     return result;
   };
+  storageSetTracked8515.__chronoStore8515=true;
+  storageSetTracked8515.__chronoBase=storageSetBefore854;
+  storageRemoveTracked8515.__chronoStore8515=true;
+  storageRemoveTracked8515.__chronoBase=storageRemoveBefore858;
+  Storage.prototype.setItem=storageSetTracked8515;
+  Storage.prototype.removeItem=storageRemoveTracked8515;
+  let storageTrackingInstalled8515=true;
   function primeRunTracking855(){
     if(runTracker854.active)return;
     const local=localWallet854();
@@ -36987,7 +36996,37 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       typeKills:cleanTypeKills8510(types,kills)
     };
   }
-  function endRunTracking854(){runTracker854.active=false;runTracker854.sessionId='';runTracker854.baseStats=null;resetRunTelemetry8510()}
+  function stopRunCheckpoint8514(){clearTimeout(runCheckpointTimer8514);runCheckpointTimer8514=0;runCheckpointInFlight8514=false;lastRunCheckpoint8514=''}
+  function checkpointSummary8514(sessionId){
+    const g=window.game||{},delta=runDelta854(sessionId),kills=Math.max(0,Math.trunc(Math.max(n(delta.kills),n(g.kills))));
+    return{score:Math.max(0,Math.trunc(n(g.score))),wave:Math.max(0,Math.trunc(n(g.wave))),kills,bossKills:Math.min(kills,Math.max(0,Math.trunc(n(delta.bossKills)))),eliteKills:Math.min(kills,Math.max(0,Math.trunc(n(delta.eliteKills)))),skillsUsed:Math.max(0,Math.trunc(n(delta.skillsUsed))),typeKills:cleanTypeKills8510(delta.typeKills,kills)};
+  }
+  async function sendRunCheckpoint8514({force=false,sessionId:sessionOverride='',summary:summaryOverride=null}={}){
+    const sessionId=String(sessionOverride||runTracker854.sessionId||'');
+    const hasExplicitSummary=!!(summaryOverride&&typeof summaryOverride==='object');
+    if(!runtime.session||!sessionId||sessionId==='__pending__')return null;
+    if(!hasExplicitSummary&&(!runTracker854.active||(!force&&!window.game?.running)))return null;
+    const summary=hasExplicitSummary?summaryOverride:checkpointSummary8514(sessionId),fingerprint=JSON.stringify(summary);
+    if(!force&&fingerprint===lastRunCheckpoint8514)return null;
+    if(runCheckpointInFlight8514)return null;
+    runCheckpointInFlight8514=true;
+    try{
+      const result=await invoke('checkpoint_run',{sessionId,...summary});
+      if(result?.terminal){stopRunCheckpoint8514();return result}
+      lastRunCheckpoint8514=fingerprint;
+      return result;
+    }catch(error){
+      if(isTerminalRunError859(error)){stopRunCheckpoint8514();return{terminal:true,code:error.code}}
+      console.warn('Chrono Cloud checkpoint_run',error);
+      return null;
+    }finally{runCheckpointInFlight8514=false}
+  }
+  function scheduleRunCheckpoint8514(delay=15000){
+    clearTimeout(runCheckpointTimer8514);
+    if(!runTracker854.active||!window.game?.running)return;
+    runCheckpointTimer8514=setTimeout(async()=>{await sendRunCheckpoint8514();scheduleRunCheckpoint8514(15000)},Math.max(2500,delay));
+  }
+  function endRunTracking854(){stopRunCheckpoint8514();runTracker854.active=false;runTracker854.sessionId='';runTracker854.baseStats=null;resetRunTelemetry8510()}
 
   function publicRuntime858(){
     return{...runtime,client:undefined,session:runtime.session?{user:{id:runtime.session.user?.id,is_anonymous:!!runtime.session.user?.is_anonymous}}:null};
@@ -37115,8 +37154,8 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     authDraft859.login={username:'',password:''};
     authDraft859.register={username:'',email:'',password:'',confirmPassword:''};
     authDraft859.recover={username:'',recoveryKey:'',newPassword:'',confirmPassword:''};
-    authDraft859.repair={password:'',confirmPassword:''};
-    authDraft859.manage={currentPassword:'',newPassword:'',confirmPassword:''};
+    authDraft859.repair={email:'',password:'',confirmPassword:''};
+    authDraft859.manage={currentPassword:'',newEmail:'',newPassword:'',confirmPassword:''};
     authFieldError859={field:'',message:''};
   }
   function clearGameSave858(){clearNonAuthBrowserState8511()}
@@ -37253,6 +37292,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     const result=await invoke('load_account');
     runtime.account=result?.account||{anonymous:isAnonymous858(),needsRepair:false,profile:null};
     runtime.profile=runtime.account.profile||null;
+    if(runtime.account?.emailMigrated){
+      try{const refreshed=await runtime.client?.auth?.refreshSession?.();if(refreshed?.data?.session)runtime.session=refreshed.data.session}catch(error){console.warn('Não foi possível atualizar a sessão após migrar o e-mail',error)}
+    }
     emit();
     return runtime.account;
   }
@@ -37324,6 +37366,17 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     if(!/^[a-z0-9_]{3,20}$/.test(normalized))formError859('Use de 3 a 20 caracteres: letras, números e _','username','INVALID_USERNAME');
     return normalized;
   }
+  function validateEmailClient8513(value,field='email'){
+    const email=String(value??'').normalize('NFKC').trim().toLowerCase();
+    const at=email.lastIndexOf('@');
+    if(!email||email.length>254||at<=0||at!==email.indexOf('@'))formError859('Informe um e-mail válido',field,'INVALID_EMAIL');
+    const local=email.slice(0,at),domain=email.slice(at+1),labels=domain.split('.');
+    if(local.length>64||local.startsWith('.')||local.endsWith('.')||local.includes('..')||!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/i.test(local))formError859('Informe um e-mail válido',field,'INVALID_EMAIL');
+    const validDomain=domain.length<=253&&labels.length>=2&&labels.every(label=>label.length>=1&&label.length<=63&&/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label))&&/^(?:[a-z]{2,63}|xn--[a-z0-9-]{2,59})$/i.test(labels.at(-1)||'');
+    if(!validDomain||['example.com','example.net','example.org','localhost','localhost.localdomain'].includes(domain)||domain.endsWith('.invalid')||domain.endsWith('.test'))formError859('Use um endereço de e-mail real',field,'INVALID_EMAIL');
+    return email;
+  }
+
   function validatePasswordClient858(value,field='password'){
     const password=String(value??'');
     if(password.length<8||password.length>72)formError859('A senha deve ter de 8 a 72 caracteres',field,'INVALID_PASSWORD');
@@ -37361,12 +37414,14 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     const normalized=validateUsernameClient858(username),cleanPassword=validatePasswordClient858(password,'password');
     await createGuestSession858();
     if(runtime.session)await settleBeforeAccountChange858();
+    const previousUserId=runtime.session?.user?.id||'';
     setAuthBusy858(true,'Entrando...');
     const result=await invoke('login_account',{username:normalized,password:cleanPassword});
     if(result?.needsRepair){
       if(result.repairCurrentSession){runtime.account={...(runtime.account||{}),needsRepair:true};openAuthModal858({required:true,mode:'repair'})}
       throw new ChronoFormError859(result.error||'Esta conta precisa ser concluída','username',result.code||'ACCOUNT_NEEDS_REPAIR',409);
     }
+    rewritePendingRunOwner859(previousUserId,String(result?.userId||''));
     await applyServerSession8510(result?.session);
     clearGameSave858();
     await bootstrapAccount858({forceApply:true});
@@ -37377,14 +37432,14 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     if(window.game?.running)formError859('Saia da partida antes de criar a conta','','GAME_RUNNING');
     const normalized=validateUsernameClient858(username),cleanPassword=validatePasswordClient858(password,'password');
     if(cleanPassword!==String(confirmPassword??''))formError859('As senhas não coincidem','confirmPassword','PASSWORD_MISMATCH');
-    const cleanEmail=String(email??'').normalize('NFKC').trim();
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cleanEmail))formError859('Informe um e-mail válido','email','INVALID_EMAIL');
+    const cleanEmail=validateEmailClient8513(email,'email');
     await createGuestSession858();
     if(!isAnonymous858()&&!runtime.account?.needsRepair)formError859('Esta sessão já está vinculada a uma conta','','ACCOUNT_EXISTS');
     await bootstrapAccount858({forceApply:false,closeModal:false});
-    const recoveryKey=generateRecoveryKey858();
+    const previousUserId=runtime.session?.user?.id||'',recoveryKey=generateRecoveryKey858();
     setAuthBusy858(true,'Criando conta...');
     const result=await invoke('register_account',{username:String(username).normalize('NFKC').trim(),email:cleanEmail,password:cleanPassword,recoveryKey,snapshot:collectLocalSnapshot()});
+    rewritePendingRunOwner859(previousUserId,String(result?.userId||''));
     rememberRecoveryKey859(recoveryKey,'CONTA CRIADA');
     await showRecoveryKey858(recoveryKey,'CONTA CRIADA');
     clearRecoveryKeyReminder859();
@@ -37394,20 +37449,21 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     authDraft859.register={username:'',email:'',password:'',confirmPassword:''};
     return result;
   }
-  async function repairAccount859(password,confirmPassword){
+  async function repairAccount859(email,password,confirmPassword){
     if(!runtime.profile)formError859('Conta para reparo não encontrada','','ACCOUNT_NOT_FOUND');
-    const cleanPassword=validatePasswordClient858(password,'password');
+    const cleanEmail=validateEmailClient8513(email||runtime.profile?.contact_email,'email'),cleanPassword=validatePasswordClient858(password,'password');
     if(cleanPassword!==String(confirmPassword??''))formError859('As senhas não coincidem','confirmPassword','PASSWORD_MISMATCH');
-    const recoveryKey=generateRecoveryKey858();
+    const previousUserId=runtime.session?.user?.id||'',recoveryKey=generateRecoveryKey858();
     setAuthBusy858(true,'Concluindo...');
-    const result=await invoke('repair_account',{password:cleanPassword,recoveryKey});
+    const result=await invoke('repair_account',{email:cleanEmail,password:cleanPassword,recoveryKey});
+    rewritePendingRunOwner859(previousUserId,String(result?.userId||''));
     rememberRecoveryKey859(recoveryKey,'CONTA CORRIGIDA');
     await showRecoveryKey858(recoveryKey,'CONTA CORRIGIDA');
     clearRecoveryKeyReminder859();
     await applyServerSession8510(result?.session);
     runtime.state=result?.state||runtime.state;
     await bootstrapAccount858({forceApply:true});
-    authDraft859.repair={password:'',confirmPassword:''};
+    authDraft859.repair={email:'',password:'',confirmPassword:''};
     return result;
   }
   async function recover858({username,recoveryKey,newPassword,confirmPassword}){
@@ -37417,8 +37473,10 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     if(String(recoveryKey??'').replace(/[^A-Za-z0-9]/g,'').length<20)formError859('Chave de recuperação inválida','recoveryKey','INVALID_RECOVERY_KEY');
     await createGuestSession858();
     await settleBeforeAccountChange858();
+    const previousUserId=runtime.session?.user?.id||'';
     setAuthBusy858(true,'Recuperando...');
     const result=await invoke('recover_account',{username:normalized,recoveryKey,newPassword:password});
+    rewritePendingRunOwner859(previousUserId,String(result?.userId||''));
     await applyServerSession8510(result?.session);
     clearGameSave858();
     await bootstrapAccount858({forceApply:true});
@@ -37431,6 +37489,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     await settleBeforeAccountChange858();
     explicitLogout8511=true;
     try{
+      // Tenta revogar a sessão atual no Supabase. Falhas de rede não impedem a
+      // limpeza local completa, evitando deixar o save de outra conta visível.
+      try{await runtime.client?.auth?.signOut?.({scope:'local'})}catch(error){console.warn('Chrono logout remoto',error)}
       await clearLocalAuthSession8510();
       purgeAllBrowserState8511();
       runtime.state=null;runtime.profile=null;runtime.account=null;runtime.bootPromise=null;
@@ -37440,6 +37501,17 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       setTimeout(()=>{explicitLogout8511=false},1500);
     }
   }
+  async function changeEmail8513(currentPassword,newEmail){
+    if(!runtime.profile)formError859('Conta não encontrada','','ACCOUNT_NOT_FOUND');
+    const current=validatePasswordClient858(currentPassword,'currentPassword'),email=validateEmailClient8513(newEmail,'newEmail');
+    setAuthBusy858(true,'Alterando e-mail...');
+    const result=await invoke('change_email',{currentPassword:current,newEmail:email});
+    await applyServerSession8510(result?.session);
+    await loadAccount858();
+    authDraft859.manage.currentPassword='';authDraft859.manage.newEmail='';
+    return result;
+  }
+
   async function changePassword858(currentPassword,newPassword,confirmPassword){
     if(!runtime.profile)formError859('Conta não encontrada','','ACCOUNT_NOT_FOUND');
     const current=validatePasswordClient858(currentPassword,'currentPassword'),next=validatePasswordClient858(newPassword,'newPassword');
@@ -37478,14 +37550,14 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     }
   }
 
-  async function startRun(mode,classKey){
+  async function startRun(mode,classKey,requestId=crypto.randomUUID()){
     if(!runtime.session)throw new Error('Faça login para continuar');
     await flushPendingRun854().catch(error=>{throw new Error('Existe uma partida anterior aguardando liquidação: '+(error?.message||error))});
     primeRunTracking855();
     try{
-      const result=await invoke('start_run',{mode:String(mode||'normal'),classKey:String(classKey||'')});
+      const result=await invoke('start_run',{requestId:String(requestId||crypto.randomUUID()),mode:String(mode||'normal'),classKey:String(classKey||'')});
       if(result?.state){runtime.state=result.state;emit()}
-      try{if(window.game&&result?.session){game.cloudSessionId=result.session.id;game.cloudServerSeed=result.session.server_seed;beginRunTracking854(result.session.id,result.state||runtime.state)}}catch{}
+      try{if(window.game&&result?.session){game.cloudSessionId=result.session.id;game.cloudServerSeed=result.session.server_seed;beginRunTracking854(result.session.id,result.state||runtime.state);scheduleRunCheckpoint8514(5000)}}catch{}
       return result;
     }catch(error){endRunTracking854();throw error}
   }
@@ -37494,6 +37566,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     const cleanTypes=cleanTypeKills8510(summary.typeKills&&typeof summary.typeKills==='object'?summary.typeKills:{},kills);
     const cleanSummary={score:n(summary.score),wave:n(summary.wave),kills,gold:n(summary.gold),relicDelta:Math.max(0,Math.trunc(n(summary.relicDelta))),chronoDelta:Math.max(0,Math.trunc(n(summary.chronoDelta))),bossKills:Math.min(kills,Math.max(0,Math.trunc(n(summary.bossKills)))),eliteKills:Math.min(kills,Math.max(0,Math.trunc(n(summary.eliteKills)))),skillsUsed:Math.max(0,Math.trunc(n(summary.skillsUsed))),typeKills:cleanTypes};
     localStorage.setItem(PENDING_RUN_854,JSON.stringify({requestId,sessionId:String(sessionId||''),ownerUserId:runtime.session?.user?.id||'',summary:cleanSummary,createdAt:Date.now()}));
+    await sendRunCheckpoint8514({force:true,sessionId:String(sessionId||''),summary:cleanSummary}).catch(()=>{});
     endRunTracking854();
     const result=await invoke('finish_run',{requestId,sessionId,...cleanSummary});
     if(result?.state){runtime.state=result.state;emit();if(result.state.authority_mode==='authoritative')applySnapshot(snapshotFromState850(result.state))}
@@ -37594,7 +37667,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     if(code==='INVALID_LOGIN'){draft.password='';return'password'}
     if(code==='PASSWORD_MISMATCH'){draft.confirmPassword='';return'confirmPassword'}
     if(['USERNAME_TAKEN','INVALID_USERNAME','RESERVED_USERNAME'].includes(code)){draft.username='';return'username'}
-    if(['EMAIL_TAKEN','INVALID_EMAIL'].includes(code)){draft.email='';return'email'}
+    if(code==='ACCOUNT_EMAIL_CONFLICT')return field||'username';
+    if(code==='EMAIL_UNCHANGED')return field||'newEmail';
+    if(['EMAIL_TAKEN','INVALID_EMAIL'].includes(code)){const target=field==='newEmail'?'newEmail':'email';draft[target]='';return target}
     if(['INVALID_RECOVERY','INVALID_RECOVERY_KEY'].includes(code)){draft.recoveryKey='';return'recoveryKey'}
     if(field==='currentPassword'){draft.currentPassword='';return field}
     if(field==='password'&&mode!=='login'){draft.password='';draft.confirmPassword='';return field}
@@ -37616,15 +37691,17 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     if(authMode858==='connection'){
       body=`<div class="chronoAuthMessage858 show">Não foi possível conectar à sua conta. Verifique a internet e tente novamente.</div><div class="chronoAuthForm858"><button class="chronoAuthPrimary858" id="chronoConnectionRetry858">TENTAR NOVAMENTE</button></div>`;
     }else if(authMode858==='register'){
-      body=`<div class="chronoAuthTabs858"><button data-auth-mode858="login">ENTRAR</button><button class="active" data-auth-mode858="register">CRIAR CONTA</button></div><div class="chronoAuthMessage858"></div><div class="chronoAuthForm858">${fieldHTML859({label:'NOME DE USUÁRIO',id:'chronoRegUser858',key:'username',maxlength:20,autocomplete:'username',placeholder:'exemplo_123'})}${fieldHTML859({label:'E-MAIL DE CONTATO',id:'chronoRegEmail858',key:'email',type:'email',maxlength:254,autocomplete:'email',placeholder:'voce@email.com'})}<p class="chronoAuthHint858">O e-mail fica cadastrado como contato. Enquanto não houver SMTP, a recuperação usa a chave secreta.</p>${fieldHTML859({label:'SENHA',id:'chronoRegPass858',key:'password',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR SENHA',id:'chronoRegConfirm858',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<div class="chronoRecoveryCard858">Seu progresso atual será transferido para a nova conta. A chave de recuperação aparecerá em uma tela obrigatória após o cadastro.</div><button class="chronoAuthPrimary858" id="chronoRegisterSubmit858">CRIAR CONTA</button></div>`;
+      body=`<div class="chronoAuthTabs858"><button data-auth-mode858="login">ENTRAR</button><button class="active" data-auth-mode858="register">CRIAR CONTA</button></div><div class="chronoAuthMessage858"></div><div class="chronoAuthForm858">${fieldHTML859({label:'NOME DE USUÁRIO',id:'chronoRegUser858',key:'username',maxlength:20,autocomplete:'username',placeholder:'exemplo_123'})}${fieldHTML859({label:'E-MAIL DA CONTA',id:'chronoRegEmail858',key:'email',type:'email',maxlength:254,autocomplete:'email',placeholder:'voce@email.com'})}<p class="chronoAuthHint858">O jogo verifica o formato, o domínio e se o endereço já está vinculado a outra conta. Sem envio de código ou link, não é possível comprovar que a caixa postal pertence ao jogador; guarde também sua chave de recuperação.</p>${fieldHTML859({label:'SENHA',id:'chronoRegPass858',key:'password',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR SENHA',id:'chronoRegConfirm858',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<div class="chronoRecoveryCard858">Seu progresso atual será transferido para a nova conta. A chave de recuperação aparecerá em uma tela obrigatória após o cadastro.</div><button class="chronoAuthPrimary858" id="chronoRegisterSubmit858">CRIAR CONTA</button></div>`;
     }else if(authMode858==='recover'){
       body=`<div class="chronoAuthMessage858"></div><div class="chronoAuthForm858">${fieldHTML859({label:'NOME DE USUÁRIO',id:'chronoRecoveryUser858',key:'username',maxlength:20,autocomplete:'username'})}${fieldHTML859({label:'CHAVE DE RECUPERAÇÃO',id:'chronoRecoveryKey858',key:'recoveryKey',maxlength:64,autocomplete:'off',placeholder:'CS-XXXX-...'})}${fieldHTML859({label:'NOVA SENHA',id:'chronoRecoveryPass858',key:'newPassword',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR NOVA SENHA',id:'chronoRecoveryConfirm858',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<button class="chronoAuthPrimary858" id="chronoRecoverySubmit858">RECUPERAR CONTA</button><div class="chronoAuthLinkRow858"><button class="chronoAuthLink858" data-auth-mode858="login">Voltar ao login</button></div></div>`;
     }else if(authMode858==='repair'){
       const username=escapeHTML858(runtime.profile?.username||'Conta');
-      body=`<div class="chronoAuthMessage858 show ok">Encontramos uma conta criada pela versão anterior. Conclua a configuração para poder entrar normalmente.</div><div class="chronoAuthForm858"><div class="chronoRecoveryCard858"><b>${username}</b><br>O progresso será mantido. Escolha a senha que deseja usar daqui em diante.</div>${fieldHTML859({label:'NOVA SENHA',id:'chronoRepairPass859',key:'password',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR NOVA SENHA',id:'chronoRepairConfirm859',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<button class="chronoAuthPrimary858" id="chronoRepairSubmit859">CONCLUIR CONTA</button><div class="chronoRecoveryCard858">Uma nova chave de recuperação será mostrada e precisará ser guardada.</div></div>`;
+      if(!authDraft859.repair.email)authDraft859.repair.email=String(runtime.profile?.contact_email||'');
+      body=`<div class="chronoAuthMessage858 show ok">Encontramos uma conta criada pela versão anterior. Conclua a configuração para poder entrar normalmente.</div><div class="chronoAuthForm858"><div class="chronoRecoveryCard858"><b>${username}</b><br>O progresso será mantido. Confirme o e-mail real da conta e escolha a senha.</div>${fieldHTML859({label:'E-MAIL DA CONTA',id:'chronoRepairEmail8513',key:'email',type:'email',maxlength:254,autocomplete:'email',placeholder:'voce@email.com'})}${fieldHTML859({label:'NOVA SENHA',id:'chronoRepairPass859',key:'password',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR NOVA SENHA',id:'chronoRepairConfirm859',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<button class="chronoAuthPrimary858" id="chronoRepairSubmit859">CONCLUIR CONTA</button><div class="chronoRecoveryCard858">Uma nova chave de recuperação será mostrada e precisará ser guardada.</div></div>`;
     }else if(authMode858==='manage'){
-      const username=escapeHTML858(runtime.profile?.username||'—'),email=escapeHTML858(runtime.profile?.contact_email||'—');
-      body=`<div class="chronoAuthMessage858"></div><div class="chronoAuthForm858"><div class="chronoRecoveryCard858"><b>${username}</b><br>${email}</div>${fieldHTML859({label:'SENHA ATUAL',id:'chronoManageCurrent858',key:'currentPassword',type:'password',autocomplete:'current-password',password:true})}${fieldHTML859({label:'NOVA SENHA',id:'chronoManageNew858',key:'newPassword',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR NOVA SENHA',id:'chronoManageConfirm858',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<button class="chronoAuthPrimary858" id="chronoChangePassword858">ALTERAR SENHA</button><div class="chronoAuthDivider858">OU</div><button class="chronoAuthGuest858" id="chronoRotateRecovery858">GERAR NOVA CHAVE DE RECUPERAÇÃO</button></div>`;
+      const username=escapeHTML858(runtime.profile?.username||'—'),email=escapeHTML858(runtime.profile?.contact_email||'—'),verified=runtime.profile?.email_ownership_verified===true,domainOk=runtime.profile?.email_domain_validated===true;
+      const emailIssue=runtime.account?.emailIssue?.message?`<div class="chronoAuthMessage858 show">${escapeHTML858(runtime.account.emailIssue.message)}</div>`:'',emailStatus=verified?'E-MAIL CONFIRMADO':domainOk?'DOMÍNIO VÁLIDO • NÃO CONFIRMADO':'E-MAIL NÃO CONFIRMADO';
+      body=`<div class="chronoAuthMessage858"></div><div class="chronoAuthForm858">${emailIssue}<div class="chronoRecoveryCard858"><b>${username}</b><br>${email}<br><span class="chronoEmailStatus8513 ${verified?'verified':''}">${emailStatus}</span></div>${fieldHTML859({label:'SENHA ATUAL',id:'chronoManageCurrent858',key:'currentPassword',type:'password',autocomplete:'current-password',password:true})}<div class="chronoAuthDivider858">E-MAIL</div>${fieldHTML859({label:'NOVO E-MAIL',id:'chronoManageEmail8513',key:'newEmail',type:'email',maxlength:254,autocomplete:'email',placeholder:'novo@email.com'})}<button class="chronoAuthGuest858" id="chronoChangeEmail8513">ALTERAR E-MAIL</button><div class="chronoAuthDivider858">SENHA</div>${fieldHTML859({label:'NOVA SENHA',id:'chronoManageNew858',key:'newPassword',type:'password',autocomplete:'new-password',password:true})}<div class="chronoPasswordStrength859" aria-hidden="true"><span></span></div><div class="chronoPasswordStrengthText859">Digite uma senha</div>${fieldHTML859({label:'CONFIRMAR NOVA SENHA',id:'chronoManageConfirm858',key:'confirmPassword',type:'password',autocomplete:'new-password',password:true})}<button class="chronoAuthPrimary858" id="chronoChangePassword858">ALTERAR SENHA</button><div class="chronoAuthDivider858">RECUPERAÇÃO</div><button class="chronoAuthGuest858" id="chronoRotateRecovery858">GERAR NOVA CHAVE DE RECUPERAÇÃO</button></div>`;
     }else{
       body=`<div class="chronoAuthTabs858"><button class="active" data-auth-mode858="login">ENTRAR</button><button data-auth-mode858="register">CRIAR CONTA</button></div><div class="chronoAuthMessage858"></div><div class="chronoAuthForm858">${fieldHTML859({label:'NOME DE USUÁRIO',id:'chronoLoginUser858',key:'username',maxlength:20,autocomplete:'username'})}${fieldHTML859({label:'SENHA',id:'chronoLoginPass858',key:'password',type:'password',autocomplete:'current-password',password:true})}<button class="chronoAuthPrimary858" id="chronoLoginSubmit858">ENTRAR</button><div class="chronoAuthLinkRow858"><button class="chronoAuthLink858" data-auth-mode858="recover">Esqueci minha senha</button></div>${guest?'<div class="chronoRecoveryCard858">Este dispositivo possui uma sessão temporária. Entre em sua conta ou escolha Criar conta para preservar o progresso atual.</div>':'<div class="chronoRecoveryCard858">Entre ou crie uma conta para carregar e proteger seu progresso.</div>'}</div>`;
     }
@@ -37650,8 +37727,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     authModal858.querySelector('#chronoLoginSubmit858')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await login858(authDraft859.login.username,authDraft859.login.password)}catch(error){handleAuthError859(error,'login')}});
     authModal858.querySelector('#chronoRegisterSubmit858')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await register858(authDraft859.register)}catch(error){handleAuthError859(error,'register')}});
     authModal858.querySelector('#chronoRecoverySubmit858')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await recover858(authDraft859.recover)}catch(error){handleAuthError859(error,'recover')}});
-    authModal858.querySelector('#chronoRepairSubmit859')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await repairAccount859(authDraft859.repair.password,authDraft859.repair.confirmPassword)}catch(error){handleAuthError859(error,'repair')}});
-    authModal858.querySelector('#chronoChangePassword858')?.addEventListener('click',async()=>{captureDraftFields859();try{setAuthBusy858(true,'Alterando...');await changePassword858(authDraft859.manage.currentPassword,authDraft859.manage.newPassword,authDraft859.manage.confirmPassword);authDraft859.manage={currentPassword:'',newPassword:'',confirmPassword:''};setAuthBusy858(false);renderAuthModal858();authMessage858('Senha alterada com sucesso.',true)}catch(error){handleAuthError859(error,'manage')}});
+    authModal858.querySelector('#chronoRepairSubmit859')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await repairAccount859(authDraft859.repair.email,authDraft859.repair.password,authDraft859.repair.confirmPassword)}catch(error){handleAuthError859(error,'repair')}});
+    authModal858.querySelector('#chronoChangeEmail8513')?.addEventListener('click',async()=>{captureDraftFields859();try{authFieldError859={field:'',message:''};authMessage858();await changeEmail8513(authDraft859.manage.currentPassword,authDraft859.manage.newEmail);setAuthBusy858(false);renderAuthModal858();authMessage858('E-mail alterado com sucesso.',true)}catch(error){handleAuthError859(error,'manage')}});
+    authModal858.querySelector('#chronoChangePassword858')?.addEventListener('click',async()=>{captureDraftFields859();try{setAuthBusy858(true,'Alterando...');await changePassword858(authDraft859.manage.currentPassword,authDraft859.manage.newPassword,authDraft859.manage.confirmPassword);authDraft859.manage={currentPassword:'',newEmail:'',newPassword:'',confirmPassword:''};setAuthBusy858(false);renderAuthModal858();authMessage858('Senha alterada com sucesso.',true)}catch(error){handleAuthError859(error,'manage')}});
     authModal858.querySelector('#chronoRotateRecovery858')?.addEventListener('click',async()=>{captureDraftFields859();try{setAuthBusy858(true,'Gerando...');await rotateRecovery858(authDraft859.manage.currentPassword);setAuthBusy858(false)}catch(error){handleAuthError859(error,'manage')}});
     authModal858.onkeydown=event=>{if(event.key==='Escape')closeAuthModal858();if(event.key==='Enter'&&!event.shiftKey&&event.target?.tagName!=='BUTTON'){event.preventDefault();const button=authModal858.querySelector('.chronoAuthPrimary858:not(:disabled)');button?.click()}};
   }
@@ -37669,7 +37747,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     return new Promise(resolve=>{
       keyModal858?.remove();
       keyModal858=document.createElement('div');keyModal858.className='chronoKeyOverlay858';keyModal858.id='chronoKeyOverlay858';
-      keyModal858.innerHTML=`<div class="chronoKeyDialog858" role="dialog" aria-modal="true"><h2>${escapeHTML858(title)}</h2><p>Esta é a única forma de recuperar sua conta sem e-mail. Guarde a chave em um local seguro antes de continuar.</p><div class="chronoKeyValue858" id="chronoKeyValue858">${escapeHTML858(key)}</div><div class="chronoKeyActions858"><button class="chronoKeyCopy858" id="chronoKeyCopy858">COPIAR CHAVE</button><button class="chronoKeyDone858" id="chronoKeyDone858">JÁ GUARDEI</button></div></div>`;
+      keyModal858.innerHTML=`<div class="chronoKeyDialog858" role="dialog" aria-modal="true"><h2>${escapeHTML858(title)}</h2><p>Enquanto o e-mail não puder ser confirmado por mensagem, esta chave é a forma segura de recuperar sua conta. Guarde-a em um local protegido antes de continuar.</p><div class="chronoKeyValue858" id="chronoKeyValue858">${escapeHTML858(key)}</div><div class="chronoKeyActions858"><button class="chronoKeyCopy858" id="chronoKeyCopy858">COPIAR CHAVE</button><button class="chronoKeyDone858" id="chronoKeyDone858">JÁ GUARDEI</button></div></div>`;
       document.body.appendChild(keyModal858);
       keyModal858.querySelector('#chronoKeyCopy858').onclick=async()=>{const button=keyModal858.querySelector('#chronoKeyCopy858');try{await navigator.clipboard.writeText(key);button.textContent='CHAVE COPIADA'}catch{prompt('Copie sua chave de recuperação:',key)}};
       keyModal858.querySelector('#chronoKeyDone858').onclick=()=>{keyModal858?.remove();keyModal858=null;resolve(true)};
@@ -37678,8 +37756,8 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 
   function accountCardHTML858(){
     if(!runtime.profile)return `<button class="chronoAccountGuest858" id="chronoAccountLogin858">👤 FAZER LOGIN</button>`;
-    const username=escapeHTML858(runtime.profile.username||'Conta');
-    return `<div class="chronoAccountPermanent858"><div class="chronoAccountHead858"><strong>👤 CONTA CHRONO</strong><span class="chronoAccountBadge858">CONECTADA</span></div><div class="chronoAccountName858"><small>NOME DE USUÁRIO</small><b>${username}</b></div><div class="chronoAccountActions858"><button id="chronoManageAccount858">GERENCIAR CONTA</button><button id="chronoLogout858">SAIR</button></div></div>`;
+    const username=escapeHTML858(runtime.profile.username||'Conta'),email=escapeHTML858(runtime.profile.contact_email||'—'),verified=runtime.profile.email_ownership_verified===true,domainOk=runtime.profile.email_domain_validated===true,emailStatus=verified?'CONFIRMADO':domainOk?'DOMÍNIO VÁLIDO • NÃO CONFIRMADO':'NÃO CONFIRMADO';
+    return `<div class="chronoAccountPermanent858"><div class="chronoAccountHead858"><strong>👤 CONTA CHRONO</strong><span class="chronoAccountBadge858">CONECTADA</span></div><div class="chronoAccountName858"><small>NOME DE USUÁRIO</small><b>${username}</b><small>E-MAIL DA CONTA</small><span>${email}</span><span class="chronoEmailStatus8513 ${verified?'verified':''}">${emailStatus}</span></div><div class="chronoAccountActions858"><button id="chronoManageAccount858">GERENCIAR CONTA</button><button id="chronoLogout858">SAIR</button></div></div>`;
   }
   function refreshAccountCard858(){
     const card=document.getElementById('chronoCloudCard850');if(!card)return;
@@ -37699,7 +37777,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   function scheduleAccountCard858(){clearTimeout(settingsTimer858);settingsTimer858=setTimeout(injectAccountCard858,55)}
   try{const host=document.getElementById('overlayCard');if(host)new MutationObserver(scheduleAccountCard858).observe(host,{childList:true,subtree:false})}catch(error){console.warn('Chrono Account observer',error)}
   document.addEventListener('click',event=>{if(event.target?.closest?.('#chronoCloudCard850,#chronoAuthOverlay858,#chronoKeyOverlay858'))return;scheduleAccountCard858()},true);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&!window.game?.running)syncSnapshot858({force:true}).catch(()=>{})});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){if(window.game?.running)sendRunCheckpoint8514({force:true}).catch(()=>{});else syncSnapshot858({force:true}).catch(()=>{})}});
   window.addEventListener('pagehide',()=>{if(!window.game?.running)syncSnapshot858({force:true}).catch(()=>{})});
   setGameAuthGate8512(true);
   if(document.body)showStartupGate8512('Carregando...');
@@ -37713,19 +37791,73 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     openLogin:()=>openAuthModal858({required:false,mode:'login'}),logout:logout858,syncNow:()=>syncSnapshot858({force:true})
   });
 
+  function installStorageTracking8514(){
+    if(storageTrackingInstalled8515)return;
+    const currentSet=Storage.prototype.setItem,currentRemove=Storage.prototype.removeItem;
+    if(!currentSet?.__chronoStore8515){
+      const wrappedSet=function(key,value){
+        if(this===localStorage&&String(key)===MAIN_SAVE_854&&runTracker854.active&&!runTracker854.suppress){
+          const next=parseJSON854(value,{});
+          runTracker854.maxRelics=Math.max(runTracker854.maxRelics,n(next.relicShards));
+          runTracker854.maxChrono=Math.max(runTracker854.maxChrono,n(next.chronoFragments));
+        }
+        const result=currentSet.call(this,key,value);
+        if(this===localStorage&&SAVE_KEYS.includes(String(key))&&!runTracker854.suppress)scheduleCloudSave858();
+        return result;
+      };
+      wrappedSet.__chronoStore8515=true;wrappedSet.__chronoBase=currentSet;
+      Storage.prototype.setItem=wrappedSet;
+    }
+    if(!currentRemove?.__chronoStore8515){
+      const wrappedRemove=function(key){
+        const result=currentRemove.call(this,key);
+        if(this===localStorage&&SAVE_KEYS.includes(String(key))&&!runTracker854.suppress)scheduleCloudSave858();
+        return result;
+      };
+      wrappedRemove.__chronoStore8515=true;wrappedRemove.__chronoBase=currentRemove;
+      Storage.prototype.removeItem=wrappedRemove;
+    }
+    storageTrackingInstalled8515=true;
+  }
+
+  let skillTelemetryDepth8515=0;
+  function skillMutationToken8515(g,idx){
+    if(!g||typeof g!=='object')return'';
+    const p=g.player&&typeof g.player==='object'?g.player:{};
+    const parts=[
+      `cd:${Array.isArray(g.skillCds)?n(g.skillCds[idx],-1):-1}`,
+      `focus:${n(p.focus,-1)}`,
+      `shield:${n(p.shield,-1)}`,
+      `dash:${n(p.dashTime,-1)}`,
+      `inv:${n(p.invulnTime??p.invincibleTime??p.invulnerability,-1)}`
+    ];
+    const arrayPattern=/(bullet|projectile|grenade|mine|mortar|shockwave|slash|meteor|orb|beam|trap|totem|seal|chain|blood|bomb|rocket|drone|fissure)/i;
+    const statePattern=/(skill|ultimate|charge|charging|cloak|turbo|trigger|stance|ritual|shield|dash|mode|active|duration|timer)/i;
+    for(const [key,value] of Object.entries(g)){
+      if(Array.isArray(value)&&arrayPattern.test(key)){parts.push(`a:${key}:${value.length}`);continue}
+      if(statePattern.test(key)&&(typeof value==='number'||typeof value==='boolean'||typeof value==='string'))parts.push(`s:${key}:${String(value)}`);
+    }
+    return parts.join('|');
+  }
+
   function installDirectTelemetry8510(){
     const currentDeath=window.enemyDeath||globalThis.enemyDeath;
     if(typeof currentDeath==='function'&&!currentDeath.__chronoTelemetry8510){
       const wrappedDeath=function(index,enemy){
         const shouldCount=!!(runTracker854.active&&window.game?.running&&enemy&&typeof enemy==='object'&&!runTracker854.seenDeaths.has(enemy));
+        const deathInfo=shouldCount?{
+          rawType:String(enemy?.type||enemy?.bossType||enemy?.kind||''),
+          type:classifyEnemyType8510(enemy),
+          boss:String(enemy?.type||'')==='boss'||enemy?.boss===true||enemy?.isBoss===true,
+          elite:enemy?.elite===true||enemy?.isElite===true
+        }:null;
         if(shouldCount)runTracker854.seenDeaths.add(enemy);
         const result=currentDeath.apply(this,arguments);
-        if(shouldCount){
+        if(deathInfo){
           runTracker854.eventKills++;
-          const rawType=String(enemy?.type||enemy?.bossType||'');
-          if(rawType==='boss'||enemy?.boss===true||enemy?.isBoss===true)runTracker854.eventBossKills++;
-          if(enemy?.elite===true||enemy?.isElite===true)runTracker854.eventEliteKills++;
-          const type=classifyEnemyType8510(enemy);if(type)runTracker854.eventTypeKills[type]=Math.max(0,Math.trunc(n(runTracker854.eventTypeKills[type])))+1;
+          if(deathInfo.boss)runTracker854.eventBossKills++;
+          if(deathInfo.elite)runTracker854.eventEliteKills++;
+          if(deathInfo.type)runTracker854.eventTypeKills[deathInfo.type]=Math.max(0,Math.trunc(n(runTracker854.eventTypeKills[deathInfo.type])))+1;
         }
         return result;
       };
@@ -37735,23 +37867,39 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     const currentSkill=window.useSkill||globalThis.useSkill;
     if(typeof currentSkill==='function'&&!currentSkill.__chronoTelemetry8510){
       const wrappedSkill=function(idx){
-        const g=window.game,beforeCd=Array.isArray(g?.skillCds)?n(g.skillCds[idx]):-1,beforeFocus=n(g?.player?.focus,NaN);
-        const result=currentSkill.apply(this,arguments);
-        if(runTracker854.active&&g?.running){
-          const afterCd=Array.isArray(g?.skillCds)?n(g.skillCds[idx]):-1,afterFocus=n(g?.player?.focus,NaN);
-          if((afterCd>beforeCd+0.001)||(Number.isFinite(beforeFocus)&&Number.isFinite(afterFocus)&&afterFocus<beforeFocus-0.001))runTracker854.eventSkillsUsed++;
-        }
-        return result;
+        if(skillTelemetryDepth8515>0)return currentSkill.apply(this,arguments);
+        const g=window.game,beforeCd=Array.isArray(g?.skillCds)?n(g.skillCds[idx]):-1,beforeFocus=n(g?.player?.focus,NaN),beforeToken=skillMutationToken8515(g,idx);
+        skillTelemetryDepth8515++;
+        try{
+          const result=currentSkill.apply(this,arguments);
+          if(runTracker854.active&&g?.running){
+            const afterCd=Array.isArray(g?.skillCds)?n(g.skillCds[idx]):-1,afterFocus=n(g?.player?.focus,NaN),afterToken=skillMutationToken8515(g,idx);
+            const consumed=(afterCd>beforeCd+0.001)||(Number.isFinite(beforeFocus)&&Number.isFinite(afterFocus)&&afterFocus<beforeFocus-0.001)||beforeToken!==afterToken;
+            if(consumed)runTracker854.eventSkillsUsed++;
+          }
+          return result;
+        }finally{skillTelemetryDepth8515=Math.max(0,skillTelemetryDepth8515-1)}
       };
       wrappedSkill.__chronoTelemetry8510=true;wrappedSkill.__chronoBase=currentSkill;
       window.useSkill=wrappedSkill;try{useSkill=wrappedSkill}catch{}
     }
   }
 
+  function showCloudNotice8514(title,detail='',color='#ff8fa3'){
+    try{
+      const old=document.getElementById('chronoCloudNotice8514');old?.remove?.();
+      const box=document.createElement('div');box.id='chronoCloudNotice8514';
+      Object.assign(box.style,{position:'fixed',left:'50%',top:'10%',zIndex:'2147483600',transform:'translateX(-50%)',maxWidth:'min(90vw,560px)',padding:'13px 17px',borderRadius:'14px',background:'rgba(6,9,20,.97)',border:`1px solid ${color}`,boxShadow:'0 18px 55px rgba(0,0,0,.5)',color:'#fff',fontFamily:'Orbitron,Arial',textAlign:'center',pointerEvents:'none'});
+      const strong=document.createElement('strong');strong.textContent=String(title||'AVISO');strong.style.display='block';strong.style.fontSize='11px';
+      const span=document.createElement('span');span.textContent=String(detail||'');span.style.cssText='display:block;margin-top:6px;color:#c5d2e5;font:500 10px Arial';
+      box.append(strong,span);document.body.appendChild(box);setTimeout(()=>box.remove(),5200);
+    }catch{}
+  }
+
   function installRunHooks850(){
     const baseReset=window.resetGame||globalThis.resetGame;
     if(typeof baseReset==='function'&&!baseReset.__chronoCloud850){
-      const wrapped=function(classKey){const out=baseReset.apply(this,arguments);queueMicrotask(async()=>{try{const g=window.game;if(!g?.running)return;const mode=g.doom800?'doom':g.riftMode50?'rift':g.mode||'normal';await startRun(mode,classKey||g.classKey)}catch(error){console.warn('Chrono Cloud start_run',error)}});return out};
+      const wrapped=function(classKey){const out=baseReset.apply(this,arguments);queueMicrotask(async()=>{const g=window.game;if(!g?.running)return;const mode=g.doom800?'doom':g.riftMode50?'rift':g.mode||'normal',selected=classKey||g.classKey,requestId=crypto.randomUUID();let lastError=null;for(let attempt=1;attempt<=3;attempt++){try{await startRun(mode,selected,requestId);return}catch(error){lastError=error;console.warn(`Chrono Cloud start_run tentativa ${attempt}`,error);if(attempt<3)await new Promise(resolve=>setTimeout(resolve,500*attempt))}}try{if(window.game)game.cloudSessionId=null}catch{}showCloudNotice8514('PARTIDA NÃO REGISTRADA','Não foi possível conectar esta partida. Os feitos dela não contarão para missões; confira sua conexão e reinicie a partida.');console.warn('Chrono Cloud start_run falhou definitivamente',lastError)});return out};
       wrapped.__chronoCloud850=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}
     }
     const baseGameOver=window.gameOver||globalThis.gameOver;
@@ -37770,8 +37918,8 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   }
   installDirectTelemetry8510();
   installRunHooks850();
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{installDirectTelemetry8510();installRunHooks850()},0),{once:true});
-  console.log('Chrono Shards 8.5.12 — login obrigatório, boot protegido e contas isoladas');
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{installStorageTracking8514();installDirectTelemetry8510();installRunHooks850();setInterval(()=>{installStorageTracking8514();installDirectTelemetry8510();installRunHooks850()},2000)},0),{once:true});
+  console.log('Chrono Shards 8.5.15 — revisão profunda, telemetria e sessões idempotentes');
 })();
 </script>
 
@@ -40033,9 +40181,10 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 
   window.addEventListener('chrono-run-settled',event=>{
     const r=event.detail||{};
+    if(r?.rejected){toast('PARTIDA NÃO VALIDADA','Os feitos desta partida não foram enviados. Atualize o jogo e tente novamente.','#ff8fa3');return}
     if(!r?.accepted)return;
     const relics=num(r.rewardRelics),chrono=num(r.rewardChrono);
-    const detail=[relics?`+${relics} Relíquias`:'',chrono?`+${chrono} Fragmentos Chrono`:''].filter(Boolean).join(' • ')||'Nenhum recurso permanente nesta partida';
+    const detail=[relics?`+${relics} Relíquias`:'',chrono?`+${chrono} Fragmentos Chrono`:''].filter(Boolean).join(' • ')||'Progresso e missões atualizados';
     toast('PARTIDA LIQUIDADA',detail,'#86ffb0');
   });
   function receive(detail){if(detail?.state)applyState(detail.state)}
@@ -40269,6 +40418,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     missionSyncPromise856=(async()=>{
       const payload=await cloud856().invoke('load_missions');
       applyServerState856(payload?.state);applyMissionPayload856(payload);
+      if(num856(payload?.recoveredRuns)>0)toast856('PROGRESSO RECUPERADO',`${num856(payload.recoveredKills)} abate(s) de uma partida interrompida foram contabilizados.`,'#86ffb0');
       if(rerender&&missionsVisible856()&&typeof baseOpenMissions856==='function'){
         baseOpenMissions856();requestAnimationFrame(()=>decorateOfficialProgress856(payload));
       }
