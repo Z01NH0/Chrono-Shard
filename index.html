@@ -41667,5 +41667,84 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   console.log('Chrono Shards 8.6.0 — Mega Optimization: scheduler, observers, rotas, eventos e FX consolidados');
 })();
 </script>
+
+<script id="chronoAwakeningRelease862">
+/* Chrono Shards 8.6.2 — libera jornadas após conclusão real do Awakening. */
+(()=>{
+  if(window.__chronoAwakeningRelease862)return;
+  window.__chronoAwakeningRelease862=true;
+  const SAVE='chrono_v4_meta';
+  const read=()=>{try{return JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{return {}}};
+  const write=m=>{try{localStorage.setItem(SAVE,JSON.stringify(m));if(window.game)game.meta=m}catch{}};
+  const num=v=>Number.isFinite(Number(v))?Number(v):0;
+  let refreshQueued=false;
+
+  function normalize(payload=null,{refresh=false}={}){
+    const meta=read();
+    meta.awakenings463=meta.awakenings463&&typeof meta.awakenings463==='object'?meta.awakenings463:{};
+    meta.awakenings463.completed=meta.awakenings463.completed&&typeof meta.awakenings463.completed==='object'?meta.awakenings463.completed:{};
+    meta.awakeningUltimates=meta.awakeningUltimates&&typeof meta.awakeningUltimates==='object'?meta.awakeningUltimates:{};
+    meta.awakeningRewards480=meta.awakeningRewards480&&typeof meta.awakeningRewards480==='object'?meta.awakeningRewards480:{};
+
+    const localActive=meta.awakenings463.active;
+    let shouldClear=false;
+
+    if(payload&&typeof payload==='object'){
+      const awakening=payload.awakening&&typeof payload.awakening==='object'?payload.awakening:{};
+      const serverActive=awakening.active;
+      const journeys=awakening.journeys&&typeof awakening.journeys==='object'?awakening.journeys:{};
+
+      // O servidor é a autoridade: ausência de active significa que nenhuma
+      // jornada deve permanecer bloqueada no navegador.
+      if(!serverActive)shouldClear=!!localActive;
+      else{
+        const key=String(serverActive.characterKey||'');
+        const row=journeys[key]||{};
+        const serverStage=Math.max(1,Math.trunc(num(serverActive.stage)));
+        if(row.ultimateUnlocked===true||num(row.completedStages)>=serverStage)shouldClear=true;
+      }
+    }else if(localActive){
+      // Proteção de boot/offline contra saves antigos: uma etapa cuja posição já
+      // está incluída nas concluídas, ou cuja Ultimate existe, não pode bloquear.
+      const key=String(localActive.id||'');
+      const stage=Math.max(0,Math.trunc(num(localActive.stage)));
+      const completed=Math.max(0,Math.trunc(num(meta.awakenings463.completed[key])));
+      const ultimate=meta.awakeningUltimates[key]===true||meta.awakeningRewards480[key]===true;
+      if(ultimate||completed>=stage+1)shouldClear=true;
+    }
+
+    if(!shouldClear)return false;
+    meta.awakenings463.active=null;
+    write(meta);
+
+    if(refresh&&!refreshQueued&&document.querySelector('.missionAwakening489')){
+      refreshQueued=true;
+      setTimeout(()=>{
+        refreshQueued=false;
+        try{
+          const hero=window.__ChronoProgression8518?.selectedHero;
+          window.openAwakening489?.(hero);
+        }catch{}
+      },0);
+    }
+    return true;
+  }
+
+  window.addEventListener('chrono-progression-applied',event=>{
+    normalize(event.detail?.payload||window.__ChronoProgression8518?.payload,{refresh:true});
+  });
+  window.addEventListener('chrono-cloud-applied',()=>{
+    setTimeout(()=>normalize(window.__ChronoProgression8518?.payload||null,{refresh:true}),0);
+  });
+  window.addEventListener('chrono-account-ready',()=>{
+    setTimeout(()=>normalize(window.__ChronoProgression8518?.payload||null,{refresh:true}),0);
+  });
+
+  // Limpa imediatamente estados locais incompatíveis ao carregar esta versão.
+  normalize(window.__ChronoProgression8518?.payload||null);
+  console.log('Chrono Shards 8.6.2 — trava fantasma do Awakening corrigida');
+})();
+</script>
+
 </body>
 </html>
