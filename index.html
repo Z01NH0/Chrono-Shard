@@ -1,4 +1,4 @@
-a<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="pt-BR">
 <head>
@@ -40840,6 +40840,138 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     wrapped.__stellarCurrent8520=true;window[name]=wrapped;try{if(name==='openClassMenu')openClassMenu=wrapped;else openClassMenu461=wrapped}catch{}
   }
   console.log('Chrono Shards 8.5.20 — correções de Exterminador, Emperador, DOOM e Nefalem carregadas');
+})();
+</script>
+
+<script id="chronoHudPauseFix8521">
+/* Chrono Shards 8.5.21 — alinhamento do HUD direito e área segura da pausa */
+(()=>{
+  if(window.__chronoHudPauseFix8521)return;
+  window.__chronoHudPauseFix8521=true;
+
+  const old=document.getElementById('chronoHudPauseFix8521Styles');
+  if(old)old.remove();
+  const style=document.createElement('style');
+  style.id='chronoHudPauseFix8521Styles';
+  style.textContent=`
+    /* O HUD fica ancorado exatamente à arena, sem depender do tamanho do conteúdo. */
+    .hud{
+      left:50%!important;
+      right:auto!important;
+      width:min(98vw,1320px)!important;
+      transform:translateX(-50%)!important;
+      align-items:flex-start!important;
+    }
+    .hud .right-panel{
+      position:absolute!important;
+      top:0!important;
+      right:0!important;
+      left:auto!important;
+      width:auto!important;
+      min-width:0!important;
+      margin:0!important;
+      padding:0!important;
+      display:flex!important;
+      align-items:flex-end!important;
+      justify-content:flex-start!important;
+      pointer-events:none!important;
+    }
+    /* Quatro informações em uma linha limpa, sempre justificadas à direita. */
+    .hud .right-panel .scoreboard{
+      width:auto!important;
+      min-width:0!important;
+      max-width:none!important;
+      display:grid!important;
+      grid-template-columns:repeat(4,minmax(98px,118px))!important;
+      align-items:stretch!important;
+      justify-content:end!important;
+      gap:8px!important;
+      padding:0!important;
+      margin:0!important;
+      background:transparent!important;
+      border:0!important;
+      border-radius:0!important;
+      box-shadow:none!important;
+      backdrop-filter:none!important;
+      overflow:visible!important;
+    }
+    .hud .right-panel .scoreboard .ui-token{
+      width:100%!important;
+      min-width:0!important;
+      max-width:none!important;
+      height:auto!important;
+      margin:0!important;
+      flex:none!important;
+    }
+    .hud .right-panel .scoreboard .ui-token b,
+    .hud .right-panel .scoreboard .ui-token span{
+      max-width:100%!important;
+      overflow:hidden!important;
+      text-overflow:ellipsis!important;
+      white-space:nowrap!important;
+      font-size:clamp(12px,1vw,16px)!important;
+    }
+
+    /* Em telas largas, a pausa fica do lado de fora da arena com uma folga real. */
+    .pauseBtn620{
+      top:16px!important;
+      right:max(16px,calc((100vw - min(98vw,1320px))/2 - 118px))!important;
+      width:106px!important;
+      min-width:106px!important;
+      white-space:nowrap!important;
+    }
+
+    /* Quando não existe espaço fora da arena, reservamos um slot dentro dela. */
+    @media (max-width:1560px){
+      .hud .right-panel{right:118px!important}
+      .pauseBtn620{
+        right:max(16px,calc((100vw - min(98vw,1320px))/2 + 8px))!important;
+      }
+    }
+
+    /* Responsividade: mantém o painel compacto sem invadir o HUD esquerdo. */
+    @media (max-width:1120px){
+      .hud .right-panel .scoreboard{
+        grid-template-columns:repeat(2,minmax(96px,112px))!important;
+      }
+    }
+    @media (max-width:760px){
+      .hud .right-panel{right:100px!important}
+      .pauseBtn620{
+        width:88px!important;
+        min-width:88px!important;
+        padding:9px 9px!important;
+        font-size:11px!important;
+      }
+      .hud .right-panel .scoreboard{
+        grid-template-columns:repeat(2,minmax(72px,88px))!important;
+        gap:5px!important;
+      }
+      .hud .right-panel .scoreboard .ui-token{
+        padding:6px 7px 7px!important;
+      }
+      .hud .right-panel .scoreboard .ui-token small{font-size:7px!important}
+      .hud .right-panel .scoreboard .ui-token b,
+      .hud .right-panel .scoreboard .ui-token span{font-size:11px!important}
+    }
+  `;
+  document.head.appendChild(style);
+
+  function normalizeHud8521(){
+    const panel=document.querySelector('.hud .right-panel');
+    const board=panel?.querySelector('.scoreboard');
+    if(panel)panel.removeAttribute('style');
+    if(board)board.removeAttribute('style');
+  }
+  normalizeHud8521();
+  window.addEventListener('resize',normalizeHud8521,{passive:true});
+  try{
+    new MutationObserver(records=>{
+      if(records.some(r=>[...r.addedNodes].some(n=>n?.nodeType===1&&(n.matches?.('.scoreboard,.right-panel')||n.querySelector?.('.scoreboard,.right-panel')))))normalizeHud8521();
+    }).observe(document.body,{childList:true,subtree:true});
+  }catch{}
+
+  console.log('Chrono Shards 8.5.21 — HUD direito alinhado e pausa isolada');
 })();
 </script>
 
