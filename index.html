@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+a<!DOCTYPE html>
 
 <html lang="pt-BR">
 <head>
@@ -10284,7 +10284,7 @@ function killKey37(e){
   updatePlayer=function(dt){
     if(game?.duneTransition37){game.duneTransition37.max=3.25;game.duneTransition37.timer=Math.min(game.duneTransition37.timer||3.25,3.25);}
     if(game?.classKey==='moonSlayer'){
-      ensureMoonN();const p=game.player;const old=game.classKey;game.classKey='assault';updatePlayerPrevN(dt);game.classKey=old;
+      ensureMoonN();const p=game.player,old=game.classKey,md=mouse.down;game.__moonLegacyProxyActive=true;mouse.down=false;game.classKey='assault';try{updatePlayerPrevN(dt)}finally{game.classKey=old;mouse.down=md;game.__moonLegacyProxyActive=false;}
       if(game.moonBloodFormN>0){game.moonBloodFormN=Math.max(0,game.moonBloodFormN-dt);p.vx*=1.14;p.vy*=1.14;}
       if(game.moonQteN){const q=game.moonQteN;q.timer+=dt;if(q.timer/q.total>q.target+q.window)resolveQteN(false);p.vx=0;p.vy=0;}
       if(game.moonRChargeN){game.moonRChargeN.t=Math.min(game.moonRChargeN.max,game.moonRChargeN.t+dt);p.vx*=.65;p.vy*=.65;}
@@ -10428,7 +10428,7 @@ function killKey37(e){
   const updatePlayerPrevO=updatePlayer;
   updatePlayer=function(dt){
     if(game?.classKey==='moonSlayer'){
-      moonInitO();const md=mouse.down;mouse.down=false;const old=game.classKey;game.classKey='assault';updatePlayerPrevO(dt);game.classKey=old;mouse.down=md;const p=game.player;if(!p)return;if(md)castBasicO();
+      moonInitO();const md=mouse.down,old=game.classKey;game.__moonLegacyProxyActive=true;mouse.down=false;game.classKey='assault';try{updatePlayerPrevO(dt)}finally{game.classKey=old;mouse.down=md;game.__moonLegacyProxyActive=false;}const p=game.player;if(!p)return;if(md)castBasicO();
       if(game.moonBloodO>0){game.moonBloodO=Math.max(0,game.moonBloodO-dt);p.vx*=1.12;p.vy*=1.12;}
       if(game.moonQteO){const q=game.moonQteO;q.timer+=dt;if(q.timer/q.total>q.target+q.window)resolveQO(false);p.vx=0;p.vy=0;}
       if(game.moonRChargeO){game.moonRChargeO.t=Math.min(game.moonRChargeO.max,game.moonRChargeO.t+dt);p.vx*=.65;p.vy*=.65;}
@@ -10447,7 +10447,7 @@ function killKey37(e){
   const renderPrevO=render;
   function drawSlashO(c){const alpha=clamp(c.life/(c.maxLife||1),0,1);ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.a);ctx.globalAlpha=alpha;ctx.shadowBlur=26;ctx.shadowColor=c.color;const len=c.length,w=c.width;ctx.beginPath();ctx.moveTo(-len*.5,-w*.22);ctx.quadraticCurveTo(-len*.12,-w*1.05,len*.32,-w*.18);ctx.quadraticCurveTo(len*.55,w*.06,len*.38,w*.48);ctx.quadraticCurveTo(len*.04,w*.95,-len*.48,w*.18);ctx.closePath();ctx.fillStyle='rgba(0,0,0,.84)';ctx.fill();ctx.strokeStyle='rgba(255,255,255,.88)';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(-len*.34,-w*.02);ctx.quadraticCurveTo(-len*.08,-w*.58,len*.34,w*.02);ctx.quadraticCurveTo(-len*.02,w*.56,-len*.34,w*.16);ctx.closePath();ctx.fillStyle=c.color;ctx.fill();ctx.restore();}
   render=function(){
-    if(game?.classKey==='moonSlayer'){const old=game.classKey;game.classKey='assault';renderPrevO();game.classKey=old;}else renderPrevO();
+    if(game?.classKey==='moonSlayer'){const old=game.classKey;game.__moonLegacyProxyRender=true;game.classKey='assault';try{renderPrevO()}finally{game.classKey=old;game.__moonLegacyProxyRender=false;}}else renderPrevO();
     if(!game)return;
     if(game.classKey==='moonSlayer'){
       const p=game.player;if(p&&!(game.moonUltO&&(game.moonUltO.phase==='storm'||game.moonUltO.phase==='draw'||(game.moonUltO.phase==='flashstep'&&game.moonUltO.time<.44)))){const red=game.moonBloodO>0;ctx.save();ctx.translate(p.x,p.y);ctx.shadowBlur=red?26:24;ctx.shadowColor=red?'#ff5269':'#d8c4ff';ctx.fillStyle=red?'#4e0712':'#2a0b52';ctx.strokeStyle='#f7f2ff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(18,-8);ctx.lineTo(23,8);ctx.lineTo(10,20);ctx.lineTo(-10,20);ctx.lineTo(-23,8);ctx.lineTo(-18,-8);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#f8f5ff';ctx.fillRect(-23,-15,46,5);ctx.strokeStyle='#ffffff';ctx.beginPath();ctx.arc(-3,-22,10,Math.PI*.22,Math.PI*1.28);ctx.stroke();ctx.strokeStyle=red?'rgba(255,82,105,.55)':'rgba(216,196,255,.55)';for(let i=0;i<2;i++){ctx.beginPath();ctx.arc(0,0,24+i*10,0,Math.PI*2);ctx.stroke();}if(game.moonRChargeO){const pct=game.moonRChargeO.t/game.moonRChargeO.max,w=92,h=8;ctx.fillStyle='rgba(5,12,30,.82)';ctx.fillRect(-w/2,34,w,h);ctx.fillStyle=pct>=.95?'#ffd166':'#72d7ff';ctx.fillRect(-w/2,34,w*clamp(pct,0,1),h);ctx.strokeStyle='#e9fbff';ctx.strokeRect(-w/2,34,w,h);}ctx.restore();if(game.moonAuraO){ctx.save();ctx.globalAlpha=.5;ctx.strokeStyle=red?'#ff5269':'#c8eaff';ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(p.x,p.y,game.moonAuraO.r,0,Math.PI*2);ctx.stroke();ctx.restore();}}
@@ -27485,7 +27485,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     ensureClass(); if(!revealed())return '';
     const c=CLASSES[EMP], own=bought(), afford=N(meta().chronoFragments)>=30;
     return `<div class="classCard461 stellarCard721 secretStable722 ${own?'':'locked'}" data-card461="${EMP}" data-stellar722="1" style="--c:#ff7a2f">
-      <button class="classInfo461" data-info-stellar722="1" title="Informações">i</button>
+      <button class="classInfo461 classInfoFast848" type="button" data-info-fast848="stellarEmperor" title="Informações">i</button>
       ${own?'':'<div class="classLock461">🔒</div>'}
       <div class="secretSlotModel722">${model()}</div>
       <span class="badge461" style="--co:#ffd166">SECRETO ESTELAR</span>
@@ -27493,7 +27493,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
       <span>${esc(c.desc)}</span>
       <span class="small461"><b>Kit:</b> Feixe carregado • Burn • Slow • Supernova • Awakening</span>
       <span class="small461">HP ${c.hp} • Escudo ${c.shield} • Foco ${c.focus} • Vel. ${c.speed}</span>
-      ${own?`<button class="pick461" data-pick-stellar722="1">Selecionar</button>`:`<button class="buy461" data-buy-stellar722="1" ${afford?'':'disabled'}>Comprar — <span style="color:#ffd166">30 ✦ Fragmentos Chrono</span></button>`}
+      ${own?`<button class="pick461" type="button" data-pick461="${EMP}">Selecionar</button>`:`<button class="buy461" type="button" data-buy461="${EMP}" ${afford?'':'disabled'}>Comprar — <span style="color:#ffd166">30 ✦ Fragmentos Chrono</span></button>`}
     </div>`;
   }
   function openInfo(){
@@ -27555,7 +27555,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     const grid23=document.querySelector('.class-grid-v23');
     if(grid23 && !document.querySelector('[data-stellar722-v23]')){
       const own=bought(), afford=N(meta().chronoFragments)>=30, c=CLASSES[EMP];
-      const html=`<div class="class-card-v23 stellarCard721 secretStable722 ${own?'':'locked'}" data-stellar722-v23="1" data-class="${EMP}" style="--c:#ff7a2f"><button class="info-btn-v23" data-info-stellar722="1">i</button>${own?'':'<div class="class-lock-v23">🔒</div>'}<div class="secretSlotModel722">${model()}</div><div class="class-title-row-v23"><strong>${esc(c.name)}</strong></div><span class="class-tag" style="background:#ffd16622;color:#ffd166;border:1px solid #ffd16655">SECRETO ESTELAR</span><span style="display:block;margin-top:8px;color:#b8cbea;line-height:1.35">${esc(c.desc)}</span><span class="muted">HP ${c.hp} • Escudo ${c.shield} • Foco ${c.focus}</span>${own?`<button class="select-btn-v23" data-pick-stellar722="1">Selecionar</button>`:`<button class="buy-btn-v23" data-buy-stellar722="1" ${afford?'':'disabled'}>Comprar — 30 ✦</button>`}</div>`;
+      const html=`<div class="class-card-v23 stellarCard721 secretStable722 ${own?'':'locked'}" data-stellar722-v23="1" data-class="${EMP}" style="--c:#ff7a2f"><button class="info-btn-v23 classInfoFast848" type="button" data-info-fast848="stellarEmperor">i</button>${own?'':'<div class="class-lock-v23">🔒</div>'}<div class="secretSlotModel722">${model()}</div><div class="class-title-row-v23"><strong>${esc(c.name)}</strong></div><span class="class-tag" style="background:#ffd16622;color:#ffd166;border:1px solid #ffd16655">SECRETO ESTELAR</span><span style="display:block;margin-top:8px;color:#b8cbea;line-height:1.35">${esc(c.desc)}</span><span class="muted">HP ${c.hp} • Escudo ${c.shield} • Foco ${c.focus}</span>${own?`<button class="select-btn-v23" type="button" data-pick461="${EMP}">Selecionar</button>`:`<button class="buy-btn-v23" type="button" data-buy461="${EMP}" ${afford?'':'disabled'}>Comprar — 30 ✦</button>`}</div>`;
       const after=grid23.querySelector('[data-class="shadowChild"]')||grid23.querySelector('[data-class="moonSlayer"]');
       if(after) after.insertAdjacentHTML('afterend',html); else grid23.insertAdjacentHTML('beforeend',html);
     }
@@ -27564,16 +27564,9 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   function bind(){
     // event delegation handles new elements without rebinding/flicker
   }
-  document.addEventListener('click',e=>{
-    const info=e.target?.closest?.('[data-info-stellar722]');
-    if(info){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openInfo();return;}
-    const buy=e.target?.closest?.('[data-buy-stellar722]');
-    if(buy){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();if(!spendChrono(30)){buy.textContent='Fragmentos insuficientes';return;}const u=unlocks();u.push(EMP);saveUnlocks(u);lastSig='';(window.openClassMenu461||window.openClassMenu)?.();return;}
-    const pick=e.target?.closest?.('[data-pick-stellar722]');
-    if(pick){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();resetGame(EMP);overlay.classList.add('hidden');return;}
-    const card=e.target?.closest?.('[data-stellar722="1"],[data-stellar722-v23]');
-    if(card && !e.target.closest('button')){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();if(bought()){resetGame(EMP);overlay.classList.add('hidden');}return;}
-  },true);
+  // Os cliques do card são tratados pelos controladores finais de informações e economia.
+  // O handler 7.2.2 foi mantido desativado para não interceptar compra/seleção antes do servidor.
+  document.addEventListener('click',()=>{},true);
 
   const oldOpen=window.openClassMenu461||window.openClassMenu||globalThis.openClassMenu;
   if(typeof oldOpen==='function'&&!oldOpen.__secretStable722){
@@ -33094,7 +33087,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     if(g.doomShopBuff830?.greed)data.hp=Math.round(data.hp*1.10);
     const e={bossType,x:p.x,y:p.y,vx:0,vy:0,r:data.r,speed:data.speed,hp:data.hp,maxHp:data.hp,type:'boss',value:data.value,color:data.color,elite:false,wobble:0,hitFlash:0,shieldHp:0,marked:false,frozenTime:0,auraAngle:0,...data,doomBoss800:true};g.enemies.push(e);g.bossActive=true;d.totalBossSpawns++;try{addRing(C(p.x,70,W-70),C(p.y,70,H-70),data.color,150,7)}catch{};return e;
   }
-  function spawnBossEncounter(){const g=G(),d=state();if(!g||!d)return;const count=d.stage>=4?2:1;if(doomSlots()<count)return;const sides=[0,1,2,3].sort(()=>Math.random()-.5),types=['archon','titan','oracle'].sort(()=>Math.random()-.5);let spawned=0;for(let i=0;i<count;i++)if(spawnDoomBoss(types[i%types.length],sides[i]))spawned++;if(spawned!==count)return;d.bossEncounter=true;d.bossTimer=60;showAlert(count===2?'DOIS BOSSES ENTRARAM':'UM BOSS ENTROU',count===2?'ELES VIERAM DE LADOS DIFERENTES':'O CONTADOR PAROU ATÉ ELE MORRER','fail');}
+  function spawnBossEncounter(){const g=G(),d=state();if(!g||!d)return false;const count=d.stage>=4?2:1;if(!freeDoomSlots(count)){d.bossTimer=Math.max(N(d.bossTimer),3);return false;}const sides=[0,1,2,3].sort(()=>Math.random()-.5),types=['archon','titan','oracle'].sort(()=>Math.random()-.5);let spawned=0;for(let i=0;i<count;i++)if(spawnDoomBoss(types[i%types.length],sides[i]))spawned++;if(spawned!==count){d.bossTimer=3;return false;}d.bossEncounter=true;d.bossTimer=60;showAlert(count===2?'DOIS BOSSES ENTRARAM':'UM BOSS ENTROU',count===2?'ELES VIERAM DE LADOS DIFERENTES':'O CONTADOR PAROU ATÉ ELE MORRER','fail');return true;}
 
   function triggerDoomArrival(){
     const g=G(),d=state();if(!g||!d||d.emperorSpawned)return;if(!freeDoomSlots(1))return;d.emperorSpawned=true;d.timeAtDoom=0;let hp=Math.round((11500+d.elapsed*11)*1.25);if(g.doomShopBuff830?.greed)hp=Math.round(hp*1.10);const side=RI(0,3),p=bossPos(side);g.enemies.push({type:'boss',bossType:'lostEmperor',name:'Emperador das Trevas',x:p.x,y:p.y,vx:0,vy:0,r:74,speed:78,hp,maxHp:hp,value:1500,color:'#ff101f',elite:false,wobble:0,hitFlash:0,phase:1,shotTimer:.72,ghostTimer:2.0,bombTimer:2.8,slashTimer:3.5,teleportTimer:4.5,voidRuptureTimer:7,auraAngle:0,doomEmperor800:true});g.bossActive=true;g.lostBossBullets=g.lostBossBullets||[];g.shadowFire=g.shadowFire||[];g.flash=.85;g.flashColor='#ff001f';g.shake=34;showAlert('☠ DOOM ☠','O EMPERADOR DAS TREVAS CHEGOU — NADA PAROU','fail');try{addRing(C(p.x,80,W-80),C(p.y,80,H-80),'#ff102d',210,10);addParticles(C(p.x,80,W-80),C(p.y,80,H-80),'#ff102d',90,1.8)}catch{}
@@ -33103,7 +33096,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   function updateBossSystem(dt){
     const g=G(),d=state();if(!g||!d)return;const regular=(g.enemies||[]).filter(e=>e?.type==='boss'&&!e.doomEmperor800);
     if(d.bossEncounter){if(regular.length===0){d.bossEncounter=false;d.bossTimer=60;}}
-    else if(d.value>=40&&d.value<100){d.bossTimer-=dt;if(d.bossTimer<=0)spawnBossEncounter();}
+    else if(d.value>=40&&d.value<100){if(!Number.isFinite(d.bossTimer))d.bossTimer=60;d.bossTimer-=dt;if(d.bossTimer<=0&&!spawnBossEncounter())d.bossTimer=3;}
     if(d.value>=100)d.timeAtDoom+=dt;
   }
 
@@ -36040,7 +36033,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   function bossLike841(e){const id=String(e?.bossType||e?.type||e?.id||e?.kind||'').toLowerCase();return !!(e&&(e.type==='boss'||e.bossType||e.isBoss||e.isMiniboss||e.miniboss||/boss|archon|titan|oracle|devor|infernal|emperor|emperador|dreadbus|glacial/.test(id)))}
   function loseStyleOnHit(){const s=S();if(!s)return;s.meter*=.70;if(s.rank<0&&s.meter<.005){s.meter=0;s.engaged=false}}
   function targetDamage(e,d){try{return window.__InfernalShop830?.targetDamage?.(e,d)??d}catch{return d}}
-  function damageEnemy(e,base,action,mult=1,opt={}){const g=G(),s=S(g);if(!active(g)||!e||N(e.hp)<=0)return 0;if(e._nefSwordBound8415&&!opt.boundDrain)return 0;let dmg=base*N(g.upgrades?.damage,1)*(1+N(s?.swordBondDamage8415))*mult;if(opt.crit!==false&&Math.random()<N(g.upgrades?.critChance,.15))dmg*=2;dmg=targetDamage(e,dmg);const before=N(e.hp)+N(e.shieldHp);if(N(e.shieldHp)>0){e.shieldHp-=dmg;if(e.shieldHp<0){e.hp+=e.shieldHp;e.shieldHp=0}}else e.hp-=dmg;e.hitFlash=Math.max(N(e.hitFlash),.11);if(opt.stun)e.stun=Math.max(N(e.stun),opt.stun);if(opt.knock){const a=angle(G().player,e);e.x+=Math.cos(a)*opt.knock;e.y+=Math.sin(a)*opt.knock}const dealt=Math.max(0,Math.min(before,before-(N(e.hp)+N(e.shieldHp))));gainStyle(.45+dealt*.17,action,opt.styleMult);gainUlt(dealt*.035);if(e.hp<=0){const idx=(g.enemies||[]).indexOf(e);if(idx>=0){gainStyle(e.type==='boss'?80:e.elite?44:24,action,opt.styleMult);gainUlt(e.type==='boss'?10:e.elite?3:1.3);enemyDeath(idx,e)}}return dealt}
+  function damageEnemy(e,base,action,mult=1,opt={}){const g=G(),s=S(g);if(!active(g)||!e||N(e.hp)<=0)return 0;if(e._nefSwordBound8415&&!opt.boundDrain)return 0;let dmg=base*N(g.upgrades?.damage,1)*(1+N(s?.swordBondDamage8415))*mult;if(opt.crit!==false&&Math.random()<N(g.upgrades?.critChance,.15))dmg*=2;dmg=targetDamage(e,dmg);const before=N(e.hp)+N(e.shieldHp);if(N(e.shieldHp)>0){e.shieldHp-=dmg;if(e.shieldHp<0){e.hp+=e.shieldHp;e.shieldHp=0}}else e.hp-=dmg;e.hitFlash=Math.max(N(e.hitFlash),.11);if(opt.stun)e.stun=Math.max(N(e.stun),opt.stun);if(opt.knock){const a=angle(G().player,e);e.x+=Math.cos(a)*opt.knock;e.y+=Math.sin(a)*opt.knock}const dealt=Math.max(0,Math.min(before,before-(N(e.hp)+N(e.shieldHp))));gainStyle(.45+dealt*.17,action,opt.styleMult);gainUlt(dealt*.035);if(e.hp<=0){const idx=(g.enemies||[]).indexOf(e);if(idx>=0){gainStyle(e.type==='boss'?80:e.elite?44:24,action,opt.styleMult);gainUlt((e.type==='boss'?10:e.elite?3:1.3)*.40);enemyDeath(idx,e)}}return dealt}
   function arcTargets(p,a,r,arc){return [...(G()?.enemies||[])].filter(e=>distance(p,e)<=r+N(e.r)&&Math.abs(Math.atan2(Math.sin(angle(p,e)-a),Math.cos(angle(p,e)-a)))<=arc/2)}
   function lineTargets(x1,y1,x2,y2,w){return [...(G()?.enemies||[])].filter(e=>lineDist(e,x1,y1,x2,y2)<=w+N(e.r))}
   function addShot(o){const s=S();o.hit=o.hit||new Set();s.shots.push(o);return o}
@@ -36061,7 +36054,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     const action=sovereign?'sovereign_m1':'sword_m1',sm=repeatMult(s,action),a=angle(p,mouse),max=sovereign?4:3;
     s.combo=s.comboWindow>0?(s.combo+1)%max:0;s.comboWindow=sovereign?.90:.76;
     const i=s.combo,dam=sovereign?[105,135,175,260][i]:[27,31,46][i],range=sovereign?[250,285,325,390][i]:[132,145,172][i],arc=sovereign?[2.50,2.78,3.12,Math.PI*2][i]:[1.95,2.12,2.48][i];
-    const targets=arc>=6?[...g.enemies]:arcTargets(p,a,range,arc);
+    const targets=arcTargets(p,a,range,arc);
     for(const e of targets){let bonus=1;if(!sovereign&&N(e._nefMark841)>0){bonus=1.35;e._nefMark841=0}damageEnemy(e,dam*bonus,action,1,{styleMult:sm,knock:i===max-1?(sovereign?24:8):sovereign?7:0})}
     const dir=i%2?1:-1;s.swordSwing={time:sovereign?.34:.24,max:sovereign?.34:.24,dir,sovereign};
     s.slashes.push({x:p.x,y:p.y,a:a+dir*.08,r:range,arc,life:sovereign?.46:.34,max:sovereign?.46:.34,color:sovereign?'#ff203d':'#ff304f',core:sovereign?'#fff0cf':'#ffc0c5',wide:sovereign?(20+i*2):(i===2?12:9),dir,curve:true});
@@ -40789,6 +40782,67 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 })();
 </script>
 
-<script>console.log('Chrono Shards 8.4.49 — intervalos de Awakening e Tutorial modular carregados');</script>
+
+<script id="chronoCorrecoes8520">
+/* Chrono Shards 8.5.20 — conflitos de personagem, Emperador, DOOM e Nefalem */
+(()=>{
+  if(window.__chronoCorrecoes8520)return;window.__chronoCorrecoes8520=true;
+  const EMP='stellarEmperor',MOON='moonSlayer';
+  const G=()=>{try{return window.game||game||null}catch{return null}};
+
+  // O Exterminador usa o Assault apenas como proxy legado de movimentação.
+  // Durante esse proxy o modelo e qualquer projétil básico do Assault ficam bloqueados.
+  const oldDrawPlayer=window.drawPlayer||(typeof drawPlayer==='function'?drawPlayer:null);
+  if(typeof oldDrawPlayer==='function'&&!oldDrawPlayer.__moonIsolation8520){
+    const wrapped=function(){const g=G();if(g?.__moonLegacyProxyRender)return;return oldDrawPlayer.apply(this,arguments)};
+    wrapped.__moonIsolation8520=true;window.drawPlayer=wrapped;try{drawPlayer=wrapped}catch{}
+  }
+  const oldShoot=window.shoot||(typeof shoot==='function'?shoot:null);
+  if(typeof oldShoot==='function'&&!oldShoot.__moonIsolation8520){
+    const wrapped=function(){
+      const g=G();if(g?.classKey!==MOON)return oldShoot.apply(this,arguments);
+      const before=Array.isArray(g.bullets)?g.bullets.length:0,oldWeapon=g.weaponKey;
+      g.weaponKey='moonBlade';
+      try{return oldShoot.apply(this,arguments)}finally{
+        // O M1 atual usa moonBladesP; qualquer bullet comum criada aqui é vazamento do Assault.
+        if(Array.isArray(g.bullets)&&g.bullets.length>before)g.bullets.splice(before);
+        g.weaponKey='moonBlade';
+        g.assaultTurbo33=0;
+      }
+    };
+    wrapped.__moonIsolation8520=true;window.shoot=wrapped;try{shoot=wrapped}catch{}
+  }
+  const oldReset=window.resetGame||(typeof resetGame==='function'?resetGame:null);
+  if(typeof oldReset==='function'&&!oldReset.__moonIsolation8520){
+    const wrapped=function(k){const out=oldReset.apply(this,arguments),g=G();if(k===MOON&&g){g.weaponKey='moonBlade';g.assaultTurbo33=0;g.assaultGrenades33=[];g.assaultGrenades34=[];g.assaultMissiles491=[];g.assaultGrenadeFx491=[];try{if(g.ults481)delete g.ults481.assault}catch{}}return out};
+    wrapped.__moonIsolation8520=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}
+  }
+
+  // Mantém apenas os atributos compreendidos pelos controladores finais do Emperador.
+  const OLD_INFO=['data-info-stellar720','data-info-stellar721','data-info-stellar722','data-info-stellar726','data-info-stellar727','data-info-stellar728','data-info-stellar729','data-info-stellar730','data-info-stellar731'];
+  function normalizeEmperorCard(){
+    document.querySelectorAll('[data-card461="stellarEmperor"],[data-stellar722-v23],[data-class="stellarEmperor"]').forEach(card=>{
+      const info=card.querySelector('.classInfo461,.info-btn-v23,[data-info-fast848]');
+      if(info){OLD_INFO.forEach(a=>info.removeAttribute(a));info.setAttribute('data-info-fast848',EMP);info.classList.add('classInfoFast848');info.type='button';}
+      const buy=card.querySelector('[data-buy-stellar720],[data-buy-stellar721],[data-buy-stellar722],[data-buy461]');
+      if(buy){buy.removeAttribute('data-buy-stellar720');buy.removeAttribute('data-buy-stellar721');buy.removeAttribute('data-buy-stellar722');buy.setAttribute('data-buy461',EMP);buy.type='button';}
+      const pick=card.querySelector('[data-pick-stellar720],[data-pick-stellar721],[data-pick-stellar722],[data-pick461]');
+      if(pick){pick.removeAttribute('data-pick-stellar720');pick.removeAttribute('data-pick-stellar721');pick.removeAttribute('data-pick-stellar722');pick.setAttribute('data-pick461',EMP);pick.type='button';}
+      card.dataset.stellarCurrent='8520';
+    });
+  }
+  const observer=new MutationObserver(normalizeEmperorCard);
+  observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-info-stellar722','data-info-stellar726','data-info-stellar727','data-info-stellar728','data-info-stellar729','data-info-stellar730','data-info-stellar731']});
+  normalizeEmperorCard();
+  for(const name of ['openClassMenu','openClassMenu461']){
+    const fn=window[name];if(typeof fn!=='function'||fn.__stellarCurrent8520)continue;
+    const wrapped=function(){const out=fn.apply(this,arguments);queueMicrotask(normalizeEmperorCard);setTimeout(normalizeEmperorCard,60);return out};
+    wrapped.__stellarCurrent8520=true;window[name]=wrapped;try{if(name==='openClassMenu')openClassMenu=wrapped;else openClassMenu461=wrapped}catch{}
+  }
+  console.log('Chrono Shards 8.5.20 — correções de Exterminador, Emperador, DOOM e Nefalem carregadas');
+})();
+</script>
+
+<script>console.log('Chrono Shards 8.5.20 — HTML atualizado e correções finais carregadas');</script>
 </body>
 </html>
