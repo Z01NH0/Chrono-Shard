@@ -1,0 +1,71 @@
+Chrono Shards 8.5.19 — relatório de validação profunda
+Data: 2026-07-28
+Escopo: index.html, game-api/index.ts, migrations 001–014, Awakening, Loja Infernal e DOOM.
+
+SINTAXE E ESTRUTURA
+[OK] 176 blocos JavaScript inline analisados individualmente com `node --check`; zero erros.
+[OK] Os 176 blocos JavaScript clássicos foram concatenados e analisados em conjunto; zero colisões sintáticas.
+[OK] Edge Function transpilada com TypeScript 5.8.3; zero diagnósticos de erro.
+[OK] 108 IDs HTML estáticos encontrados; 108 únicos; zero duplicados.
+[OK] Migration 014 com aspas, delimitadores e parênteses estruturalmente balanceados.
+[OK] 11 imagens PNG presentes no pacote.
+[OK] Nenhuma `service_role`, URL de banco, JWT secret ou chave `sb_secret_*` encontrada no HTML.
+
+INTEGRAÇÃO HTML / EDGE / SQL
+[OK] 21 ações literais chamadas diretamente por `invoke()` no HTML; todas possuem handler na Edge Function.
+[OK] 29 handlers de ação detectados na Edge Function.
+[OK] 20 RPCs chamadas pelo HTML/Edge; zero funções ausentes no histórico das 14 migrations.
+[OK] 41 funções SECURITY DEFINER no histórico; todas usam `SET search_path = ''`.
+[OK] Respostas autenticadas da game-api usam `Cache-Control: no-store`.
+[OK] Número de etapa Awakening é validado como inteiro entre 1 e 5; não existe correção silenciosa.
+
+AWAKENING — CATÁLOGO E MÉTRICAS
+[OK] 10 personagens no catálogo final do HTML.
+[OK] 10 personagens no catálogo SQL.
+[OK] 50 etapas no HTML e 50 etapas no SQL.
+[OK] Zero diferenças de personagem, etapa, título, descrição, métrica ou meta.
+[OK] 38 métricas distintas usadas pelas etapas; todas possuem suporte no SQL.
+[OK] Métricas especiais revisadas: typeKills.riftTick, assaultTurboBossKills e roninParryContacts8427.
+
+AWAKENING — HIDRATAÇÃO E CICLO DE TELA
+[OK] A interface prioriza `serverProgress`, `serverTarget`, `serverDone` e o baseline oficial.
+[OK] Smoke test: progresso oficial substitui um valor local desatualizado.
+[OK] Smoke test: conclusão oficial permanece concluída mesmo antes do valor visual alcançar a meta.
+[OK] Smoke test: fallback legado continua funcional quando a autoridade ainda não está disponível.
+[OK] Abrir a aba Awakening força a sincronização oficial.
+[OK] Checkpoints aceitos aplicam imediatamente o payload de progressão na interface.
+[OK] Voltar à página, carregar a conta e finalizar uma partida provocam nova hidratação quando necessário.
+[OK] Redesenhos internos não chamam novamente a função pública de abertura e não duplicam requisições.
+
+AWAKENING — AUTORIDADE E CONSISTÊNCIA
+[OK] O servidor valida a posse do personagem antes de iniciar ou resgatar uma jornada.
+[OK] Personagens não adquiridos aparecem bloqueados no HTML.
+[OK] O payload oficial inclui propriedade, revisão e horários de atualização.
+[OK] A migration repara progresso fora da meta, etapa fora de ordem, Ultimate inconsistente e jornada marcada incorretamente.
+[OK] Etapas ativas inválidas são removidas e a Chave de Awakening consumida é devolvida.
+[OK] Existe restrição de progresso entre 0 e a meta oficial.
+
+CHECKPOINTS E MISSÕES
+[OK] Awakening recebe o mesmo checkpoint cumulativo já normalizado pelas missões gerais.
+[OK] Abates, bosses, elites, habilidades, wave e tipos de inimigos usam o mesmo resumo oficial nas duas abas.
+[OK] Checkpoints fora de ordem não diminuem contadores cumulativos.
+[OK] Objetos JSON cumulativos são mesclados pelo maior valor observado.
+[OK] O valor métrico da sessão permanece monotônico, impedindo dupla contagem posterior.
+[OK] Dados especiais do DOOM continuam separados, limitados e mesclados no servidor.
+
+LOJA INFERNAL E DOOM — REGRESSÃO
+[OK] Rotação, rotationId, preços, estoque, pity, pactos, Legados, skins e recompensas continuam autoritativos.
+[OK] O navegador não escolhe preço nem recompensa da Loja Infernal.
+[OK] Sessões DOOM continuam vinculadas aos pactos consumidos e às recompensas finais.
+[OK] A atualização 8.5.19 não removeu handlers ou RPCs introduzidos na 8.5.18.
+
+ARQUIVOS DE AUDITORIA
+[OK] Migration adicionada: 20260728001400_chrono_awakening_hydration_hardening.sql.
+[OK] Diagnóstico somente leitura adicionado: 20260728_chrono_awakening_review_8_5_19.sql.
+[OK] Guia, changelog, README e relatório técnico atualizados.
+
+LIMITES DA VALIDAÇÃO
+- A migration não foi executada dentro do projeto Supabase real do usuário.
+- A Edge Function não foi publicada nem chamada contra o projeto real.
+- Não foi possível executar uma partida completa conectada ao banco real.
+- A validação cobre sintaxe, estrutura, integração, catálogos, simulações isoladas e revisão estática profunda.

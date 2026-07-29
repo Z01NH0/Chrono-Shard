@@ -1,0 +1,32 @@
+CHRONO SHARDS 8.5.17 — VALIDAÇÃO ESTÁTICA E AUDITORIA DE AUTORIDADE
+
+HTML / JAVASCRIPT
+- Scripts inline encontrados: 175
+- Scripts com erro de sintaxe em `node --check`: 0
+- IDs HTML duplicados: 0
+- Referências locais ausentes: 0
+- Texto runtime “PARTIDA LIQUIDADA”: 0 ocorrências
+- Alerta “PARTIDA NÃO VALIDADA”: preservado
+- Evento interno `chrono-run-settled`: preservado
+- Sincronização automática das missões após liquidação aceita: preservada
+
+EDGE FUNCTION / SQL
+- Edge Function idêntica por SHA-256 à versão 8.5.16
+- Diagnósticos sintáticos TypeScript 5.8.3: 0
+- Ações chamadas diretamente pelo HTML sem handler: 0
+- RPCs chamadas pela Edge Function sem função correspondente nas migrations: 0
+- Migrations no pacote: 12
+- Nenhuma migration nova necessária
+
+ARQUIVOS
+- Imagens do projeto: 11
+- ZIP completo contém HTML, imagens, Edge Function, migrations, diagnósticos e documentação
+
+AUDITORIA DE AUTORIDADE
+- Sistemas econômicos centrais, personagens protegidos, runs, missões oficiais e códigos: autoritativos
+- Awakening, Loja Infernal, skins, Mauro, bestiário, maestria, upgrades e vários desbloqueios: ainda persistidos como snapshot do cliente
+- Configurações e controles: corretamente mantidos no cliente
+
+LIMITES
+- A análise distingue armazenamento no Supabase de autoridade real. `client_save_data` é backup/sincronização, mas continua manipulável pelo navegador.
+- Não foi executada uma partida real nem chamada uma RPC no projeto Supabase do usuário.

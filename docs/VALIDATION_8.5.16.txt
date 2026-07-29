@@ -1,0 +1,34 @@
+CHRONO SHARDS 8.5.16 — VALIDAÇÃO ESTÁTICA E ESTRUTURAL
+
+HTML / JAVASCRIPT
+- Scripts inline encontrados: 175
+- Scripts com erro de sintaxe em `node --check`: 0
+- IDs HTML duplicados: 0
+- Guarda contra payload antigo sem target/progress/done: presente
+- Hidratação automática após estado da conta: presente
+- Bloqueio de sorteio local após autoridade do servidor: presente
+- Renovação de cooldown delegada ao servidor: presente
+
+EDGE FUNCTION
+- Transpilação TypeScript 5.8.3: 0 diagnósticos sintáticos
+- Recuperação de checkpoint ajustada de 45 para 180 segundos
+- Ações diretas detectadas no HTML sem handler correspondente: 0
+
+SQL / MISSÕES
+- Migrations no pacote: 12
+- Migration nova: 20260728001200_chrono_mission_hydration_consistency.sql
+- Estrutura léxica/pares de delimitadores da migration nova: válida
+- Campos autoritativos na RPC: target, current, progress, done e serverTime
+- Missões oficiais no catálogo final do HTML: 34
+- Missões oficiais no catálogo SQL: 34
+- Divergências de ID, métrica ou meta: 0
+- Diagnóstico somente leitura incluído
+
+ARQUIVOS
+- Imagens do projeto: 11
+- index.html, Edge Function, histórico de migrations e documentação presentes
+
+LIMITES DESTA VALIDAÇÃO
+- A migration foi verificada estruturalmente, mas não executada em uma instância PostgreSQL/Supabase real.
+- Não foi possível jogar uma partida real nem chamar as RPCs do projeto do usuário.
+- O teste definitivo exige aplicar a migration, publicar a Edge Function e testar no Supabase real.

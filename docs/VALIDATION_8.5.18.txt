@@ -1,0 +1,27 @@
+Chrono Shards 8.5.18 — relatório de validação estrutural
+Data: 2026-07-28
+
+[OK] 176 blocos JavaScript inline analisados individualmente; zero erros de sintaxe.
+[OK] 176 blocos JavaScript combinados analisados; zero colisões sintáticas.
+[OK] Edge Function TypeScript transpilada com TypeScript em modo strict; zero diagnósticos.
+[OK] Migration 013: 25 funções detectadas, 12 SECURITY DEFINER, delimitadores/aspas/parênteses balanceados.
+[OK] Todas as funções SECURITY DEFINER da migration 013 usam search_path vazio.
+[OK] Catálogo final de Awakening: 10 personagens, 50 etapas no HTML e 50 no SQL; zero diferenças de métrica/meta/texto.
+[OK] 27 ações literais chamadas pelo HTML; zero handlers ausentes na Edge Function.
+[OK] 20 RPCs chamadas pela Edge Function; zero funções SQL ausentes no histórico de migrations.
+[OK] 108 IDs HTML estáticos; zero IDs duplicados.
+[OK] 11 imagens PNG presentes no pacote.
+[OK] Smoke test do módulo chronoProgression8518: estado oficial aplicado a Awakening, Chaves, Lágrimas, Nefalem, DOOM, Relíquias Infernais, Legado, pactos, skins e ampliações.
+[OK] Compra Infernal envia rotationId; Edge Function repassa p_rotation_id; SQL recusa rotação vencida ou divergente.
+[OK] Loja autoritativa não gera rotação local quando o cache oficial ainda não chegou.
+[OK] Ordenação da rotação possui agregação explicitamente ordenada e determinística.
+[OK] Importação preserva progresso disponível de uma etapa Awakening ativa, limitado pela meta oficial.
+[OK] Skin legada demon_rico_* é normalizada para demon_ricocheteador_* na importação.
+[OK] Nenhuma service_role, sb_secret, URI de banco ou chave privada encontrada no index.html.
+[OK] Validação estática específica de integração concluída sem problemas.
+
+LIMITES DESTA VALIDAÇÃO
+- A migration não foi executada em um PostgreSQL/Supabase real neste ambiente.
+- A Edge Function não foi publicada nem chamada contra o projeto Supabase do usuário.
+- Não foi executada uma partida real no navegador; o teste foi estrutural e por smoke test isolado.
+- O combate continua client-side; o servidor valida persistência, ações, sessões, limites e plausibilidade, mas não simula cada frame da partida.

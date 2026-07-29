@@ -1,0 +1,41 @@
+Chrono Shards 8.5.14 — validação estática
+
+JavaScript
+- 175 blocos inline analisados individualmente.
+- 0 erros de sintaxe.
+- Conjunto concatenado validado por `node --check`.
+- 0 chamadas inseguras de `event.key.toLowerCase()`.
+- 0 IDs HTML duplicados.
+
+Edge Function
+- TypeScript transpilado com target ES2022 e módulo ESNext.
+- 0 diagnósticos de transpilação.
+- 19 ações chamadas pelo HTML; 0 handlers ausentes.
+- 10 RPCs chamadas pela Edge Function; 0 funções SQL ausentes.
+- O classificador de conflito de e-mail não usa mais correspondência genérica por “duplicate”.
+- Limpeza de identidade órfã exige ausência de perfil/save e metadados do Chrono Shards.
+
+Missões
+- 34 missões no catálogo final do HTML.
+- 34 missões no catálogo SQL.
+- 0 IDs ausentes.
+- 0 divergências de métrica ou meta.
+- Checkpoint periódico, checkpoint final e recuperação de runs interrompidas presentes.
+- Checkpoints recuperados não concedem moedas.
+
+SQL
+- 11 migrations ordenadas de 00100 a 01100.
+- Delimitadores `$$` balanceados em todas as migrations.
+- RLS/revogações da fase atual mantidas.
+
+Arquivos
+- 0 referências locais ausentes no HTML.
+- ZIP verificado após a criação.
+
+Limitação
+- Não foi possível executar a migration contra o banco Supabase real do usuário neste ambiente. O teste definitivo de runtime exige executar a migration 011, publicar a Edge Function e realizar cadastro/partida no projeto real.
+
+Hashes SHA-256:
+947c4d33e1079f4ff3477f6a514045b4e130e818bee6f4f715cf03fdfa18693f  index.html
+d1c870e6a080308b55fa0d800bee757fb1128ead0d46bfdf74b4d551049aa766  supabase/functions/game-api/index.ts
+3d34ccf150adf558f606ef179081326e0b1cb55a5a2df70739e42690febfaca0  supabase/migrations/20260724001100_chrono_email_missions_reliability.sql

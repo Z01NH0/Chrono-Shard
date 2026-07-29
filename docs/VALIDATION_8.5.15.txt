@@ -1,0 +1,43 @@
+CHRONO SHARDS 8.5.15 — VALIDAÇÃO ESTÁTICA E ESTRUTURAL
+Data: 2026-07-28
+
+ESCOPO
+- index.html: aproximadamente 40 mil linhas
+- JavaScript embutido: 175 blocos
+- Edge Function: supabase/functions/game-api/index.ts
+- Migrations: 11 arquivos em ordem 001–011
+- Catálogo oficial final: 34 missões
+- Imagens do projeto: 11 arquivos PNG
+
+RESULTADOS
+[OK] 175/175 blocos JavaScript passaram em `node --check`.
+[OK] Edge Function transpilada pelo TypeScript 5.8.3 sem erro sintático.
+[OK] 107 IDs HTML únicos; nenhum ID duplicado encontrado.
+[OK] Nenhum uso inseguro direto de `event.key.toLowerCase()`.
+[OK] Nenhum `signInWithPassword` direto no HTML.
+[OK] Nenhuma chave `service_role`, `sb_secret`, URL de banco ou arquivo `.env` no cliente.
+[OK] 19 ações usadas pelo HTML possuem handler na Edge Function.
+[OK] As 10 RPCs chamadas pela Edge Function existem nas migrations.
+[OK] As 34 missões do catálogo final do HTML correspondem às 34 missões SQL em ID, métrica e meta.
+[OK] Todas as funções SQL `security definer` detectadas possuem `set search_path = ''`.
+[OK] Sequência das migrations preservada de 20260724000100 a 20260724001100.
+[OK] Imagens `modos-1..5.png` e `recursos-1..6.png` presentes.
+
+CORREÇÕES 8.5.15 CONFERIDAS
+[OK] Observador de Storage marcado como instalação única e preservado na cadeia dos patches posteriores.
+[OK] Dados de tipo/boss/elite são capturados antes da função original de morte reciclar o inimigo.
+[OK] Telemetria de habilidade possui trava contra wrappers aninhados.
+[OK] Habilidades que mudam estado sem cooldown/foco imediato têm detecção complementar.
+[OK] Três retries de `start_run` reutilizam o mesmo UUID.
+[OK] Edge Function usa o UUID da tentativa como ID da sessão e retorna a sessão existente em retry.
+[OK] Logout tenta revogação remota e mantém limpeza local mesmo quando a rede falha.
+[OK] Requisições maiores que 700 KB são rejeitadas antes do parse completo.
+
+LIMITAÇÕES DO TESTE
+- Não foi possível executar as RPCs dentro do projeto Supabase real a partir deste ambiente.
+- Não foi possível simular uma partida completa com renderização e conexão real ao navegador do usuário.
+- A confirmação de propriedade de e-mail continua exigindo OTP/link ou login social; validação de domínio não comprova a caixa postal.
+
+ARQUIVO DE DIAGNÓSTICO
+- supabase/diagnostics/20260728_chrono_deep_review_8_5_15.sql
+- Somente consultas; não altera dados.
