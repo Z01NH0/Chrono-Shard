@@ -31785,6 +31785,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 
   const MAX_SOULS=30;
   const SOUL_COOLDOWN=10;
+  const SOUL_IDLE_RESET=10;
   const DAMAGE_PER_SOUL=.003; // +0,3% por alma
   const FIRE_RATE_PER_SOUL=.1; // +0,1 de cadência por alma, conforme o rework original
   const N=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
@@ -31800,6 +31801,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
         count:0,
         max:MAX_SOULS,
         cooldown:0,
+        idleTimer:0,
         appliedSouls:0,
         wisps:[],
         bursts:[],
@@ -31812,6 +31814,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     s.bursts=Array.isArray(s.bursts)?s.bursts:[];
     s.count=clamp744(Math.floor(N(s.count)),0,MAX_SOULS);
     s.cooldown=Math.max(0,N(s.cooldown));
+    s.idleTimer=Math.max(0,N(s.idleTimer));
     s.appliedSouls=Math.max(0,Math.floor(N(s.appliedSouls)));
     mirrorLegacy744(g,s);
     return s;
@@ -31899,6 +31902,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 
     removeAppliedBuffs744(g,s);
     s.count=0;
+    s.idleTimer=0;
     s.cooldown=SOUL_COOLDOWN;
     s.hudFlash=.55;
     s.bursts.push({x:p.x,y:p.y,life:.82,maxLife:.82,r:230});
@@ -31933,6 +31937,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     if(!g||!s||g.classKey!=='reaper'||s.cooldown>0)return false;
 
     s.count=Math.min(MAX_SOULS,s.count+1);
+    s.idleTimer=0;
     s.appliedSouls++;
     if(g.upgrades){
       g.upgrades.damage=N(g.upgrades.damage,1)+DAMAGE_PER_SOUL;
@@ -31958,15 +31963,29 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     if(!g||!s||!p)return;
 
     if(g.classKey==='reaper'&&s.cooldown>0){
+      s.idleTimer=0;
       s.cooldown=Math.max(0,s.cooldown-dt);
       if(s.cooldown<=0){
         s.count=0;
+        s.idleTimer=0;
         s.cooldown=0;
         try{
           addFloatingText(p.x,p.y-42,'ALMAS LIBERADAS','#ffb6d5',14);
           addRing(p.x,p.y,'#ff7b9c',62,3);
         }catch{}
       }
+    }else if(g.classKey==='reaper'&&s.count>0){
+      s.idleTimer+=dt;
+      if(s.idleTimer>=SOUL_IDLE_RESET){
+        removeAppliedBuffs744(g,s);
+        s.count=0;
+        s.idleTimer=0;
+        s.hudFlash=0;
+        mirrorLegacy744(g,s);
+        syncSoulHud744();
+      }
+    }else{
+      s.idleTimer=0;
     }
     s.hudFlash=Math.max(0,N(s.hudFlash)-dt);
 
@@ -40976,5 +40995,34 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 </script>
 
 <script>console.log('Chrono Shards 8.5.20 — HTML atualizado e correções finais carregadas');</script>
+<script>
+/* Chrono Shards 8.5.22 — balanceamento do Reaper: expiração das almas e limite de cura da habilidade E */
+(()=>{
+  if(window.__chronoReaperBalance8522)return;
+  window.__chronoReaperBalance8522=true;
+
+  const previousUseSkill8522=window.useSkill||globalThis.useSkill;
+  if(typeof previousUseSkill8522==='function'){
+    const wrappedUseSkill8522=function(index){
+      const g=(()=>{try{return game||window.game||null}catch{return window.game||null}})();
+      const p=g?.player;
+      const skillKey=g?.classKey==='reaper'?CLASSES?.reaper?.skills?.[index]:null;
+      const capSoulDrain=!!(p&&skillKey==='soulDrain');
+      const hpBefore=capSoulDrain?Number(p.hp)||0:0;
+      const result=previousUseSkill8522.apply(this,arguments);
+      if(capSoulDrain&&g===(()=>{try{return game||window.game||null}catch{return window.game||null}})()&&g?.player===p){
+        const maxHp=Math.max(0,Number(p.maxHp)||0);
+        const healCap=maxHp*.10;
+        p.hp=Math.min(maxHp,hpBefore+healCap,Number(p.hp)||0);
+      }
+      return result;
+    };
+    wrappedUseSkill8522.__reaperBalance8522=true;
+    window.useSkill=wrappedUseSkill8522;
+    try{useSkill=wrappedUseSkill8522}catch{}
+  }
+})();
+</script>
+
 </body>
 </html>
