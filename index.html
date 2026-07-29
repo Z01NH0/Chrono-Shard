@@ -37521,12 +37521,12 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     return runtime.account;
   }
 
-  async function loadState({applyAuthoritative=true,forceApply=false}={}){
+  async function loadState({applyAuthoritative=true,forceApply=false,reloadUI=true}={}){
     setStatus('loading','Carregando...');
     const result=await invoke('load_state');
     runtime.state=result?.state||null;
     const state=runtime.state;
-    if(state?.initialized&&(forceApply||(applyAuthoritative&&state.authority_mode==='authoritative')))applySnapshot(snapshotFromState850(state));
+    if(state?.initialized&&(forceApply||(applyAuthoritative&&state.authority_mode==='authoritative')))applySnapshot(snapshotFromState850(state),{reloadUI});
     setStatus(runtime.profile?'account':'guest','');
     return result;
   }
@@ -40723,6 +40723,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   async function claimMission856(slotKey,button){
     if(missionClaimBusy856)return;missionClaimBusy856=true;
     const original=button?.textContent;if(button){button.disabled=true;button.classList.add('chronoServerBusy855');button.textContent='CARREGANDO...'}
+    const waitToken=window.__ChronoServerWait863?.show?.('O servidor está confirmando e entregando a recompensa da missão.');
     try{
       let official=officialSlot856(slotKey);
       if(!official){await syncMissions856({rerender:false});official=officialSlot856(slotKey)}
@@ -40742,6 +40743,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       if(typeof baseOpenMissions856==='function')baseOpenMissions856();requestAnimationFrame(()=>decorateOfficialProgress856());
       toast856('RESGATE RECUSADO',error?.message||String(error),'#ff8fa3');
     }finally{
+      window.__ChronoServerWait863?.hide?.(waitToken);
       missionClaimBusy856=false;if(button?.isConnected){button.classList.remove('chronoServerBusy855');button.disabled=false;button.textContent=original||'Resgatar missão'}
     }
   }
@@ -40898,15 +40900,25 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   }
   async function refreshState(result,{render=true}={}){
     if(result?.progression)applyProgression(result.progression,{render:false});
-    try{await cloud()?.loadState?.({applyAuthoritative:true,forceApply:true})}catch(error){console.warn('Chrono progression state refresh',error)}
+    try{await cloud()?.loadState?.({applyAuthoritative:true,forceApply:true,reloadUI:false})}catch(error){console.warn('Chrono progression state refresh',error)}
     if(!result?.progression)await load({force:true});
     if(render)refreshVisible();
   }
+  function actionWaitText8519(name){
+    if(name==='awakening_start_stage')return'O servidor está liberando esta missão de Awakening.';
+    if(name==='awakening_claim_stage')return'O servidor está confirmando a conclusão da etapa.';
+    if(name==='awakening_claim_ultimate')return'O servidor está liberando a Ultimate.';
+    if(name==='infernal_purchase')return'O servidor está validando a compra da Loja Infernal.';
+    if(name==='infernal_legacy')return'O servidor está fortalecendo o Legado.';
+    if(name==='infernal_nefalem')return'O servidor está confirmando o desbloqueio do Nefalem.';
+    return'O servidor está processando sua solicitação.';
+  }
   async function action(name,body,button,success){
     if(button?.dataset?.serverBusy8518)return;button&&(button.dataset.serverBusy8518='1',button.disabled=true);
+    const waitToken=window.__ChronoServerWait863?.show?.(actionWaitText8519(name));
     try{const result=await cloud().invoke(name,{requestId:crypto.randomUUID(),...body});await refreshState(result);if(success)toast(success,result?.reward?.title||'', '#86ffb0');return result}
     catch(error){toast('AÇÃO RECUSADA',error?.message||String(error),'#ff6b7d');await load({force:true,render:true});throw error}
-    finally{if(button?.isConnected){delete button.dataset.serverBusy8518;button.disabled=false}}
+    finally{window.__ChronoServerWait863?.hide?.(waitToken);if(button?.isConnected){delete button.dataset.serverBusy8518;button.disabled=false}}
   }
   async function purchaseInfernal(section,index,button){
     let rotation=read(SHOP,null),next=n(rotation?.next);
@@ -41743,6 +41755,49 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   // Limpa imediatamente estados locais incompatíveis ao carregar esta versão.
   normalize(window.__ChronoProgression8518?.payload||null);
   console.log('Chrono Shards 8.6.2 — trava fantasma do Awakening corrigida');
+})();
+</script>
+
+
+<script id="chronoServerWait863">
+/* Chrono Shards 8.6.3 — ações autoritativas preservam a tela atual e exibem espera visível. */
+(()=>{
+  if(window.__ChronoServerWait863)return;
+  const ID='chronoServerWait863Overlay';
+  let currentToken=0,depth=0;
+  function ensureStyle(){
+    if(document.getElementById('chronoServerWait863Style'))return;
+    const style=document.createElement('style');style.id='chronoServerWait863Style';style.textContent=`
+      #${ID}{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:20px;background:rgba(2,5,13,.58);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);font-family:Orbitron,Arial,sans-serif;pointer-events:auto}
+      #${ID} .chronoWaitCard863{width:min(88vw,430px);display:grid;justify-items:center;gap:12px;padding:25px 24px;border:1px solid rgba(117,216,255,.72);border-radius:18px;background:linear-gradient(180deg,rgba(10,17,35,.98),rgba(4,8,19,.98));box-shadow:0 24px 80px rgba(0,0,0,.62),0 0 38px rgba(117,216,255,.18);color:#fff;text-align:center}
+      #${ID} .chronoWaitSpinner863{width:42px;height:42px;border:4px solid rgba(255,255,255,.14);border-top-color:#75d8ff;border-right-color:#9f6cff;border-radius:50%;animation:chronoWaitSpin863 .78s linear infinite}
+      #${ID} strong{font-size:15px;letter-spacing:1.8px}
+      #${ID} p{margin:0;color:#c6d4e9;font:600 12px/1.55 Arial,sans-serif;max-width:340px}
+      @keyframes chronoWaitSpin863{to{transform:rotate(360deg)}}
+      @media(max-width:520px){#${ID}{padding:14px}#${ID} .chronoWaitCard863{padding:21px 18px;border-radius:15px}#${ID} strong{font-size:13px}}
+      @media(prefers-reduced-motion:reduce){#${ID} .chronoWaitSpinner863{animation-duration:1.35s}}
+    `;document.head.appendChild(style);
+  }
+  function show(message='O servidor está processando sua solicitação.'){
+    ensureStyle();
+    const token=++currentToken;depth++;
+    let overlay=document.getElementById(ID);
+    if(!overlay){overlay=document.createElement('div');overlay.id=ID;overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');overlay.setAttribute('aria-busy','true');document.body.appendChild(overlay)}
+    overlay.dataset.token=String(token);
+    overlay.innerHTML=`<div class="chronoWaitCard863"><span class="chronoWaitSpinner863" aria-hidden="true"></span><strong>AGUARDE</strong><p></p></div>`;
+    overlay.querySelector('p').textContent=String(message||'O servidor está processando sua solicitação.');
+    return token;
+  }
+  function hide(token){
+    depth=Math.max(0,depth-1);
+    const overlay=document.getElementById(ID);if(!overlay)return;
+    if(depth>0&&token&&String(token)!==overlay.dataset.token)return;
+    if(depth===0||!token){overlay.remove();depth=0}
+  }
+  function clear(){depth=0;document.getElementById(ID)?.remove()}
+  window.__ChronoServerWait863=Object.freeze({show,hide,clear});
+  window.addEventListener('pagehide',clear);
+  console.log('Chrono Shards 8.6.3 — espera do servidor sem retorno ao menu inicial');
 })();
 </script>
 
