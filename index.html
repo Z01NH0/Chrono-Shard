@@ -382,60 +382,176 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
   window.__chronoPerfCore820=true;
   const NativeMO=window.MutationObserver;
   const observers=new Set();
+  const observerStats={callbacks:0,batches:0,records:0,droppedGameplay:0,droppedDetached:0,suspended:0,resumed:0,maxBatch:0};
   let nextObserverId=1;
+  function chronoGameplayActive820(){
+    try{
+      const g=window.game;
+      const overlay=document.getElementById('overlay');
+      return !!(g&&g.running&&overlay?.classList.contains('hidden'));
+    }catch{return false}
+  }
   class ChronoMutationObserver820{
     constructor(cb){
       this._cb=typeof cb==='function'?cb:()=>{};
       this._id=nextObserverId++;
-      this._target=null;this._options=null;
+      this._target=null;this._options=null;this._records=[];this._queued=false;this._disconnected=false;this._pausedForGameplay=false;this._raf=0;this._timer=0;this._lastFlush=0;
+      let cbSource='';try{cbSource=(cb.name||'')+' '+Function.prototype.toString.call(cb).slice(0,1200)}catch{}
+      this._kind=/queueRoute|guardCombatHud|clearSynergyHud|missionCompletePoll/i.test(cbSource)?'runtime':/overlayCard|classMenu|classCard|bestiary|book|mauro|shop|skin|button|ticket|reroll|preview|patch|inject|ensure|sanitize|theme|missionGrid|awakening/i.test(cbSource)?'ui':'generic';
+      this._flush=()=>{
+        this._queued=false;this._raf=0;
+        if(this._disconnected||!this._records.length)return;
+        const target=this._target;
+        if(target&&target.nodeType===1&&!target.isConnected){this._records.length=0;observerStats.droppedDetached++;return}
+        const playing=chronoGameplayActive820(),overlayCard=document.getElementById('overlayCard'),overlay=document.getElementById('overlay');
+        if(playing&&(target===document.body||target===document.documentElement||(target===overlay&&this._kind!=='runtime')||(target===overlayCard&&this._kind!=='runtime')||(overlayCard?.contains?.(target)&&this._kind!=='runtime')||this._kind==='ui')){
+          observerStats.droppedGameplay+=this._records.length;this._records.length=0;return;
+        }
+        let records=this._records.splice(0);
+        if(records.length>180)records=records.slice(-180);
+        this._lastFlush=performance.now();
+        observerStats.callbacks++;observerStats.batches++;observerStats.records+=records.length;observerStats.maxBatch=Math.max(observerStats.maxBatch,records.length);
+        try{this._cb(records,this)}catch(e){console.warn('Chrono observer 8.6.0',e)}
+      };
       this._native=NativeMO?new NativeMO((records)=>{
-        if(!records?.length)return;
-        // Patches antigos de menu observavam o BODY inteiro. Durante gameplay eles não
-        // precisam reagir a HP/XP/score mudando; isso criava uma tempestade de callbacks
-        // e setTimeouts nos primeiros segundos de cada run.
-        let playing=false;
-        try{const g=window.game;playing=!!(g&&g.running&&document.getElementById('overlay')?.classList.contains('hidden'))}catch{}
-        if(playing&&(this._target===document.body||this._target===document.documentElement))return;
-        try{this._cb(records,this)}catch(e){console.warn('Chrono observer 8.2.11',e)}
+        if(!records?.length||this._disconnected)return;
+        const target=this._target,playing=chronoGameplayActive820(),overlayCard=document.getElementById('overlayCard'),overlay=document.getElementById('overlay');
+        if(playing&&(target===document.body||target===document.documentElement||(target===overlay&&this._kind!=='runtime')||(target===overlayCard&&this._kind!=='runtime')||(overlayCard?.contains?.(target)&&this._kind!=='runtime')||this._kind==='ui')){
+          observerStats.droppedGameplay+=records.length;return;
+        }
+        // Mantém somente um lote limitado por observer. Interfaces antigas costumavam
+        // produzir centenas de mutações repetidas durante uma única reconstrução.
+        if(this._records.length>480)this._records.splice(0,this._records.length-320);
+        this._records.push(...records);
+        if(this._queued)return;
+        this._queued=true;
+        const bodyWide=target===document.body||target===document.documentElement;
+        const liveHud=playing&&/^(stats|skillBar)$/.test(target?.id||'');
+        const heavy=bodyWide||this._options?.subtree||liveHud;
+        if(heavy){
+          const baseDelay=liveHud?110:bodyWide?(this._options?.attributes?220:140):(this._kind==='ui'?72:40);
+          const wait=Math.max(0,baseDelay-(performance.now()-this._lastFlush));
+          this._timer=setTimeout(this._flush,wait);
+        }else queueMicrotask(this._flush);
       }):null;
       observers.add(this);
     }
-    observe(target,options={}){if(target&&this._native){this._target=target;this._options=options;observers.add(this);this._native.observe(target,options)}}
-    disconnect(){this._native?.disconnect();observers.delete(this)}
-    takeRecords(){return this._native?.takeRecords?.()||[]}
+    _wouldDropDuringGameplay(){
+      const target=this._target,overlayCard=document.getElementById('overlayCard'),overlay=document.getElementById('overlay');
+      return !!(target===document.body||target===document.documentElement||(target===overlay&&this._kind!=='runtime')||(target===overlayCard&&this._kind!=='runtime')||(overlayCard?.contains?.(target)&&this._kind!=='runtime')||this._kind==='ui');
+    }
+    _pauseForGameplay(){
+      if(this._disconnected||this._pausedForGameplay||!this._wouldDropDuringGameplay())return;
+      this._pausedForGameplay=true;this._native?.disconnect();this._records.length=0;
+      if(this._raf)cancelAnimationFrame(this._raf);if(this._timer)clearTimeout(this._timer);
+      this._raf=0;this._timer=0;this._queued=false;observerStats.suspended++;
+    }
+    _resumeAfterGameplay(){
+      if(this._disconnected||!this._pausedForGameplay||!this._target||!this._native)return;
+      if(this._target.nodeType===1&&!this._target.isConnected){this.disconnect();observerStats.droppedDetached++;return}
+      this._pausedForGameplay=false;
+      try{this._native.observe(this._target,this._options||{});observerStats.resumed++}catch{this.disconnect()}
+    }
+    observe(target,options={}){
+      if(!target||!this._native)return;
+      this._target=target;this._options=options||{};this._disconnected=false;this._pausedForGameplay=false;observers.add(this);
+      if(chronoGameplayActive820()&&this._wouldDropDuringGameplay()){this._pausedForGameplay=true;observerStats.suspended++;return}
+      this._native.observe(target,options);
+    }
+    disconnect(){
+      this._disconnected=true;this._pausedForGameplay=false;this._native?.disconnect();this._records.length=0;
+      if(this._raf)cancelAnimationFrame(this._raf);if(this._timer)clearTimeout(this._timer);this._raf=0;this._timer=0;this._queued=false;observers.delete(this);
+    }
+    takeRecords(){
+      const queued=this._records.splice(0),native=this._native?.takeRecords?.()||[];
+      return queued.concat(native);
+    }
   }
   // Usa a filtragem nativa do navegador. O multiplexador anterior observava atributos e texto
   // da página inteira e comparava cada mutação com todos os observers, causando picos no início da run.
   if(NativeMO)window.MutationObserver=ChronoMutationObserver820;
 
   const tasks=new Map();let nextTaskId=1;
+  const schedulerStats={executed:0,suspendedUI:0,suspendedRoute:0,throttledGeneric:0,throttledIdleRuntime:0,budgetDeferrals:0,lastFrameCost:0};
+  const UI_TASK_RE=/overlayCard|classMenu|classCard|bestiary|book|mauro|shop|skin|button|ticket|reroll|preview|drawCanvas|patchCard|patchButton|injectButton|ensureButton|sanitize|normalizeBook|theme|Hub|Screen/i;
+  const RUNTIME_TASK_RE=/missionCompletePoll|updateXpHud|guardCombatHud|clearSynergyHud|checkpoint|telemetry|runHook|settleRun|missionCooldown|combatHud|lowHp|syncXp|markBoss|updateHUD|classKey|initBank|syncAll/i;
+  function taskSource820(fn){try{return(fn.name||'')+' '+Function.prototype.toString.call(fn).slice(0,1800)}catch{return''}}
+  function classifyTask820(fn,period,src=taskSource820(fn)){
+    if(RUNTIME_TASK_RE.test(src))return'runtime';
+    if(UI_TASK_RE.test(src))return'ui';
+    if(period<=32)return'runtime';
+    if(/\b(game|player|enemies|bullets|enemyBullets)\b|\bG\(\)|curGame\(/.test(src)&&!/overlayCard|classList|querySelector/.test(src))return'runtime';
+    return'generic';
+  }
+  function classifyTaskScreen820(src){
+    if(/cleanIfOutsideBook|isBestiaryScreen|sanitizeBook|normalizeBook|bookSideNav|bookTickets|bestiary/i.test(src))return'bestiary';
+    if(/drawCanvases|skinCanvas702|drawPreviewEpic|epicCanvases|normalizeMauroShop|patchChestCard|mauroTimer|rotationPrices|MauroShop/i.test(src))return'mauro-shop';
+    if(/primeButton|statsInfo551|ensureRicoAug|AugButton|patchClassMenu|fixCardInfo|markStellarInfoButtons|scrubInfo|classCard|classMenu/i.test(src))return'class';
+    if(/missionGrid|awakening489|renderMissionScreen|openMissions/i.test(src))return'missions';
+    if(/rerollBox|rerollBtn|injectReroll|ensureXPBar|syncXPBar/i.test(src))return'powerups';
+    return'';
+  }
+  function taskScreenActive820(screen){
+    if(!screen)return true;
+    const current=String(window.__ChronoUIRoute827?.current||'');
+    if(screen==='class')return current==='class-menu'||current.startsWith('class-info');
+    return current===screen||current.startsWith(screen+'-');
+  }
   function interval(fn,ms=0,...args){
     if(typeof fn!=='function')return 0;
-    const id=nextTaskId++,period=Math.max(16,Number(ms)||16),now=performance.now();
-    // Espalha tarefas criadas juntas para elas não vencerem todas no mesmo frame.
-    const phase=period>32?((id%11)/11)*Math.min(period*.82,420):0;
-    tasks.set(id,{fn,args,period,next:now+period+phase,active:true});
+    const id=nextTaskId++,period=Math.max(16,Number(ms)||16),now=performance.now(),src=taskSource820(fn);
+    const phase=period>32?((id%13)/13)*Math.min(period*.84,460):0;
+    tasks.set(id,{fn,args,period,next:now+period+phase,active:true,kind:classifyTask820(fn,period,src),screen:classifyTaskScreen820(src),lastRun:0,runs:0});
     return id;
   }
   function clear(id){tasks.delete(Number(id)||id)}
+  let observerGameplayMode820=false;
+  function syncObserverGameplayMode820(playing){
+    if(playing===observerGameplayMode820)return;
+    observerGameplayMode820=playing;
+    for(const observer of [...observers]){
+      try{playing?observer._pauseForGameplay?.():observer._resumeAfterGameplay?.()}catch{}
+    }
+  }
   function schedulerTick(now){
+    const frameStart=performance.now();
     if(!document.hidden){
-      const started=performance.now(),budgetMs=3.2;
+      const playing=chronoGameplayActive820(),gameRunning=!!window.game?.running;
+      syncObserverGameplayMode820(playing);
+      const budgetMs=playing?2.35:4.4;
       for(const [id,t] of tasks){
         if(!t.active||now<t.next)continue;
-        // Tarefas de interface podem aguardar o frame seguinte; tarefas de alta frequência continuam prioritárias.
-        if(t.period>32&&performance.now()-started>budgetMs)continue;
+        if(playing&&t.kind==='ui'){
+          t.next=now+Math.max(650,t.period);schedulerStats.suspendedUI++;continue;
+        }
+        if(!playing&&t.kind==='ui'&&t.screen&&!taskScreenActive820(t.screen)){
+          t.next=now+Math.max(550,t.period);schedulerStats.suspendedRoute++;continue;
+        }
+        if(!gameRunning&&t.kind==='runtime'&&t.lastRun>0&&now-t.lastRun<1200){
+          t.next=now+Math.max(180,t.period);schedulerStats.throttledIdleRuntime++;continue;
+        }
+        if(playing&&t.kind==='generic'&&t.period>=100&&now-t.lastRun<700){
+          t.next=now+Math.max(180,t.period);schedulerStats.throttledGeneric++;continue;
+        }
+        if(t.period>32&&performance.now()-frameStart>budgetMs){schedulerStats.budgetDeferrals++;continue}
         const missed=Math.max(1,Math.floor((now-t.next)/t.period)+1);
-        t.next+=missed*t.period;
-        try{t.fn(...t.args)}catch(e){console.warn('Chrono scheduler 8.2.6 task '+id,e)}
+        t.next+=missed*t.period;t.lastRun=now;t.runs++;
+        try{t.fn(...t.args);schedulerStats.executed++}catch(e){console.warn('Chrono scheduler 8.6.0 task '+id,e)}
       }
     }else{
       for(const t of tasks)t.next=now+t.period;
     }
+    schedulerStats.lastFrameCost=performance.now()-frameStart;
     requestAnimationFrame(schedulerTick);
   }
   requestAnimationFrame(schedulerTick);
-  window.__ChronoUIScheduler820={interval,clear,tasks,observerCount:()=>observers.size,taskCount:()=>tasks.size};
+  window.__ChronoUIScheduler820={
+    interval,clear,tasks,stats:schedulerStats,observerStats,observers,
+    observerCount:()=>observers.size,taskCount:()=>tasks.size,
+    snapshot:()=>[...tasks].map(([id,t])=>({id,period:t.period,kind:t.kind,screen:t.screen||'',runs:t.runs,name:t.fn?.name||'anonymous'})),
+    pauseKind(kind,paused=true){for(const t of tasks.values())if(t.kind===kind)t.active=!paused},
+    wakeScreen(screen){const now=performance.now();for(const t of tasks.values())if(!t.screen||t.screen===screen||(screen==='class'&&t.screen==='class'))t.next=Math.min(t.next,now+16)}
+  };
 
   // 8.2.7: coordenador de telas. Tarefas assíncronas só podem alterar a tela que as criou.
   const uiRoute827=window.__ChronoUIRoute827=window.__ChronoUIRoute827||{
@@ -456,6 +572,24 @@ button:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.08)}
     const token=uiRoute827.token(name);
     return setTimeout(()=>{if(uiRoute827.valid(token))try{fn()}catch(e){console.warn('Chrono UI task 8.2.7',e)}},Math.max(0,Number(delay)||0));
   };
+
+  // 8.6.0: broker instalado cedo para ter prioridade sobre listeners legados de seleção/informações.
+  // A implementação final só existe no fim do arquivo, mas é consultada no momento do clique.
+  if(!window.__chronoInputBroker860Early){
+    window.__chronoInputBroker860Early=true;
+    const broker860=function(event){
+      try{
+        const api=window.__ChronoMega860;
+        if(!api||typeof api.routeEvent!=='function')return;
+        if(api.routeEvent(event,event.type)!==true)return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+      }catch(error){console.warn('Chrono input broker 8.6.0',error)}
+    };
+    window.addEventListener('pointerdown',broker860,true);
+    window.addEventListener('click',broker860,true);
+  }
 
   // Early compatibility shell: gameplay functions may reference the optimizer before the final performance block is parsed.
   window.__ChronoOptimizer820=window.__ChronoOptimizer820||{
@@ -593,7 +727,9 @@ function rebuildBGGradient820(){
 let bgLastFrame8434=0;
 function drawBG(ts=0){
   requestAnimationFrame(drawBG);
-  if(document.hidden||ts-bgLastFrame8434<33)return;
+  // O fundo fica completamente coberto durante a partida; não redesenha 200 estrelas atrás do canvas.
+  const gameplayVisible860=document.getElementById('overlay')?.classList.contains('hidden');
+  if(document.hidden||gameplayVisible860||ts-bgLastFrame8434<33)return;
   bgLastFrame8434=ts;
   if(!bgGradient820||bgLastW820!==bgC.width||bgLastH820!==bgC.height)rebuildBGGradient820();
   bgX.clearRect(0,0,bgC.width,bgC.height);bgX.fillStyle=bgGradient820;bgX.fillRect(0,0,bgC.width,bgC.height);
@@ -2323,9 +2459,13 @@ function render(){
 }
 
 // ── LOOP ─────────────────────────────────────────────────────────
+let idleRenderLast860=0;
 function loop(ts){
   requestAnimationFrame(loop);
   if(!game) return;
+  // Menus e telas pausadas não precisam redesenhar o cenário oculto a 60 FPS.
+  if(!game.running&&ts-idleRenderLast860<100){last=ts;return}
+  if(!game.running)idleRenderLast860=ts;
   let dt=(ts-last)/1000||0;last=ts;
   dt=Math.min(dt,0.033);
   window.__ChronoOptimizer820?.frameStart(dt);
@@ -27485,7 +27625,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     ensureClass(); if(!revealed())return '';
     const c=CLASSES[EMP], own=bought(), afford=N(meta().chronoFragments)>=30;
     return `<div class="classCard461 stellarCard721 secretStable722 ${own?'':'locked'}" data-card461="${EMP}" data-stellar722="1" style="--c:#ff7a2f">
-      <button class="classInfo461 classInfoFast848" type="button" data-info-fast848="stellarEmperor" title="Informações">i</button>
+      <button class="classInfo461 classInfoFast848 info-btn-v23" type="button" data-info-fast848="stellarEmperor" title="Informações">i</button>
       ${own?'':'<div class="classLock461">🔒</div>'}
       <div class="secretSlotModel722">${model()}</div>
       <span class="badge461" style="--co:#ffd166">SECRETO ESTELAR</span>
@@ -27529,8 +27669,9 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     ensureClass(); if(!revealed())return;
     const cardText=document.getElementById('overlayCard')?.textContent||'';
     if(!/SELEÇÃO|PERSONAGEM|CLASSE|SECRETOS|SECRETO|ASSAULT|SNIPER/i.test(cardText)) return;
-    const sig=[bought()?1:0,N(meta().chronoFragments),document.querySelectorAll('[data-stellar722="1"]').length,!!document.querySelector('.classGroups461')].join('|');
-    if(!force && sig===lastSig && document.querySelector('[data-stellar722="1"]')){ bind(); return; }
+    const sig=[bought()?1:0,N(meta().chronoFragments),!!document.querySelector('.classGroups461'),!!document.querySelector('.class-grid-v23')].join('|');
+    const existing=document.querySelector('[data-stellar722="1"],[data-stellar722-v23]');
+    if(existing && sig===lastSig){ bind(); return; }
     lastSig=sig;
 
     // Remove only older Emperador cards/groups, never other secret cards.
@@ -27553,7 +27694,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 
     // Fallback menu v23, if it exists without group wrapper.
     const grid23=document.querySelector('.class-grid-v23');
-    if(grid23 && !document.querySelector('[data-stellar722-v23]')){
+    if(!wrap && grid23 && !document.querySelector('[data-stellar722-v23]')){
       const own=bought(), afford=N(meta().chronoFragments)>=30, c=CLASSES[EMP];
       const html=`<div class="class-card-v23 stellarCard721 secretStable722 ${own?'':'locked'}" data-stellar722-v23="1" data-class="${EMP}" style="--c:#ff7a2f"><button class="info-btn-v23 classInfoFast848" type="button" data-info-fast848="stellarEmperor">i</button>${own?'':'<div class="class-lock-v23">🔒</div>'}<div class="secretSlotModel722">${model()}</div><div class="class-title-row-v23"><strong>${esc(c.name)}</strong></div><span class="class-tag" style="background:#ffd16622;color:#ffd166;border:1px solid #ffd16655">SECRETO ESTELAR</span><span style="display:block;margin-top:8px;color:#b8cbea;line-height:1.35">${esc(c.desc)}</span><span class="muted">HP ${c.hp} • Escudo ${c.shield} • Foco ${c.focus}</span>${own?`<button class="select-btn-v23" type="button" data-pick461="${EMP}">Selecionar</button>`:`<button class="buy-btn-v23" type="button" data-buy461="${EMP}" ${afford?'':'disabled'}>Comprar — 30 ✦</button>`}</div>`;
       const after=grid23.querySelector('[data-class="shadowChild"]')||grid23.querySelector('[data-class="moonSlayer"]');
@@ -27570,10 +27711,10 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 
   const oldOpen=window.openClassMenu461||window.openClassMenu||globalThis.openClassMenu;
   if(typeof oldOpen==='function'&&!oldOpen.__secretStable722){
-    const wrapped=function(){const r=oldOpen.apply(this,arguments);lastSig='';[40,160,420].forEach(t=>setTimeout(()=>patchOnce(true),t));return r};
+    const wrapped=function(){const r=oldOpen.apply(this,arguments);lastSig='';queueMicrotask(()=>patchOnce(false));setTimeout(()=>patchOnce(false),90);return r};
     wrapped.__secretStable722=true; window.openClassMenu461=wrapped; try{openClassMenu461=wrapped}catch{}; window.openClassMenu=wrapped; try{openClassMenu=wrapped}catch{};
   }
-  setTimeout(()=>patchOnce(true),350);
+  setTimeout(()=>patchOnce(false),350);
   console.log('Chrono Shards 7.2.2 — seleção secreta estabilizada');
 })();
 </script>
@@ -27714,6 +27855,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
       || null;
   }
   function fixClassCards724(){
+    if(window.__stellarCardCanonical8523)return;
     try{
       const cardWrap = document.getElementById('overlayCard');
       if(!cardWrap) return;
@@ -28938,6 +29080,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 
   // Info correta, removendo conflito com info genérica.
   function fixCardInfo(){
+    if(window.__stellarCardCanonical8523)return;
     try{
       const card=document.getElementById('overlayCard'); if(!card)return;
       card.querySelectorAll('[data-card461="'+EMP+'"],[data-stellar722="1"],[data-stellar722-v23]').forEach(c=>{
@@ -29094,6 +29237,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
 
   // Force the info buttons/cards for Stellar Emperor to use the latest info path.
   function markStellarInfoButtons(){
+    if(window.__stellarCardCanonical8523)return;
     try{
       document.querySelectorAll('.classCard461,.class-card-v23').forEach(card=>{
         const text=(card.textContent||'').toLowerCase();
@@ -29286,6 +29430,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   }
 
   function forceInfoButtonAttrs(){
+    if(window.__stellarCardCanonical8523)return;
     try{
       document.querySelectorAll('.classCard461,.class-card-v23').forEach(card=>{
         const isEmp=card.dataset.card461===EMP || card.querySelector('[data-pick-stellar722],[data-buy-stellar722]') || /Emperador Estelar/i.test(card.textContent||'');
@@ -29890,6 +30035,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     return !!card&&(card.dataset?.card461===EMP||card.querySelector?.('[data-pick-stellar722],[data-buy-stellar722]')||/Emperador Estelar/i.test(card.textContent||''));
   }
   function markButtons(){
+    if(window.__stellarCardCanonical8523)return;
     ensureClass();
     try{
       document.querySelectorAll('.classCard461,.class-card-v23').forEach(card=>{
@@ -37985,7 +38131,17 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   function installRunHooks850(){
     const baseReset=window.resetGame||globalThis.resetGame;
     if(typeof baseReset==='function'&&!baseReset.__chronoCloud850){
-      const wrapped=function(classKey){const out=baseReset.apply(this,arguments);queueMicrotask(async()=>{const g=window.game;if(!g?.running)return;const mode=g.doom800?'doom':g.riftMode50?'rift':g.mode||'normal',selected=classKey||g.classKey,requestId=crypto.randomUUID();let lastError=null;for(let attempt=1;attempt<=3;attempt++){try{await startRun(mode,selected,requestId);return}catch(error){lastError=error;console.warn(`Chrono Cloud start_run tentativa ${attempt}`,error);if(attempt<3)await new Promise(resolve=>setTimeout(resolve,500*attempt))}}try{if(window.game)game.cloudSessionId=null}catch{}showCloudNotice8514('PARTIDA NÃO REGISTRADA','Não foi possível conectar esta partida. Os feitos dela não contarão para missões; confira sua conexão e reinicie a partida.');console.warn('Chrono Cloud start_run falhou definitivamente',lastError)});return out};
+      const wrapped=function(classKey){
+        const out=baseReset.apply(this,arguments),g=window.game;
+        if(!g?.running)return out;
+        const mode=g.doom800?'doom':g.riftMode50?'rift':g.mode||'normal',selected=classKey||g.classKey;
+        const explicit=String(window.__chronoRunStartToken860||''),signature=explicit||`${mode}|${selected}`,now=performance.now(),gate=window.__chronoCloudStartGate850;
+        // Impede wrappers Cloud antigos aninhados de registrarem a mesma partida duas vezes.
+        if(gate&&gate.signature===signature&&now-gate.at<1200)return out;
+        window.__chronoCloudStartGate850={signature,at:now};
+        queueMicrotask(async()=>{const requestId=crypto.randomUUID();let lastError=null;for(let attempt=1;attempt<=3;attempt++){try{await startRun(mode,selected,requestId);return}catch(error){lastError=error;console.warn(`Chrono Cloud start_run tentativa ${attempt}`,error);if(attempt<3)await new Promise(resolve=>setTimeout(resolve,500*attempt))}}try{if(window.game)game.cloudSessionId=null}catch{}showCloudNotice8514('PARTIDA NÃO REGISTRADA','Não foi possível conectar esta partida. Os feitos dela não contarão para missões; confira sua conexão e reinicie a partida.');console.warn('Chrono Cloud start_run falhou definitivamente',lastError)});
+        return out
+      };
       wrapped.__chronoCloud850=true;window.resetGame=wrapped;try{resetGame=wrapped}catch{}
     }
     const baseGameOver=window.gameOver||globalThis.gameOver;
@@ -39775,7 +39931,23 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   function mcDrawModel837(canvas,k,co,ts){const r=canvas.getBoundingClientRect(),d=Math.min(2,window.devicePixelRatio||1),w=Math.max(320,r.width||520),h=Math.max(300,r.height||390);if(canvas.width!==Math.round(w*d)||canvas.height!==Math.round(h*d)){canvas.width=Math.round(w*d);canvas.height=Math.round(h*d)}const x=canvas.getContext('2d');x.setTransform(d,0,0,d,0,0);const[cx,cy]=mcBackdrop837(x,w,h,co,ts);x.save();x.translate(cx,cy+Math.sin(ts*.0022)*6);const sc=Math.min(w/530,h/410)*1.28;x.scale(sc,sc);const fn={assault:mcModelAssault837,sniper:mcModelSniper837,mage:mcModelMage837,reaper:mcModelReaper837,engineer:mcModelEngineer837,ronin:mcModelRonin837,alchemist:mcModelAlchemist837,colonel:mcModelColonel837,archer:mcModelArcher837,bomber:mcModelBomber837,chronoHero:mcModelChronoHero837,moonSlayer:mcModelMoon837,shadowChild:mcModelShadow837,ricocheteador:mcModelRico837,stellarEmperor:mcModelStellar837}[k]||mcModelAssault837;fn(x,ts);x.restore()}
   function startCharacterModel837(card,k,co){cancelAnimationFrame(mcModelRaf837);const token=++mcModelToken837,canvas=card.querySelector('.mcCharacterCanvas837');if(!canvas)return;let last=0;const loop=ts=>{if(token!==mcModelToken837||!canvas.isConnected||card.classList.contains('hidden'))return;if(ts-last>24){last=ts;mcDrawModel837(canvas,k,co,ts)}mcModelRaf837=requestAnimationFrame(loop)};mcModelRaf837=requestAnimationFrame(loop)}
 
-  function legacyExtract(k){const out={lore:LORE[k]||'',skills:[]};if(typeof oldInfo!=='function')return out;try{oldInfo(k);const card=CARD();for(const row of card?.querySelectorAll('.skillRow461,.skill-row27')||[]){const b=row.querySelector('b')?.textContent?.trim(),s=row.querySelector('span')?.textContent?.trim();if(b&&s)out.skills.push({title:b,desc:s})}const lore=[...card?.querySelectorAll('.dunePanel461 span')||[]].map(x=>x.textContent.trim()).filter(Boolean).at(-1);if(lore)out.lore=lore}catch{}return out}
+  function legacyExtract(k){
+    const out={lore:LORE[k]||'',skills:[]};
+    // O Emperador já possui dados atuais no painel 8.4.39. Chamar oldInfo aqui
+    // reentrava na rota __openStellarInfoLatest731 e criava recursão infinita.
+    if(k==='stellarEmperor'||typeof oldInfo!=='function')return out;
+    try{
+      oldInfo(k);
+      const card=CARD();
+      for(const row of card?.querySelectorAll('.skillRow461,.skill-row27')||[]){
+        const b=row.querySelector('b')?.textContent?.trim(),s=row.querySelector('span')?.textContent?.trim();
+        if(b&&s)out.skills.push({title:b,desc:s});
+      }
+      const lore=[...card?.querySelectorAll('.dunePanel461 span')||[]].map(x=>x.textContent.trim()).filter(Boolean).at(-1);
+      if(lore)out.lore=lore;
+    }catch{}
+    return out;
+  }
   const PRIMARY_DESC843={
     assault:'O Blaster dispara rajadas rápidas de energia azul, com boa precisão e cadência para manter pressão constante sem comprometer a mobilidade.',
     sniper:'A AWP-ChR dispara balas pontiagudas laranja em altíssima velocidade. Cada tiro é lento, preciso e extremamente poderoso, recompensando posicionamento e pontaria.',
@@ -41024,5 +41196,476 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 })();
 </script>
 
+
+<style id="stellarEmperorCanonical8523Style">
+  /* Um único controle visual para o card atual. A classe info-btn-v23 também
+     impede o seletor global antigo de interpretar o botão "i" como clique no card. */
+  [data-stellar-canonical8523="1"]{position:relative!important;isolation:isolate}
+  [data-stellar-canonical8523="1"]>[data-stellar-info8523="1"]{
+    position:absolute!important;right:13px!important;left:auto!important;top:13px!important;
+    width:36px!important;height:36px!important;margin:0!important;padding:0!important;
+    display:grid!important;place-items:center!important;border-radius:50%!important;
+    z-index:40!important;background:rgba(255,255,255,.10)!important;
+    border:1px solid rgba(255,235,174,.30)!important;color:#fff7cf!important;
+    font:900 13px Orbitron,Arial,sans-serif!important;line-height:1!important;
+    box-shadow:0 0 18px rgba(255,174,67,.18)!important;cursor:pointer!important;
+    pointer-events:auto!important;touch-action:manipulation!important;transform:none!important
+  }
+  [data-stellar-canonical8523="1"]>[data-stellar-info8523="1"]:hover{
+    filter:brightness(1.18)!important;box-shadow:0 0 25px rgba(255,190,80,.34)!important
+  }
+</style>
+<script id="stellarEmperorCanonical8523">
+/* Chrono Shards 8.5.23 — consolidação profunda do card e das rotas do Emperador Estelar */
+(()=>{
+  if(window.__stellarEmperorCanonical8523)return;
+  window.__stellarEmperorCanonical8523=true;
+  window.__stellarCardCanonical8523=true;
+
+  const EMP='stellarEmperor';
+  const SAVE=(()=>{try{return typeof SAVE_KEY!=='undefined'?SAVE_KEY:'chrono_v4_meta'}catch{return 'chrono_v4_meta'}})();
+  const UNLOCK=SAVE+'_class_unlocks_v3';
+  const LEGACY_INFO=[
+    'data-info461','data-info-stellar720','data-info-stellar721','data-info-stellar722',
+    'data-info-stellar726','data-info-stellar727','data-info-stellar728','data-info-stellar729',
+    'data-info-stellar730','data-info-stellar731','data-latest-info581'
+  ];
+  const LEGACY_BUY=['data-buy-stellar720','data-buy-stellar721','data-buy-stellar722'];
+  const LEGACY_PICK=['data-pick-stellar720','data-pick-stellar721','data-pick-stellar722'];
+  const CARD_SELECTOR='[data-card461="stellarEmperor"],[data-stellar722-v23],[data-class="stellarEmperor"]';
+  let scheduled=false;
+
+  const read=(k,fallback)=>{try{const v=JSON.parse(localStorage.getItem(k)||'null');return v==null?fallback:v}catch{return fallback}};
+  function localOwned(){
+    try{
+      const economy=window.ChronoEconomy852;
+      if(economy?.isEnabled?.())return !!economy.isOwned?.(EMP);
+    }catch{}
+    const m=read(SAVE,{})||{},u=read(UNLOCK,[]);
+    return !!(m.unlockedStellarEmperor||m.allUnlocked||m.allInUnlocked||(Array.isArray(u)&&u.includes(EMP)));
+  }
+  function selectionVisible(){
+    const o=document.getElementById('overlay'),c=document.getElementById('overlayCard');
+    return !!(o&&!o.classList.contains('hidden')&&c&&/SELEÇÃO DE PERSONAGEM/i.test(c.textContent||''));
+  }
+  function ensureDefinition(){
+    try{
+      if(!window.CLASSES||!window.WEAPONS||!window.SKILL_DEFS)return;
+      CLASSES[EMP]=Object.assign(CLASSES[EMP]||{}, {
+        name:'Emperador Estelar ☀️',color:'#ff7a2f',tagColor:'#ffd166',tag:'SECRETO ESTELAR',
+        hp:128,shield:36,focus:155,speed:302,weapon:'stellarBeam',
+        skills:['solarTyranny','mirrorRay','stellarEruption'],
+        desc:'Monarca solar secreto. O feixe começa grosso e fraco, afina ao segurar e fica devastador quando concentrado.'
+      });
+      WEAPONS.stellarBeam=Object.assign(WEAPONS.stellarBeam||{}, {
+        name:'Feixe Solar Régio',cooldown:.055,bulletSpeed:0,damage:12,spread:0,projectiles:1,life:.1
+      });
+    }catch{}
+  }
+  function stripInfo(button){
+    if(!button)return;
+    for(const attr of LEGACY_INFO)button.removeAttribute(attr);
+    button.removeAttribute('data-bound720');button.removeAttribute('data-bound721');
+    button.removeAttribute('data-info-owner8411');
+    button.onclick=null;
+    button.type='button';
+    if(button.dataset.infoFast848!==EMP)button.dataset.infoFast848=EMP;
+    button.dataset.stellarInfo8523='1';
+    button.classList.add('classInfoFast848','info-btn-v23');
+    button.classList.remove('classInfo461');
+    button.title='Informações';
+    button.style.pointerEvents='auto';
+    button.style.touchAction='manipulation';
+  }
+  function canonicalInfo(card){
+    let buttons=[...card.querySelectorAll(':scope > .classInfo461,:scope > .classInfoFast848,:scope > .info-btn-v23,:scope > [data-info-fast848],:scope > [data-info461],:scope > [data-info-stellar720],:scope > [data-info-stellar721],:scope > [data-info-stellar722],:scope > [data-info-stellar726],:scope > [data-info-stellar727],:scope > [data-info-stellar728],:scope > [data-info-stellar729],:scope > [data-info-stellar730],:scope > [data-info-stellar731]')];
+    let button=buttons.find(b=>b.dataset.stellarInfo8523==='1')||buttons[0];
+    if(!button){button=document.createElement('button');button.textContent='i';card.prepend(button)}
+    if(button.dataset.stellarInfo8523!=='1'){
+      const fresh=button.cloneNode(true);
+      button.replaceWith(fresh);button=fresh;
+    }
+    buttons=[...card.querySelectorAll(':scope > .classInfo461,:scope > .classInfoFast848,:scope > .info-btn-v23,:scope > [data-info-fast848],:scope > [data-info461],:scope > [data-info-stellar720],:scope > [data-info-stellar721],:scope > [data-info-stellar722],:scope > [data-info-stellar726],:scope > [data-info-stellar727],:scope > [data-info-stellar728],:scope > [data-info-stellar729],:scope > [data-info-stellar730],:scope > [data-info-stellar731]')];
+    for(const other of buttons)if(other!==button)other.remove();
+    if(!String(button.textContent||'').trim())button.textContent='i';
+    stripInfo(button);
+  }
+  function canonicalActions(card){
+    const actions=[...card.querySelectorAll(':scope > [data-buy461],:scope > [data-pick461],:scope > [data-buy-stellar720],:scope > [data-buy-stellar721],:scope > [data-buy-stellar722],:scope > [data-pick-stellar720],:scope > [data-pick-stellar721],:scope > [data-pick-stellar722],:scope > .buy461,:scope > .pick461,:scope > .buy-btn-v23,:scope > .select-btn-v23')];
+    if(!actions.length)return;
+    const own=localOwned();
+    let keep=actions.find(b=>own?(b.hasAttribute('data-pick461')||b.classList.contains('pick461')||b.classList.contains('select-btn-v23')):(b.hasAttribute('data-buy461')||b.classList.contains('buy461')||b.classList.contains('buy-btn-v23')))||actions[0];
+    for(const b of actions)if(b!==keep)b.remove();
+    keep.onclick=null;keep.type='button';
+    if(own){
+      for(const a of LEGACY_BUY)keep.removeAttribute(a);keep.removeAttribute('data-buy461');
+      for(const a of LEGACY_PICK)keep.removeAttribute(a);keep.dataset.pick461=EMP;
+      keep.classList.remove('buy461','buy-btn-v23');keep.classList.add(card.classList.contains('class-card-v23')?'select-btn-v23':'pick461');
+      keep.disabled=false;
+      if(!/selecionar|jogar/i.test(keep.textContent||''))keep.textContent='Selecionar';
+    }else{
+      for(const a of LEGACY_PICK)keep.removeAttribute(a);keep.removeAttribute('data-pick461');
+      for(const a of LEGACY_BUY)keep.removeAttribute(a);keep.dataset.buy461=EMP;
+      keep.classList.remove('pick461','select-btn-v23');keep.classList.add(card.classList.contains('class-card-v23')?'buy-btn-v23':'buy461');
+      if(!/comprar/i.test(keep.textContent||''))keep.innerHTML='Comprar — <span style="color:#ffd166">30 ✦ Fragmentos Chrono</span>';
+    }
+  }
+  function dedupeControls(card){
+    for(const selector of [':scope > .skinBtn702',':scope > .classStats551,:scope > .classStats702,:scope > [data-stats551]']){
+      const list=[...card.querySelectorAll(selector)];
+      list.slice(1).forEach(x=>x.remove());
+    }
+    const locks=[...card.querySelectorAll(':scope > .classLock461,:scope > .class-lock-v23')];
+    if(localOwned())locks.forEach(x=>x.remove());else locks.slice(1).forEach(x=>x.remove());
+  }
+  function chooseAndDedupe(root){
+    let cards=[...root.querySelectorAll(CARD_SELECTOR)];
+    if(cards.length<2)return cards[0]||null;
+    const classic=cards.filter(c=>c.matches('[data-card461="stellarEmperor"]')&&c.closest('.classGroups461'));
+    const v23=cards.filter(c=>c.matches('[data-class="stellarEmperor"],[data-stellar722-v23]')&&c.closest('.class-grid-v23'));
+    const keep=classic[0]||v23[0]||cards[0];
+    for(const c of cards)if(c!==keep)c.remove();
+    return keep;
+  }
+  function normalize(){
+    scheduled=false;ensureDefinition();
+    if(!selectionVisible())return;
+    const root=document.getElementById('overlayCard');if(!root)return;
+    const card=chooseAndDedupe(root);if(!card)return;
+    card.dataset.card461=EMP;
+    card.dataset.stellarCanonical8523='1';
+    card.dataset.stellarCurrent='8523';
+    card.style.pointerEvents='auto';
+    canonicalInfo(card);canonicalActions(card);dedupeControls(card);
+    const box=card.querySelector('.secretSlotModel722,.modelBox461');
+    if(box){box.dataset.model726='1';box.dataset.stellar724='1';if(!box.querySelector('.stellarModel726'))box.innerHTML='<div class="stellarModel726"><i></i><b></b><em></em><u></u><s></s></div>'}
+  }
+  function schedule(){if(scheduled)return;scheduled=true;queueMicrotask(normalize)}
+
+  // O roteador rápido 8.4.8 chamava deliberadamente a tela 7.3.1 do Emperador.
+  // Mantemos o mesmo ponto de entrada, mas o direcionamos para o painel consolidado 8.4.39.
+  const legacyOpen=window.__openStellarInfoLatest731;
+  let stellarInfoOpening8524=false;
+  window.__openStellarInfoLatest731=function(){
+    // Trava de reentrada: impede que qualquer wrapper legado devolva a execução
+    // para esta mesma rota enquanto o painel ainda está sendo montado.
+    if(stellarInfoOpening8524)return false;
+    stellarInfoOpening8524=true;
+    try{
+      if(typeof window.openCharacterPanel835==='function'){
+        window.openCharacterPanel835(EMP,'overview');
+        return true;
+      }
+      if(typeof legacyOpen==='function')return legacyOpen.apply(this,arguments);
+      return false;
+    }catch(err){
+      console.warn('Emperador 8.5.24 painel atual',err);
+      try{if(typeof legacyOpen==='function')return legacyOpen.apply(this,arguments)}catch{}
+      return false;
+    }finally{
+      stellarInfoOpening8524=false;
+    }
+  };
+  window.__openStellarInfoLatest731.__stellarCanonical8523=true;
+  window.__openStellarInfoLatest731.__stellarNoRecursion8524=true;
+
+  // Observa inclusive data-info461: os patches 7.2.7/7.2.8 o recolocavam e
+  // acionavam listeners globais antigos antes do painel atual.
+  try{
+    const root=document.getElementById('overlayCard')||document.body;
+    new MutationObserver(records=>{
+      if(records.some(r=>r.type==='childList'||r.target?.closest?.(CARD_SELECTOR)||r.target?.matches?.(CARD_SELECTOR)))schedule();
+    }).observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:[...LEGACY_INFO,'data-info-fast848','data-buy-stellar720','data-buy-stellar721','data-buy-stellar722','data-pick-stellar720','data-pick-stellar721','data-pick-stellar722']});
+  }catch{}
+
+  for(const name of ['openClassMenu461','openClassMenu']){
+    const fn=window[name];if(typeof fn!=='function'||fn.__stellarCanonical8523)continue;
+    const wrapped=function(){const out=fn.apply(this,arguments);schedule();setTimeout(schedule,110);return out};
+    wrapped.__stellarCanonical8523=true;window[name]=wrapped;
+    try{globalThis[name]=wrapped}catch{}
+  }
+  window.addEventListener('chrono-cloud-state',schedule);
+  window.addEventListener('chrono-cloud-applied',schedule);
+  setTimeout(schedule,0);setTimeout(schedule,420);
+
+  window.__StellarEmperor8523=Object.freeze({
+    normalize,
+    audit:()=>{
+      const root=document.getElementById('overlayCard');
+      const cards=root?[...root.querySelectorAll(CARD_SELECTOR)]:[];
+      const info=cards[0]?.querySelector('[data-stellar-info8523]');
+      return {cards:cards.length,canonical:cards.filter(c=>c.dataset.stellarCanonical8523==='1').length,legacyInfo:info?LEGACY_INFO.filter(a=>info.hasAttribute(a)):[],route:typeof window.openCharacterPanel835==='function'?'mastery-8.4.39':'fallback',gameplay742:!!window.__stellar742,charge743:!!window.__stellarLatestChronoCharge743};
+    }
+  });
+  console.log('Chrono Shards 8.5.24 — painel do Emperador sem recursão legada');
+})();
+</script>
+
+
+
+<style id="chronoMegaOptimization860Style">
+  /* Chrono Shards 8.6.0 — contenção e responsividade sem redesenhar a identidade visual. */
+  *,*::before,*::after{box-sizing:border-box}
+  #overlay.hidden{pointer-events:none!important;visibility:hidden}
+  #overlay:not(.hidden){pointer-events:auto;visibility:visible}
+  #overlayCard{overscroll-behavior:contain;scrollbar-gutter:stable both-edges}
+  #overlayCard button,#overlayCard [role="button"]{touch-action:manipulation}
+  .classGroup461,.classCard461,.missionCard489,.b846Card,.dunePanel461,.powerCard544{
+    contain:layout style;
+  }
+  .classGroup461,.missionGrid489>article,.b846Grid>.b846Card{
+    content-visibility:auto;
+    contain-intrinsic-size:320px;
+  }
+  .classGrid461,.class-grid-v23{
+    grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr))!important;
+  }
+  .classCard461,.class-card-v23{min-width:0!important;max-width:100%!important}
+  .duneActions461,.classTop461,.b846Toolbar{min-width:0;flex-wrap:wrap}
+  .duneActions461 button,.classTop461 button{max-width:100%}
+  img,canvas,svg{max-width:100%}
+  @media(max-width:760px){
+    #overlayCard{max-width:calc(100vw - 16px)!important;margin-inline:auto!important}
+    .classTop461{align-items:stretch!important}
+    .classTop461>div{min-width:0!important}
+    .duneActions461{justify-content:center!important}
+    .infoLayout461,.nefalemMasteryLayout841{grid-template-columns:1fr!important}
+    .mcTabs835{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;overflow:visible!important}
+    .mcTab835{width:100%!important;min-width:0!important;max-width:100%!important;white-space:normal!important}
+    .mcHead835,.mcStats835,.mcContent835,.mcPages835{min-width:0!important;max-width:100%!important}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #overlayCard *,#overlayCard *::before,#overlayCard *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  }
+</style>
+<script id="chronoMegaOptimization860">
+/* Chrono Shards 8.6.0 — núcleo unificado de desempenho, rotas e eventos de interface */
+(()=>{
+  if(window.__chronoMegaOptimization860)return;window.__chronoMegaOptimization860=true;
+  const route=window.__ChronoUIRoute827;
+  const scheduler=window.__ChronoUIScheduler820;
+  const overlay=()=>document.getElementById('overlay');
+  const card=()=>document.getElementById('overlayCard');
+  const G=()=>{try{return window.game||game||null}catch{return null}};
+  const clean=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase();
+
+  /* Retira apenas tarefas antigas comprovadamente substituídas pelo card canônico atual. */
+  function retireLegacyTasks860(){
+    const tasks=scheduler?.tasks;if(!tasks)return 0;let removed=0;
+    for(const [id,task] of [...tasks]){
+      let src='';try{src=(task.fn?.name||'')+' '+Function.prototype.toString.call(task.fn)}catch{}
+      if(/disabled by v722|fixCardInfo|markStellarInfoButtons|forceInfoButtonAttrs/i.test(src)){
+        scheduler.clear?.(id);removed++;
+      }
+    }
+    return removed;
+  }
+
+
+  retireLegacyTasks860();
+
+  /* Ciclo de vida real para telas. Timers vinculados a uma rota são cancelados na saída. */
+  if(route&&!route.__mega860){
+    route.__mega860=true;
+    const originalEnter=route.enter.bind(route),listeners=new Set(),cleanups=new Map(),timers=new Map();
+    function clearRoute(name){
+      const ids=timers.get(name);if(ids){for(const id of ids)clearTimeout(id);ids.clear()}
+      const fns=cleanups.get(name);if(fns){for(const fn of [...fns])try{fn()}catch(e){console.warn('Chrono route cleanup 8.6.0',e)}}
+    }
+    route.enter=function(name,reason='render'){
+      const next=String(name||'unknown'),prev=this.current;
+      if(prev!==next)clearRoute(prev);
+      const epoch=originalEnter(next,reason);
+      document.documentElement.dataset.chronoRoute=next;
+      if(prev!==next)for(const fn of [...listeners])try{fn({from:prev,to:next,reason,epoch})}catch(e){console.warn('Chrono route listener 8.6.0',e)}
+      return epoch;
+    };
+    route.onChange=fn=>{if(typeof fn==='function')listeners.add(fn);return()=>listeners.delete(fn)};
+    route.registerCleanup=(name,fn)=>{if(typeof fn!=='function')return()=>{};const key=String(name),set=cleanups.get(key)||new Set();set.add(fn);cleanups.set(key,set);return()=>set.delete(fn)};
+    route.trackTimer=(name,id)=>{const key=String(name),set=timers.get(key)||new Set();set.add(id);timers.set(key,set);return id};
+    route.untrackTimer=(name,id)=>timers.get(String(name))?.delete(id);
+    route.clearRoute=clearRoute;
+    window.__ChronoScheduleForScreen827=function(name,fn,delay=0){
+      const key=String(name||route.current),token=route.token(key);let id=0;
+      id=setTimeout(()=>{route.untrackTimer?.(key,id);if(route.valid(token))try{fn()}catch(e){console.warn('Chrono UI task 8.6.0',e)}},Math.max(0,Number(delay)||0));
+      return route.trackTimer(key,id);
+    };
+  }
+
+  function routeFamily(name){
+    name=String(name||'');
+    if(name.startsWith('bestiary'))return'bestiary';
+    if(name.startsWith('class-info'))return'class-info';
+    if(name.startsWith('missions')||name.startsWith('awakening'))return'missions';
+    return name;
+  }
+  function detectRoute(){
+    const o=overlay(),c=card(),g=G();
+    if(g?.running&&o?.classList.contains('hidden'))return'gameplay';
+    if(!o||o.classList.contains('hidden'))return'hidden';
+    const title=clean(c?.querySelector('h1')?.textContent),body=clean(c?.textContent?.slice(0,500)),cls=String(c?.className||'');
+    if(/bestiary|bookPage|newBook/i.test(cls)||/BESTIARI|REGISTRO TATICO|ARQUIVO DE AMEACAS/.test(title+' '+body))return'bestiary';
+    if(/mission489|awakening489/.test(cls)||/^MISSOES/.test(title))return'missions';
+    if(/SELECAO DE PERSONAGEM|ESCOLHA SEU PERSONAGEM/.test(title))return'class-menu';
+    if(/CONFIGURACOES/.test(title))return'settings';
+    if(/LOJA DO MAURO|SKINS|RELIQUIAS/.test(title))return'mauro-shop';
+    if(/POWER.?UPS/.test(title))return'powerups';
+    if(/SINERGIAS/.test(title))return'synergies';
+    if(/TUTORIAL/.test(title))return'tutorial';
+    if(/ESCOLHA.*MODO|SELECAO DE MODO/.test(title))return'modes';
+    if(/CONQUISTAS.*MISSOES|CENTRAL CHRONO|CHRONO HUB/.test(title+' '+body))return'hub';
+    if(/masteryCharacter835/.test(cls)||c?.querySelector?.('.mcShell835,.infoLayout461,.classInfo835,.nefalemInfo841,.nefalemMastery841'))return'class-info';
+    return route?.current&&route.current!=='boot'?route.current:'overlay';
+  }
+  let routeQueued=false;
+  function syncRoute(){
+    routeQueued=false;if(!route)return;
+    const next=detectRoute(),current=route.current,nextFamily=routeFamily(next),currentFamily=routeFamily(current);
+    if(nextFamily!==currentFamily)route.enter(next,'dom-8.6.0');
+    const activeFamily=routeFamily(route.current),taskScreen=activeFamily==='class-info'||activeFamily==='class-menu'?'class':activeFamily;
+    window.__ChronoUIScheduler820?.wakeScreen?.(taskScreen);
+    document.documentElement.dataset.chronoRoute=route.current;
+    cleanupForeignUI(activeFamily);
+  }
+  function queueRoute(){if(routeQueued)return;routeQueued=true;requestAnimationFrame(syncRoute)}
+
+  /* Remove somente resíduos comprovadamente pertencentes a outra tela. */
+  function keepOne(selector){const list=[...document.querySelectorAll(selector)];list.slice(1).forEach(el=>el.remove());return list[0]||null}
+  function cleanupForeignUI(family=routeFamily(route?.current)){
+    if(family!=='bestiary')document.querySelectorAll('#bookSideNav531,.bookTickets529,.bookTickets530,.riftBookGeneral531,.newBook529,.newBook530').forEach(el=>el.remove());
+    if(family!=='gameplay'){
+      document.querySelectorAll('#synergyHud529,#synergyHud541,.synergyHud529,.synergyHud541,[data-synergy-hud]').forEach(el=>el.remove());
+      for(const id of ['nefalemStyleHud841','nefalemUlt841']){const el=document.getElementById(id);if(el){el.classList.remove('show');el.style.display='none'}}
+    }
+    keepOne('.pauseBtn620');
+    const toasts=[...document.querySelectorAll('.chronoRewardToast855')];toasts.slice(0,-1).forEach(el=>el.remove());
+  }
+  try{
+    const o=overlay(),c=card();
+    if(o)new MutationObserver(queueRoute).observe(o,{attributes:true,attributeFilter:['class','style']});
+    if(c)new MutationObserver(queueRoute).observe(c,{childList:true,subtree:false,attributes:true,attributeFilter:['class','data-bestiary846','data-ui-screen827']});
+  }catch{}
+  window.addEventListener('chrono-cloud-applied',queueRoute);
+  window.addEventListener('chrono-account-ready',queueRoute);
+
+  /* Uma única rota de clique para informações, seleção, maestria e skins. */
+  const INFO='[data-info-fast848],[data-info461],[data-info-rico529],[data-info-archer470],[data-info-stellar720],[data-info-stellar721],[data-info-stellar722],[data-info-stellar726],[data-info-stellar727],[data-info-stellar728],[data-info-stellar729],[data-info-stellar730],[data-info-stellar731],#nefInfo841';
+  const PICK='[data-pick461],[data-pick-rico529],[data-pick-archer470],[data-pick-stellar720],[data-pick-stellar721],[data-pick-stellar722],[data-pick37],#nefPick841';
+  const STATS='[data-stats551],.classStats551,.classStats702,#nefStats841';
+  const SKIN='.skinBtn702,[data-open-skin702]';
+  const CARD='[data-card461],[data-card-rico529],[data-card-archer470],.class-card27[data-class],.class-card-v23[data-class],[data-stellar722],[data-stellar722-v23]';
+  function keyFrom(el){
+    const host=el?.closest?.(CARD);
+    if(el?.id?.startsWith('nef')||host?.dataset?.card461==='nefalem')return'nefalem';
+    if(el?.matches?.('[data-info-stellar720],[data-info-stellar721],[data-info-stellar722],[data-info-stellar726],[data-info-stellar727],[data-info-stellar728],[data-info-stellar729],[data-info-stellar730],[data-info-stellar731],[data-pick-stellar720],[data-pick-stellar721],[data-pick-stellar722],[data-stellar722],[data-stellar722-v23]')||/EMPERADOR ESTELAR/i.test(host?.textContent||''))return'stellarEmperor';
+    return el?.dataset?.infoFast848||el?.dataset?.info461||el?.dataset?.infoRico529||el?.dataset?.infoArcher470||el?.dataset?.pick461||el?.dataset?.pickRico529||el?.dataset?.pickArcher470||el?.dataset?.stats551||host?.dataset?.card461||host?.dataset?.cardRico529||host?.dataset?.cardArcher470||host?.dataset?.class||'';
+  }
+  function openInfo860(key){
+    if(!key)return false;
+    if(key==='nefalem'&&window.__Nefalem841?.openInfo){window.__Nefalem841.openInfo('guns');return true}
+    if(typeof window.openCharacterPanel835==='function'){window.openCharacterPanel835(key,'overview');return true}
+    if(typeof window.openCharacterInfo551==='function'){window.openCharacterInfo551(key);return true}
+    if(typeof window.openClassInfo461==='function'){window.openClassInfo461(key);return true}
+    return false;
+  }
+  const inputState860={signature:'',at:0,phase:''};
+  function consumeEvent860(event){
+    try{event.preventDefault();event.stopPropagation();event.stopImmediatePropagation()}catch{}
+  }
+  function runInputAction860(kind,key,element){
+    if(kind==='info'){openInfo860(key);queueRoute();return true}
+    if(kind==='stats'){
+      if(key==='nefalem')window.__Nefalem841?.openMastery?.();
+      else if(typeof window.openCharacterStats551==='function')window.openCharacterStats551(key);
+      else window.openCharacterPanel835?.(key,'stats');
+      queueRoute();return true;
+    }
+    if(kind==='skin'){window.openSkinMenu702?.(key,0);queueRoute();return true}
+    if(kind==='pick'||kind==='card'){
+      if(kind==='card'&&(element?.classList?.contains('locked')||element?.classList?.contains('is-locked')))return true;
+      const token=globalThis.crypto?.randomUUID?.()||('run-'+Date.now()+'-'+Math.random());
+      window.__chronoRunStartToken860=token;
+      let out;
+      try{out=(window.resetGame||globalThis.resetGame)?.(key)}finally{if(window.__chronoRunStartToken860===token)delete window.__chronoRunStartToken860}
+      if(out!==false){overlay()?.classList.add('hidden');route?.enter?.('gameplay',kind+'-8.6.0')}
+      return true;
+    }
+    return false;
+  }
+  function routeEvent860(event,phase=event?.type||'click'){
+    if(!event?.target?.closest)return false;
+    if(phase==='pointerdown'&&event.button!==undefined&&event.button!==0)return false;
+    let kind='',element=null,key='';
+    if((element=event.target.closest(INFO))){kind='info';key=keyFrom(element)}
+    else if((element=event.target.closest(STATS))){kind='stats';key=keyFrom(element)}
+    else if((element=event.target.closest(SKIN))){kind='skin';key=keyFrom(element)}
+    else if((element=event.target.closest(PICK))){kind='pick';key=keyFrom(element)}
+    else{
+      const host=event.target.closest(CARD);
+      if(host&&!event.target.closest('button,a,input,select,textarea')){kind='card';element=host;key=keyFrom(host)}
+    }
+    if(!kind||!key)return false;
+    const signature=kind+':'+key,now=performance.now();
+    // Um clique real gera pointerdown + click. A segunda fase é apenas consumida.
+    if(signature===inputState860.signature&&now-inputState860.at<900){
+      inputState860.phase=phase;return true;
+    }
+    inputState860.signature=signature;inputState860.at=now;inputState860.phase=phase;
+    return runInputAction860(kind,key,element)!==false;
+  }
+  // Fallback para documentos que injetem este bloco sem o broker inicial.
+  window.addEventListener('click',event=>{if(routeEvent860(event,'click'))consumeEvent860(event)},true);
+
+  /* Qualidade adaptativa afeta somente densidade de efeitos visuais. */
+  const optimizer=window.__ChronoOptimizer820;
+  if(optimizer&&!optimizer.__mega860){
+    optimizer.__mega860=true;
+    const baseFrame=optimizer.frameStart?.bind(optimizer)||(()=>{}),baseParticles=window.addParticles||globalThis.addParticles;
+    const quality={level:0,slow:0,fast:0,last:performance.now()};
+    const caps=[
+      {particles:1200,rings:180,texts:120,lightnings:120,factor:1},
+      {particles:720,rings:120,texts:80,lightnings:75,factor:.68},
+      {particles:400,rings:72,texts:52,lightnings:46,factor:.42}
+    ];
+    function trim(arr,max,kind){if(Array.isArray(arr)&&arr.length>max)optimizer.trimFX(arr,arr.length-max,kind)}
+    optimizer.frameStart=function(dt){
+      baseFrame(dt);const now=performance.now(),fps=Number(optimizer.metrics?.fps||60);
+      if(now-quality.last>500){
+        quality.last=now;
+        if(fps>0&&fps<38){quality.slow++;quality.fast=0}else if(fps>=54){quality.fast++;quality.slow=0}else{quality.slow=Math.max(0,quality.slow-1);quality.fast=Math.max(0,quality.fast-1)}
+        if(quality.slow>=2&&quality.level<2){quality.level++;quality.slow=0}
+        if(quality.fast>=5&&quality.level>0){quality.level--;quality.fast=0}
+      }
+      const g=G(),cap=caps[g?.meta?.gfxLow?2:quality.level];if(!g)return;
+      trim(g.particles,cap.particles,'particle');trim(g.rings,cap.rings,'ring');trim(g.floatingTexts,cap.texts,'text');trim(g.lightnings,cap.lightnings,'lightning');
+    };
+    optimizer.quality=quality;optimizer.visualCaps=caps;
+    if(typeof baseParticles==='function'&&!baseParticles.__adaptive860){
+      const wrapped=function(x,y,color,count,force){
+        const g=G(),level=g?.meta?.gfxLow?2:quality.level,factor=caps[level].factor;
+        return baseParticles.call(this,x,y,color,Math.max(1,Math.round((Number(count)||0)*factor)),force);
+      };
+      wrapped.__adaptive860=true;window.addParticles=wrapped;try{addParticles=wrapped}catch{}
+    }
+  }
+
+  /* Diagnóstico programático para futuras revisões, sem painel ou custo contínuo. */
+  window.__ChronoMega860=Object.freeze({
+    version:'8.6.0',syncRoute,cleanup:cleanupForeignUI,openInfo:openInfo860,routeEvent:routeEvent860,
+    audit(){
+      const g=G(),s=window.__ChronoUIScheduler820;
+      return{
+        route:route?.current||'unknown',running:!!g?.running,
+        schedulerTasks:s?.taskCount?.()||0,observers:s?.observerCount?.()||0,
+        schedulerStats:{...(s?.stats||{})},observerStats:{...(s?.observerStats||{})},
+        effects:{particles:g?.particles?.length||0,rings:g?.rings?.length||0,texts:g?.floatingTexts?.length||0,lightnings:g?.lightnings?.length||0},
+        quality:optimizer?.quality?.level||0
+      };
+    }
+  });
+  queueRoute();setTimeout(queueRoute,80);setTimeout(queueRoute,500);
+  console.log('Chrono Shards 8.6.0 — Mega Optimization: scheduler, observers, rotas, eventos e FX consolidados');
+})();
+</script>
 </body>
 </html>
