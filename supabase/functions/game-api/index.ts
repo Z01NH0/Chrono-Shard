@@ -175,6 +175,22 @@ function finiteInt(value: unknown, min: number, max: number): number {
   return Math.max(min, Math.min(max, Math.trunc(n)))
 }
 
+function strictInt(value: unknown, min: number, max: number): number | null {
+  let parsed: number
+  if (typeof value === 'number') {
+    parsed = value
+  } else if (typeof value === 'string') {
+    const normalized = value.trim()
+    // Não aceita expoentes, decimais, sinal ou coerções como Number('') = 0.
+    if (!/^\d+$/.test(normalized)) return null
+    parsed = Number(normalized)
+  } else {
+    return null
+  }
+  if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) return null
+  return parsed
+}
+
 function cleanArray(value: unknown, maxLength = 500): unknown[] {
   return Array.isArray(value) ? value.slice(0, maxLength) : []
 }
@@ -231,8 +247,34 @@ function sanitizeDoomSummary(value: unknown, totalKills: number, bossKills: numb
   }
 }
 
+const INTERNAL_DATABASE_ERROR_PATTERNS = [
+  /function\s+.+\s+does not exist/i,
+  /relation\s+.+\s+does not exist/i,
+  /column\s+.+\s+does not exist/i,
+  /operator does not exist/i,
+  /schema\s+.+\s+does not exist/i,
+  /syntax error/i,
+  /permission denied/i,
+  /violates .+ constraint/i,
+  /sqlstate/i,
+  /cached plan/i,
+]
+
+function isInternalDatabaseError(message: string): boolean {
+  return INTERNAL_DATABASE_ERROR_PATTERNS.some((pattern) => pattern.test(message))
+}
+
 function throwProgressionRpcError(error: any): never {
-  const message = String(error?.message ?? error ?? 'Operação recusada pelo servidor')
+  const rawMessage = String(error?.message ?? error ?? 'Operação recusada pelo servidor')
+  if (isInternalDatabaseError(rawMessage)) {
+    console.error('Progression RPC internal error', error)
+    publicError(
+      'O servidor não conseguiu concluir a operação. Tente novamente em instantes.',
+      503,
+      'PROGRESSION_SERVER_ERROR',
+    )
+  }
+  const message = rawMessage.slice(0, 240)
   const lower = message.toLowerCase()
   const status = lower.includes('insuficiente') || lower.includes('limite') || lower.includes('já ') || lower.includes('ainda não')
     ? 409
@@ -429,6 +471,104 @@ async function sha256Hex(value: string): Promise<string> {
 
 async function recoveryHash(usernameNormalized: string, recoveryKey: string): Promise<string> {
   return sha256Hex(`chrono-recovery-v1|${usernameNormalized}|${recoveryKey}`)
+}
+
+type ActionRequestResolution = {
+  serverRequestId: string
+  replay: unknown | null
+}
+
+const STATE_REFRESH_ACTIONS = new Set([
+  'import_legacy', 'enable_economy', 'purchase_character', 'claim_mission', 'redeem_code', 'finish_run',
+])
+const PROGRESSION_REFRESH_ACTIONS = new Set([
+  'awakening_start_stage', 'awakening_claim_stage', 'awakening_claim_ultimate',
+  'infernal_purchase', 'infernal_legacy', 'infernal_nefalem', 'doom_unlock', 'finish_run',
+])
+const MAURO_REFRESH_ACTIONS = new Set([
+  'mauro_purchase', 'mauro_equip_skin', 'bestiary_claim',
+])
+
+async function namespacedActionRequestId(action: string, requestId: string): Promise<string> {
+  const hex = await sha256Hex(`chrono-action-v1|${action}|${requestId.toLowerCase()}`)
+  const bytes = new Uint8Array(16)
+  for (let index = 0; index < bytes.length; index += 1) {
+    bytes[index] = Number.parseInt(hex.slice(index * 2, index * 2 + 2), 16)
+  }
+  // UUID v5/variant RFC 4122. O valor é determinístico por ação e por pedido.
+  bytes[6] = (bytes[6] & 0x0f) | 0x50
+  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  const value = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+  return `${value.slice(0, 8)}-${value.slice(8, 12)}-${value.slice(12, 16)}-${value.slice(16, 20)}-${value.slice(20)}`
+}
+
+async function resolveActionRequest(
+  admin: AdminClient,
+  userId: string,
+  action: string,
+  rawRequestId: unknown,
+): Promise<ActionRequestResolution> {
+  const originalRequestId = String(rawRequestId ?? '').toLowerCase()
+  if (!isUuid(originalRequestId)) publicError('Identificador da operação inválido', 400, 'INVALID_ACTION_REQUEST_ID')
+  const serverRequestId = await namespacedActionRequestId(action, originalRequestId)
+
+  // Compatibilidade com recibos criados antes da 8.7.3: procura tanto o UUID
+  // original quanto o UUID delimitado pela ação. Isso também impede que o mesmo
+  // UUID seja reaproveitado para uma ação diferente e devolva um payload alheio.
+  const { data, error } = await admin
+    .from('chrono_action_receipts')
+    .select('request_id,action,response')
+    .eq('user_id', userId)
+    .in('request_id', [originalRequestId, serverRequestId])
+  if (error) throw error
+
+  const rows = Array.isArray(data) ? data : []
+  if (rows.some((row) => String(row?.action ?? '') !== action)) {
+    publicError('Este identificador já foi usado por outra operação', 409, 'REQUEST_ID_ACTION_CONFLICT')
+  }
+  // Se uma tentativa antiga e outra já delimitada coexistirem, a delimitada é a
+  // fonte mais recente e específica. A ordem devolvida pelo banco não é garantida.
+  const previous = rows.find((row) => String(row?.request_id ?? '') === serverRequestId
+      && row?.response !== undefined && row?.response !== null)
+    ?? rows.find((row) => String(row?.request_id ?? '') === originalRequestId
+      && row?.response !== undefined && row?.response !== null)
+  if (previous) return { serverRequestId: String(previous.request_id), replay: previous.response }
+  return { serverRequestId, replay: null }
+}
+
+async function refreshActionResponse(
+  admin: AdminClient,
+  userId: string,
+  action: string,
+  value: unknown,
+): Promise<JsonObject> {
+  const response = { ...asObject(value) }
+
+  if (STATE_REFRESH_ACTIONS.has(action)) {
+    const { data, error } = await admin
+      .from('chrono_player_state')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (!error && data) response.state = data
+  }
+
+  if (action === 'claim_mission') {
+    const { data, error } = await admin.rpc('chrono_load_missions_server', { p_user_id: userId })
+    if (!error && data && typeof data === 'object') Object.assign(response, asObject(data))
+  }
+
+  if (PROGRESSION_REFRESH_ACTIONS.has(action)) {
+    const { data, error } = await admin.rpc('chrono_progression_payload_server', { p_user_id: userId })
+    if (!error && data) response.progression = data
+  }
+
+  if (MAURO_REFRESH_ACTIONS.has(action)) {
+    const { data, error } = await admin.rpc('chrono_mauro_bestiary_payload_server', { p_user_id: userId })
+    if (!error && data) response.payload = data
+  }
+
+  return response
 }
 
 async function passwordSession(
@@ -804,7 +944,7 @@ export default {
         return json({
           ok: true,
           service: 'chrono-shards-cloud',
-          phase: 'mauro-chest-missions-8.7.2',
+          phase: 'global-inventory-audit-8.7.3',
         })
       }
 
@@ -1267,17 +1407,8 @@ export default {
       }
 
       if (action === 'import_legacy') {
-        const requestId = String(body.requestId ?? '')
-        if (!requestId) return json({ error: 'requestId ausente' }, 400)
-
-        const { data: previous } = await admin
-          .from('chrono_action_receipts')
-          .select('response')
-          .eq('user_id', userId)
-          .eq('request_id', requestId)
-          .maybeSingle()
-
-        if (previous?.response) return json(previous.response)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
 
         const state = await bootstrapPlayerState(admin, userId, body.snapshot)
         const response = {
@@ -1290,48 +1421,45 @@ export default {
           .from('chrono_action_receipts')
           .insert({
             user_id: userId,
-            request_id: requestId,
+            request_id: request.serverRequestId,
             action: 'import_legacy',
             response,
           })
         if (receiptError) throw receiptError
 
-        return json(response)
+        return json(await refreshActionResponse(admin, userId, action, response))
       }
 
       if (action === 'enable_economy') {
-        const requestId = String(body.requestId ?? '')
-        if (!requestId) return json({ error: 'requestId ausente' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
 
         const { data, error } = await admin.rpc('chrono_enable_economy_server', {
           p_user_id: userId,
-          p_request_id: requestId,
+          p_request_id: request.serverRequestId,
         })
 
         if (error) throw error
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'purchase_character') {
-        const requestId = String(body.requestId ?? '')
         const characterKey = String(body.characterKey ?? '').slice(0, 80)
-
-        if (!requestId || !characterKey) {
-          return json({ error: 'Dados da compra ausentes' }, 400)
-        }
-
+        if (!characterKey) return json({ error: 'Dados da compra ausentes' }, 400)
         if (!PROTECTED_CHARACTER_KEYS.has(characterKey)) {
           return json({ error: 'Personagem ainda não suportado pela compra segura' }, 400)
         }
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
 
         const { data, error } = await admin.rpc('chrono_purchase_character_server', {
           p_user_id: userId,
-          p_request_id: requestId,
+          p_request_id: request.serverRequestId,
           p_character_key: characterKey,
         })
 
         if (error) throw error
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'load_missions') {
@@ -1362,43 +1490,37 @@ export default {
       }
 
       if (action === 'claim_mission') {
-        const requestId = String(body.requestId ?? '')
         const slotKey = String(body.slotKey ?? '').slice(0, 40)
-
-        if (!requestId || !slotKey) {
-          return json({ error: 'Dados da missão ausentes' }, 400)
-        }
+        if (!slotKey) return json({ error: 'Dados da missão ausentes' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
 
         const { data, error } = await admin.rpc('chrono_claim_mission_server', {
           p_user_id: userId,
-          p_request_id: requestId,
+          p_request_id: request.serverRequestId,
           p_slot_key: slotKey,
         })
 
         if (error) throw error
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'redeem_code') {
-        const requestId = String(body.requestId ?? '')
         const normalizedCode = normalizeRewardCode(body.code)
-
-        if (!requestId || !normalizedCode) {
-          return json({ error: 'Digite um código' }, 400)
-        }
-        if (normalizedCode.length > 256) {
-          return json({ error: 'Código grande demais' }, 400)
-        }
+        if (!normalizedCode) return json({ error: 'Digite um código' }, 400)
+        if (normalizedCode.length > 256) return json({ error: 'Código grande demais' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
 
         const codeHash = await sha256Hex(normalizedCode)
         const { data, error } = await admin.rpc('chrono_redeem_code_server', {
           p_user_id: userId,
-          p_request_id: requestId,
+          p_request_id: request.serverRequestId,
           p_code_hash: codeHash,
         })
 
         if (error) throw error
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'load_progression') {
@@ -1410,6 +1532,16 @@ export default {
       }
 
       if (action === 'load_mauro_bestiary') {
+        const { data: authority, error: authorityError } = await admin
+          .from('chrono_player_state')
+          .select('initialized,mauro_authority_enabled,bestiary_authority_enabled')
+          .eq('user_id', userId)
+          .maybeSingle()
+        if (authorityError) throw authorityError
+        if (!authority?.initialized) publicError('Save online ainda não inicializado', 409, 'PLAYER_STATE_NOT_READY')
+        if (!authority.mauro_authority_enabled || !authority.bestiary_authority_enabled) {
+          publicError('Mauro e Bestiário ainda não foram ativados para esta conta', 409, 'COLLECTION_AUTHORITY_NOT_READY')
+        }
         const { data, error } = await admin.rpc('chrono_mauro_bestiary_payload_server', {
           p_user_id: userId,
         })
@@ -1418,167 +1550,150 @@ export default {
       }
 
       if (action === 'mauro_purchase') {
-        const requestId = String(body.requestId ?? '')
         const section = String(body.section ?? '')
         const rotationId = String(body.rotationId ?? '').trim()
-        const rawSlot = Number(body.slot)
-        const slot = Number.isInteger(rawSlot) && rawSlot >= 0 && rawSlot <= 7 ? rawSlot : -1
+        const slot = strictInt(body.slot, 0, 7) ?? -1
         const itemKey = String(body.itemKey ?? '').trim().slice(0, 160)
-        if (!isUuid(requestId) || !['rotation', 'permanent'].includes(section)) {
+        if (!['rotation', 'permanent'].includes(section)) {
           return json({ error: 'Compra da Loja do Mauro inválida' }, 400)
         }
         if (section === 'rotation' && (slot < 0 || rotationId.length < 10 || rotationId.length > 120)) {
           return json({ error: 'Oferta da Loja do Mauro inválida' }, 400)
         }
         if (section === 'permanent' && !itemKey) return json({ error: 'Power-up permanente inválido' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_mauro_purchase_server', {
           p_user_id: userId,
-          p_request_id: requestId,
+          p_request_id: request.serverRequestId,
           p_section: section,
           p_rotation_id: rotationId,
           p_slot: slot,
           p_item_key: itemKey,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'mauro_equip_skin') {
-        const requestId = String(body.requestId ?? '')
         const characterKey = String(body.characterKey ?? '').slice(0, 80)
         const skinId = String(body.skinId ?? '').slice(0, 160)
-        if (!isUuid(requestId) || !ALLOWED_CHARACTER_KEYS.has(characterKey) || !skinId) {
+        if (!ALLOWED_CHARACTER_KEYS.has(characterKey) || !skinId) {
           return json({ error: 'Seleção de skin inválida' }, 400)
         }
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_mauro_equip_skin_server', {
           p_user_id: userId,
-          p_request_id: requestId,
+          p_request_id: request.serverRequestId,
           p_character_key: characterKey,
           p_skin_id: skinId,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'bestiary_claim') {
-        const requestId = String(body.requestId ?? '')
         const entryId = String(body.entryId ?? '').slice(0, 120)
-        if (!isUuid(requestId) || !BESTIARY_TYPE_KILLS.has(entryId)) {
+        if (!BESTIARY_TYPE_KILLS.has(entryId)) {
           return json({ error: 'Registro do Bestiário inválido' }, 400)
         }
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_bestiary_claim_server', {
           p_user_id: userId,
-          p_request_id: requestId,
+          p_request_id: request.serverRequestId,
           p_entry_id: entryId,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'awakening_start_stage') {
-        const requestId = String(body.requestId ?? '')
         const characterKey = String(body.characterKey ?? '')
-        const rawStage = Number(body.stage)
-        if (
-          !isUuid(requestId) ||
-          !AWAKENING_CHARACTER_KEYS.has(characterKey) ||
-          !Number.isInteger(rawStage) ||
-          rawStage < 1 ||
-          rawStage > 5
-        ) {
+        const rawStage = strictInt(body.stage, 1, 5)
+        if (!AWAKENING_CHARACTER_KEYS.has(characterKey) || rawStage === null) {
           return json({ error: 'Dados da etapa de Awakening inválidos' }, 400)
         }
-        const stage = rawStage
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_start_awakening_stage_server', {
-          p_user_id: userId,
-          p_request_id: requestId,
-          p_character_key: characterKey,
-          p_stage: stage,
+          p_user_id: userId, p_request_id: request.serverRequestId, p_character_key: characterKey, p_stage: rawStage,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'awakening_claim_stage') {
-        const requestId = String(body.requestId ?? '')
-        if (!isUuid(requestId)) return json({ error: 'Identificador inválido' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_claim_awakening_stage_server', {
-          p_user_id: userId,
-          p_request_id: requestId,
+          p_user_id: userId, p_request_id: request.serverRequestId,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'awakening_claim_ultimate') {
-        const requestId = String(body.requestId ?? '')
         const characterKey = String(body.characterKey ?? '')
-        if (!isUuid(requestId) || !AWAKENING_CHARACTER_KEYS.has(characterKey)) {
-          return json({ error: 'Dados da Ultimate inválidos' }, 400)
-        }
+        if (!AWAKENING_CHARACTER_KEYS.has(characterKey)) return json({ error: 'Dados da Ultimate inválidos' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_claim_awakening_ultimate_server', {
-          p_user_id: userId,
-          p_request_id: requestId,
-          p_character_key: characterKey,
+          p_user_id: userId, p_request_id: request.serverRequestId, p_character_key: characterKey,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'infernal_purchase') {
-        const requestId = String(body.requestId ?? '')
         const section = String(body.section ?? '')
-        const index = finiteInt(body.index, 0, 20)
+        const rawIndex = strictInt(body.index, 0, 20)
         const rotationId = String(body.rotationId ?? '').trim()
-        if (!isUuid(requestId) || !INFERNAL_SHOP_SECTIONS.has(section) || rotationId.length < 10 || rotationId.length > 100) {
+        if (!INFERNAL_SHOP_SECTIONS.has(section) || rawIndex === null || rotationId.length < 10 || rotationId.length > 100) {
           return json({ error: 'Oferta da Loja Infernal inválida' }, 400)
         }
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_infernal_purchase_server', {
-          p_user_id: userId,
-          p_request_id: requestId,
-          p_section: section,
-          p_index: index,
-          p_rotation_id: rotationId,
+          p_user_id: userId, p_request_id: request.serverRequestId, p_section: section, p_index: rawIndex, p_rotation_id: rotationId,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'infernal_legacy') {
-        const requestId = String(body.requestId ?? '')
         const legacyId = String(body.legacyId ?? '')
-        if (!isUuid(requestId) || !legacyId) return json({ error: 'Legado inválido' }, 400)
+        if (!legacyId) return json({ error: 'Legado inválido' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_infernal_legacy_server', {
-          p_user_id: userId,
-          p_request_id: requestId,
-          p_legacy_id: legacyId,
+          p_user_id: userId, p_request_id: request.serverRequestId, p_legacy_id: legacyId,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'infernal_nefalem') {
-        const requestId = String(body.requestId ?? '')
-        if (!isUuid(requestId)) return json({ error: 'Identificador inválido' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_purchase_nefalem_server', {
-          p_user_id: userId,
-          p_request_id: requestId,
+          p_user_id: userId, p_request_id: request.serverRequestId,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'doom_unlock') {
-        const requestId = String(body.requestId ?? '')
         const sessionId = String(body.sessionId ?? '')
-        if (!isUuid(requestId) || !isUuid(sessionId)) return json({ error: 'Sessão DOOM inválida' }, 400)
+        if (!isUuid(sessionId)) return json({ error: 'Sessão DOOM inválida' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
         const { data, error } = await admin.rpc('chrono_unlock_doom_server', {
-          p_user_id: userId,
-          p_request_id: requestId,
-          p_session_id: sessionId,
+          p_user_id: userId, p_request_id: request.serverRequestId, p_session_id: sessionId,
         })
         if (error) throwProgressionRpcError(error)
-        return json(data)
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       if (action === 'start_run') {
@@ -1773,11 +1888,10 @@ export default {
       }
 
       if (action === 'finish_run') {
-        const requestId = String(body.requestId ?? '')
         const sessionId = String(body.sessionId ?? '')
-        if (!isUuid(requestId) || !isUuid(sessionId)) {
-          return json({ error: 'Identificadores ausentes ou inválidos' }, 400)
-        }
+        if (!isUuid(sessionId)) return json({ error: 'Identificadores ausentes ou inválidos' }, 400)
+        const request = await resolveActionRequest(admin, userId, action, body.requestId)
+        if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
 
         const totalKills = finiteInt(body.kills, 0, 10_000_000)
         const bossKills = finiteInt(body.bossKills, 0, totalKills)
@@ -1796,7 +1910,7 @@ export default {
         // recompensa.
         const { data, error } = await admin.rpc('chrono_finish_run_bundle_server', {
           p_user_id: userId,
-          p_request_id: requestId,
+          p_request_id: request.serverRequestId,
           p_session_id: sessionId,
           p_score: score,
           p_wave: wave,
@@ -1869,7 +1983,7 @@ export default {
           throw error
         }
 
-        return json(asObject(data))
+        return json(await refreshActionResponse(admin, userId, action, data))
       }
 
       return json({ error: 'Ação desconhecida' }, 400)
@@ -1879,12 +1993,10 @@ export default {
         const payload = { error: error.message, code: error.code, field: error.field ?? null, status: error.status }
         return json(payload, SOFT_ERROR_ACTIONS.has(action) ? 200 : error.status)
       }
-      const message = error instanceof Error
-        ? error.message
-        : error && typeof error === 'object' && 'message' in error
-          ? String((error as { message?: unknown }).message ?? 'Erro interno')
-          : 'Erro interno'
-      return json({ error: message, code: 'INTERNAL_ERROR' }, 500)
+      return json({
+        error: 'O servidor encontrou um erro interno. Tente novamente em instantes.',
+        code: 'INTERNAL_ERROR',
+      }, 500)
     }
   }),
 }
