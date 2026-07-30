@@ -804,7 +804,7 @@ export default {
         return json({
           ok: true,
           service: 'chrono-shards-cloud',
-          phase: 'mauro-bestiary-authority-8.7.0',
+          phase: 'mauro-bestiary-authority-8.7.1',
         })
       }
 
@@ -1421,7 +1421,8 @@ export default {
         const requestId = String(body.requestId ?? '')
         const section = String(body.section ?? '')
         const rotationId = String(body.rotationId ?? '').trim()
-        const slot = finiteInt(body.slot, -1, 7)
+        const rawSlot = Number(body.slot)
+        const slot = Number.isInteger(rawSlot) && rawSlot >= 0 && rawSlot <= 7 ? rawSlot : -1
         const itemKey = String(body.itemKey ?? '').trim().slice(0, 160)
         if (!isUuid(requestId) || !['rotation', 'permanent'].includes(section)) {
           return json({ error: 'Compra da Loja do Mauro inválida' }, 400)
