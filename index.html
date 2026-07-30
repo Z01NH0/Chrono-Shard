@@ -40224,11 +40224,11 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   function read(){let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{};m.stats=m.stats||{};m.stats.typeKills=m.stats.typeKills||{};m.bestiaryKills=m.bestiaryKills||{};m.bestiaryClaimed461=m.bestiaryClaimed461||{};m.relicShards=n(m.relicShards);return m}
   function write(m){try{localStorage.setItem(SAVE,JSON.stringify(m||{}))}catch{};try{if(typeof game!=='undefined'&&game)game.meta=m}catch{};return m}
   function aliases(id){if(id==='medic')return ['medic','medicDrone'];if(id==='oracle')return ['oracle','oracleBloom'];return [id]}
-  function kills(id){const m=read();let v=0;for(const k of aliases(id))v=Math.max(v,n(m.bestiaryKills[k]),n(m.stats.typeKills[k]));return v}
+  function kills(id){const m=read();let v=0;const official=!!window.__ChronoMauroBestiary870?.authorityActive?.()&&!window.game?.running;for(const k of aliases(id))v=Math.max(v,n(m.bestiaryKills[k]),official?0:n(m.stats.typeKills[k]));return v}
   function claimed(id){return !!read().bestiaryClaimed461[id]}
   function ready(e){return !claimed(e.id)&&kills(e.id)>=e.req}
   function canonicalId(e){if(!e)return '';if(e.infernalBoss810||e.type==='infernalBoss810')return'infernalBoss810';if(e.infernalImp810||e.type==='infernalImp810')return'infernalImp810';if(e.doomMini800)return`doomMini_${e.doomMiniKind800}800`;if(e.doomPortal800||e.type==='doomPortal800')return'doomPortal800';if(e.doomTotem800||e.type==='doomTotem800')return'doomTotem800';const id=e.bossType||e.type||'';if(id==='medicDrone')return'medic';if(id==='oracleBloom')return'oracle';return id}
-  function claim(e){if(!ready(e))return false;const m=read();if(m.bestiaryClaimed461[e.id])return false;m.bestiaryClaimed461[e.id]=true;m.relicShards=n(m.relicShards)+n(e.reward);write(m);try{rewardBurst?.(e.reward,'RELÍQUIAS','#ffd166')}catch{};toast(`${e.name} revelado • +${e.reward} Relíquias`);return true}
+  function claim(e){if(window.__ChronoMauroBestiary870?.authorityActive?.())return false;if(!ready(e))return false;const m=read();if(m.bestiaryClaimed461[e.id])return false;m.bestiaryClaimed461[e.id]=true;m.relicShards=n(m.relicShards)+n(e.reward);write(m);try{rewardBurst?.(e.reward,'RELÍQUIAS','#ffd166')}catch{};toast(`${e.name} revelado • +${e.reward} Relíquias`);return true}
   function toast(msg){let t=document.getElementById('b846Toast');if(!t){t=document.createElement('div');t.id='b846Toast';t.className='b846Toast';document.body.appendChild(t)}t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2300)}
   function hpTier(e){const raw=String(e.hp||''),v=n((raw.match(/[\d.]+/)||[])[0]);if(e.id==='infernalBoss810')return'Brutamonte';if(v<=40)return'Fraco';if(v<=100)return'Médio';if(v<=350)return'Alto';if(v<=1800)return'Resistente';if(v<=5000)return'Brutamonte';return'Colossal'}
   function damageTier(e){const s=String(e.dmg||'').toLowerCase(),v=n((s.match(/[\d.]+/)||[])[0]);if(/catastr|destrui|núcleo|selo|lava|explos|muito alto/.test(s)||e.id==='lostEmperor')return'Catastrófico';if(e.kind==='boss'||/alto|gelo|projéteis|invocação|cortante/.test(s))return'Muito Alto';if(/ácido|veneno|foco|moderado|torres|suporte|cacos/.test(s))return'Alto';if((v&&v<=10)||/baixo|fraco|irritante/.test(s))return'Fraco';return'Médio'}
@@ -41805,11 +41805,12 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 
 
 <script id="chronoServerWait863">
-/* Chrono Shards 8.6.3 — ações autoritativas preservam a tela atual e exibem espera visível. */
+/* Chrono Shards 8.7.3 — fila visual de operações autoritativas sem remoção fora de ordem. */
 (()=>{
   if(window.__ChronoServerWait863)return;
   const ID='chronoServerWait863Overlay';
-  let currentToken=0,depth=0;
+  let serial=0;
+  const active=new Map();
   function ensureStyle(){
     if(document.getElementById('chronoServerWait863Style'))return;
     const style=document.createElement('style');style.id='chronoServerWait863Style';style.textContent=`
@@ -41823,26 +41824,33 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       @media(prefers-reduced-motion:reduce){#${ID} .chronoWaitSpinner863{animation-duration:1.35s}}
     `;document.head.appendChild(style);
   }
-  function show(message='O servidor está processando sua solicitação.'){
-    ensureStyle();
-    const token=++currentToken;depth++;
+  function render(){
     let overlay=document.getElementById(ID);
+    if(active.size===0){overlay?.remove();return}
+    ensureStyle();
+    const latest=Array.from(active.entries()).at(-1);
+    if(!latest)return;
+    const [token,message]=latest;
     if(!overlay){overlay=document.createElement('div');overlay.id=ID;overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');overlay.setAttribute('aria-busy','true');document.body.appendChild(overlay)}
     overlay.dataset.token=String(token);
     overlay.innerHTML=`<div class="chronoWaitCard863"><span class="chronoWaitSpinner863" aria-hidden="true"></span><strong>AGUARDE</strong><p></p></div>`;
-    overlay.querySelector('p').textContent=String(message||'O servidor está processando sua solicitação.');
+    overlay.querySelector('p').textContent=message;
+  }
+  function show(message='O servidor está processando sua solicitação.'){
+    const token=++serial;
+    active.set(token,String(message||'O servidor está processando sua solicitação.'));
+    render();
     return token;
   }
   function hide(token){
-    depth=Math.max(0,depth-1);
-    const overlay=document.getElementById(ID);if(!overlay)return;
-    if(depth>0&&token&&String(token)!==overlay.dataset.token)return;
-    if(depth===0||!token){overlay.remove();depth=0}
+    if(token===undefined||token===null)return;
+    active.delete(Number(token));
+    render();
   }
-  function clear(){depth=0;document.getElementById(ID)?.remove()}
-  window.__ChronoServerWait863=Object.freeze({show,hide,clear});
+  function clear(){active.clear();document.getElementById(ID)?.remove()}
+  window.__ChronoServerWait863=Object.freeze({show,hide,clear,get size(){return active.size}});
   window.addEventListener('pagehide',clear);
-  console.log('Chrono Shards 8.6.3 — espera do servidor sem retorno ao menu inicial');
+  console.log('Chrono Shards 8.7.3 — fila de espera autoritativa protegida');
 })();
 </script>
 
@@ -41860,7 +41868,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   @media(max-width:620px){.chronoMBToast870{top:8%;padding:11px 14px}.serverAuthority870{font-size:8px}.serverChest870 .rewardGrid56{grid-template-columns:1fr!important}}
 </style>
 <script id="chronoMauroBestiary870">
-/* Chrono Shards 8.7.2 — baús, Missões e integração Mauro/Bestiário corrigidos. */
+/* Chrono Shards 8.7.3 — auditoria integral, resgates locais bloqueados e inventário oficial endurecido. */
 (()=>{
   window.__ChronoMauroServerAuthority870=true;
   if(window.__ChronoMauroBestiary870)return;
@@ -42004,12 +42012,13 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       const id=String(card.dataset.b846Id||''),entry=payload?.bestiary?.entries?.[id];
       if(!payload){stop(event);openBestiary(currentBestiaryTab());return}
       if(BESTIARY_SET.has(id)&&entry?.ready===true&&entry?.claimed!==true){stop(event);claimBestiary(id);return}
-      // Se a interface local já alcançou a meta, mas o checkpoint oficial ainda não chegou,
-      // impede o resgate legado de conceder recompensa pelo navegador. A seleção normal
-      // dos demais registros continua funcionando.
+      // O resgate local da 8.4.6 foi desativado na própria função claim(). Aqui só
+      // bloqueamos o clique quando o contador local do Bestiário já alcançou a meta,
+      // mas o checkpoint oficial ainda não confirmou. Registros realmente bloqueados
+      // continuam selecionáveis para o jogador consultar os detalhes e o progresso.
       if(BESTIARY_SET.has(id)&&entry?.claimed!==true&&entry?.ready!==true){
         const localMeta=read(META,{});
-        const localKills=Math.max(num(localMeta?.bestiaryKills?.[id],0),num(localMeta?.stats?.typeKills?.[id],0));
+        const localKills=Math.max(0,num(localMeta?.bestiaryKills?.[id],0));
         const required=Math.max(1,num(entry?.required,Infinity));
         if(localKills>=required){
           stop(event);
@@ -42021,14 +42030,23 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     }
   },true);
 
-  function bindRoutes(){for(const name of ['openMauroShop702','openLojaDoMauro702','openMetaRelicMenu','openRelics461']){window[name]=openMauro;try{globalThis[name]=openMauro}catch{}}for(const name of ['openBestiary846','openBestiary531','openBestiary530','openBestiary529','openBestiary464','openBestiary461','openBestiary455','openBestiary452','openBestiaryO','openBestiaryP','openBestiaryI','openBestiaryG','openBestiary37','openBestiary38']){window[name]=openBestiary;try{globalThis[name]=openBestiary}catch{}}window.__openBestiaryLatest=()=>openBestiary('general')}
+  const openBestiaryLatest870=()=>openBestiary('general');
+  function setRoute870(name,handler){
+    try{if(window[name]!==handler)window[name]=handler}catch{}
+    try{if(globalThis[name]!==handler)globalThis[name]=handler}catch{}
+  }
+  function bindRoutes(){
+    for(const name of ['openMauroShop702','openLojaDoMauro702','openMetaRelicMenu','openRelics461'])setRoute870(name,openMauro);
+    for(const name of ['openBestiary846','openBestiary531','openBestiary530','openBestiary529','openBestiary464','openBestiary461','openBestiary455','openBestiary452','openBestiaryO','openBestiaryP','openBestiaryI','openBestiaryG','openBestiary37','openBestiary38'])setRoute870(name,openBestiary);
+    setRoute870('__openBestiaryLatest',openBestiaryLatest870);
+  }
   function tick(){bindRoutes();decorateMauro();decorateBestiary();updateTimer();const next=num(officialShop()?.next);if(next&&Date.now()>=next&&!refreshTimer&&document.getElementById('overlayCard')?.classList.contains('mauroShop702')){refreshTimer=setTimeout(()=>{refreshTimer=0;openMauro()},80)}}
   try{window.__ChronoUIScheduler820?.interval?.(tick,700)}catch{setInterval(tick,700)}
   window.addEventListener('chrono-account-ready',()=>setTimeout(()=>{if(authenticated())load({force:true}).catch(()=>{})},350));
   window.addEventListener('chrono-run-settled',()=>setTimeout(()=>load({force:true}).catch(()=>{}),500));
   bindRoutes();if(authenticated())setTimeout(()=>load({force:true}).catch(()=>{}),500);
   window.__ChronoMauroBestiary870=Object.freeze({authorityActive:()=>true,load,apply:applyPayload,openMauro,openBestiary,buyRotation,buyPermanent,equipSkin,claimBestiary,openInfernalChest:openServerInfernalChest,get payload(){return clone(payload)}});
-  console.log('Chrono Shards 8.7.2 — baús corrigidos, Missões isoladas do Bestiário e integração revisada');
+  console.log('Chrono Shards 8.7.3 — auditoria integral, inventário unificado e rotas endurecidas');
 })();
 </script>
 
