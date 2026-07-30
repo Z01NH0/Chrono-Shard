@@ -22922,7 +22922,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
   const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
   const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/gi,'').toLowerCase();
   const colorOf=k=>{try{return CLASSES[k]?.tagColor||CLASSES[k]?.color||'#75d8ff'}catch{return '#75d8ff'}};
-  const titleOf=k=>{try{return (CLASSES[k]?.name||k).replace(/[\u{1F300}-\u{1FAFF}]/gu,'').trim()}catch{return k}};
+  const titleOf=k=>{try{return (CLASSES[k]?.name||k).replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu,'').trim()}catch{return k}};
   const AUGS={
     assault:[
       {id:'assault_arsenal',icon:'⚙️',name:'Arsenal de um Perito',tag:'BALÍSTICA',color:'#75d8ff',stats:{speed:.10,fireRate:.10},main:'Tiros principais se dividem em 2 disparos menores ao atingir um alvo. Os disparos menores causam dano reduzido e não se dividem de novo.',flags:{splitShot:true}},
@@ -37041,7 +37041,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   const PENDING_RECOVERY_KEY_859='chrono_pending_recovery_key_859';
   const AUTH_STORAGE_KEY_8510='sb-favrbugywlamhitktocy-auth-token';
   const AUTH_STORAGE_PREFIX_8511='sb-favrbugywlamhitktocy-';
-  const TRACKED_TYPES_855=['chaser','swarmer','strafer','tank','bomber','sentinel','vomiter','pukeling'];
+  const TRACKED_TYPES_855=['chaser','strafer','tank','bomber','swarmer','sentinel','leaper','medic','sniperDrone','splitter','vomiter','pukeling','dreadbus','nullHerald','riftTick','glassMantis','phaseLurker','glassCrawler','manaParasite','stoneColossus','voidWeaver','chronoMosquito','ruinCharger','towerEater','riftHerald','coreDevourer','archon','titan','oracle','eclipseInquisitor','glacialBeast','lostEmperor','doomPortal800','doomTotem800','doomMini_butcher800','doomMini_priest800','doomMini_harvester800','doomMini_carrier800','infernalImp810','infernalBoss810'];
   const PROGRESSION_SPECIAL_KEYS_8518=['riftTickKills','assaultTurboBossKills','roninParryContacts','infernalBossKills','doomEmperorKills'];
   const runtime={client:null,session:null,state:null,profile:null,account:null,status:'idle',message:'',lastError:null,bootPromise:null,sdkPromise:null,authSubscription:null};
   const listeners=new Set();
@@ -37137,10 +37137,16 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     return out;
   }
   function classifyEnemyType8510(enemy){
-    const raw=String(enemy?.type||enemy?.bossType||enemy?.kind||'').trim();
-    if(TRACKED_TYPES_855.includes(raw))return raw;
-    if(raw==='pukelings'||raw==='pukeling')return'pukeling';
-    return'';
+    if(!enemy)return'';
+    if(enemy.infernalBoss810===true||enemy.type==='infernalBoss810')return'infernalBoss810';
+    if(enemy.infernalImp810===true||enemy.type==='infernalImp810')return'infernalImp810';
+    if(enemy.doomMini800===true&&enemy.doomMiniKind800)return`doomMini_${enemy.doomMiniKind800}800`;
+    if(enemy.doomPortal800===true||enemy.type==='doomPortal800')return'doomPortal800';
+    if(enemy.doomTotem800===true||enemy.type==='doomTotem800')return'doomTotem800';
+    const raw=String(enemy?.bossType||enemy?.type||enemy?.kind||'').trim();
+    const aliases={pukelings:'pukeling',medicDrone:'medic',oracleBloom:'oracle'};
+    const canonical=aliases[raw]||raw;
+    return TRACKED_TYPES_855.includes(canonical)?canonical:'';
   }
   const storageSetBefore854=Storage.prototype.setItem;
   const storageRemoveBefore858=Storage.prototype.removeItem;
@@ -40927,7 +40933,18 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
       if(!rotation?.offers||!rotation?.rotationId||!next||Date.now()>=next){toast('LOJA SINCRONIZANDO','Aguarde a rotação oficial chegar do servidor.','#ffd166');return null}
       toast('ROTAÇÃO ATUALIZADA','Confira as ofertas antes de comprar.','#ffd166');return null;
     }
-    return action('infernal_purchase',{section,index,rotationId:String(rotation.rotationId)},button,'COMPRA CONCLUÍDA');
+    const result=await action('infernal_purchase',{section,index,rotationId:String(rotation.rotationId)},button,section==='chests'?null:'COMPRA CONCLUÍDA');
+    if(section==='chests'&&result){
+      const opened=window.__ChronoMauroBestiary870?.openInfernalChest?.(result,infernalOrigin);
+      if(!opened){
+        // Fallback seguro: exibe apenas o resultado oficial, sem sortear ou
+        // conceder qualquer recompensa adicional no navegador.
+        const reward=result?.reward||{};
+        toast('BAÚ ABERTO',reward.title||'Recompensa recebida.','#ffd166');
+        originalInfernalOpen?.(infernalOrigin);
+      }
+    }
+    return result;
   }
   function selectedHero(){const active=document.querySelector('[data-awakhero489].active')?.dataset?.awakhero489;return HEROES.has(active)?active:HEROES.has(api.selectedHero)?api.selectedHero:'assault'}
   window.addEventListener('click',event=>{const hero=event.target?.closest?.('[data-awakhero489]')?.dataset?.awakhero489;if(HEROES.has(hero))api.selectedHero=hero},true);
@@ -41798,6 +41815,205 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   window.__ChronoServerWait863=Object.freeze({show,hide,clear});
   window.addEventListener('pagehide',clear);
   console.log('Chrono Shards 8.6.3 — espera do servidor sem retorno ao menu inicial');
+})();
+</script>
+
+
+<style id="chronoMauroBestiary870Style">
+  .serverAuthority870{display:inline-flex;align-items:center;gap:7px;margin:8px 0 0;padding:6px 10px;border:1px solid rgba(134,255,176,.42);border-radius:999px;background:rgba(15,64,51,.28);color:#a9ffd0;font:800 10px Orbitron,Arial;letter-spacing:.8px}
+  .serverAuthority870::before{content:"";width:7px;height:7px;border-radius:50%;background:#86ffb0;box-shadow:0 0 12px #86ffb0}
+  .chronoMBToast870{position:fixed;left:50%;top:11%;z-index:2147482900;transform:translateX(-50%);max-width:min(90vw,570px);padding:13px 18px;border:1px solid var(--c,#86ffb0);border-radius:14px;background:rgba(5,9,20,.97);box-shadow:0 18px 55px rgba(0,0,0,.58),0 0 28px color-mix(in srgb,var(--c,#86ffb0) 24%,transparent);color:#fff;text-align:center;pointer-events:none;font-family:Orbitron,Arial}
+  .chronoMBToast870 b{display:block;font-size:12px}.chronoMBToast870 span{display:block;margin-top:6px;color:#c1cede;font:600 11px/1.45 Arial}
+  .serverChest870 .serverChestOrigin870{display:inline-block;margin:2px auto 12px;padding:5px 10px;border:1px solid rgba(255,209,102,.4);border-radius:999px;color:#ffd166;font:800 9px Orbitron;letter-spacing:1px}
+  .serverChest870 .serverChestProof870{margin:9px 0 0;color:#8fa2ba;font:600 10px Arial}
+  .serverChest870 .rewardGrid56{margin-top:18px}
+  .serverChest870 .serverChestRoll870{min-height:18px;color:#dbe8ff;font:800 11px Orbitron;letter-spacing:.7px;text-align:center}
+  .bestiary846 .serverAuthority870{margin-left:auto}
+  .serverInfernalChest870{width:min(95vw,920px)!important;overflow:hidden!important;text-align:center!important;background:radial-gradient(circle at 50% 5%,rgba(255,48,79,.19),transparent 34%),linear-gradient(150deg,#170106,#030102 72%)!important}
+  .serverInfernalChest870 .serverInfernalProof870{display:inline-flex;align-items:center;gap:7px;margin:3px auto 13px;padding:6px 11px;border:1px solid rgba(255,209,102,.36);border-radius:999px;color:#ffd166;font:900 9px Orbitron;letter-spacing:.9px}
+  .serverInfernalChest870 .serverInfernalSeal870{display:flex;justify-content:center;gap:13px;margin:11px 0 15px}.serverInfernalChest870 .serverInfernalSeal870 i{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;font-style:normal;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.14);filter:saturate(.55);transition:.35s}.serverInfernalChest870 .serverInfernalSeal870 i.broken{color:#ffd166;border-color:#ffd166;box-shadow:0 0 18px rgba(255,209,102,.28);filter:none;transform:scale(.92)}
+  .serverInfernalChest870 .serverInfernalAction870{margin-top:8px}.serverInfernalChest870 .serverInfernalReward870{max-width:620px;margin:20px auto;padding:22px;border-radius:22px;background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--c) 24%,transparent),transparent 46%),rgba(0,0,0,.42);border:1px solid color-mix(in srgb,var(--c) 48%,rgba(255,255,255,.11));box-shadow:0 0 35px color-mix(in srgb,var(--c) 18%,transparent)}
+  .serverInfernalChest870 .serverInfernalReward870 i{display:block;font-style:normal;font-size:60px}.serverInfernalChest870 .serverInfernalReward870 h2{margin:8px 0;color:var(--c);font:900 clamp(20px,4vw,34px) Orbitron}.serverInfernalChest870 .serverInfernalReward870 p{color:#d9c5ca}
+  .serverInfernalChest870 .serverInfernalReward870 .infernalPrimary830{display:block;margin:16px auto 0}
+  @media(max-width:620px){.chronoMBToast870{top:8%;padding:11px 14px}.serverAuthority870{font-size:8px}.serverChest870 .rewardGrid56{grid-template-columns:1fr!important}.serverInfernalChest870 .chestRarityPath832{grid-template-columns:repeat(3,1fr)}.serverInfernalChest870 .serverInfernalSeal870 i{width:36px;height:36px}}
+</style>
+<script id="chronoMauroBestiary870">
+/* Chrono Shards 8.7.0 — Loja do Mauro e Bestiário autoritativos. */
+(()=>{
+  if(window.__ChronoMauroBestiary870)return;
+  const META='chrono_v4_meta',SHOP=META+'_mauro_shop_clean_702',SKINS=META+'_skins_clean_702',AUGS=META+'_chrono_augments_620',POWERS=META+'_power_catalog_unlocks_544';
+  const BESTIARY_IDS=["chaser","strafer","tank","bomber","swarmer","sentinel","leaper","medic","sniperDrone","splitter","vomiter","pukeling","dreadbus","nullHerald","riftTick","glassMantis","phaseLurker","glassCrawler","manaParasite","stoneColossus","voidWeaver","chronoMosquito","ruinCharger","towerEater","riftHerald","coreDevourer","archon","titan","oracle","eclipseInquisitor","glacialBeast","lostEmperor","doomPortal800","doomTotem800","doomMini_butcher800","doomMini_priest800","doomMini_harvester800","doomMini_carrier800","infernalImp810","infernalBoss810"];
+  const BESTIARY_SET=new Set(BESTIARY_IDS);
+  const clone=v=>{try{return JSON.parse(JSON.stringify(v))}catch{return v}};
+  const num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+  const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const read=(key,fallback={})=>{try{return JSON.parse(localStorage.getItem(key)||'null')??clone(fallback)}catch{return clone(fallback)}};
+  const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}catch{}};
+  const wait=window.__ChronoServerWait863;
+  const legacyMauroOpen=window.openMauroShop702||window.openLojaDoMauro702||window.openMetaRelicMenu||window.openRelics461;
+  const legacyBestiaryOpen=window.openBestiary846||window.__openBestiaryLatest||window.openBestiary461;
+  const legacySkinOpen=window.openSkinMenu702;
+  let payload=null,loadPromise=null,busy=false,lastToast=null,lastLoad=0,refreshTimer=0;
+
+  function toast(title,detail='',color='#86ffb0'){
+    lastToast?.remove?.();const box=document.createElement('div');lastToast=box;box.className='chronoMBToast870';box.style.setProperty('--c',color);box.innerHTML=`<b>${esc(title)}</b>${detail?`<span>${esc(detail)}</span>`:''}`;document.body.appendChild(box);setTimeout(()=>{if(lastToast===box)lastToast=null;box.remove()},3200);
+  }
+  function cloud(){return window.ChronoCloud}
+  function authenticated(){try{return !!cloud()?.isAuthenticated?.()}catch{return false}}
+  function officialShop(){return payload?.mauro?.shop||null}
+  function applyPayload(next){
+    if(!next||typeof next!=='object')return false;payload=clone(next);lastLoad=Date.now();
+    const wallet=next.wallet||{},mauro=next.mauro||{},inventory=mauro.inventory||{},entries=next.bestiary?.entries||{};
+    const meta=read(META,{});meta.stats=meta.stats&&typeof meta.stats==='object'?meta.stats:{};meta.stats.typeKills=meta.stats.typeKills&&typeof meta.stats.typeKills==='object'?meta.stats.typeKills:{};
+    meta.bestiaryKills=meta.bestiaryKills&&typeof meta.bestiaryKills==='object'?meta.bestiaryKills:{};meta.bestiaryClaimed461={};
+    meta.relicShards=Math.max(0,Math.trunc(num(wallet.relics)));meta.chronoFragments=Math.max(0,Math.trunc(num(wallet.chrono)));meta.awakeningKeys=Math.max(0,Math.trunc(num(wallet.keys)));
+    for(const id of BESTIARY_IDS){const e=entries[id]||{};const k=Math.max(0,Math.trunc(num(e.kills))),live=!!window.game?.running,value=live?Math.max(k,Math.max(0,Math.trunc(num(meta.bestiaryKills[id]))),Math.max(0,Math.trunc(num(meta.stats.typeKills[id])))):k;meta.bestiaryKills[id]=value;meta.stats.typeKills[id]=value;if(e.claimed===true)meta.bestiaryClaimed461[id]=true}
+    const officialRelics=new Set(Array.isArray(inventory.permanentRelics)?inventory.permanentRelics:[]),catalogIds=new Set((Array.isArray(mauro.permanent)?mauro.permanent:[]).map(x=>x?.id).filter(Boolean));
+    const oldRelics=Array.isArray(meta.unlockedRelics)?meta.unlockedRelics:[];meta.unlockedRelics=Array.from(new Set(oldRelics.filter(id=>!catalogIds.has(id)).concat([...officialRelics])));
+    write(META,meta);try{if(window.game)game.meta=Object.assign(game.meta||{},meta);window.updateHUD?.()}catch{}
+
+    const skinState={unlocked:{},selected:{}};for(const id of Array.isArray(inventory.skins)?inventory.skins:[])skinState.unlocked[id]=true;for(const [k,id] of Object.entries(inventory.selectedSkins||{})){if(skinState.unlocked[id])skinState.selected[k]=id}
+    for(const id of Object.keys(skinState.unlocked)){if(id.endsWith('_default')){const k=id.slice(0,-8);if(!skinState.selected[k])skinState.selected[k]=id}}
+    write(SKINS,skinState);
+    const augState=read(AUGS,{});augState.unlocked={};for(const id of Array.isArray(inventory.augments)?inventory.augments:[])augState.unlocked[id]=true;augState.selected=augState.selected&&typeof augState.selected==='object'?augState.selected:{};for(const [k,id] of Object.entries(augState.selected))if(!augState.unlocked[id])delete augState.selected[k];write(AUGS,augState);
+    const powerState={};for(const id of Array.isArray(inventory.catalogPowerups)?inventory.catalogPowerups:[])powerState[id]=true;write(POWERS,powerState);
+    if(mauro.shop){const shop=clone(mauro.shop),realNext=num(shop.next);shop._serverNext870=realNext;shop.next=realNext+4000;shop.priceBoost703=true;shop.serverAuthority870=true;shop.chestSlot714=String(shop.created||'')+'_'+String(shop.next||'');write(SHOP,shop)}
+    try{window.dispatchEvent(new CustomEvent('chrono-mauro-bestiary-applied',{detail:{payload:clone(next)}}))}catch{}
+    return true;
+  }
+  async function load({visible=false,force=false,message='Sincronizando Loja do Mauro e Bestiário...'}={}){
+    if(!force&&payload&&Date.now()-lastLoad<12000)return payload;
+    if(loadPromise){
+      const joinedToken=visible?wait?.show?.(message):0;
+      try{return await loadPromise}finally{if(joinedToken)wait?.hide?.(joinedToken)}
+    }
+    const token=visible?wait?.show?.(message):0;
+    loadPromise=(async()=>{const result=await cloud().invoke('load_mauro_bestiary',{});const next=result?.payload||result;applyPayload(next);return payload})().finally(()=>{if(token)wait?.hide?.(token);loadPromise=null});
+    return loadPromise;
+  }
+  function decorateMauro(){
+    const card=document.getElementById('overlayCard');if(!card?.classList.contains('mauroShop702'))return;
+    if(!card.querySelector('.serverAuthority870')){const intro=card.querySelector('.shopIntro702');intro?.insertAdjacentHTML('afterend','<span class="serverAuthority870">ECONOMIA VALIDADA PELO SERVIDOR</span>')}
+    updateTimer();
+  }
+  function decorateBestiary(){
+    const card=document.getElementById('overlayCard');if(card?.dataset?.bestiary846!=='1')return;
+    const brand=card.querySelector('.b846Brand');if(brand&&!brand.querySelector('.serverAuthority870'))brand.insertAdjacentHTML('beforeend','<span class="serverAuthority870">REGISTROS OFICIAIS</span>');
+  }
+  function scheduleMauroDecorate(){for(const delay of [0,35,120,360,850])setTimeout(decorateMauro,delay)}
+  function scheduleBestiaryDecorate(){for(const delay of [0,35,120,360,850])setTimeout(decorateBestiary,delay)}
+  function updateTimer(){const timer=document.getElementById('mauroTimer702'),next=num(officialShop()?.next);if(!timer||!next)return;const t=Math.max(0,Math.ceil((next-Date.now())/1000)),m=Math.floor(t/60),sec=String(t%60).padStart(2,'0');timer.textContent=`Atualiza em ${m}:${sec}`}
+  async function openMauro(){
+    try{await load({visible:true,force:true,message:'Mauro está consultando a vitrine oficial...'});legacyMauroOpen?.();scheduleMauroDecorate()}catch(error){toast('LOJA DO MAURO INDISPONÍVEL',error?.message||'Não foi possível consultar o servidor.','#ff8fa3')}
+  }
+  function currentBestiaryTab(){const active=document.querySelector('.b846Tab.active');return active?.dataset?.b846Tab||'general'}
+  async function openBestiary(tab='general'){
+    try{await load({visible:true,force:true,message:'Carregando registros oficiais do Bestiário...'});legacyBestiaryOpen?.(tab);scheduleBestiaryDecorate()}catch(error){toast('BESTIÁRIO INDISPONÍVEL',error?.message||'Não foi possível consultar o servidor.','#ff8fa3')}
+  }
+  async function invokeAction(action,body,message){
+    if(busy)return null;busy=true;const token=wait?.show?.(message);
+    try{const result=await cloud().invoke(action,body);if(result?.payload)applyPayload(result.payload);return result}finally{busy=false;if(token)wait?.hide?.(token)}
+  }
+  async function buyRotation(slot){
+    const shop=officialShop();if(!shop)return openMauro();
+    try{
+      const result=await invokeAction('mauro_purchase',{requestId:crypto.randomUUID(),section:'rotation',rotationId:shop.rotationId,slot},'Mauro está confirmando a compra no servidor...');if(!result)return;
+      if(result.chest&&typeof result.chest==='object'){openServerChest(result.chest,result.purchase?.item||{});return}
+      legacyMauroOpen?.();scheduleMauroDecorate();toast('COMPRA CONCLUÍDA',result.purchase?.item?.title||'Item adicionado à conta.','#ffd166');
+    }catch(error){toast('COMPRA RECUSADA',error?.message||'Não foi possível concluir a compra.','#ff8fa3');setTimeout(()=>{legacyMauroOpen?.();scheduleMauroDecorate()},20)}
+  }
+  async function buyPermanent(itemId){
+    try{const result=await invokeAction('mauro_purchase',{requestId:crypto.randomUUID(),section:'permanent',itemKey:itemId},'Registrando o power-up permanente...');if(!result)return;legacyMauroOpen?.();scheduleMauroDecorate();toast('POWER-UP PERMANENTE ADQUIRIDO',result.purchase?.title||'Item registrado na conta.','#ffb8ff')}catch(error){toast('COMPRA RECUSADA',error?.message||'Não foi possível concluir a compra.','#ff8fa3')}
+  }
+  async function claimBestiary(id){
+    try{const result=await invokeAction('bestiary_claim',{requestId:crypto.randomUUID(),entryId:id},'Revelando o registro no servidor...');if(!result)return;const tab=currentBestiaryTab();legacyBestiaryOpen?.(tab);scheduleBestiaryDecorate();toast('REGISTRO REVELADO',`+${Math.max(0,Math.trunc(num(result.reward)))} Relíquias recebidas.`,'#86ffb0')}catch(error){toast('REGISTRO NÃO LIBERADO',error?.message||'O requisito ainda não foi confirmado.','#ff8fa3')}
+  }
+  async function equipSkin(){
+    const canvas=document.querySelector('.skinPage702 canvas.skinCanvas702[data-skin-id]'),skinId=canvas?.dataset?.skinId,classKey=canvas?.dataset?.classKey;if(!skinId||!classKey)return;
+    try{const result=await invokeAction('mauro_equip_skin',{requestId:crypto.randomUUID(),characterKey:classKey,skinId},'Equipando a skin na conta...');if(!result)return;const btn=document.getElementById('skinSelect702');if(btn){btn.textContent='Selecionada';btn.disabled=false}toast('SKIN SELECIONADA','A escolha foi salva no servidor.','#75d8ff')}catch(error){toast('SKIN NÃO EQUIPADA',error?.message||'Não foi possível salvar a seleção.','#ff8fa3')}
+  }
+
+  const R={common:{name:'COMUM',color:'#86a2bd',emoji:'📦'},rare:{name:'RARO',color:'#4ce0b3',emoji:'🟩'},epic:{name:'ÉPICO',color:'#b77cff',emoji:'🟪'},legendary:{name:'LENDÁRIO',color:'#ffd166',emoji:'🟨'},mythic:{name:'MÍTICO',color:'#ff304f',emoji:'🟥'}};
+  function openServerChest(chest,item){
+    const overlay=document.getElementById('overlay'),card=document.getElementById('overlayCard');if(!overlay||!card)return;overlay.classList.remove('hidden');
+    const rolls=Array.isArray(chest.rolls)?chest.rolls:[],rewards=Array.isArray(chest.rewards)?chest.rewards:[];let current=chest.startRarity||'common',step=0,busyRoll=false,ready=false;
+    function render(lastUp=false){const r=R[current]||R.common;card.className=`card chestStage56 mauroChest714 serverChest870 rarity-${current}`;card.dataset.serverChest870='1';card.style.setProperty('--c',r.color);const done=ready||step>=rolls.length||current==='mythic';card.innerHTML=`<h1>${esc(item.title||'BAÚ CHRONAL')}</h1><span class="serverChestOrigin870">RITUAL DE ABERTURA</span><div class="chestRarity56">${r.emoji} ${r.name}</div><div class="chestBox56 rarity-${current} ${lastUp?'rarityUp56 chestRarityJump731':''}" id="serverChestBox870" role="button" tabindex="0"><div class="chestLid56"></div><div class="chestBase56"></div><div class="chestLock56"></div></div><div class="serverChestRoll870">${done?'CLIQUE PARA ABRIR':step===0?'CLIQUE PARA INICIAR O RITUAL':lastUp?'RARIDADE AUMENTADA — CLIQUE NOVAMENTE':'RARIDADE MANTIDA — CLIQUE NOVAMENTE'}</div><div class="orbs56">${rolls.map((_,i)=>`<i class="orb56 ${i<step?'used':''}"></i>`).join('')}</div><p class="muted">Complete o ritual para revelar as três recompensas do baú.</p>`;
+      const box=card.querySelector('#serverChestBox870');const click=()=>{if(busyRoll)return;if(done){box.classList.add('open');busyRoll=true;setTimeout(showRewards,620);return}const roll=rolls[step++];busyRoll=true;box.classList.add('shake');const label=card.querySelector('.serverChestRoll870');if(label)label.textContent='TECENDO A RARIDADE...';setTimeout(()=>{const before=current;current=roll?.after||current;ready=step>=rolls.length||current==='mythic';busyRoll=false;render(before!==current)},650)};box.onpointerdown=e=>{if(Number.isFinite(e.button)&&e.button!==0)return;e.preventDefault();click()};box.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();click()}};
+    }
+    function showRewards(){const r=R[chest.finalRarity]||R[current]||R.common;card.className=`card chestStage56 chestRewardStage56 mauroChest714 serverChest870 rarity-${chest.finalRarity||current}`;card.style.setProperty('--c',r.color);card.innerHTML=`<h1>BAÚ CHRONAL ABERTO</h1><p class="shopSub56">Raridade final: <span class="chestRarity56">${r.emoji} ${r.name}</span></p><div class="rewardGrid56">${rewards.map(x=>`<div class="rewardCard56 ${x?.rare?'rareLoot620':''}" style="--c:${esc(x?.color||r.color)}"><i>${esc(x?.icon||'✨')}</i><strong>${esc(x?.title||'Recompensa')}</strong><span>${esc(x?.desc||'Adicionada à conta.')}</span></div>`).join('')}</div><button class="main-btn continue56" id="serverChestBack870">Voltar para Loja do Mauro</button>`;card.querySelector('#serverChestBack870').onclick=()=>{legacyMauroOpen?.();scheduleMauroDecorate()}}
+    render();
+  }
+
+  const INFERNAL_R=[
+    {id:'profane',name:'PROFANO',color:'#72e389'},
+    {id:'cursed',name:'AMALDIÇOADO',color:'#b98cff'},
+    {id:'infernal',name:'INFERNAL',color:'#ff7043'},
+    {id:'abyssal',name:'ABISSAL',color:'#c13cff'},
+    {id:'apocalyptic',name:'APOCALÍPTICO',color:'#ffd166'},
+    {id:'heretic',name:'HERÉTICO',color:'#ffffff'}
+  ];
+  const INFERNAL_CHESTS={
+    profane:{id:'profane',name:'Cofre Profano',icon:'⛓',start:0,color:'#72e389',accent:'#163b27'},
+    blood:{id:'blood',name:'Caixa de Sangue',icon:'🩸',start:1,color:'#ff3f55',accent:'#48000b'},
+    throne:{id:'throne',name:'Relicário do Trono',icon:'♛',start:2,color:'#ffd166',accent:'#2b0710'}
+  };
+  function infernalVisual870(ch,rar,raised=false){const r=INFERNAL_R[Math.max(0,Math.min(5,rar))];return `<div class="infernalChestMini830 ${ch.id} rarity-${r.id} ${raised?'up830':''}" style="--c:${r.color};--a:${ch.accent};--base:${ch.color}"><i class="chestHorn830 l"></i><i class="chestHorn830 r"></i><div class="chestLid830"></div><div class="chestBody830"><b>${ch.icon}</b></div><div class="chestRune830">𖤐</div></div>`}
+  function infernalRewardDescription870(reward){const kind=String(reward?.kind||'');if(kind==='relics')return'Relíquias adicionadas ao saldo oficial.';if(kind==='chrono')return'Fragmentos Chrono adicionados à conta.';if(kind==='tears')return'Lágrimas dos Pecadores adicionadas à conta.';if(kind==='skin')return'Skin demoníaca adicionada à coleção.';if(kind==='augment')return'Ampliação Chronal adicionada ao inventário.';if(kind==='infernalRelic')return'Relíquia Infernal permanente desbloqueada.';return'Recompensa adicionada à conta.'}
+  function infernalRewardIcon870(reward){return({relics:'🜂',chrono:'✦',tears:'💧',skin:'👕',augment:'⚙️',infernalRelic:'𖤐',doomBuff:'☠'})[String(reward?.kind||'')]||'✨'}
+  function openServerInfernalChest(result,origin='portal'){
+    const overlay=document.getElementById('overlay'),card=document.getElementById('overlayCard'),reward=result?.reward||{},ch=INFERNAL_CHESTS[String(result?.itemId||'')]||INFERNAL_CHESTS.profane;if(!overlay||!card)return false;
+    overlay.classList.remove('hidden');const start=Math.max(0,Math.min(5,ch.start)),final=Math.max(start,Math.min(5,Math.trunc(num(reward.rarity,start))));let seals=0,current=start,locked=false;
+    const path=[1,2,3].map(i=>Math.max(current,Math.min(final,start+Math.ceil((final-start)*i/3))));
+    function rarityPath(){return INFERNAL_R.map((x,i)=>`<span class="chestRarityStep832 ${i<current?'passed':i===current?'current':''}" style="--step:${x.color}">${x.name}</span>`).join('')}
+    function render(raised=false){const r=INFERNAL_R[current];card.className=`card infernalChestPage830 serverInfernalChest870 chest-${ch.id}`;card.style.setProperty('--c',r.color);card.innerHTML=`<div class="chestRitual830 chestRitual832" style="--c:${r.color};--ch:${ch.color}"><div class="chestRitualSigil830">𖤐</div><header class="chestHeader832"><small>RITUAL DO BAÚ DEMONÍACO</small><h1>${esc(ch.name)}</h1><p>Rompa os três selos para revelar a recompensa.</p></header><span class="serverInfernalProof870">TRÊS SELOS — UMA RECOMPENSA</span><div class="chestStatusGrid832"><div class="chestStatusCard832 rarity832"><small>RARIDADE</small><b>${r.name}</b><em>Nível ${current+1} de 6</em></div><div class="chestStatusCard832"><small>SELOS ROMPIDOS</small><b>${seals} / 3</b><em>${seals<3?`${3-seals} restantes`:'Ritual concluído'}</em></div></div><div class="chestBigWrap830 ${raised?'rise832':''}">${infernalVisual870(ch,current,raised)}</div><div class="chestRarityPath832">${rarityPath()}</div><div class="serverInfernalSeal870">${[0,1,2].map(i=>`<i class="${i<seals?'broken':''}">${i<seals?'✦':'🔒'}</i>`).join('')}</div><div class="chestMessage832" id="serverInfernalMsg870">${seals<3?'O próximo selo aguarda.':'O baú está pronto para abrir.'}</div><button class="infernalPrimary830 serverInfernalAction870" id="serverInfernalAction870">${seals<3?'ROMPER SELO':'ABRIR O BAÚ'}</button></div>`;
+      card.querySelector('#serverInfernalAction870').onclick=advance;
+    }
+    function advance(){if(locked)return;locked=true;const button=card.querySelector('#serverInfernalAction870'),msg=card.querySelector('#serverInfernalMsg870');if(button)button.disabled=true;if(msg){msg.textContent=seals<3?'O INFERNO ESTÁ JULGANDO O SELO...':'ABRINDO O BAÚ...';msg.classList.add('weaving')}
+      if(seals<3){const before=current;current=path[seals]??current;seals++;setTimeout(()=>{locked=false;render(current>before)},720);return}
+      card.classList.add('opening832');setTimeout(showReward,950);
+    }
+    function showReward(){const r=INFERNAL_R[final]||INFERNAL_R[current];card.className=`card infernalChestPage830 serverInfernalChest870 chest-${ch.id}`;card.style.setProperty('--c',r.color);card.innerHTML=`<div class="chestResultBurst830 serverInfernalReward870" style="--c:${r.color}"><div class="resultSigil830">𖤐</div><small>BAÚ ABERTO • ${r.name}</small><h1>${esc(ch.name)}</h1><i>${infernalRewardIcon870(reward)}</i><h2>${esc(reward.title||'Recompensa confirmada')}</h2><p>${esc(infernalRewardDescription870(reward))}</p><button class="infernalPrimary830" id="serverInfernalBack870">Voltar à Loja Infernal</button></div>`;card.querySelector('#serverInfernalBack870').onclick=()=>{window.openInfernalShop830?.(origin)};
+    }
+    render();return true;
+  }
+
+  function stop(event){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation()}
+  window.addEventListener('click',event=>{
+    const target=event.target;if(!(target instanceof Element))return;
+    const shopOpen=target.closest('#hubRelics461,#classRelics461,[data-open-relics]');if(shopOpen){stop(event);openMauro();return}
+    const bestOpen=target.closest('#hubBestiarySafe540,#hubBestiaryRift537,#hubBestiary461,#hubBestiary37,#hubBestiary40,#hubBestiaryG,[data-open-bestiary]');if(bestOpen){stop(event);openBestiary('general');return}
+    const buy=target.closest('[data-buy702]');if(buy){stop(event);buyRotation(Number(buy.dataset.buy702));return}
+    const perm=target.closest('[data-perm702]');if(perm){stop(event);buyPermanent(String(perm.dataset.perm702||''));return}
+    const skin=target.closest('#skinSelect702');if(skin&&!skin.disabled){stop(event);equipSkin();return}
+    const card=target.closest('[data-b846-id]');if(card){
+      const id=String(card.dataset.b846Id||''),entry=payload?.bestiary?.entries?.[id];
+      if(!payload){stop(event);openBestiary(currentBestiaryTab());return}
+      if(BESTIARY_SET.has(id)&&entry?.ready===true&&entry?.claimed!==true){stop(event);claimBestiary(id);return}
+      // Se a interface local já alcançou a meta, mas o checkpoint oficial ainda não chegou,
+      // impede o resgate legado de conceder recompensa pelo navegador. A seleção normal
+      // dos demais registros continua funcionando.
+      if(BESTIARY_SET.has(id)&&entry?.claimed!==true&&entry?.ready!==true){
+        const localMeta=read(META,{});
+        const localKills=Math.max(num(localMeta?.bestiaryKills?.[id],0),num(localMeta?.stats?.typeKills?.[id],0));
+        const required=Math.max(1,num(entry?.required,Infinity));
+        if(localKills>=required){
+          stop(event);
+          toast('PROGRESSO AINDA NÃO CONFIRMADO','Aguarde o próximo checkpoint do servidor antes de resgatar.', '#ffd166');
+          load({force:true}).then(()=>openBestiary(currentBestiaryTab())).catch(()=>{});
+          return;
+        }
+      }
+    }
+  },true);
+
+  function bindRoutes(){for(const name of ['openMauroShop702','openLojaDoMauro702','openMetaRelicMenu','openRelics461']){window[name]=openMauro;try{globalThis[name]=openMauro}catch{}}for(const name of ['openBestiary846','openBestiary531','openBestiary530','openBestiary529','openBestiary464','openBestiary461','openBestiary455','openBestiary452','openBestiaryO','openBestiaryP','openBestiaryI','openBestiaryG','openBestiary37','openBestiary38']){window[name]=openBestiary;try{globalThis[name]=openBestiary}catch{}}window.__openBestiaryLatest=()=>openBestiary('general')}
+  function tick(){bindRoutes();decorateMauro();decorateBestiary();updateTimer();const next=num(officialShop()?.next);if(next&&Date.now()>=next&&!refreshTimer&&document.getElementById('overlayCard')?.classList.contains('mauroShop702')){refreshTimer=setTimeout(()=>{refreshTimer=0;openMauro()},80)}}
+  try{window.__ChronoUIScheduler820?.interval?.(tick,700)}catch{setInterval(tick,700)}
+  window.addEventListener('chrono-account-ready',()=>setTimeout(()=>{if(authenticated())load({force:true}).catch(()=>{})},350));
+  window.addEventListener('chrono-run-settled',()=>setTimeout(()=>load({force:true}).catch(()=>{}),500));
+  bindRoutes();if(authenticated())setTimeout(()=>load({force:true}).catch(()=>{}),500);
+  window.__ChronoMauroBestiary870=Object.freeze({load,apply:applyPayload,openMauro,openBestiary,openInfernalChest:openServerInfernalChest,get payload(){return clone(payload)}});
+  console.log('Chrono Shards 8.7.0 — Loja do Mauro e Bestiário autoritativos carregados');
 })();
 </script>
 
