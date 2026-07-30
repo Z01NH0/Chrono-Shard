@@ -11390,7 +11390,7 @@ function killKey37(e){
   function classCost(k){return CLASS_COSTS[k]||0;}
   function classColor(k){const c=CLASSES[k]||{};return c.tagColor||c.color||'#61dafb';}
   function classCurrency(k){return k==='moonSlayer'?`${CHRONO} Fragmentos Chrono`:'🜂 Relíquias';}
-  function metric(key,m=meta()){const s=m.stats||{};if(key.includes('.')){const [a,b]=key.split('.');if(a==='typeKills')return Number((s.typeKills||{})[b]||m.bestiaryKills?.[b]||0);if(a==='classKills')return Number((s.classKills||{})[b]||0);if(a==='classBossKills')return Number((s.classBossKills||{})[b]||0);if(a==='classSkillUses')return Number((s.classSkillUses||{})[b]||0);}return Number(s[key]||0);}
+  function metric(key,m=meta()){const s=m.stats||{};if(key.includes('.')){const [a,b]=key.split('.');if(a==='typeKills')return Number((s.typeKills||{})[b]||0);if(a==='classKills')return Number((s.classKills||{})[b]||0);if(a==='classBossKills')return Number((s.classBossKills||{})[b]||0);if(a==='classSkillUses')return Number((s.classSkillUses||{})[b]||0);}return Number(s[key]||0);}
   function lowGfx(){return !!meta().gfxLow;}
 
   function ensureStyle(){if(document.getElementById('duneUi461Style'))return;const st=document.createElement('style');st.id='duneUi461Style';st.textContent=`
@@ -12364,7 +12364,7 @@ function killKey37(e){
   };
   function readMeta465(){let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{m={}};m.relicShards=Number(m.relicShards||0);m.stats=m.stats||{};m.stats.typeKills=m.stats.typeKills||{};m.stats.classKills=m.stats.classKills||{};m.stats.classBossKills=m.stats.classBossKills||{};m.stats.classSkillUses=m.stats.classSkillUses||{};m.stats.chronoFragmentsCollected=Number(m.stats.chronoFragmentsCollected||0);m.bestiaryKills=m.bestiaryKills||{};m.missions465=m.missions465||{slots:[],v:465};return m;}
   function saveMeta465(m){localStorage.setItem(SAVE,JSON.stringify(m||{}));try{if(game)game.meta=m}catch{}return m;}
-  function metric465(key,m=readMeta465()){const s=m.stats||{};if(String(key).includes('.')){const [a,b]=String(key).split('.');if(a==='typeKills')return Number((s.typeKills||{})[b]||m.bestiaryKills?.[b]||0);if(a==='classKills')return Number((s.classKills||{})[b]||0);if(a==='classBossKills')return Number((s.classBossKills||{})[b]||0);if(a==='classSkillUses')return Number((s.classSkillUses||{})[b]||0);}return Number(s[key]||0);}
+  function metric465(key,m=readMeta465()){const s=m.stats||{};if(String(key).includes('.')){const [a,b]=String(key).split('.');if(a==='typeKills')return Number((s.typeKills||{})[b]||0);if(a==='classKills')return Number((s.classKills||{})[b]||0);if(a==='classBossKills')return Number((s.classBossKills||{})[b]||0);if(a==='classSkillUses')return Number((s.classSkillUses||{})[b]||0);}return Number(s[key]||0);}
   function addRelics465(n){const m=readMeta465();m.relicShards=Number(m.relicShards||0)+Number(n||0);saveMeta465(m);return m.relicShards;}
   function toast465(text,color='#ffd166'){try{if(game?.player&&typeof addFloatingText==='function')addFloatingText(game.player.x,game.player.y-44,text,color,18);}catch{}const d=document.createElement('div');d.textContent=text;d.style.cssText=`position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:99999;padding:12px 18px;border-radius:999px;background:rgba(5,8,18,.94);border:1px solid ${color};box-shadow:0 0 28px ${color}55;color:#fff;font:900 12px Orbitron,Arial;letter-spacing:.12em;pointer-events:none`;document.body.appendChild(d);setTimeout(()=>d.remove(),1100);}
   function activeMissionIds465(ms,ignoreIndex=-1){return (ms.slots||[]).map((s,i)=>i===ignoreIndex?null:(s&&s.missionId&&(!s.cooldownUntil||s.cooldownUntil<=Date.now())?s.missionId:null)).filter(Boolean);}
@@ -12557,7 +12557,7 @@ function killKey37(e){
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   const read=()=>{let m={};try{m=JSON.parse(localStorage.getItem(SAVE)||'{}')||{}}catch{m={}};m.relicShards=Number(m.relicShards||0);m.chronoFragments=Number(m.chronoFragments||0);m.stats=m.stats||{};m.stats.typeKills=m.stats.typeKills||{};m.stats.classKills=m.stats.classKills||{};m.stats.classBossKills=m.stats.classBossKills||{};m.stats.classSkillUses=m.stats.classSkillUses||{};m.bestiaryKills=m.bestiaryKills||{};m.bestiaryClaimed461=m.bestiaryClaimed461||{};m.unlockedRelics=Array.isArray(m.unlockedRelics)?m.unlockedRelics:[];m.awakeningKeys=Number(m.awakeningKeys||0);m.awakenings463=m.awakenings463||{completed:{},active:null};m.awakenings463.completed=m.awakenings463.completed||{};m.awakeningUltimates=m.awakeningUltimates||{};m.awakeningRewards480=m.awakeningRewards480||{};return m;};
   const write=m=>{localStorage.setItem(SAVE,JSON.stringify(m));if(game)game.meta=m;return m;};
-  const metric=(key,m=read())=>{const s=m.stats||{};if(String(key).includes('.')){const [a,b]=String(key).split('.');if(a==='typeKills')return Number((s.typeKills||{})[b]||m.bestiaryKills?.[b]||0);if(a==='classKills')return Number((s.classKills||{})[b]||0);if(a==='classBossKills')return Number((s.classBossKills||{})[b]||0);if(a==='classSkillUses')return Number((s.classSkillUses||{})[b]||0);}return Number(s[key]||0)};
+  const metric=(key,m=read())=>{const s=m.stats||{};if(String(key).includes('.')){const [a,b]=String(key).split('.');if(a==='typeKills')return Number((s.typeKills||{})[b]||0);if(a==='classKills')return Number((s.classKills||{})[b]||0);if(a==='classBossKills')return Number((s.classBossKills||{})[b]||0);if(a==='classSkillUses')return Number((s.classSkillUses||{})[b]||0);}return Number(s[key]||0)};
   function unlocks(){try{const a=JSON.parse(localStorage.getItem(CLASS_UNLOCK_KEY)||'[]');return Array.isArray(a)?a:[]}catch{return []}}
   function saveUnlocks(a){localStorage.setItem(CLASS_UNLOCK_KEY,JSON.stringify(Array.from(new Set((a||[]).filter(Boolean).filter(k=>!['assault','sniper'].includes(k))))));}
   function unlockedClass(k){if(['assault','sniper'].includes(k))return true;const m=read();if(k==='moonSlayer')return !!m.unlockedMoonSlayer;if(k==='shadowChild'){try{if(!(JSON.parse(localStorage.getItem(SECRET_KEY)||'{}')||{}).lostEmperorDefeated)return false}catch{return false}}return unlocks().includes(k);}
@@ -35256,9 +35256,14 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     return `<div class="chestFx832 throne832 ${phase}"><b class="crown832">♛</b><i class="soul832 r1">♙</i><i class="soul832 r2">♙</i><i class="soul832 r3">♙</i><i class="soul832 r4">♙</i></div>`;
   }
   function rarityPath832(rar){return RARITIES.map((x,i)=>`<span class="chestRarityStep832 ${i<rar?'passed':i===rar?'current':''}" style="--step:${x.color}">${x.name}</span>`).join('')}
-  function openInfernalChest830(ch){
+  function openInfernalChest830(ch,serverResult=null,serverOrigin=null){
     const token=++chestSession830;
     let seals=0,rar=C(ch.start,0,5),busy=false,opened=false,riseState=null;
+    const serverMode=!!(serverResult&&typeof serverResult==='object'&&serverResult.reward&&typeof serverResult.reward==='object');
+    const serverStart=rar;
+    const serverFinal=serverMode?C(N(serverResult.reward.rarity,serverStart),serverStart,5):serverStart;
+    const serverPath=serverMode?[1,2,3].map(i=>Math.max(serverStart,Math.min(serverFinal,serverStart+Math.ceil((serverFinal-serverStart)*i/3)))):[];
+    const returnOrigin=serverOrigin||shopOrigin830;
     function setActionReady832(delay=0){
       if(delay<=0){busy=false;const b=document.getElementById('chestAction830');if(b)b.disabled=false;return}
       busy=true;afterFrames830(delay,token,()=>{busy=false;const b=document.getElementById('chestAction830');if(b&&!opened)b.disabled=false});
@@ -35278,7 +35283,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
           if(msgEl){msgEl.textContent='O INFERNO ESTÁ JULGANDO O SELO...';msgEl.classList.add('weaving')}
           c.classList.add('weaving830');
           afterFrames830(700,token,()=>{
-            rar=chestAdvance830(ch,rar);seals++;
+            rar=serverMode?(serverPath[seals]??rar):chestAdvance830(ch,rar);seals++;
             riseState={raised:rar>before,from:before,to:rar};
             const text=rar>before?`${RARITIES[before].name} ascendeu para ${RARITIES[rar].name}.`:'O selo foi quebrado, mas a raridade resistiu.';
             render(text,rar>before?980:460);
@@ -35290,7 +35295,7 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
           if(wrap)wrap.insertAdjacentHTML('beforeend',chestFxHTML832(ch,'open'));
           if(msgEl){msgEl.classList.remove('weaving');msgEl.innerHTML='<span class="chestOpeningLabel832">O BAÚ ESTÁ REVELANDO O QUE DEVOROU...</span>'}
           if(ritual)ritual.querySelectorAll('button').forEach(b=>b.disabled=true);
-          afterFrames830(1250,token,()=>finishChest830(ch,rar));
+          afterFrames830(1250,token,()=>serverMode?finishServerChest830(ch,rar,serverResult,returnOrigin):finishChest830(ch,rar));
         }
       };
       setActionReady832(lockMs);
@@ -35317,6 +35322,14 @@ function removeTickets(){try{$('#powerTickets544')?.remove();$('#powerTickets548
     return {title,desc,icon,color};
   }
   function finishChest830(ch,rar){const s=shop();rar=forcePity830(ch,rar,s);const rw=rewardChest830(rar),r=RARITIES[rar],w=wallet();const c=cardEl();if(!c)return;c.className=`card infernalChestResult830 rarity-${r.id}`;c.innerHTML=`<div class="chestResultBurst830" style="--c:${r.color}"><div class="resultSigil830">𖤐</div><small>BAÚ ABERTO • ${r.name}</small><h1>${esc(rw.title)}</h1><div class="rewardIcon830">${rw.icon}</div><p>${esc(rw.desc)}</p><div class="resultWallet830">💧 ${fmt(w.tears)} &nbsp; 🜂 ${fmt(w.relics)} &nbsp; ✦ ${fmt(w.chrono)}</div><button class="infernalPrimary830" id="chestResultBack830">Voltar à Loja</button></div>`;document.getElementById('chestResultBack830').onclick=()=>openInfernalShop830(shopOrigin830)}
+  function serverRewardIcon830(reward){return({relics:'🜂',chrono:'✦',tears:'💧',skin:'👕',augment:'⚙️',infernalRelic:'𖤐',doomBuff:'☠'})[String(reward?.kind||'')]||'✨'}
+  function serverRewardDesc830(reward){const kind=String(reward?.kind||'');if(kind==='relics')return'Relíquias adicionadas ao saldo oficial.';if(kind==='chrono')return'Fragmentos Chrono adicionados à conta.';if(kind==='tears')return'Lágrimas dos Pecadores adicionadas à conta.';if(kind==='skin')return'Skin demoníaca adicionada à coleção.';if(kind==='augment')return'Ampliação Chronal adicionada ao inventário.';if(kind==='infernalRelic')return'Relíquia Infernal permanente desbloqueada.';if(kind==='doomBuff')return'Pacto preparado para a próxima invasão DOOM.';return'Recompensa confirmada e adicionada à conta.'}
+  function finishServerChest830(ch,rar,result,origin){
+    const reward=result?.reward||{},final=C(N(reward.rarity,rar),C(ch.start,0,5),5),r=RARITIES[final],w=wallet(),c=cardEl();if(!c)return;
+    c.className=`card infernalChestResult830 rarity-${r.id}`;
+    c.innerHTML=`<div class="chestResultBurst830" style="--c:${r.color}"><div class="resultSigil830">𖤐</div><small>BAÚ ABERTO • ${r.name}</small><h1>${esc(reward.title||ch.name||'Recompensa confirmada')}</h1><div class="rewardIcon830">${serverRewardIcon830(reward)}</div><p>${esc(serverRewardDesc830(reward))}</p><div class="resultWallet830">💧 ${fmt(w.tears)} &nbsp; 🜂 ${fmt(w.relics)} &nbsp; ✦ ${fmt(w.chrono)}</div><button class="infernalPrimary830" id="chestResultBack830">Voltar à Loja Infernal</button></div>`;
+    document.getElementById('chestResultBack830').onclick=()=>openInfernalShop830(origin||shopOrigin830);
+  }
 
   function drawDemonPreview830(cv,s){
     const x=cv.getContext('2d'),w=cv.width,h=cv.height,t=performance.now()/1000;x.clearRect(0,0,w,h);x.save();x.translate(w/2,h/2+12);const pulse=1+Math.sin(t*3+s.rank)*.035;x.scale(pulse,pulse);const col=s.color,acc=s.accent;x.globalCompositeOperation='lighter';x.globalAlpha=.18+.04*s.rank;x.fillStyle=col;x.beginPath();x.arc(0,0,55+s.rank*7,0,Math.PI*2);x.fill();x.globalAlpha=.9;x.shadowBlur=18+s.rank*5;x.shadowColor=col;x.fillStyle=acc;x.strokeStyle=col;x.lineWidth=3;x.beginPath();x.moveTo(0,-43);x.lineTo(25,-18);x.lineTo(23,28);x.lineTo(0,43);x.lineTo(-23,28);x.lineTo(-25,-18);x.closePath();x.fill();x.stroke();x.beginPath();x.moveTo(-15,-33);x.quadraticCurveTo(-48,-60,-42,-9);x.moveTo(15,-33);x.quadraticCurveTo(48,-60,42,-9);x.stroke();x.fillStyle=col;x.beginPath();x.arc(-8,-12,4,0,Math.PI*2);x.arc(8,-12,4,0,Math.PI*2);x.fill();if(s.rank>=2){x.globalAlpha=.65;x.strokeStyle=col;for(let i=0;i<4+s.rank;i++){const a=t*(.7+s.rank*.1)+i*Math.PI*2/(4+s.rank);x.beginPath();x.arc(0,0,50+s.rank*5,a,a+.6);x.stroke()}}if(s.rank>=3){x.font='28px serif';x.textAlign='center';x.fillStyle=col;x.globalAlpha=.75;x.fillText('𖤐',0,10)}x.restore();
@@ -41844,16 +41857,10 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   .serverChest870 .rewardGrid56{margin-top:18px}
   .serverChest870 .serverChestRoll870{min-height:18px;color:#dbe8ff;font:800 11px Orbitron;letter-spacing:.7px;text-align:center}
   .bestiary846 .serverAuthority870{margin-left:auto}
-  .serverInfernalChest870{width:min(95vw,920px)!important;overflow:hidden!important;text-align:center!important;background:radial-gradient(circle at 50% 5%,rgba(255,48,79,.19),transparent 34%),linear-gradient(150deg,#170106,#030102 72%)!important}
-  .serverInfernalChest870 .serverInfernalProof870{display:inline-flex;align-items:center;gap:7px;margin:3px auto 13px;padding:6px 11px;border:1px solid rgba(255,209,102,.36);border-radius:999px;color:#ffd166;font:900 9px Orbitron;letter-spacing:.9px}
-  .serverInfernalChest870 .serverInfernalSeal870{display:flex;justify-content:center;gap:13px;margin:11px 0 15px}.serverInfernalChest870 .serverInfernalSeal870 i{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;font-style:normal;background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.14);filter:saturate(.55);transition:.35s}.serverInfernalChest870 .serverInfernalSeal870 i.broken{color:#ffd166;border-color:#ffd166;box-shadow:0 0 18px rgba(255,209,102,.28);filter:none;transform:scale(.92)}
-  .serverInfernalChest870 .serverInfernalAction870{margin-top:8px}.serverInfernalChest870 .serverInfernalReward870{max-width:620px;margin:20px auto;padding:22px;border-radius:22px;background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--c) 24%,transparent),transparent 46%),rgba(0,0,0,.42);border:1px solid color-mix(in srgb,var(--c) 48%,rgba(255,255,255,.11));box-shadow:0 0 35px color-mix(in srgb,var(--c) 18%,transparent)}
-  .serverInfernalChest870 .serverInfernalReward870 i{display:block;font-style:normal;font-size:60px}.serverInfernalChest870 .serverInfernalReward870 h2{margin:8px 0;color:var(--c);font:900 clamp(20px,4vw,34px) Orbitron}.serverInfernalChest870 .serverInfernalReward870 p{color:#d9c5ca}
-  .serverInfernalChest870 .serverInfernalReward870 .infernalPrimary830{display:block;margin:16px auto 0}
-  @media(max-width:620px){.chronoMBToast870{top:8%;padding:11px 14px}.serverAuthority870{font-size:8px}.serverChest870 .rewardGrid56{grid-template-columns:1fr!important}.serverInfernalChest870 .chestRarityPath832{grid-template-columns:repeat(3,1fr)}.serverInfernalChest870 .serverInfernalSeal870 i{width:36px;height:36px}}
+  @media(max-width:620px){.chronoMBToast870{top:8%;padding:11px 14px}.serverAuthority870{font-size:8px}.serverChest870 .rewardGrid56{grid-template-columns:1fr!important}}
 </style>
 <script id="chronoMauroBestiary870">
-/* Chrono Shards 8.7.1 — Loja do Mauro e Bestiário autoritativos estabilizados. */
+/* Chrono Shards 8.7.2 — baús, Missões e integração Mauro/Bestiário corrigidos. */
 (()=>{
   window.__ChronoMauroServerAuthority870=true;
   if(window.__ChronoMauroBestiary870)return;
@@ -41883,10 +41890,12 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     const wallet=next.wallet||{};if(!Number.isFinite(Number(wallet.relics))||!Number.isFinite(Number(wallet.chrono))||!Number.isFinite(Number(wallet.keys)))return false;
     payload=clone(next);lastLoad=Date.now();
     const mauro=next.mauro||{},inventory=mauro.inventory||{},entries=next.bestiary?.entries||{};
-    const meta=read(META,{});meta.stats=meta.stats&&typeof meta.stats==='object'?meta.stats:{};meta.stats.typeKills=meta.stats.typeKills&&typeof meta.stats.typeKills==='object'?meta.stats.typeKills:{};
+    const meta=read(META,{});meta.stats=meta.stats&&typeof meta.stats==='object'?meta.stats:{};
+    // Bestiário e Missões compartilham nomes de inimigos, mas não compartilham autoridade.
+    // Nunca reescrevemos stats.typeKills aqui: esse campo pertence às Missões oficiais.
     meta.bestiaryKills=meta.bestiaryKills&&typeof meta.bestiaryKills==='object'?meta.bestiaryKills:{};meta.bestiaryClaimed461={};
     meta.relicShards=Math.max(0,Math.trunc(num(wallet.relics)));meta.chronoFragments=Math.max(0,Math.trunc(num(wallet.chrono)));meta.awakeningKeys=Math.max(0,Math.trunc(num(wallet.keys)));
-    for(const id of BESTIARY_IDS){const e=entries[id]||{};const k=Math.max(0,Math.trunc(num(e.kills))),live=!!window.game?.running,value=live?Math.max(k,Math.max(0,Math.trunc(num(meta.bestiaryKills[id]))),Math.max(0,Math.trunc(num(meta.stats.typeKills[id])))):k;meta.bestiaryKills[id]=value;meta.stats.typeKills[id]=value;if(e.claimed===true)meta.bestiaryClaimed461[id]=true}
+    for(const id of BESTIARY_IDS){const e=entries[id]||{};const k=Math.max(0,Math.trunc(num(e.kills))),live=!!window.game?.running,value=live?Math.max(k,Math.max(0,Math.trunc(num(meta.bestiaryKills[id])))):k;meta.bestiaryKills[id]=value;if(e.claimed===true)meta.bestiaryClaimed461[id]=true}
     const officialRelics=new Set(Array.isArray(inventory.permanentRelics)?inventory.permanentRelics:[]),catalogIds=new Set((Array.isArray(mauro.permanent)?mauro.permanent:[]).map(x=>x?.id).filter(Boolean));
     const oldRelics=Array.isArray(meta.unlockedRelics)?meta.unlockedRelics:[];meta.unlockedRelics=Array.from(new Set(oldRelics.filter(id=>!catalogIds.has(id)).concat([...officialRelics])));
     write(META,meta);try{if(window.game)game.meta=Object.assign(game.meta||{},meta);window.updateHUD?.()}catch{}
@@ -41972,37 +41981,15 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     render();
   }
 
-  const INFERNAL_R=[
-    {id:'profane',name:'PROFANO',color:'#72e389'},
-    {id:'cursed',name:'AMALDIÇOADO',color:'#b98cff'},
-    {id:'infernal',name:'INFERNAL',color:'#ff7043'},
-    {id:'abyssal',name:'ABISSAL',color:'#c13cff'},
-    {id:'apocalyptic',name:'APOCALÍPTICO',color:'#ffd166'},
-    {id:'heretic',name:'HERÉTICO',color:'#ffffff'}
-  ];
-  const INFERNAL_CHESTS={
-    profane:{id:'profane',name:'Cofre Profano',icon:'⛓',start:0,color:'#72e389',accent:'#163b27'},
-    blood:{id:'blood',name:'Caixa de Sangue',icon:'🩸',start:1,color:'#ff3f55',accent:'#48000b'},
-    throne:{id:'throne',name:'Relicário do Trono',icon:'♛',start:2,color:'#ffd166',accent:'#2b0710'}
-  };
-  function infernalVisual870(ch,rar,raised=false){const r=INFERNAL_R[Math.max(0,Math.min(5,rar))];return `<div class="infernalChestMini830 ${ch.id} rarity-${r.id} ${raised?'up830':''}" style="--c:${r.color};--a:${ch.accent};--base:${ch.color}"><i class="chestHorn830 l"></i><i class="chestHorn830 r"></i><div class="chestLid830"></div><div class="chestBody830"><b>${ch.icon}</b></div><div class="chestRune830">𖤐</div></div>`}
-  function infernalRewardDescription870(reward){const kind=String(reward?.kind||'');if(kind==='relics')return'Relíquias adicionadas ao saldo oficial.';if(kind==='chrono')return'Fragmentos Chrono adicionados à conta.';if(kind==='tears')return'Lágrimas dos Pecadores adicionadas à conta.';if(kind==='skin')return'Skin demoníaca adicionada à coleção.';if(kind==='augment')return'Ampliação Chronal adicionada ao inventário.';if(kind==='infernalRelic')return'Relíquia Infernal permanente desbloqueada.';return'Recompensa adicionada à conta.'}
-  function infernalRewardIcon870(reward){return({relics:'🜂',chrono:'✦',tears:'💧',skin:'👕',augment:'⚙️',infernalRelic:'𖤐',doomBuff:'☠'})[String(reward?.kind||'')]||'✨'}
   function openServerInfernalChest(result,origin='portal'){
-    const overlay=document.getElementById('overlay'),card=document.getElementById('overlayCard'),reward=result?.reward||{},ch=INFERNAL_CHESTS[String(result?.itemId||'')]||INFERNAL_CHESTS.profane;if(!overlay||!card)return false;
-    overlay.classList.remove('hidden');const start=Math.max(0,Math.min(5,ch.start)),final=Math.max(start,Math.min(5,Math.trunc(num(reward.rarity,start))));let seals=0,current=start,locked=false;
-    const path=[1,2,3].map(i=>Math.max(current,Math.min(final,start+Math.ceil((final-start)*i/3))));
-    function rarityPath(){return INFERNAL_R.map((x,i)=>`<span class="chestRarityStep832 ${i<current?'passed':i===current?'current':''}" style="--step:${x.color}">${x.name}</span>`).join('')}
-    function render(raised=false){const r=INFERNAL_R[current];card.className=`card infernalChestPage830 serverInfernalChest870 chest-${ch.id}`;card.style.setProperty('--c',r.color);card.innerHTML=`<div class="chestRitual830 chestRitual832" style="--c:${r.color};--ch:${ch.color}"><div class="chestRitualSigil830">𖤐</div><header class="chestHeader832"><small>RITUAL DO BAÚ DEMONÍACO</small><h1>${esc(ch.name)}</h1><p>Rompa os três selos para revelar a recompensa.</p></header><span class="serverInfernalProof870">TRÊS SELOS — UMA RECOMPENSA</span><div class="chestStatusGrid832"><div class="chestStatusCard832 rarity832"><small>RARIDADE</small><b>${r.name}</b><em>Nível ${current+1} de 6</em></div><div class="chestStatusCard832"><small>SELOS ROMPIDOS</small><b>${seals} / 3</b><em>${seals<3?`${3-seals} restantes`:'Ritual concluído'}</em></div></div><div class="chestBigWrap830 ${raised?'rise832':''}">${infernalVisual870(ch,current,raised)}</div><div class="chestRarityPath832">${rarityPath()}</div><div class="serverInfernalSeal870">${[0,1,2].map(i=>`<i class="${i<seals?'broken':''}">${i<seals?'✦':'🔒'}</i>`).join('')}</div><div class="chestMessage832" id="serverInfernalMsg870">${seals<3?'O próximo selo aguarda.':'O baú está pronto para abrir.'}</div><button class="infernalPrimary830 serverInfernalAction870" id="serverInfernalAction870">${seals<3?'ROMPER SELO':'ABRIR O BAÚ'}</button></div>`;
-      card.querySelector('#serverInfernalAction870').onclick=advance;
-    }
-    function advance(){if(locked)return;locked=true;const button=card.querySelector('#serverInfernalAction870'),msg=card.querySelector('#serverInfernalMsg870');if(button)button.disabled=true;if(msg){msg.textContent=seals<3?'O INFERNO ESTÁ JULGANDO O SELO...':'ABRINDO O BAÚ...';msg.classList.add('weaving')}
-      if(seals<3){const before=current;current=path[seals]??current;seals++;setTimeout(()=>{locked=false;render(current>before)},720);return}
-      card.classList.add('opening832');setTimeout(showReward,950);
-    }
-    function showReward(){const r=INFERNAL_R[final]||INFERNAL_R[current];card.className=`card infernalChestPage830 serverInfernalChest870 chest-${ch.id}`;card.style.setProperty('--c',r.color);card.innerHTML=`<div class="chestResultBurst830 serverInfernalReward870" style="--c:${r.color}"><div class="resultSigil830">𖤐</div><small>BAÚ ABERTO • ${r.name}</small><h1>${esc(ch.name)}</h1><i>${infernalRewardIcon870(reward)}</i><h2>${esc(reward.title||'Recompensa confirmada')}</h2><p>${esc(infernalRewardDescription870(reward))}</p><button class="infernalPrimary830" id="serverInfernalBack870">Voltar à Loja Infernal</button></div>`;card.querySelector('#serverInfernalBack870').onclick=()=>{window.openInfernalShop830?.(origin)};
-    }
-    render();return true;
+    const itemId=String(result?.itemId||''),catalog=window.__InfernalShop830?.catalogs?.chests;
+    const chest=Array.isArray(catalog)?catalog.find(entry=>String(entry?.id||'')===itemId):null;
+    const opener=window.__InfernalShop830?.openChest;
+    if(!chest||typeof opener!=='function')return false;
+    // Usa integralmente o ritual 8.3.2 já existente no jogo. A recompensa e a
+    // raridade vêm prontas do Supabase; o HTML apenas as revela, sem novo sorteio.
+    opener(chest,result,origin);
+    return true;
   }
 
   function stop(event){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation()}
@@ -42041,7 +42028,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   window.addEventListener('chrono-run-settled',()=>setTimeout(()=>load({force:true}).catch(()=>{}),500));
   bindRoutes();if(authenticated())setTimeout(()=>load({force:true}).catch(()=>{}),500);
   window.__ChronoMauroBestiary870=Object.freeze({authorityActive:()=>true,load,apply:applyPayload,openMauro,openBestiary,buyRotation,buyPermanent,equipSkin,claimBestiary,openInfernalChest:openServerInfernalChest,get payload(){return clone(payload)}});
-  console.log('Chrono Shards 8.7.1 — Loja do Mauro e Bestiário autoritativos estabilizados');
+  console.log('Chrono Shards 8.7.2 — baús corrigidos, Missões isoladas do Bestiário e integração revisada');
 })();
 </script>
 
