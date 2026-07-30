@@ -67,7 +67,7 @@ const INITIAL_PROTECTED_META_KEYS = [
   'stellarEmperorRevealed', 'stellarEmperorSecretUnlocked',
 ]
 const MAX_SNAPSHOT_BYTES = 512_000
-const ALLOWED_TYPE_KILL_KEYS = [
+const MISSION_TYPE_KILL_KEYS = [
   'chaser',
   'swarmer',
   'strafer',
@@ -77,7 +77,49 @@ const ALLOWED_TYPE_KILL_KEYS = [
   'vomiter',
   'pukeling',
 ] as const
-const ALLOWED_TYPE_KILLS = new Set<string>(ALLOWED_TYPE_KILL_KEYS)
+const BESTIARY_TYPE_KILL_KEYS = [
+  'chaser',
+  'strafer',
+  'tank',
+  'bomber',
+  'swarmer',
+  'sentinel',
+  'leaper',
+  'medic',
+  'sniperDrone',
+  'splitter',
+  'vomiter',
+  'pukeling',
+  'dreadbus',
+  'nullHerald',
+  'riftTick',
+  'glassMantis',
+  'phaseLurker',
+  'glassCrawler',
+  'manaParasite',
+  'stoneColossus',
+  'voidWeaver',
+  'chronoMosquito',
+  'ruinCharger',
+  'towerEater',
+  'riftHerald',
+  'coreDevourer',
+  'archon',
+  'titan',
+  'oracle',
+  'eclipseInquisitor',
+  'glacialBeast',
+  'lostEmperor',
+  'doomPortal800',
+  'doomTotem800',
+  'doomMini_butcher800',
+  'doomMini_priest800',
+  'doomMini_harvester800',
+  'doomMini_carrier800',
+  'infernalImp810',
+  'infernalBoss810',
+] as const
+const BESTIARY_TYPE_KILLS = new Set<string>(BESTIARY_TYPE_KILL_KEYS)
 const AWAKENING_CHARACTER_KEYS = new Set([
   'assault', 'sniper', 'reaper', 'alchemist', 'colonel',
   'engineer', 'archer', 'bomber', 'mage', 'ronin',
@@ -137,15 +179,19 @@ function cleanArray(value: unknown, maxLength = 500): unknown[] {
   return Array.isArray(value) ? value.slice(0, maxLength) : []
 }
 
-function sanitizeTypeKills(value: unknown, totalKills: number): Record<string, number> {
+function sanitizeTypeKills(
+  value: unknown,
+  totalKills: number,
+  allowedKeys: readonly string[] = MISSION_TYPE_KILL_KEYS,
+): Record<string, number> {
   const source = asObject(value)
   const out: Record<string, number> = {}
   let remaining = Math.max(0, totalKills)
 
-  // Alguns patches antigos do cliente incrementavam o mesmo abate mais de uma vez.
-  // O servidor aplica um orçamento global para que a soma por tipo nunca ultrapasse
-  // o total real informado para a partida.
-  for (const key of ALLOWED_TYPE_KILL_KEYS) {
+  // O orçamento global impede que aliases ou wrappers antigos contem o mesmo
+  // inimigo duas vezes. Missões recebem apenas o catálogo legado; o Bestiário
+  // recebe os 40 tipos oficiais em uma RPC separada.
+  for (const key of allowedKeys) {
     if (remaining <= 0) break
     const amount = Math.min(finiteInt(source[key], 0, totalKills), remaining)
     if (amount > 0) {
@@ -679,7 +725,8 @@ async function bootstrapPlayerState(
   const needsProtection = !current.wallet_authority_enabled || !current.character_purchases_enabled ||
     !current.run_results_enabled || !current.mission_rewards_enabled || !current.code_rewards_enabled
   const needsProgressionProtection = !current.awakening_authority_enabled ||
-    !current.infernal_authority_enabled || !current.doom_authority_enabled
+    !current.infernal_authority_enabled || !current.doom_authority_enabled ||
+    !current.mauro_authority_enabled || !current.bestiary_authority_enabled
 
   if (!needsInitialization && !needsProtection && !needsProgressionProtection) return current as Record<string, unknown>
 
@@ -692,6 +739,9 @@ async function bootstrapPlayerState(
     awakening_authority_enabled: true,
     infernal_authority_enabled: true,
     doom_authority_enabled: true,
+    mauro_authority_enabled: true,
+    bestiary_authority_enabled: true,
+    collection_authority_enabled_at: current.collection_authority_enabled_at ?? new Date().toISOString(),
     progression_authority_enabled_at: current.progression_authority_enabled_at ?? new Date().toISOString(),
     wallet_authority_enabled_at: current.wallet_authority_enabled_at ?? new Date().toISOString(),
     revision: Number(current.revision ?? 0) + 1,
@@ -754,7 +804,7 @@ export default {
         return json({
           ok: true,
           service: 'chrono-shards-cloud',
-          phase: 'awakening-hydration-hardening-8.5.19',
+          phase: 'mauro-bestiary-authority-8.7.0',
         })
       }
 
@@ -1359,6 +1409,71 @@ export default {
         return json({ progression: data })
       }
 
+      if (action === 'load_mauro_bestiary') {
+        const { data, error } = await admin.rpc('chrono_mauro_bestiary_payload_server', {
+          p_user_id: userId,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json({ payload: data })
+      }
+
+      if (action === 'mauro_purchase') {
+        const requestId = String(body.requestId ?? '')
+        const section = String(body.section ?? '')
+        const rotationId = String(body.rotationId ?? '').trim()
+        const slot = finiteInt(body.slot, -1, 7)
+        const itemKey = String(body.itemKey ?? '').trim().slice(0, 160)
+        if (!isUuid(requestId) || !['rotation', 'permanent'].includes(section)) {
+          return json({ error: 'Compra da Loja do Mauro inválida' }, 400)
+        }
+        if (section === 'rotation' && (slot < 0 || rotationId.length < 10 || rotationId.length > 120)) {
+          return json({ error: 'Oferta da Loja do Mauro inválida' }, 400)
+        }
+        if (section === 'permanent' && !itemKey) return json({ error: 'Power-up permanente inválido' }, 400)
+        const { data, error } = await admin.rpc('chrono_mauro_purchase_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+          p_section: section,
+          p_rotation_id: rotationId,
+          p_slot: slot,
+          p_item_key: itemKey,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
+      if (action === 'mauro_equip_skin') {
+        const requestId = String(body.requestId ?? '')
+        const characterKey = String(body.characterKey ?? '').slice(0, 80)
+        const skinId = String(body.skinId ?? '').slice(0, 160)
+        if (!isUuid(requestId) || !ALLOWED_CHARACTER_KEYS.has(characterKey) || !skinId) {
+          return json({ error: 'Seleção de skin inválida' }, 400)
+        }
+        const { data, error } = await admin.rpc('chrono_mauro_equip_skin_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+          p_character_key: characterKey,
+          p_skin_id: skinId,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
+      if (action === 'bestiary_claim') {
+        const requestId = String(body.requestId ?? '')
+        const entryId = String(body.entryId ?? '').slice(0, 120)
+        if (!isUuid(requestId) || !BESTIARY_TYPE_KILLS.has(entryId)) {
+          return json({ error: 'Registro do Bestiário inválido' }, 400)
+        }
+        const { data, error } = await admin.rpc('chrono_bestiary_claim_server', {
+          p_user_id: userId,
+          p_request_id: requestId,
+          p_entry_id: entryId,
+        })
+        if (error) throwProgressionRpcError(error)
+        return json(data)
+      }
+
       if (action === 'awakening_start_stage') {
         const requestId = String(body.requestId ?? '')
         const characterKey = String(body.characterKey ?? '')
@@ -1625,7 +1740,8 @@ export default {
         const score = finiteInt(body.score, 0, 2_000_000_000)
         const wave = finiteInt(body.wave, 0, 1_000_000)
         const skillsUsed = finiteInt(body.skillsUsed, 0, 10_000_000)
-        const typeKills = sanitizeTypeKills(body.typeKills, totalKills)
+        const missionTypeKills = sanitizeTypeKills(body.typeKills, totalKills, MISSION_TYPE_KILL_KEYS)
+        const bestiaryTypeKills = sanitizeTypeKills(body.typeKills, totalKills, BESTIARY_TYPE_KILL_KEYS)
         const specialMetrics = sanitizeSpecialMetrics(body.specialMetrics, totalKills, bossKills)
         const doomSummary = sanitizeDoomSummary(body.doomSummary, totalKills, bossKills)
 
@@ -1638,7 +1754,7 @@ export default {
           p_boss_kills: bossKills,
           p_elite_kills: eliteKills,
           p_skills_used: skillsUsed,
-          p_type_kills: typeKills,
+          p_type_kills: missionTypeKills,
         })
         if (error) {
           const message = String(error.message ?? '').toLowerCase()
@@ -1654,7 +1770,7 @@ export default {
         const officialKills = finiteInt(officialCheckpoint.kills, 0, 10_000_000)
         const officialBossKills = finiteInt(officialCheckpoint.bossKills, 0, officialKills)
         const officialEliteKills = finiteInt(officialCheckpoint.eliteKills, 0, officialKills)
-        const officialTypeKills = sanitizeTypeKills(officialCheckpoint.typeKills, officialKills)
+        const officialTypeKills = sanitizeTypeKills(officialCheckpoint.typeKills, officialKills, MISSION_TYPE_KILL_KEYS)
         const { data: progression, error: progressionError } = await admin.rpc('chrono_apply_progression_run_server', {
           p_user_id: userId,
           p_session_id: sessionId,
@@ -1670,31 +1786,56 @@ export default {
           p_final: false,
         })
         if (progressionError) throw progressionError
-        return json({ ...asObject(data), progression: asObject(progression).progression ?? progression })
+        const { data: bestiary, error: bestiaryError } = await admin.rpc('chrono_apply_bestiary_run_server', {
+          p_user_id: userId,
+          p_session_id: sessionId,
+          p_total_kills: totalKills,
+          p_type_kills: bestiaryTypeKills,
+          p_final: false,
+        })
+        if (bestiaryError) throw bestiaryError
+        return json({ ...asObject(data), progression: asObject(progression).progression ?? progression, bestiary })
       }
 
       if (action === 'finish_run') {
         const requestId = String(body.requestId ?? '')
         const sessionId = String(body.sessionId ?? '')
-        if (!requestId || !sessionId) {
-          return json({ error: 'Identificadores ausentes' }, 400)
+        if (!isUuid(requestId) || !isUuid(sessionId)) {
+          return json({ error: 'Identificadores ausentes ou inválidos' }, 400)
         }
 
         const totalKills = finiteInt(body.kills, 0, 10_000_000)
-        const { data, error } = await admin.rpc('chrono_finish_run_server', {
+        const bossKills = finiteInt(body.bossKills, 0, totalKills)
+        const eliteKills = finiteInt(body.eliteKills, 0, totalKills)
+        const score = finiteInt(body.score, 0, 2_000_000_000)
+        const wave = finiteInt(body.wave, 0, 1_000_000)
+        const skillsUsed = finiteInt(body.skillsUsed, 0, 10_000_000)
+        const missionTypeKills = sanitizeTypeKills(body.typeKills, totalKills, MISSION_TYPE_KILL_KEYS)
+        const bestiaryTypeKills = sanitizeTypeKills(body.typeKills, totalKills, BESTIARY_TYPE_KILL_KEYS)
+        const specialMetrics = sanitizeSpecialMetrics(body.specialMetrics, totalKills, bossKills)
+        const doomSummary = sanitizeDoomSummary(body.doomSummary, totalKills, bossKills)
+
+        // A migration 017 reúne a liquidação, a progressão e o Bestiário em uma
+        // única transação. Uma falha em qualquer parte desfaz toda a operação,
+        // permitindo repetir o mesmo requestId sem perder progresso nem duplicar
+        // recompensa.
+        const { data, error } = await admin.rpc('chrono_finish_run_bundle_server', {
           p_user_id: userId,
           p_request_id: requestId,
           p_session_id: sessionId,
-          p_score: finiteInt(body.score, 0, 2_000_000_000),
-          p_wave: finiteInt(body.wave, 0, 1_000_000),
+          p_score: score,
+          p_wave: wave,
           p_kills: totalKills,
           p_gold: finiteInt(body.gold, 0, 1_000_000_000),
           p_relic_delta: finiteInt(body.relicDelta, 0, 1_000_000),
           p_chrono_delta: finiteInt(body.chronoDelta, 0, 100_000),
-          p_boss_kills: finiteInt(body.bossKills, 0, totalKills),
-          p_elite_kills: finiteInt(body.eliteKills, 0, totalKills),
-          p_skills_used: finiteInt(body.skillsUsed, 0, 10_000_000),
-          p_type_kills: sanitizeTypeKills(body.typeKills, totalKills),
+          p_boss_kills: bossKills,
+          p_elite_kills: eliteKills,
+          p_skills_used: skillsUsed,
+          p_mission_type_kills: missionTypeKills,
+          p_bestiary_type_kills: bestiaryTypeKills,
+          p_special_metrics: specialMetrics,
+          p_doom_summary: doomSummary,
         })
 
         if (error) {
@@ -1718,6 +1859,10 @@ export default {
             'contagem de inimigo inválida',
             'contagem por tipo maior',
             'soma de inimigos maior',
+            'resumo do bestiário inválido',
+            'tipo de bestiário inválido',
+            'contagem de bestiário inválida',
+            'soma do bestiário maior',
             'save online não inicializado',
             'recompensas de partida ainda não estão ativadas',
           ]
@@ -1748,43 +1893,8 @@ export default {
           }
           throw error
         }
-        const bossKills = finiteInt(body.bossKills, 0, totalKills)
-        const eliteKills = finiteInt(body.eliteKills, 0, totalKills)
-        const score = finiteInt(body.score, 0, 2_000_000_000)
-        const wave = finiteInt(body.wave, 0, 1_000_000)
-        const skillsUsed = finiteInt(body.skillsUsed, 0, 10_000_000)
-        const typeKills = sanitizeTypeKills(body.typeKills, totalKills)
-        const specialMetrics = sanitizeSpecialMetrics(body.specialMetrics, totalKills, bossKills)
-        const doomSummary = sanitizeDoomSummary(body.doomSummary, totalKills, bossKills)
-        const { data: progression, error: progressionError } = await admin.rpc('chrono_apply_progression_run_server', {
-          p_user_id: userId,
-          p_session_id: sessionId,
-          p_score: score,
-          p_wave: wave,
-          p_kills: totalKills,
-          p_boss_kills: bossKills,
-          p_elite_kills: eliteKills,
-          p_skills_used: skillsUsed,
-          p_type_kills: typeKills,
-          p_special_metrics: specialMetrics,
-          p_doom_summary: doomSummary,
-          p_final: true,
-        })
-        if (progressionError) throw progressionError
 
-        const { data: freshState, error: freshStateError } = await admin
-          .from('chrono_player_state')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
-        if (freshStateError) throw freshStateError
-        const progressionObject = asObject(progression)
-        return json({
-          ...asObject(data),
-          state: freshState,
-          progression: progressionObject.progression ?? null,
-          doomReward: finiteInt(progressionObject.doomReward, 0, 1_000_000),
-        })
+        return json(asObject(data))
       }
 
       return json({ error: 'Ação desconhecida' }, 400)
