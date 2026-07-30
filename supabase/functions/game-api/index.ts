@@ -804,7 +804,7 @@ export default {
         return json({
           ok: true,
           service: 'chrono-shards-cloud',
-          phase: 'mauro-bestiary-authority-8.7.1',
+          phase: 'mauro-chest-missions-8.7.2',
         })
       }
 
@@ -1746,7 +1746,10 @@ export default {
         const specialMetrics = sanitizeSpecialMetrics(body.specialMetrics, totalKills, bossKills)
         const doomSummary = sanitizeDoomSummary(body.doomSummary, totalKills, bossKills)
 
-        const { data, error } = await admin.rpc('chrono_checkpoint_run_server', {
+        // A migration 019 reúne Missões, Awakening/DOOM e Bestiário em uma
+        // única transação. Assim o cliente nunca recebe falha depois de uma parte
+        // do checkpoint já ter sido confirmada.
+        const { data, error } = await admin.rpc('chrono_checkpoint_run_bundle_server', {
           p_user_id: userId,
           p_session_id: sessionId,
           p_score: score,
@@ -1755,7 +1758,10 @@ export default {
           p_boss_kills: bossKills,
           p_elite_kills: eliteKills,
           p_skills_used: skillsUsed,
-          p_type_kills: missionTypeKills,
+          p_mission_type_kills: missionTypeKills,
+          p_bestiary_type_kills: bestiaryTypeKills,
+          p_special_metrics: specialMetrics,
+          p_doom_summary: doomSummary,
         })
         if (error) {
           const message = String(error.message ?? '').toLowerCase()
@@ -1763,39 +1769,7 @@ export default {
           if (message.includes('sessão já encerrada')) return json({ accepted: false, terminal: true, code: 'RUN_ALREADY_SETTLED' })
           throw error
         }
-
-        // O checkpoint normal já combina valores cumulativos e impede regressão.
-        // O Awakening usa exatamente esse mesmo resumo oficial para que as duas
-        // abas nunca avancem com números diferentes para a mesma partida.
-        const officialCheckpoint = asObject(asObject(data).checkpoint)
-        const officialKills = finiteInt(officialCheckpoint.kills, 0, 10_000_000)
-        const officialBossKills = finiteInt(officialCheckpoint.bossKills, 0, officialKills)
-        const officialEliteKills = finiteInt(officialCheckpoint.eliteKills, 0, officialKills)
-        const officialTypeKills = sanitizeTypeKills(officialCheckpoint.typeKills, officialKills, MISSION_TYPE_KILL_KEYS)
-        const { data: progression, error: progressionError } = await admin.rpc('chrono_apply_progression_run_server', {
-          p_user_id: userId,
-          p_session_id: sessionId,
-          p_score: finiteInt(officialCheckpoint.score, 0, 2_000_000_000),
-          p_wave: finiteInt(officialCheckpoint.wave, 0, 1_000_000),
-          p_kills: officialKills,
-          p_boss_kills: officialBossKills,
-          p_elite_kills: officialEliteKills,
-          p_skills_used: finiteInt(officialCheckpoint.skillsUsed, 0, 10_000_000),
-          p_type_kills: officialTypeKills,
-          p_special_metrics: specialMetrics,
-          p_doom_summary: doomSummary,
-          p_final: false,
-        })
-        if (progressionError) throw progressionError
-        const { data: bestiary, error: bestiaryError } = await admin.rpc('chrono_apply_bestiary_run_server', {
-          p_user_id: userId,
-          p_session_id: sessionId,
-          p_total_kills: totalKills,
-          p_type_kills: bestiaryTypeKills,
-          p_final: false,
-        })
-        if (bestiaryError) throw bestiaryError
-        return json({ ...asObject(data), progression: asObject(progression).progression ?? progression, bestiary })
+        return json(asObject(data))
       }
 
       if (action === 'finish_run') {
