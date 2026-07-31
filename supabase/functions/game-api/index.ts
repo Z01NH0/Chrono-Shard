@@ -558,6 +558,11 @@ async function refreshActionResponse(
     if (!error && data && typeof data === 'object') Object.assign(response, asObject(data))
   }
 
+  if (action === 'finish_run') {
+    const { data, error } = await admin.rpc('chrono_load_missions_server', { p_user_id: userId })
+    if (!error && data && typeof data === 'object') response.missions = asObject(data)
+  }
+
   if (PROGRESSION_REFRESH_ACTIONS.has(action)) {
     const { data, error } = await admin.rpc('chrono_progression_payload_server', { p_user_id: userId })
     if (!error && data) response.progression = data
@@ -1490,8 +1495,10 @@ export default {
       }
 
       if (action === 'claim_mission') {
-        const slotKey = String(body.slotKey ?? '').slice(0, 40)
-        if (!slotKey) return json({ error: 'Dados da missão ausentes' }, 400)
+        const slotKey = String(body.slotKey ?? '').trim()
+        if (!/^(normal:[0-5]|extreme|secret)$/.test(slotKey)) {
+          return json({ error: 'Slot de missão inválido', code: 'INVALID_MISSION_SLOT' }, 400)
+        }
         const request = await resolveActionRequest(admin, userId, action, body.requestId)
         if (request.replay) return json(await refreshActionResponse(admin, userId, action, request.replay))
 
