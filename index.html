@@ -13406,7 +13406,12 @@ function killKey37(e){
     write(m);return m;
   }
   function progress(slot,m=read(),absolute=false){
-    const mission=missionById(slot?.missionId);if(!mission)return {mission:null,cur:0,target:1,pct:0,done:false};
+    const baseMission=missionById(slot?.missionId);if(!baseMission)return {mission:null,cur:0,target:1,pct:0,done:false};
+    const mission=(slot?.serverVerified&&slot?.title)?Object.assign({},baseMission,{title:slot.title,desc:slot.description||baseMission.desc,metric:slot.metric||baseMission.metric}):baseMission;
+    if(slot?.serverVerified&&slot?.serverProgressComplete){
+      const target=Math.max(1,n(slot.serverTarget,mission.target)),cur=Math.min(Math.max(0,n(slot.serverProgress)),target),done=slot.serverDone===true;
+      return {mission,cur,target,pct:clamp(cur/target*100,0,100),done};
+    }
     const raw=absolute?metric(mission.metric,m):Math.max(0,metric(mission.metric,m)-n(slot.baseline));
     const cur=Math.min(raw,mission.target);return {mission,cur,target:mission.target,pct:clamp(cur/mission.target*100,0,100),done:cur>=mission.target};
   }
@@ -13597,12 +13602,24 @@ function killKey37(e){
   function headerHtml(m){return `<div class="missionHead489"><div><h1>MISSÕES</h1><p>Contratos rotativos, reputação e jornadas de Awakening em uma única central.</p></div><div class="missionCurrencies489"><div class="currency489"><small>RELÍQUIAS</small><b>🜂 ${fmt(m.relicShards)}</b></div><div class="currency489"><small>FRAGMENTOS</small><b>${CHRONO_ICON} ${fmt(m.chronoFragments)}</b></div><div class="currency489 keys"><small>CHAVES AWAKENING</small><b>${KEY_ICON} ${fmt(m.awakeningKeys)}</b></div></div></div><nav class="ticketRail489"><button class="ticket489 ${currentView==='general'?'active':''}" data-view489="general">MISSÕES GERAIS</button><button class="ticket489 ${currentView==='awakening'?'active':''}" data-view489="awakening">AWAKENING</button></nav>`}
   function rankModalHtml(m){const current=rankData(m).idx;return `<div class="rankModal489" id="rankModal489" aria-hidden="true"><div class="rankDialog489"><h2>CAMINHO DE REPUTAÇÃO</h2><p style="color:#bfc9eb;margin:6px 0 0">Cada missão resgatada concede reputação além das Relíquias.</p><div class="rankChain489">${RANKS.map((r,i)=>`<div class="rankRow489 ${i===current?'current':''}" style="--c:${r.color}"><canvas width="104" height="104" data-rankcanvas489="${i}"></canvas><div><b style="color:${r.color}">${r.name.toUpperCase()}</b><small>${i===0?'Patente inicial':'Requer reputação acumulada'}</small></div><span class="rankNeed489">${fmt(r.need)} REP</span></div>${i<RANKS.length-1?`<div class="rankArrow489"><span>${r.name}</span><i>→</i><span>${RANKS[i+1].name}</span></div>`:''}`).join('')}</div><button class="rankClose489" id="rankClose489">Fechar</button></div></div>`}
   function missionCard(slot,diff,m,index){
-    const cfg=DIFF[diff],now=Date.now();if(slot?.cooldownUntil>now)return `<article class="missionCard489" style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">${cfg.label}</span><span class="status489">RENOVANDO</span></div><h3>Novo contrato sendo preparado</h3><p>Este espaço receberá outra missão aleatória quando o cooldown terminar.</p><div class="cooldown489" data-cooldown489="${slot.cooldownUntil}">Nova missão em ${formatTime(slot.cooldownUntil-now)}</div></article>`;
-    const info=progress(slot,m);if(!info.mission)return '';
-    return `<article class="missionCard489 ${info.done?'ready':''}" style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">${cfg.label}</span><span class="status489">${info.done?'PRONTA PARA RESGATE':'EM PROGRESSO'}</span></div><h3>${esc(info.mission.title)}</h3><p>${esc(info.mission.desc)}</p><div class="missionProgress489" style="--p:${info.pct}%"><i></i></div><div class="missionCount489"><span>${fmt(info.cur)}/${fmt(info.target)}</span><span>${Math.round(info.pct)}%</span></div>${info.done?`<button class="claim489" data-claim489="${index}">Resgatar missão</button>`:''}</article>`;
+    const cfg=DIFF[diff],now=Date.now(),slotKey=`normal:${index}`,attrs=`data-mission-slot489="${slotKey}"`;
+    if(slot?.cooldownUntil>now)return `<article class="missionCard489 missionPending874" ${attrs} style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">${cfg.label}</span><span class="status489">RENOVANDO</span></div><h3>Novo contrato sendo preparado</h3><p>O servidor está preparando uma nova missão para este espaço.</p><div class="cooldown489" data-cooldown489="${slot.cooldownUntil}">Nova missão em ${formatTime(slot.cooldownUntil-now)}</div></article>`;
+    const info=progress(slot,m);
+    if(!info.mission)return `<article class="missionCard489 missionPending874" ${attrs} style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">${cfg.label}</span><span class="status489">AGUARDE</span></div><h3>Preparando contrato oficial</h3><p>Este slot está sendo sincronizado com o servidor.</p><div class="missionPendingSpinner874" aria-label="Carregando missão"></div></article>`;
+    return `<article class="missionCard489 ${info.done?'ready':''}" ${attrs} style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">${cfg.label}</span><span class="status489">${info.done?'PRONTA PARA RESGATE':'EM PROGRESSO'}</span></div><h3>${esc(info.mission.title)}</h3><p>${esc(info.mission.desc)}</p><div class="missionProgress489" style="--p:${info.pct}%"><i></i></div><div class="missionCount489"><span>${fmt(info.cur)}/${fmt(info.target)}</span><span>${Math.round(info.pct)}%</span></div>${info.done?`<button class="claim489" data-claim489="${index}">Resgatar missão</button>`:''}</article>`;
   }
-  function extremeCard(ex,m){const cfg=DIFF.extreme,now=Date.now();if(ex?.cooldownUntil>now)return `<article class="missionCard489 extreme" style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">EXTREMA</span><span class="status489">RENOVANDO</span></div><h3>Contrato extremo em reconstrução</h3><p>Uma nova missão extrema será sorteada quando o selo terminar de se recompor.</p><div class="cooldown489" data-cooldown489="${ex.cooldownUntil}">Nova missão em ${formatTime(ex.cooldownUntil-now)}</div></article>`;const info=progress(ex,m);return `<article class="missionCard489 extreme ${info.done?'ready':''}" style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">EXTREMA</span><span class="status489">${info.done?'PRONTA PARA RESGATE':'EM PROGRESSO'}</span></div><h3>${esc(info.mission.title)}</h3><p>${esc(info.mission.desc)}</p><div class="missionProgress489" style="--p:${info.pct}%"><i></i></div><div class="missionCount489"><span>${fmt(info.cur)}/${fmt(info.target)}</span><span>${Math.round(info.pct)}%</span></div>${info.done?'<button class="claim489" id="claimExtreme489">Resgatar missão</button>':''}</article>`}
-  function secretCard(secret,m){const cfg=DIFF.secret,claimed=!!secret.claimed,info=progress(secret,m,true);return `<article class="missionCard489 secret ${info.done&&!claimed?'ready':''}" style="--c:${cfg.color}"><div><div class="missionMeta489"><span class="difficulty489">SECRETA</span><span class="status489">${claimed?'ENCERRADA':info.done?'SINAL COMPLETO':'???'}</span></div><h3>${claimed?'Sinal encerrado':esc(info.mission.title)}</h3><p>${claimed?'A origem e a recompensa deste contrato permanecem ocultas.':esc(info.mission.desc)}</p></div><div><div class="missionProgress489" style="--p:${claimed?100:info.pct}%"><i></i></div><div class="missionCount489"><span>${claimed?'???':`${fmt(info.cur)}/${fmt(info.target)}`}</span><span>${claimed?'CONCLUÍDA':`${Math.round(info.pct)}%`}</span></div>${info.done&&!claimed?'<button class="claim489" id="claimSecret489">Resgatar missão</button>':''}</div></article>`}
+  function extremeCard(ex,m){
+    const cfg=DIFF.extreme,now=Date.now(),attrs='data-mission-slot489="extreme"';
+    if(ex?.cooldownUntil>now)return `<article class="missionCard489 extreme missionPending874" ${attrs} style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">EXTREMA</span><span class="status489">RENOVANDO</span></div><h3>Contrato extremo em reconstrução</h3><p>Uma nova missão extrema será preparada pelo servidor quando o selo terminar.</p><div class="cooldown489" data-cooldown489="${ex.cooldownUntil}">Nova missão em ${formatTime(ex.cooldownUntil-now)}</div></article>`;
+    const info=progress(ex,m);
+    if(!info.mission)return `<article class="missionCard489 extreme missionPending874" ${attrs} style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">EXTREMA</span><span class="status489">AGUARDE</span></div><h3>Preparando contrato extremo</h3><p>O contrato oficial está sendo sincronizado.</p><div class="missionPendingSpinner874" aria-label="Carregando missão"></div></article>`;
+    return `<article class="missionCard489 extreme ${info.done?'ready':''}" ${attrs} style="--c:${cfg.color}"><div class="missionMeta489"><span class="difficulty489">EXTREMA</span><span class="status489">${info.done?'PRONTA PARA RESGATE':'EM PROGRESSO'}</span></div><h3>${esc(info.mission.title)}</h3><p>${esc(info.mission.desc)}</p><div class="missionProgress489" style="--p:${info.pct}%"><i></i></div><div class="missionCount489"><span>${fmt(info.cur)}/${fmt(info.target)}</span><span>${Math.round(info.pct)}%</span></div>${info.done?'<button class="claim489" id="claimExtreme489">Resgatar missão</button>':''}</article>`;
+  }
+  function secretCard(secret,m){
+    const cfg=DIFF.secret,claimed=!!secret.claimed,info=progress(secret,m,true),attrs='data-mission-slot489="secret"';
+    if(!info.mission)return `<article class="missionCard489 secret missionPending874" ${attrs} style="--c:${cfg.color}"><div><div class="missionMeta489"><span class="difficulty489">SECRETA</span><span class="status489">AGUARDE</span></div><h3>Sinal sendo localizado</h3><p>O servidor está recuperando o contrato secreto.</p></div><div class="missionPendingSpinner874" aria-label="Carregando missão"></div></article>`;
+    return `<article class="missionCard489 secret ${info.done&&!claimed?'ready':''}" ${attrs} style="--c:${cfg.color}"><div><div class="missionMeta489"><span class="difficulty489">SECRETA</span><span class="status489">${claimed?'ENCERRADA':info.done?'SINAL COMPLETO':'???'}</span></div><h3>${claimed?'Sinal encerrado':esc(info.mission.title)}</h3><p>${claimed?'A origem e a recompensa deste contrato permanecem ocultas.':esc(info.mission.desc)}</p></div><div><div class="missionProgress489" style="--p:${claimed?100:info.pct}%"><i></i></div><div class="missionCount489"><span>${claimed?'???':`${fmt(info.cur)}/${fmt(info.target)}`}</span><span>${claimed?'CONCLUÍDA':`${Math.round(info.pct)}%`}</span></div>${info.done&&!claimed?'<button class="claim489" id="claimSecret489">Resgatar missão</button>':''}</div></article>`;
+  }
   function generalHtml(m){
     const ms=m.missions39,rd=rankData(m);
     return `<section class="missionGeneral489">
@@ -13693,14 +13710,17 @@ function killKey37(e){
   }
   function missionCompleteEntries826(m){
     const out=[];
-    for(let i=0;i<(m.missions39?.slots||[]).length;i++){
-      const slot=m.missions39.slots[i];if(!slot||slot.cooldownUntil>Date.now()||!slot.missionId)continue;
-      const info=progress(slot,m);if(info.done)out.push({key:`normal:${i}:${slot.missionId}:${n(slot.baseline)}`,title:info.mission.title,label:DIFF[slot.difficulty]?.label||'MISSÃO',color:DIFF[slot.difficulty]?.color||'#73f0a7'});
+    const serverManaged=m.missions39?.serverAuthority856===true||window.ChronoRewards856?.expectsMissionAuthority?.()===true;
+    if(!serverManaged){
+      for(let i=0;i<(m.missions39?.slots||[]).length;i++){
+        const slot=m.missions39.slots[i];if(!slot||slot.cooldownUntil>Date.now()||!slot.missionId)continue;
+        const info=progress(slot,m);if(info.done)out.push({key:`normal:${i}:${slot.missionId}:${n(slot.baseline)}`,title:info.mission.title,label:DIFF[slot.difficulty]?.label||'MISSÃO',color:DIFF[slot.difficulty]?.color||'#73f0a7'});
+      }
+      const ex=m.missions39?.extreme489;
+      if(ex&&ex.missionId&&!(ex.cooldownUntil>Date.now())){const info=progress(ex,m);if(info.done)out.push({key:`extreme:${ex.missionId}:${n(ex.baseline)}`,title:info.mission.title,label:'MISSÃO EXTREMA',color:DIFF.extreme.color});}
+      const sec=m.missions39?.secret;
+      if(sec&&!sec.claimed){const info=progress(sec,m,true);if(info.done)out.push({key:`secret:${sec.missionId}`,title:info.mission.title,label:'MISSÃO SECRETA',color:DIFF.secret.color});}
     }
-    const ex=m.missions39?.extreme489;
-    if(ex&&ex.missionId&&!(ex.cooldownUntil>Date.now())){const info=progress(ex,m);if(info.done)out.push({key:`extreme:${ex.missionId}:${n(ex.baseline)}`,title:info.mission.title,label:'MISSÃO EXTREMA',color:DIFF.extreme.color});}
-    const sec=m.missions39?.secret;
-    if(sec&&!sec.claimed){const info=progress(sec,m,true);if(info.done)out.push({key:`secret:${sec.missionId}`,title:info.mission.title,label:'MISSÃO SECRETA',color:DIFF.secret.color});}
     const active=m.awakenings463?.active,a=AWAKEN[active?.id],mi=a?.missions?.[active?.stage];
     if(active&&a&&mi){const ap=awakeningProgress(active,m);if(ap.done)out.push({key:`awak:${active.id}:${active.stage}:${n(active.startedAt)}`,title:mi[0],label:`AWAKENING — ${a.name.toUpperCase()}`,color:a.color});}
     return out;
@@ -40504,6 +40524,11 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
   .missionCard489.ready[data-server-verified856="1"] .status489{color:#86ffb0!important}
   @keyframes chronoMissionSpin856{to{transform:rotate(360deg)}}
 </style>
+<style id="chronoMission874Styles">
+  .missionCard489.missionPending874{min-height:180px;justify-content:flex-start;opacity:.92}
+  .missionPendingSpinner874{width:34px;height:34px;margin:14px auto 0;border-radius:50%;border:3px solid color-mix(in srgb,var(--c,#86ffb0) 20%,transparent);border-top-color:var(--c,#86ffb0);animation:chronoMissionSpin856 .75s linear infinite}
+  .missionCard489[data-mission-slot489]{contain:layout paint}
+</style>
 <script id="chronoMissionsCodes856">
 (()=>{
   if(window.__chronoMissionsCodes856)return;window.__chronoMissionsCodes856=true;
@@ -40544,13 +40569,17 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     }
     return local;
   }
-  function protectionEnabled856(){
-    try{
-      const state=cloud856()?.getState?.()?.state;
-      if(!state)return false;
-      return !!(state.wallet_authority_enabled&&state.character_purchases_enabled&&state.mission_rewards_enabled&&state.code_rewards_enabled);
-    }catch{return false}
+  function missionAuthorityEnabled856(){
+    try{const state=cloud856()?.getState?.()?.state;return !!(state?.wallet_authority_enabled&&state?.mission_rewards_enabled)}catch{return false}
   }
+  function codeAuthorityEnabled856(){
+    try{const state=cloud856()?.getState?.()?.state;return !!(state?.wallet_authority_enabled&&state?.code_rewards_enabled)}catch{return false}
+  }
+  function permanentAccount856(){try{return cloud856()?.isAuthenticated?.()===true}catch{return false}}
+  function missionAuthorityExpected856(){
+    try{return missionAuthorityEnabled856()||permanentAccount856()||readMeta856()?.missions39?.serverAuthority856===true}catch{return false}
+  }
+  function protectionEnabled856(){return missionAuthorityEnabled856()}
   function toast856(title,detail='',color='#86ffb0'){
     lastToast856?.remove?.();
     const box=document.createElement('div');lastToast856=box;box.className='chronoRewardToast855';box.style.setProperty('--toast855',color);
@@ -40601,20 +40630,12 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     const remoteCooldown=Math.max(0,Math.trunc(num856(value.cooldownUntil)));
     const localCooldown=remoteCooldown>0?Date.now()+Math.max(0,remoteCooldown-Math.max(0,Math.trunc(num856(serverTime)))):0;
     return{
-      difficulty:String(value.difficulty||difficulty||''),
-      missionId:value.missionId||null,
-      baseline:Math.max(0,Math.trunc(num856(value.baseline))),
-      cooldownUntil:localCooldown,
-      lastMissionId:value.lastMissionId||'',
-      claimed:!!value.claimed,
-      serverSlotKey:String(value.slotKey||`normal:${index}`),
-      serverCurrent:Math.max(0,Math.trunc(num856(value.current))),
-      serverProgress:Math.max(0,Math.trunc(num856(value.progress))),
-      serverTarget:Math.max(0,Math.trunc(num856(value.target))),
-      serverDone:value.done===true,
-      serverProgressComplete:Number.isFinite(Number(value.target))&&Number(value.target)>0&&Number.isFinite(Number(value.progress))&&typeof value.done==='boolean',
-      serverVerified:true,
-      v:489
+      difficulty:String(value.difficulty||difficulty||''),missionId:value.missionId||null,
+      title:String(value.title||''),description:String(value.description||''),metric:String(value.metric||''),
+      rewardRelics:Math.max(0,Math.trunc(num856(value.rewardRelics))),rewardChrono:Math.max(0,Math.trunc(num856(value.rewardChrono))),rewardReputation:Math.max(0,Math.trunc(num856(value.rewardReputation))),
+      baseline:Math.max(0,Math.trunc(num856(value.baseline))),cooldownUntil:localCooldown,lastMissionId:value.lastMissionId||'',claimed:!!value.claimed,
+      serverSlotKey:String(value.slotKey||`normal:${index}`),serverCurrent:Math.max(0,Math.trunc(num856(value.current))),serverProgress:Math.max(0,Math.trunc(num856(value.progress))),serverTarget:Math.max(0,Math.trunc(num856(value.target))),serverDone:value.done===true,
+      serverProgressComplete:Number.isFinite(Number(value.target))&&Number(value.target)>0&&Number.isFinite(Number(value.progress))&&typeof value.done==='boolean',serverVerified:true,v:489
     };
   }
   function scheduleMissionCooldownSync856(payload){
@@ -40628,32 +40649,26 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     missionCooldownTimer856=setTimeout(()=>syncMissions856({rerender:missionsVisible856()}).catch(()=>{}),delay);
   }
   function applyMissionPayload856(payload){
-    if(!payload||typeof payload!=='object')return;
-    lastMissionPayload856=clone856(payload);
-    const meta=readMeta856();
-    meta.stats=mergeMissionStats856(meta.stats,payload.stats);
-    meta.missionReputation489=Math.max(0,Math.trunc(num856(payload.reputation)));
-    meta.missions39=meta.missions39&&typeof meta.missions39==='object'?meta.missions39:{};
-    const ordered=['easy','easy','easy','medium','medium','hard'];
-    const slots=Array.isArray(payload.slots)?payload.slots:[],serverTime=Math.max(0,Math.trunc(num856(payload.serverTime)))||Date.now();
-    meta.missions39.slots=ordered.map((difficulty,index)=>localSlot856(slots.find(item=>Number(item?.slotIndex)===index)||slots[index],index,difficulty,serverTime));
-    meta.missions39.extreme489=localSlot856(payload.extreme,6,'extreme',serverTime);
-    meta.missions39.secret=localSlot856(payload.secret,7,'secret',serverTime);
-    meta.missions39.secret.missionId='s_moon';
-    if(meta.missions39.secret.claimed){
-      meta.moonMissionClaimed=true;
-      meta.missions39.extreme=Object.assign({},meta.missions39.extreme,{claimed:true});
-      meta.missions37=meta.missions37&&typeof meta.missions37==='object'?meta.missions37:{};
-      meta.missions37.extreme=Object.assign({},meta.missions37.extreme,{claimed:true});
-    }
-    meta.missions39.serverAuthority856=true;
-    meta.missions39.serverSyncedAt856=Date.now();
-    writeMeta856(meta);scheduleMissionCooldownSync856(payload);
-    if(payload?.audit&&(num856(payload.audit.invalidMissions)>0||num856(payload.audit.duplicateMissions)>0))console.warn('Chrono mission audit',payload.audit);
-    if(num856(payload.legacyImportedCount)>0&&!sessionStorage.getItem('chronoLegacyMissionNotice856')){
-      sessionStorage.setItem('chronoLegacyMissionNotice856','1');
-      toast856('MISSÕES ANTIGAS RECONCILIADAS',`${num856(payload.legacyImportedCount)} contrato(s) concluído(s) antes da atualização foram preservados.`,'#ffd166');
-    }
+    if(!payload||typeof payload!=='object')return false;
+    if(payload.enabled===false)throw new Error('As Missões ainda não estão habilitadas para esta conta.');
+    const expected=['normal:0','normal:1','normal:2','normal:3','normal:4','normal:5'];
+    const incoming=Array.isArray(payload.slots)?payload.slots:[];
+    const byKey=new Map();
+    for(const slot of incoming){const key=String(slot?.slotKey||'');if(expected.includes(key)&&!byKey.has(key))byKey.set(key,slot)}
+    const normalizedSlots=expected.map((key,index)=>byKey.get(key)||{slotKey:key,slotIndex:index,difficulty:index<3?'easy':index<5?'medium':'hard',missionId:null,target:0,progress:0,done:false});
+    const normalized=Object.assign({},payload,{slots:normalizedSlots});
+    lastMissionPayload856=clone856(normalized);
+    const meta=readMeta856();meta.stats=mergeMissionStats856(meta.stats,normalized.stats);meta.missionReputation489=Math.max(0,Math.trunc(num856(normalized.reputation)));meta.missions39=meta.missions39&&typeof meta.missions39==='object'?meta.missions39:{};
+    const ordered=['easy','easy','easy','medium','medium','hard'],serverTime=Math.max(0,Math.trunc(num856(normalized.serverTime)))||Date.now();
+    meta.missions39.slots=ordered.map((difficulty,index)=>localSlot856(normalizedSlots[index],index,difficulty,serverTime));
+    meta.missions39.extreme489=localSlot856(normalized.extreme,6,'extreme',serverTime);
+    meta.missions39.secret=localSlot856(normalized.secret,7,'secret',serverTime);meta.missions39.secret.missionId=normalized.secret?.missionId||'s_moon';
+    if(meta.missions39.secret.claimed){meta.moonMissionClaimed=true;meta.missions39.extreme=Object.assign({},meta.missions39.extreme,{claimed:true});meta.missions37=meta.missions37&&typeof meta.missions37==='object'?meta.missions37:{};meta.missions37.extreme=Object.assign({},meta.missions37.extreme,{claimed:true})}
+    meta.missions39.serverAuthority856=true;meta.missions39.serverSyncedAt856=Date.now();meta.missions39.serverCatalogRevision874=Math.trunc(num856(normalized.catalogRevision));
+    writeMeta856(meta);scheduleMissionCooldownSync856(normalized);
+    if(normalized?.audit&&(num856(normalized.audit.invalidMissions)>0||num856(normalized.audit.duplicateMissions)>0||num856(normalized.audit.impossibleBaselines)>0||num856(normalized.audit.invalidSlotShape)>0))console.warn('Chrono mission audit',normalized.audit);
+    if(num856(normalized.legacyImportedCount)>0&&!sessionStorage.getItem('chronoLegacyMissionNotice856')){sessionStorage.setItem('chronoLegacyMissionNotice856','1');toast856('MISSÕES ANTIGAS RECONCILIADAS',`${num856(normalized.legacyImportedCount)} contrato(s) concluído(s) antes da atualização foram preservados.`,'#ffd166')}
+    return true;
   }
   function missionsVisible856(){
     try{return /MISSÕES|MISSÕES CHRONO|AWAKENING/i.test(document.querySelector('#overlayCard h1')?.textContent||'')&&document.getElementById('overlay')&&!document.getElementById('overlay').classList.contains('hidden')}catch{return false}
@@ -40678,37 +40693,37 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     card.querySelector('#backMissions856')?.addEventListener('click',()=>{try{(window.openHub461||window.openStartMenu)?.()}catch{overlay.classList.add('hidden')}});
   }
   function updateOfficialCard856(card,slot,kind,index){
-    if(!card||!slot||!slot.missionId)return;
-    // Versões antigas da RPC devolviam somente a atribuição/baseline. Nesses
-    // casos não sobrescrevemos a interface com 0/1: a tela local já calcula o
-    // progresso a partir das estatísticas oficiais aplicadas ao meta.
+    if(!card)return;
+    const expectedKey=kind==='normal'?`normal:${index}`:kind;card.dataset.missionSlot489=expectedKey;
+    if(!slot||!slot.missionId){
+      card.classList.add('missionPending874');card.classList.remove('ready');card.dataset.serverVerified856='1';
+      const status=card.querySelector('.status489');if(status)status.textContent=Number(slot?.cooldownUntil)>Number(lastMissionPayload856?.serverTime||Date.now())?'RENOVANDO':'AGUARDE';
+      card.querySelector('[data-claim489],#claimExtreme489,#claimSecret489')?.remove();return;
+    }
+    const title=String(slot.title||''),description=String(slot.description||'');
+    if(title){const heading=card.querySelector('h3');if(heading)heading.textContent=title}
+    if(description){const paragraph=card.querySelector('h3 + p');if(paragraph)paragraph.textContent=description}
     const hasProgress=Number.isFinite(Number(slot.target))&&Number(slot.target)>0&&Number.isFinite(Number(slot.progress))&&typeof slot.done==='boolean';
     if(!hasProgress)return;
-    const target=Math.max(1,Math.trunc(num856(slot.target))),progress=Math.max(0,Math.trunc(num856(slot.progress))),shown=Math.min(progress,target),done=slot.done===true,claimed=slot.claimed===true;
-    const pct=Math.max(0,Math.min(100,shown/target*100));
+    card.classList.remove('missionPending874');
+    const target=Math.max(1,Math.trunc(num856(slot.target))),progress=Math.max(0,Math.trunc(num856(slot.progress))),shown=Math.min(progress,target),done=slot.done===true,claimed=slot.claimed===true,pct=Math.max(0,Math.min(100,shown/target*100));
     card.dataset.serverVerified856='1';card.classList.toggle('ready',done&&!claimed);
-    const status=card.querySelector('.status489');
-    if(status)status.textContent=claimed?'ENCERRADA':done?'PRONTA PARA RESGATE':'EM PROGRESSO';
+    const status=card.querySelector('.status489');if(status)status.textContent=claimed?'ENCERRADA':done?'PRONTA PARA RESGATE':'EM PROGRESSO';
     const progressBar=card.querySelector('.missionProgress489');if(progressBar)progressBar.style.setProperty('--p',`${claimed?100:pct}%`);
-    const counts=card.querySelectorAll('.missionCount489 span');
-    if(counts[0])counts[0].textContent=claimed&&kind==='secret'?'???':`${Math.floor(shown).toLocaleString('pt-BR')}/${Math.floor(target).toLocaleString('pt-BR')}`;
-    if(counts[1])counts[1].textContent=claimed&&kind==='secret'?'CONCLUÍDA':`${Math.round(pct)}%`;
+    const counts=card.querySelectorAll('.missionCount489 span');if(counts[0])counts[0].textContent=claimed&&kind==='secret'?'???':`${Math.floor(shown).toLocaleString('pt-BR')}/${Math.floor(target).toLocaleString('pt-BR')}`;if(counts[1])counts[1].textContent=claimed&&kind==='secret'?'CONCLUÍDA':`${Math.round(pct)}%`;
     let button=kind==='normal'?card.querySelector('[data-claim489]'):kind==='extreme'?card.querySelector('#claimExtreme489'):card.querySelector('#claimSecret489');
     if(!done||claimed){button?.remove();return}
-    if(!button){
-      button=document.createElement('button');button.className='claim489';button.textContent=kind==='secret'?'Resgatar missão':'Resgatar missão';
-      if(kind==='normal')button.dataset.claim489=String(index);
-      else button.id=kind==='extreme'?'claimExtreme489':'claimSecret489';
-      card.appendChild(button);
-    }
+    if(!button){button=document.createElement('button');button.className='claim489';button.textContent='Resgatar missão';if(kind==='normal')button.dataset.claim489=String(index);else button.id=kind==='extreme'?'claimExtreme489':'claimSecret489';card.appendChild(button)}
   }
   function decorateOfficialProgress856(payload=lastMissionPayload856){
     if(!payload||!missionsVisible856())return;
-    const cards=[...document.querySelectorAll('#overlayCard .missionGrid489 > article.missionCard489')];
     const slots=Array.isArray(payload.slots)?payload.slots:[];
-    for(let index=0;index<6;index++)updateOfficialCard856(cards[index],slots.find(slot=>Number(slot?.slotIndex)===index)||slots[index],'normal',index);
-    updateOfficialCard856(cards[6],payload.extreme,'extreme',6);
-    updateOfficialCard856(cards[7],payload.secret,'secret',7);
+    for(let index=0;index<6;index++){
+      const key=`normal:${index}`,card=document.querySelector(`#overlayCard .missionGrid489 > article.missionCard489[data-mission-slot489="${key}"]`);
+      updateOfficialCard856(card,slots.find(slot=>String(slot?.slotKey)===key),'normal',index);
+    }
+    updateOfficialCard856(document.querySelector('#overlayCard .missionGrid489 > article.missionCard489[data-mission-slot489="extreme"]'),payload.extreme,'extreme',6);
+    updateOfficialCard856(document.querySelector('#overlayCard .missionGrid489 > article.missionCard489[data-mission-slot489="secret"]'),payload.secret,'secret',7);
   }
   function refreshMissionView856({syncIfStale=false}={}){
     if(!missionsVisible856())return null;
@@ -40721,7 +40736,8 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     try{return await window.ChronoEconomy852?.reloadState?.()}catch(error){console.warn('Chrono 8.5.6 economy refresh',error);return null}
   }
   async function syncMissions856({rerender=true}={}){
-    if(!protectionEnabled856()||!cloud856()?.invoke)return null;
+    if(!missionAuthorityExpected856())return null;
+    if(!cloud856()?.invoke)throw new Error('Chrono Cloud indisponível. Não foi possível carregar as Missões oficiais.');
     if(missionSyncPromise856)return missionSyncPromise856;
     missionSyncPromise856=(async()=>{
       const payload=await cloud856().invoke('load_missions');
@@ -40737,8 +40753,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     return missionSyncPromise856;
   }
   async function openMissions856(){
-    if(!protectionEnabled856()||!cloud856()?.invoke)return typeof baseOpenMissions856==='function'?baseOpenMissions856.apply(this,arguments):undefined;
+    if(!missionAuthorityExpected856())return typeof baseOpenMissions856==='function'?baseOpenMissions856.apply(this,arguments):undefined;
     renderMissionLoading856();
+    if(!cloud856()?.invoke){renderMissionError856(new Error('Chrono Cloud indisponível. Entre novamente para carregar suas Missões.'));return null}
     try{
       const payload=await syncMissions856({rerender:false});
       if(typeof baseOpenMissions856==='function')baseOpenMissions856();
@@ -40782,7 +40799,7 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     }
   }
   window.addEventListener('click',event=>{
-    if(!protectionEnabled856())return;
+    if(!missionAuthorityExpected856())return;
     const normal=event.target?.closest?.('[data-claim489]');
     const extreme=event.target?.closest?.('#claimExtreme489');
     const secret=event.target?.closest?.('#claimSecret489');
@@ -40825,36 +40842,32 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
     }finally{codeBusy856=false;if(button?.isConnected){button.disabled=false;button.classList.remove('chronoServerBusy855')}}
   }
   window.addEventListener('click',event=>{
-    if(!protectionEnabled856())return;
+    if(!codeAuthorityEnabled856()&&!permanentAccount856())return;
     const button=event.target?.closest?.(CODE_BUTTONS);if(!button)return;
     const ui=codeUI856(button);if(!ui.input)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();redeemCode856(ui.input,ui.msg,button);
   },true);
   window.addEventListener('keydown',event=>{
-    if(!protectionEnabled856()||event.key!=='Enter'||!event.target?.matches?.(CODE_INPUTS))return;
+    if((!codeAuthorityEnabled856()&&!permanentAccount856())||event.key!=='Enter'||!event.target?.matches?.(CODE_INPUTS))return;
     const ui=codeUI856(event.target);event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();redeemCode856(ui.input,ui.msg,null);
   },true);
   let cloudHydrationTimer856=0,lastHydratedRevision856=-1,lastHydratedUser856='';
   function scheduleMissionHydration856(detail){
     clearTimeout(cloudHydrationTimer856);
-    if(!protectionEnabled856())return;
     const userId=String(detail?.session?.user?.id||cloud856()?.getState?.()?.session?.user?.id||'');
-    const revision=Math.trunc(num856(detail?.state?.revision));
-    const shouldHydrate=userId&&(userId!==lastHydratedUser856||revision!==lastHydratedRevision856||!lastMissionPayload856);
+    if(!userId){lastMissionPayload856=null;lastHydratedUser856='';lastHydratedRevision856=-1;return}
+    if(userId!==lastHydratedUser856){lastMissionPayload856=null;lastHydratedRevision856=-1}
+    if(!missionAuthorityExpected856())return;
+    const revision=Math.trunc(num856(detail?.state?.revision)),shouldHydrate=userId&&(userId!==lastHydratedUser856||revision!==lastHydratedRevision856||!lastMissionPayload856);
     if(!shouldHydrate)return;
-    cloudHydrationTimer856=setTimeout(async()=>{
-      try{
-        const payload=await syncMissions856({rerender:missionsVisible856()});
-        if(payload){lastHydratedUser856=userId;lastHydratedRevision856=Math.trunc(num856(payload.revision??revision))}
-      }catch(error){console.warn('Chrono mission hydration',error)}
-    },120);
+    cloudHydrationTimer856=setTimeout(async()=>{try{const payload=await syncMissions856({rerender:missionsVisible856()});if(payload){lastHydratedUser856=userId;lastHydratedRevision856=Math.trunc(num856(payload.revision??revision))}}catch(error){console.warn('Chrono mission hydration',error)}},120);
   }
-  window.addEventListener('chrono-run-settled',event=>{if(event.detail?.accepted)syncMissions856({rerender:missionsVisible856()}).catch(()=>{})});
+  window.addEventListener('chrono-run-settled',event=>{if(!event.detail?.accepted)return;try{if(event.detail?.missions){applyServerState856(event.detail?.state);applyMissionPayload856(event.detail.missions);if(missionsVisible856()&&typeof baseOpenMissions856==='function'){baseOpenMissions856();requestAnimationFrame(()=>decorateOfficialProgress856(event.detail.missions))}return}}catch(error){console.warn('Chrono mission settlement payload',error)}syncMissions856({rerender:missionsVisible856()}).catch(()=>{})});
   window.addEventListener('chrono-cloud-state',event=>scheduleMissionHydration856(event.detail));
   window.addEventListener('click',event=>{if(!event.target?.closest?.('[data-view489="general"]'))return;setTimeout(()=>refreshMissionView856({syncIfStale:true}),0)},true);
-  window.ChronoRewards856=Object.freeze({syncMissions:syncMissions856,refreshView:refreshMissionView856,claimMission:claimMission856,redeemCode:redeemCode856,isProtected:protectionEnabled856,getPayload:()=>clone856(lastMissionPayload856)});
+  window.ChronoRewards856=Object.freeze({syncMissions:syncMissions856,refreshView:refreshMissionView856,claimMission:claimMission856,redeemCode:redeemCode856,isProtected:missionAuthorityEnabled856,expectsMissionAuthority:missionAuthorityExpected856,isCodeProtected:codeAuthorityEnabled856,applyPayload:applyMissionPayload856,getPayload:()=>clone856(lastMissionPayload856)});
   window.ChronoRewards855=window.ChronoRewards856;
-  console.log('Chrono Shards 8.5.19 — Awakening, Loja Infernal e DOOM revisados');
+  console.log('Chrono Shards 8.7.4 — Missões Gerais autoritativas e slots estáveis');
 })();
 </script>
 
@@ -42050,5 +42063,9 @@ A Loja Infernal nunca vendeu sua obediência. Por quinhentas Lágrimas, ela vend
 })();
 </script>
 
+
+<script id="chronoMissionsAudit874">
+(()=>{if(window.__chronoMissionsAudit874)return;window.__chronoMissionsAudit874=true;console.log('Chrono Shards 8.7.4 — revisão integral de Missões carregada');})();
+</script>
 </body>
 </html>
